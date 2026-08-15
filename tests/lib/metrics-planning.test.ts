@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateCostBasedPrice,
+  calculateCostCoverageEstimate,
   calculateCostPerActiveCreator,
   calculateCreatorRange,
   calculatePlanLimitImpact,
@@ -50,18 +50,18 @@ describe("planning metric helpers", () => {
     expect(calculateCostPerActiveCreator(42.8, 0)).toBeNull();
   });
 
-  it("derives a paid-plan price floor from explicit cost assumptions", () => {
-    expect(calculateCostBasedPrice(100, 200, 5, 75)).toEqual({
+  it("derives a cost-covering estimate from explicit assumptions", () => {
+    expect(calculateCostCoverageEstimate(100, 200, 5, 25)).toEqual({
       expectedPaidCreators: 10,
       breakEvenPerPaidCreator: 10,
-      priceFloorPerPaidCreator: 40,
+      costCoveringPricePerPaidCreator: 12.5,
     });
   });
 
   it("rejects incomplete or impossible pricing assumptions", () => {
-    expect(calculateCostBasedPrice(0, 200, 5, 75)).toBeNull();
-    expect(calculateCostBasedPrice(100, 200, 0, 75)).toBeNull();
-    expect(calculateCostBasedPrice(100, 200, 5, 100)).toBeNull();
+    expect(calculateCostCoverageEstimate(0, 200, 5, 25)).toBeNull();
+    expect(calculateCostCoverageEstimate(100, 200, 0, 25)).toBeNull();
+    expect(calculateCostCoverageEstimate(100, 200, 5, 101)).toBeNull();
   });
 
   it("normalizes behavioral bounds into a projected creator range", () => {

@@ -2,7 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Activity, Circle, Compass, Download, RefreshCcw } from "lucide-react";
+import {
+  Activity,
+  Circle,
+  Compass,
+  Download,
+  LayoutDashboard,
+  PenTool,
+  RefreshCcw,
+  Share2,
+  type LucideIcon,
+  Users,
+} from "lucide-react";
 import {
   ContentGrowthChart,
   EditorUsageBreakdown,
@@ -82,6 +93,29 @@ const JOURNEY_STAGES = [
 ] as const;
 
 const EVIDENCE_METRICS = ["MTR-001", "MTR-004", "MTR-006", "MTR-005"] as const;
+
+const METRICS_VIEWS = [
+  { view: "overview", key: "overview", icon: LayoutDashboard },
+  { view: "user-growth", key: "userGrowth", icon: Users },
+  { view: "acquisition", key: "acquisition", icon: Compass },
+  { view: "editor", key: "editor", icon: PenTool },
+  { view: "content", key: "content", icon: Activity },
+  { view: "exports", key: "exports", icon: Download },
+  { view: "sharing", key: "sharing", icon: Share2 },
+  { view: "retention", key: "retention", icon: RefreshCcw },
+] as const satisfies ReadonlyArray<{
+  view: MetricsView;
+  key:
+    | "overview"
+    | "userGrowth"
+    | "acquisition"
+    | "editor"
+    | "content"
+    | "exports"
+    | "sharing"
+    | "retention";
+  icon: LucideIcon;
+}>;
 
 const DICTIONARY_METRICS = [
   "MTR-001",
@@ -449,7 +483,10 @@ export default function MetricsWorkspace({
         </header>
       ) : null}
 
-      <nav aria-label={t("journey.label")} className="overflow-x-auto pb-1">
+      <nav
+        aria-label={t("journey.label")}
+        className="snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+      >
         <ol className="grid min-w-[54rem] grid-cols-5 px-2 pt-2">
           {JOURNEY_STAGES.map(({ key, id, view }, index) => {
             const snapshot = snapshots.get(id)!;
@@ -457,7 +494,7 @@ export default function MetricsWorkspace({
             return (
               <li
                 key={id}
-                className="after:bg-border relative after:absolute after:top-2.5 after:left-8 after:h-px after:w-[calc(100%-2rem)] last:after:hidden"
+                className="after:bg-border relative snap-start after:absolute after:top-2.5 after:left-8 after:h-px after:w-[calc(100%-2rem)] last:after:hidden"
               >
                 <button
                   type="button"
@@ -503,26 +540,19 @@ export default function MetricsWorkspace({
         className="min-w-0"
       >
         <div className="flex items-end justify-between gap-4 border-b">
-          <div className="overflow-x-auto">
+          <div className="snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
             <TabsList
               className="h-auto min-w-max justify-start rounded-none bg-transparent p-0"
               aria-label={t("views.label")}
             >
-              {(
-                [
-                  "overview",
-                  "user-growth",
-                  "editor",
-                  "exports",
-                  "sharing",
-                ] as const
-              ).map((view) => (
+              {METRICS_VIEWS.map(({ view, key, icon: Icon }) => (
                 <TabsTrigger
                   key={view}
                   value={view}
-                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  className="data-[state=active]:border-primary min-h-11 snap-start gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                 >
-                  {t(`views.${view === "user-growth" ? "userGrowth" : view}`)}
+                  <Icon className="size-4" aria-hidden="true" />
+                  {t(`views.${key}`)}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -674,27 +704,25 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
 
-        {activeView === "acquisition" ? (
-          <div className="mt-4">
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2 className="text-base font-semibold">
-                    {t("acquisition.title")}
-                  </h2>
-                  <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                    {t("acquisition.description")}
-                  </p>
-                </div>
-                <QualityLabel quality={explorer.acquisition.quality} />
+        <TabsContent value="acquisition" className="mt-4">
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("acquisition.title")}
+                </h2>
+                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+                  {t("acquisition.description")}
+                </p>
               </div>
-              <ExplorerBarRows
-                metric={explorer.acquisition}
-                namespace="sources"
-              />
-            </section>
-          </div>
-        ) : null}
+              <QualityLabel quality={explorer.acquisition.quality} />
+            </div>
+            <ExplorerBarRows
+              metric={explorer.acquisition}
+              namespace="sources"
+            />
+          </section>
+        </TabsContent>
 
         <TabsContent value="editor" className="mt-4 space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
@@ -727,19 +755,17 @@ export default function MetricsWorkspace({
           </div>
         </TabsContent>
 
-        {activeView === "content" ? (
-          <div className="mt-4">
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <h2 className="text-base font-semibold">{t("content.title")}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("content.description")}
-              </p>
-              <div className="mt-4">
-                <ContentGrowthChart data={insights.contentGrowth} />
-              </div>
-            </section>
-          </div>
-        ) : null}
+        <TabsContent value="content" className="mt-4">
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <h2 className="text-base font-semibold">{t("content.title")}</h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("content.description")}
+            </p>
+            <div className="mt-4">
+              <ContentGrowthChart data={insights.contentGrowth} />
+            </div>
+          </section>
+        </TabsContent>
 
         <TabsContent value="exports" className="mt-4">
           <section className="bg-card max-w-4xl rounded-xl border p-4 sm:p-5">
@@ -794,57 +820,23 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
 
-        {activeView === "retention" ? (
-          <div className="mt-4">
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2 className="text-base font-semibold">
-                    {t("retention.title")}
-                  </h2>
-                  <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                    {t("retention.description")}
-                  </p>
-                </div>
-                <QualityLabel quality={explorer.retention.quality} />
+        <TabsContent value="retention" className="mt-4">
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("retention.title")}
+                </h2>
+                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+                  {t("retention.description")}
+                </p>
               </div>
-              <RetentionTable metric={explorer.retention} />
-            </section>
-          </div>
-        ) : null}
+              <QualityLabel quality={explorer.retention.quality} />
+            </div>
+            <RetentionTable metric={explorer.retention} />
+          </section>
+        </TabsContent>
       </Tabs>
-
-      <nav
-        aria-label={t("explore.label")}
-        className="bg-card flex min-w-0 flex-col gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center"
-      >
-        <span className="text-muted-foreground shrink-0 text-xs">
-          {t("explore.label")}
-        </span>
-        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-          {(
-            [
-              { view: "acquisition", key: "acquisition", icon: Compass },
-              { view: "content", key: "content", icon: Activity },
-              { view: "retention", key: "retention", icon: RefreshCcw },
-            ] as const
-          ).map(({ view, key, icon: Icon }) => (
-            <button
-              key={view}
-              type="button"
-              onClick={() => setActiveView(view)}
-              aria-pressed={activeView === view}
-              className={cn(
-                "hover:bg-muted focus-visible:ring-ring inline-flex shrink-0 items-center gap-2 rounded-sm px-3 py-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none",
-                activeView === view && "bg-muted text-foreground"
-              )}
-            >
-              <Icon className="size-3.5" aria-hidden="true" />
-              {t(`explore.${key}`)}
-            </button>
-          ))}
-        </div>
-      </nav>
 
       <details
         id="data-dictionary"

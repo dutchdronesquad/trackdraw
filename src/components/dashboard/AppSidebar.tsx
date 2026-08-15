@@ -114,6 +114,24 @@ const topNavItems: NavItem[] = [
   },
 ] as const;
 
+const insightsNavItems: NavItem[] = [
+  {
+    key: "metrics",
+    titleKey: "metrics",
+    href: "/dashboard/metrics",
+    icon: BarChart2,
+    activePrefix: "/dashboard/metrics",
+    exact: true,
+  },
+  {
+    key: "metrics-planning",
+    titleKey: "plansAndLimits",
+    href: "/dashboard/metrics/planning",
+    icon: SlidersHorizontal,
+    activePrefix: "/dashboard/metrics/planning",
+  },
+] as const;
+
 const adminNavItems: NavItem[] = [
   {
     key: "users",
@@ -135,21 +153,6 @@ const adminNavItems: NavItem[] = [
     href: "/dashboard/audit",
     icon: Bell,
     activePrefix: "/dashboard/audit",
-  },
-  {
-    key: "metrics",
-    titleKey: "metrics",
-    href: "/dashboard/metrics",
-    icon: BarChart2,
-    activePrefix: "/dashboard/metrics",
-    exact: true,
-  },
-  {
-    key: "metrics-planning",
-    titleKey: "planDecisions",
-    href: "/dashboard/metrics/planning",
-    icon: SlidersHorizontal,
-    activePrefix: "/dashboard/metrics/planning",
   },
   {
     key: "email-preview",
@@ -256,11 +259,15 @@ export default function DashboardAppSidebar({
     return true;
   });
 
-  const filteredAdminItems = adminNavItems.filter((item) => {
-    if (item.key === "users") return visibleModules.includes("users");
+  const filteredInsightsItems = insightsNavItems.filter((item) => {
     if (item.key === "metrics" || item.key === "metrics-planning") {
       return visibleModules.includes("metrics");
     }
+    return true;
+  });
+
+  const filteredAdminItems = adminNavItems.filter((item) => {
+    if (item.key === "users") return visibleModules.includes("users");
     if (item.key === "audit") return visibleModules.includes("audit");
     if (item.key === "api-keys") return visibleModules.includes("api-keys");
     if (item.key === "email-preview") return currentUser.role === "admin";
@@ -305,6 +312,24 @@ export default function DashboardAppSidebar({
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredTopItems.map((item) => (
+                  <NavMenuItem
+                    key={item.titleKey}
+                    item={item}
+                    currentPath={currentPath}
+                    badge={itemBadges[item.key]}
+                    label={t(`nav.${item.titleKey}`)}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        {filteredInsightsItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{t("insightsGroup")}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {filteredInsightsItems.map((item) => (
                   <NavMenuItem
                     key={item.titleKey}
                     item={item}

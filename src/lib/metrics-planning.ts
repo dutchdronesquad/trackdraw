@@ -92,18 +92,18 @@ export function calculateCostPerActiveCreator(
   return monthlyCost / activeCreators;
 }
 
-export type CostBasedPrice = {
+export type CostCoverageEstimate = {
   expectedPaidCreators: number;
   breakEvenPerPaidCreator: number;
-  priceFloorPerPaidCreator: number;
+  costCoveringPricePerPaidCreator: number;
 };
 
-export function calculateCostBasedPrice(
+export function calculateCostCoverageEstimate(
   monthlyCost: number,
   activeCreators: number,
   paidAdoptionPct: number,
-  targetGrossMarginPct: number
-): CostBasedPrice | null {
+  costBufferPct: number
+): CostCoverageEstimate | null {
   if (
     !Number.isFinite(monthlyCost) ||
     monthlyCost <= 0 ||
@@ -112,9 +112,9 @@ export function calculateCostBasedPrice(
     !Number.isFinite(paidAdoptionPct) ||
     paidAdoptionPct <= 0 ||
     paidAdoptionPct > 100 ||
-    !Number.isFinite(targetGrossMarginPct) ||
-    targetGrossMarginPct < 0 ||
-    targetGrossMarginPct >= 100
+    !Number.isFinite(costBufferPct) ||
+    costBufferPct < 0 ||
+    costBufferPct > 100
   ) {
     return null;
   }
@@ -125,8 +125,8 @@ export function calculateCostBasedPrice(
   return {
     expectedPaidCreators,
     breakEvenPerPaidCreator,
-    priceFloorPerPaidCreator:
-      breakEvenPerPaidCreator / (1 - targetGrossMarginPct / 100),
+    costCoveringPricePerPaidCreator:
+      breakEvenPerPaidCreator * (1 + costBufferPct / 100),
   };
 }
 

@@ -256,10 +256,15 @@ describe("metrics decision views", () => {
       name: "Projects free-plan limit value",
     });
     expect(projectLimit.getAttribute("max")).toBe("20");
+    expect(projectLimit.className).toContain("h-11");
+    expect(
+      screen.getByRole("slider", { name: "Projects free-plan limit slider" })
+        .className
+    ).toContain("h-11");
     fireEvent.change(projectLimit, { target: { value: "999" } });
     expect((projectLimit as HTMLInputElement).value).toBe("5");
     expect(screen.getAllByText("21+")).toHaveLength(3);
-    expect(screen.getByText("Scenario impact")).toBeTruthy();
+    expect(screen.getByText("Free-plan impact")).toBeTruthy();
     expect(screen.getByText("Commercial signals")).toBeTruthy();
   });
 
@@ -281,6 +286,9 @@ describe("metrics decision views", () => {
       screen.getByText("100% of accounts with content · 1 near · 1 above")
     ).toBeTruthy();
     expect(screen.getAllByText("n/a").length).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("Monthly infrastructure cost").className
+    ).toContain("h-11");
 
     await user.type(
       screen.getByLabelText("Monthly infrastructure cost"),
@@ -291,12 +299,14 @@ describe("metrics decision views", () => {
       "July invoice"
     );
 
-    expect(screen.getByText("Paid plan calculator")).toBeTruthy();
+    expect(screen.getByText("Cost coverage estimate")).toBeTruthy();
     expect(screen.getByText("€10.00 per active creator")).toBeTruthy();
     expect(
-      screen.getByText("0.5 expected paid creators · €200.00 break-even")
+      screen.getByText(
+        "0.5 expected paid creators · €200.00 base cost per paid account"
+      )
     ).toBeTruthy();
-    expect(screen.getByText("€666.67")).toBeTruthy();
+    expect(screen.getByText("€200.00")).toBeTruthy();
     const advanced = screen
       .getByText("Advanced assumptions")
       .closest("details");
@@ -483,19 +493,18 @@ describe("metrics decision views", () => {
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
     ).toBeNull();
 
-    await user.click(
-      within(journey).getByRole("button", { name: /^Acquisition Building/ })
-    );
+    await user.click(screen.getByRole("tab", { name: "Acquisition" }));
+    expect(
+      screen.getByRole("tab", { name: "Acquisition" }).className
+    ).toContain("min-h-11");
     const acquisitionHeading = screen.getByRole("heading", {
       name: "Acquisition source mix",
     });
     expect(acquisitionHeading).toBeTruthy();
-    expect(acquisitionHeading.closest('[role="tabpanel"]')).toBeNull();
+    expect(acquisitionHeading.closest('[role="tabpanel"]')).toBeTruthy();
     expect(
-      screen
-        .getByRole("button", { name: "Acquisition sources" })
-        .getAttribute("aria-pressed")
-    ).toBe("true");
+      screen.queryByRole("navigation", { name: "Explore more views:" })
+    ).toBeNull();
     expect(screen.getByText("No data for this period.")).toBeTruthy();
 
     await user.click(screen.getByRole("tab", { name: "Sharing" }));
