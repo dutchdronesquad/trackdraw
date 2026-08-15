@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import {
+  ArrowRight,
   Eye,
   EyeOff,
   FolderOpen,
@@ -11,14 +12,14 @@ import {
   ShieldCheck,
   Sparkles,
   Trash2,
-  TrendingDown,
   TrendingUp,
   UserPlus,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Reveal, RevealListItem } from "@/components/motion/Reveal";
+import DailyCockpit from "@/components/dashboard/DailyCockpit";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -29,6 +30,7 @@ import {
   type DashboardGalleryEntry,
 } from "@/lib/server/gallery";
 import { getOverviewStats, type RecentUser } from "@/lib/server/metrics";
+import { getDailyCockpit } from "@/lib/server/dashboard-cockpit";
 
 // --- Helpers ---
 
@@ -119,93 +121,67 @@ function humanEventLabel(
 
 // --- Components ---
 
-function KpiTrend({
-  current,
-  previous,
-  vsPrevMonthLabel,
-}: {
-  current: number;
-  previous: number;
-  vsPrevMonthLabel: string;
-}) {
-  if (previous === 0) return null;
-  const pct = Math.round(((current - previous) / previous) * 100);
-  const up = pct >= 0;
-  const Icon = up ? TrendingUp : TrendingDown;
-  return (
-    <span
-      className={`inline-flex items-center gap-0.5 text-[10px] font-medium ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
-    >
-      <Icon className="size-3" />
-      {up ? "+" : ""}
-      {pct}% {vsPrevMonthLabel}
-    </span>
-  );
-}
-
-function KpiCard({
+function PlatformStat({
   label,
   value,
-  sub,
-  trend,
-  vsPrevMonthLabel,
   icon: Icon,
   accent,
   iconTone,
 }: {
   label: string;
   value: number | string;
-  sub?: string;
-  trend?: { current: number; previous: number };
-  vsPrevMonthLabel?: string;
   icon: LucideIcon;
   accent: string;
   iconTone: string;
 }) {
   return (
-    <div className="bg-card overflow-hidden rounded-xl border">
-      <div className={`h-1 ${accent}`} />
-      <div className="flex items-start gap-3 p-4">
-        <span
-          className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
-        >
-          <Icon className="size-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-muted-foreground truncate text-xs font-medium">
-            {label}
-          </p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-2xl leading-tight font-bold tabular-nums">
-              {value}
-            </p>
-            {trend ? (
-              <KpiTrend
-                current={trend.current}
-                previous={trend.previous}
-                vsPrevMonthLabel={vsPrevMonthLabel ?? ""}
-              />
-            ) : null}
-          </div>
-          {sub ? (
-            <p className="text-muted-foreground mt-0.5 text-xs">{sub}</p>
-          ) : null}
-        </div>
+    <div
+      className={`flex h-full min-w-0 items-center gap-3 border-t-2 p-4 sm:px-5 ${accent}`}
+    >
+      <span
+        className={`inline-flex size-10 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
+      >
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-sm leading-snug">{label}</p>
+        <p className="text-xl leading-tight font-semibold tabular-nums">
+          {value}
+        </p>
       </div>
     </div>
   );
 }
 
-function RecentAuditEvents({
+function RecentChanges({
   events,
+  users,
   t,
 }: {
   events: AuditEvent[];
+  users: RecentUser[];
   t: (key: string, values?: Record<string, unknown>) => string;
 }) {
-  if (events.length === 0) {
+  const changes = [
+    ...events.map((event) => ({
+      kind: "audit" as const,
+      id: event.id,
+      createdAt: event.createdAt,
+      event,
+    })),
+    ...users.map((user) => ({
+      kind: "signup" as const,
+      id: user.id,
+      createdAt: user.createdAt,
+      user,
+    })),
+  ]
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    .slice(0, 8);
+
+  if (changes.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-xs">
+      <p className="text-muted-foreground py-6 text-center text-sm">
         {t("empty.recentActivity")}
       </p>
     );
@@ -213,79 +189,57 @@ function RecentAuditEvents({
 
   return (
     <ul className="divide-y">
-      {events.map((event, index) => {
-        const cfg = eventConfig(event.eventType);
+      {changes.map((change, index) => {
+        if (change.kind === "signup") {
+          const displayName =
+            change.user.name?.trim() ||
+            change.user.email?.trim() ||
+            t("fallback.unknownUser");
+          return (
+            <RevealListItem
+              key={`signup-${change.id}`}
+              className="flex min-h-14 items-center gap-3 py-2.5"
+              delay={index * 0.03}
+            >
+              <span className="bg-muted text-muted-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <UserPlus className="size-3.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
+                <p className="truncate text-sm font-medium">{displayName}</p>
+                <p className="text-muted-foreground truncate text-sm">
+                  {t("events.signedUp")}
+                </p>
+              </div>
+              <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                {formatRelativeTime(change.createdAt, t)}
+              </time>
+            </RevealListItem>
+          );
+        }
+
+        const cfg = eventConfig(change.event.eventType);
         const Icon = cfg.icon;
         return (
           <RevealListItem
-            key={event.id}
-            className="flex items-start gap-3 py-2.5"
+            key={`audit-${change.id}`}
+            className="flex min-h-14 items-center gap-3 py-2.5"
             delay={index * 0.03}
           >
             <span
-              className={`mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md ${cfg.tone}`}
+              className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${cfg.tone}`}
             >
               <Icon className="size-3.5" />
             </span>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
               <p className="truncate text-sm font-medium">
-                {actorLabel(event.actor, t("events.system"))}
+                {actorLabel(change.event.actor, t("events.system"))}
               </p>
-              <p className="text-muted-foreground truncate text-xs">
-                {humanEventLabel(event.eventType, t)}
+              <p className="text-muted-foreground truncate text-sm">
+                {humanEventLabel(change.event.eventType, t)}
               </p>
-            </div>
-            <time className="text-muted-foreground mt-0.5 shrink-0 text-xs tabular-nums">
-              {formatRelativeTime(event.createdAt, t)}
-            </time>
-          </RevealListItem>
-        );
-      })}
-    </ul>
-  );
-}
-
-function RecentSignups({
-  users,
-  t,
-}: {
-  users: RecentUser[];
-  t: (key: string, values?: Record<string, unknown>) => string;
-}) {
-  if (users.length === 0) {
-    return (
-      <p className="text-muted-foreground py-6 text-center text-xs">
-        {t("empty.recentSignups")}
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y">
-      {users.map((user, index) => {
-        const displayName =
-          user.name?.trim() || user.email?.trim() || t("fallback.unknownUser");
-        const email = user.email?.trim();
-        const initial = displayName[0]?.toUpperCase() ?? "U";
-        return (
-          <RevealListItem
-            key={user.id}
-            className="flex items-center gap-3 py-2.5"
-            delay={index * 0.03}
-          >
-            <span className="bg-muted text-muted-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-              {initial}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{displayName}</p>
-              {user.name?.trim() && email ? (
-                <p className="text-muted-foreground truncate text-xs">
-                  {email}
-                </p>
-              ) : null}
             </div>
             <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
-              {formatRelativeTime(user.createdAt, t)}
+              {formatRelativeTime(change.createdAt, t)}
             </time>
           </RevealListItem>
         );
@@ -321,7 +275,7 @@ function RecentGalleryEntries({
 }) {
   if (entries.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-xs">
+      <p className="text-muted-foreground py-6 text-center text-sm">
         {t("empty.galleryEntries")}
       </p>
     );
@@ -336,7 +290,7 @@ function RecentGalleryEntries({
         return (
           <RevealListItem
             key={entry.id}
-            className="flex items-center gap-3 py-2.5"
+            className="flex min-h-14 items-center gap-3 py-2.5"
             delay={index * 0.03}
           >
             <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
@@ -355,10 +309,14 @@ function RecentGalleryEntries({
               </p>
             </div>
             <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}
+              className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${badge.className}`}
             >
               {t(`galleryState.${badge.labelKey}`)}
             </span>
+            <ArrowRight
+              className="text-muted-foreground size-3.5"
+              aria-hidden="true"
+            />
           </RevealListItem>
         );
       })}
@@ -378,153 +336,154 @@ export default async function DashboardPage() {
 
   const canReadAudit = hasCapability(actor.role, "audit.read");
   const canReadUsers = hasCapability(actor.role, "admin.users.read");
+  const canReadMetrics = hasCapability(actor.role, "admin.metrics.read");
+  const cockpitPromise = canReadMetrics
+    ? getDailyCockpit().catch((error: unknown) => {
+        console.error("Dashboard daily focus unavailable", error);
+        return null;
+      })
+    : Promise.resolve(null);
 
-  const [overviewStats, galleryStats, recentAuditEvents, recentGalleryEntries] =
-    await Promise.all([
-      getOverviewStats(),
-      getGalleryOverviewStats(),
-      canReadAudit ? listAuditEvents({ limit: 6 }) : Promise.resolve([]),
-      listGalleryEntriesForDashboard({ state: "public", limit: 6 }),
-    ]);
+  const [
+    overviewStats,
+    galleryStats,
+    recentAuditEvents,
+    recentGalleryEntries,
+    cockpit,
+  ] = await Promise.all([
+    getOverviewStats(),
+    getGalleryOverviewStats(),
+    canReadAudit ? listAuditEvents({ limit: 6 }) : Promise.resolve([]),
+    listGalleryEntriesForDashboard({ state: "public", limit: 6 }),
+    cockpitPromise,
+  ]);
 
   const t = await getTranslations("dashboard.overview");
   const tPages = await getTranslations("dashboard.pages");
+  const locale = await getLocale();
+  const updatedAt = cockpit
+    ? new Intl.DateTimeFormat(locale, {
+        timeZone: "Europe/Amsterdam",
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(cockpit.generatedAt))
+    : null;
 
   return (
     <>
       <DashboardSiteHeader title={tPages("overview")} />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* KPI strip */}
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <Reveal>
-            <KpiCard
-              label={t("kpi.totalUsers.label")}
-              value={overviewStats.totalUsers}
-              sub={t("kpi.totalUsers.sub", {
-                count: overviewStats.newUsersThisMonth,
-              })}
-              trend={{
-                current: overviewStats.newUsersThisMonth,
-                previous: overviewStats.newUsersLastMonth,
-              }}
-              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
-              icon={Users}
-              accent="bg-emerald-500"
-              iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            />
-          </Reveal>
-          <Reveal delay={0.04}>
-            <KpiCard
-              label={t("kpi.activeProjects.label")}
-              value={overviewStats.activeProjects}
-              sub={t("kpi.activeProjects.sub", {
-                count: overviewStats.newActiveProjectsThisMonth,
-              })}
-              trend={{
-                current: overviewStats.newActiveProjectsThisMonth,
-                previous: overviewStats.newActiveProjectsLastMonth,
-              }}
-              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
-              icon={FolderOpen}
-              accent="bg-violet-500"
-              iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
-            />
-          </Reveal>
-          <Reveal delay={0.08}>
-            <KpiCard
-              label={t("kpi.activeShares.label")}
-              value={overviewStats.activeShares}
-              sub={t("kpi.activeShares.sub", {
-                count: overviewStats.newActiveSharesThisMonth,
-              })}
-              trend={{
-                current: overviewStats.newActiveSharesThisMonth,
-                previous: overviewStats.newActiveSharesLastMonth,
-              }}
-              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
-              icon={Link2}
-              accent="bg-orange-500"
-              iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
-            />
-          </Reveal>
-          <Reveal delay={0.12}>
-            <KpiCard
-              label={t("kpi.gallery.label")}
-              value={galleryStats.public}
-              sub={t("kpi.gallery.sub", {
-                featured: galleryStats.featured,
-                hidden: galleryStats.hidden,
-              })}
-              icon={ImageIcon}
-              accent="bg-sky-500"
-              iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
-            />
-          </Reveal>
-        </div>
+      <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-3 pt-0 sm:p-4 sm:pt-0">
+        <header className="flex items-end justify-between gap-4">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {tPages("overview")}
+          </h1>
+          {updatedAt ? (
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {t("updatedAt", { time: updatedAt })}
+            </p>
+          ) : null}
+        </header>
 
-        {/* Activity + Sign-ups (admin only) + Gallery */}
-        <div
-          className={`grid gap-4 ${canReadUsers ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}
-        >
-          <Reveal className="bg-card rounded-xl border p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">
-                {t("sections.recentActivity")}
-              </p>
-              {canReadAudit && (
+        {canReadMetrics ? <DailyCockpit data={cockpit} /> : null}
+
+        <section aria-labelledby="platform-snapshot" className="space-y-3">
+          <div>
+            <h2 id="platform-snapshot" className="text-base font-semibold">
+              {t("sections.platformSnapshot")}
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("sections.platformSnapshotDescription")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 overflow-hidden rounded-xl border sm:grid-cols-2 xl:grid-cols-4 xl:[&>*]:border-b-0 [&>*:not(:last-child)]:border-b xl:[&>*:not(:last-child)]:border-r sm:[&>*:nth-child(odd)]:border-r">
+            <Reveal className="h-full">
+              <PlatformStat
+                label={t("kpi.totalUsers.label")}
+                value={overviewStats.totalUsers}
+                icon={Users}
+                accent="border-emerald-500/70"
+                iconTone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              />
+            </Reveal>
+            <Reveal className="h-full" delay={0.03}>
+              <PlatformStat
+                label={t("kpi.activeProjects.label")}
+                value={overviewStats.activeProjects}
+                icon={FolderOpen}
+                accent="border-violet-500/70"
+                iconTone="bg-violet-500/10 text-violet-700 dark:text-violet-300"
+              />
+            </Reveal>
+            <Reveal className="h-full" delay={0.06}>
+              <PlatformStat
+                label={t("kpi.activeShares.label")}
+                value={overviewStats.activeShares}
+                icon={Link2}
+                accent="border-orange-500/70"
+                iconTone="bg-orange-500/10 text-orange-700 dark:text-orange-300"
+              />
+            </Reveal>
+            <Reveal className="h-full" delay={0.09}>
+              <PlatformStat
+                label={t("kpi.gallery.label")}
+                value={galleryStats.public}
+                icon={ImageIcon}
+                accent="border-sky-500/70"
+                iconTone="bg-sky-500/10 text-sky-700 dark:text-sky-300"
+              />
+            </Reveal>
+          </div>
+        </section>
+
+        <div className="grid items-start border-t pt-6 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)]">
+          <Reveal className="min-w-0 lg:pr-6">
+            <div className="flex min-h-11 items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("sections.recentChanges")}
+                </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {t("sections.recentChangesDescription")}
+                </p>
+              </div>
+              {canReadAudit ? (
                 <Link
                   href="/dashboard/audit"
                   prefetch={false}
-                  className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   {t("actions.viewAll")}
+                  <ArrowRight className="size-3.5" aria-hidden="true" />
                 </Link>
-              )}
+              ) : null}
             </div>
-            <RecentAuditEvents
+            <RecentChanges
               events={recentAuditEvents}
+              users={canReadUsers ? overviewStats.recentUsers : []}
               t={t as (key: string, values?: Record<string, unknown>) => string}
             />
           </Reveal>
 
-          {canReadUsers && (
-            <Reveal className="bg-card rounded-xl border p-4" delay={0.04}>
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <UserPlus className="text-muted-foreground size-3.5" />
-                  <p className="text-sm font-medium">
-                    {t("sections.recentSignups")}
-                  </p>
-                </div>
-                <Link
-                  href="/dashboard/users"
-                  prefetch={false}
-                  className="text-muted-foreground hover:text-foreground text-xs transition-colors"
-                >
-                  {t("actions.viewAll")}
-                </Link>
-              </div>
-              <RecentSignups
-                users={overviewStats.recentUsers}
-                t={
-                  t as (key: string, values?: Record<string, unknown>) => string
-                }
-              />
-            </Reveal>
-          )}
-
           <Reveal
-            className="bg-card rounded-xl border p-4"
-            delay={canReadUsers ? 0.08 : 0.04}
+            className="mt-6 min-w-0 border-t pt-6 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6"
+            delay={0.04}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">{t("sections.gallery")}</p>
+            <div className="flex min-h-11 items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("sections.gallery")}
+                </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {t("sections.galleryDescription")}
+                </p>
+              </div>
               <Link
                 href="/dashboard/gallery"
                 prefetch={false}
-                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 {t("actions.viewAll")}
+                <ArrowRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>
             <RecentGalleryEntries
@@ -533,7 +492,7 @@ export default async function DashboardPage() {
             />
           </Reveal>
         </div>
-      </div>
+      </main>
     </>
   );
 }

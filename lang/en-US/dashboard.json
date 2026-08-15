@@ -38,7 +38,110 @@
     "sharesIntro": "Every share link, public or private. View, copy, revoke, or permanently delete share access.",
     "emailPreview": "Email Preview"
   },
+  "cockpit": {
+    "title": "Daily focus",
+    "description": "Product movement and operational work, kept in context with the platform overview.",
+    "updatedAt": "Updated {time}",
+    "liveStamp": "Live context through {time} (Europe/Amsterdam). Headline comparisons use complete UTC periods.",
+    "notAvailable": "not available",
+    "today": {
+      "title": "Today",
+      "noActions": "No action needs attention",
+      "unavailable": "Daily status is temporarily unavailable"
+    },
+    "headlines": {
+      "title": "Product pulse",
+      "description": "Key product signals while a trustworthy comparison baseline develops.",
+      "viewAnalytics": "View analytics",
+      "collecting": "{count, plural, one {# metric is collecting a baseline} other {# metrics are collecting a baseline}}",
+      "ready": "All product metrics have a comparison baseline.",
+      "buildingTitle": "Product comparisons are building",
+      "buildingDetail": "Headline values will appear after complete measurement periods are available. The analytical drilldowns remain available while history builds."
+    },
+    "kpis": {
+      "MTR-001": {
+        "label": "Active creators"
+      },
+      "MTR-004": {
+        "label": "Valuable-session rate"
+      },
+      "MTR-005": {
+        "label": "30-day returning creators"
+      },
+      "MTR-006": {
+        "label": "Published browser sessions"
+      },
+      "openDrilldown": "Open analytical context for {metric}",
+      "collecting": "Collecting",
+      "window": "{window} days",
+      "windowSince": "{window} days · Since {date}",
+      "rateCounts": "{numerator} of {denominator}",
+      "previousPeriod": "Previous period",
+      "previousCompact": "Previous {value}",
+      "comparisonBuilding": "Comparison building",
+      "liveContext": "Live window incl. today",
+      "liveCompact": "Live {value}",
+      "latestMatureCohort": "Latest mature cohort",
+      "contractMeta": "{id} · {window}-day window · measured since {date} · owner: Product",
+      "drilldown": "View analytical context"
+    },
+    "quality": {
+      "not_started": "Not started",
+      "building": "Building",
+      "low_volume": "Low volume",
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "invalid": "Invalid",
+      "unavailable": "Unavailable"
+    },
+    "warning": {
+      "sectionTitle": "Product signal",
+      "title": "Reliable product warning",
+      "detail": "{metric} is {current}, compared with a historical median of {baseline}. This signal has complete coverage, sufficient volume, and eight healthy comparison periods.",
+      "noneTitle": "No reliable product warning",
+      "noneDetail": "Immature, incomplete, and low-volume movement is deliberately suppressed. Counts remain visible above while trustworthy comparison history builds.",
+      "operationFallback": "Categorized operation failure rate"
+    },
+    "operations": {
+      "title": "Needs attention",
+      "description": "Actionable items that need review today.",
+      "allClear": "No operational action needed",
+      "confirmedClear": "{count, plural, one {# confirmed check is clear} other {# confirmed checks are clear}}",
+      "notMeasured": "{count, plural, one {# check is not measured yet} other {# checks are not measured yet}}",
+      "unavailable": "Operational status unavailable",
+      "unavailableDetail": "The platform overview remains available while measurement recovers.",
+      "clearSummary": "{count, plural, one {# other check is clear} other {# other checks are clear}}",
+      "clearDetail": "Healthy checks stay compact so current work remains easy to spot.",
+      "previews": {
+        "label": "Gallery previews",
+        "today": "{count, plural, one {# gallery preview needs attention} other {# gallery previews need attention}}",
+        "detail": "Published gallery entries without a stored preview image.",
+        "action": "Review gallery entries"
+      },
+      "failures": {
+        "label": "Publication and export failures",
+        "today": "{count, plural, one {# publication or export failure needs attention} other {# publication or export failures need attention}}",
+        "detail": "{export} export · {publication} gallery publication failures in the latest complete 7-day window.",
+        "action": "Review operational metrics",
+        "exportLabel": "Export failure rate",
+        "publicationLabel": "Gallery publication failure rate"
+      },
+      "apiKeys": {
+        "label": "API keys to review",
+        "today": "{count, plural, one {# API key needs attention} other {# API keys need attention}}",
+        "detail": "{unused} active keys unused after 30 days · {expired} enabled but expired.",
+        "action": "Review API keys"
+      },
+      "pipeline": {
+        "label": "Analytics pipeline gaps",
+        "today": "{count, plural, one {# analytics pipeline gap needs attention} other {# analytics pipeline gaps need attention}}",
+        "detail": "{building} metric series are still building and are not treated as incidents.",
+        "action": "Review measurement health"
+      }
+    }
+  },
   "overview": {
+    "updatedAt": "Updated {time}",
     "kpi": {
       "totalUsers": {
         "label": "Total users",
@@ -63,7 +166,12 @@
     "sections": {
       "recentActivity": "Recent activity",
       "recentSignups": "Recent sign-ups",
-      "gallery": "Gallery"
+      "gallery": "Gallery",
+      "galleryDescription": "Latest published tracks and moderation state.",
+      "platformSnapshot": "Platform snapshot",
+      "platformSnapshotDescription": "High-level inventory across the platform.",
+      "recentChanges": "Recent changes",
+      "recentChangesDescription": "A unified feed of important events across the platform."
     },
     "actions": {
       "viewAll": "View all"
@@ -92,6 +200,7 @@
       "galleryEntryHidden": "Entry hidden",
       "galleryEntryRestored": "Entry restored",
       "galleryEntryDeleted": "Entry deleted",
+      "signedUp": "Signed up",
       "system": "System"
     },
     "relativeTime": {

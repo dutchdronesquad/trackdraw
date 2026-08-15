@@ -1,5 +1,3 @@
-import "server-only";
-
 const CONTRACT_VERSION = "1.0.0";
 const AGGREGATE_RETENTION_MONTHS = 24;
 const MAX_BACKFILL_DAYS_PER_RUN = 7;
@@ -202,7 +200,8 @@ with
     from failure_rows
     group by operation
   ),
-  metric_rows(metric_id, dimension, window_days, numerator, denominator, quality_volume) as (
+  -- D1 caps compound SELECTs at five terms, so keep metric unions bounded.
+  metric_rows_primary(metric_id, dimension, window_days, numerator, denominator, quality_volume) as (
     select 'MTR-001', '', 7, (select count(actor) from active_actors7), null, (select count(actor) from editor_actors7)
     union all
     select 'MTR-002', '', 7, (select count(actor) from active_actors7), (select count(actor) from editor_actors7), (select count(actor) from editor_actors7)
@@ -242,7 +241,8 @@ with
         (select count(*) from product_metric_creator_activations a, bounds
          where a.activated_at >= bounds.start_at and a.activated_at < bounds.end_at)
       end
-    union all
+  ),
+  metric_rows_secondary(metric_id, dimension, window_days, numerator, denominator, quality_volume) as (
     select 'MTR-006', '', 7, count(distinct session_id), null, count(distinct session_id)
     from events7
     where event_type = 'share.viewed'
@@ -282,6 +282,11 @@ with
     from failure_rows
     inner join operation_failures on operation_failures.operation = failure_rows.operation
     left join operation_outcomes on operation_outcomes.operation = failure_rows.operation
+  ),
+  metric_rows as (
+    select * from metric_rows_primary
+    union all
+    select * from metric_rows_secondary
   ),
   final_rows as (
     select
