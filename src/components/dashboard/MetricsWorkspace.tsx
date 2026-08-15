@@ -115,7 +115,8 @@ function metricValue(
   valueKind: "count" | "rate"
 ) {
   if (valueKind === "count") return numerator;
-  if (!denominator) return null;
+  if (denominator === null) return null;
+  if (denominator === 0) return 0;
   return numerator / denominator;
 }
 

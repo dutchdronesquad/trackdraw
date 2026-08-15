@@ -133,4 +133,24 @@ describe("metrics explorer", () => {
       "2026-06-01",
     ]);
   });
+
+  it("derives retention quality from every displayed cohort", () => {
+    const result = buildMetricsExplorerData(
+      {
+        "MTR-005": [
+          row("MTR-005", "2026-07-01", "", 18, 30),
+          row("MTR-005", "2026-06-01", "", 8, 24, {
+            quality_status: "degraded",
+          }),
+        ],
+      },
+      [state("MTR-005")]
+    );
+
+    expect(result.retention.rows.map((entry) => entry.quality)).toEqual([
+      "healthy",
+      "degraded",
+    ]);
+    expect(result.retention.quality).toBe("degraded");
+  });
 });

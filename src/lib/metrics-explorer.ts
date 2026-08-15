@@ -224,6 +224,28 @@ export function buildMetricsExplorerData(
       ];
     })
   ) as Record<MetricDefinition["id"], MetricsExplorerMetric>;
+  const retentionRows = (series["MTR-005"] ?? [])
+    .filter(
+      (row) =>
+        row.dimension === "" &&
+        row.completeness_state === "complete" &&
+        row.denominator !== null &&
+        row.quality_status !== "invalid"
+    )
+    .sort((left, right) => right.day_utc.localeCompare(left.day_utc))
+    .slice(0, 8)
+    .map((row) => ({
+      dimension: row.dimension,
+      day: row.day_utc,
+      numerator: row.numerator,
+      denominator: row.denominator,
+      sampleSize: row.sample_size,
+      value: rowValue(row, "rate"),
+      quality: rowQuality(row, 20),
+      previousValue: null,
+      comparisonReady: false,
+    }));
+  const retentionState = states.find((entry) => entry.metric_id === "MTR-005");
 
   return {
     generatedAt: now.toISOString(),
@@ -231,27 +253,8 @@ export function buildMetricsExplorerData(
     adoption: metrics["MTR-009"],
     retention: {
       ...metrics["MTR-005"],
-      rows: (series["MTR-005"] ?? [])
-        .filter(
-          (row) =>
-            row.dimension === "" &&
-            row.completeness_state === "complete" &&
-            row.denominator !== null &&
-            row.quality_status !== "invalid"
-        )
-        .sort((left, right) => right.day_utc.localeCompare(left.day_utc))
-        .slice(0, 8)
-        .map((row) => ({
-          dimension: row.dimension,
-          day: row.day_utc,
-          numerator: row.numerator,
-          denominator: row.denominator,
-          sampleSize: row.sample_size,
-          value: rowValue(row, "rate"),
-          quality: rowQuality(row, 20),
-          previousValue: null,
-          comparisonReady: false,
-        })),
+      quality: metricQuality(retentionRows, retentionState),
+      rows: retentionRows,
     },
   };
 }

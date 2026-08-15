@@ -333,8 +333,8 @@ describe("metrics decision views", () => {
             ...metricRow,
             metric_id: id,
             window_days: id === "MTR-005" ? (30 as const) : (7 as const),
-            numerator: 4,
-            denominator: 10,
+            numerator: id === "MTR-004" ? 0 : 4,
+            denominator: id === "MTR-004" ? 0 : 10,
           },
           live: null,
           previous: null,
@@ -394,6 +394,9 @@ describe("metrics decision views", () => {
     expect(screen.getByText("Completed exports")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /^Acquisition Building/ })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /^Activation Building 0%/ })
     ).toBeTruthy();
     expect(screen.queryAllByRole("combobox")).toHaveLength(0);
     expect(
