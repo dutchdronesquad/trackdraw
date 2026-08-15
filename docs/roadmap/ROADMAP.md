@@ -24,15 +24,15 @@ TrackDraw is now strong in these areas:
 
 After v1.14.0, the next product focus should stay deliberately narrow:
 
-1. Generated flightpath validation: test real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid.
+1. Generated flightpath validation: test real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid.
 2. Translation follow-up: run a bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and keep locale catalogs out of the Worker bundle.
 3. Focused 3D item controls: add direct 3D move/rotate controls only where they are predictable across desktop, mobile, undo/redo, and lock state.
 
 Track Preflight and a leaner inspector hierarchy should follow as one focused usability slice once generated-route warning behavior is trustworthy enough to reuse. Preflight should consolidate existing signals rather than introduce another validation system or a broad race-day mode.
 
-Race-day workflow depth, account lifecycle depth, custom banner textures, share version history, gallery collections, billing, and community features should stay behind those priorities unless a concrete support issue or release risk forces them forward.
+Race-day workflow depth, account lifecycle depth, custom banner textures, and billing should stay behind those priorities unless a concrete support issue or release risk forces them forward.
 
-Lower-priority follow-up such as share version history, gallery collections, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
+Share version history should stay parked until account-backed share lifecycle work becomes a clear product priority.
 
 ## Product Principles
 
@@ -151,6 +151,32 @@ Maintenance focus:
 - Add regression tests when a fix affects selection, transforms, route editing, export generation, project recovery, sharing, or larger layouts
 - Treat future reliability work as targeted support-driven slices rather than a broad redesign track
 
+#### Faster Editor Actions And Safe Project Variants (`No account required`, `Account-backed`)
+
+Reduce repeated navigation and precision work through small, compositional editor improvements. These slices should make existing capabilities faster to reach without adding more permanent controls to the header or creating a separate project-branching model.
+
+Why:
+
+- TrackDraw now has enough dialogs, views, and secondary actions that discoverability cannot depend on adding another header button for every capability
+- Alignment snapping helps while dragging, but it does not replace deliberate multi-selection alignment and equal-spacing operations
+- Users need a low-risk way to try an alternative layout without overwriting a working design or manually exporting and reimporting a project
+
+First slices:
+
+- Add a keyboard-first `Cmd/Ctrl+K` command palette that searches existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings
+- Keep palette results context-aware, explain disabled actions, and call the existing handlers rather than duplicating editor or dialog state
+- Add horizontal and vertical align actions plus equal horizontal and vertical distribution for compatible selected items
+- Preserve lock behavior, exclude route waypoints from the first arrange slice, and record each alignment or distribution operation as one undoable change
+- Let users duplicate a device or account project from Project Manager into a clearly named independent project for exploring a variant
+- Copy editable project content only; do not inherit published-share ownership, gallery state, or restore history
+
+Important boundary:
+
+- Do not turn the command palette into a second toolbar or make essential primary actions keyboard-only
+- Do not add persistent header controls for these slices; use the palette and existing contextual selection/project surfaces
+- Do not expand project duplication into branching, merging, side-by-side comparison, or share version history in the first slice
+- Keep the three slices independently testable and shippable
+
 #### Track Preflight And Inspector Focus (`No account required`)
 
 Bring existing route, numbering, timing, and inventory signals into one compact layout-review summary while reducing repeated inspector chrome.
@@ -193,7 +219,7 @@ Important boundary:
 - Reuse existing validators and thresholds; do not duplicate route-analysis logic in React inspector components
 - Keep generated-route warnings in the generation workflow until real-layout validation and threshold tuning are complete
 - Exclude out-of-field geometry checks, per-format export runtime readiness, and gallery/share metadata readiness from the first slice because they do not yet share the same domain semantics
-- Do not expand this slice into simulation, AR, build mode, new persistence, or a broad inspector redesign
+- Do not expand this slice into simulation, new persistence, or a broad inspector redesign
 
 #### Production Observability and Operational Resilience
 
@@ -318,6 +344,7 @@ Maintenance focus:
 - Keep new product copy behind typed message catalogs instead of reopening hardcoded-copy debt
 - Treat translation management and Worker package size as a near-term operational track now that TrackDraw has four shipped languages and additional contributor languages are expected
 - Pilot Crowdin Free before selecting a platform; the current ten namespaces and three target languages are estimated at 25,731 hosted words, while Weblate remains the self-hosted fallback
+- Keep the pilot cost-free: automatically reuse only previously approved perfect Translation Memory matches, leave paid Crowdin AI and machine translation disabled, and use contributors, reviewable maintainer-seeded Crowdin imports, plus English fallback for remaining strings
 - Do not depend on Crowdin's open-source grant: confirm the actual workspace quota and reassess licensing if TrackDraw introduces related paid products or services
 - Prototype one translatable namespace end to end before committing to a migration, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review
 - If Weblate becomes necessary, use an ephemeral pilot before operating a separate production stack; a permanent ACC environment is not initially required
@@ -388,7 +415,7 @@ Why:
 Feature tracks:
 
 - Generated flightpath validation: test real layouts, tune warning thresholds, route anchor heights, and unclear sequence feedback, and keep generated routes positioned as editable drafting assistance
-- Route ambiguity warnings: explore lightweight feedback for unclear order, direction, or corkscrew-like layouts before adding simulation-heavy path optimization
+- Route and flow warnings: explore lightweight feedback for unclear order, direction, corkscrew-like layouts, dense clusters, inconsistent spacing, and rhythm breaks before adding simulation-heavy path optimization
 
 Current foundation:
 
@@ -451,7 +478,7 @@ Deliberate scope decisions:
 
 - Local-first preset storage for logged-out users was deferred; the first version is account-backed only, keeping the implementation simple and the data model unambiguous
 - Local-to-account migration was skipped for the same reason — there is no local preset state to migrate
-- A community presets store where users publish and browse each other's presets remains a deliberate future follow-up. Research document: `docs/research/presets-store.md`
+- Presets remain a private account library; community publishing is outside the current product direction. Earlier exploration remains documented in `docs/research/presets-store.md`.
 
 Supporting design doc:
 
@@ -565,23 +592,6 @@ Important boundary:
 - Do not add branching, named release channels, collaborative approval, or public version browsing in the first pass
 - Do not expose private project history through public gallery, embeds, or share metadata
 
-#### Gallery Featured Collections (`Lower priority`)
-
-The gallery can become more useful through curated collections without becoming a social feed.
-
-Why:
-
-- Featured entries are useful, but one global featured bucket will get blunt as the gallery grows
-- Collections can guide visitors toward practical examples such as indoor practice, beginner friendly, technical layouts, or race-day examples
-- Admin-curated collections reuse the existing dashboard and gallery foundations without adding voting, comments, or reporting
-
-Focus:
-
-- Add dashboard controls for creating, ordering, and publishing gallery collections
-- Let admins assign listed or featured gallery entries to one or more collections
-- Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
-- Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
-
 #### Dashboard Operator Tooling (`Lower priority`)
 
 The dashboard should become the control surface for public, account-backed, and integration-sensitive behavior without turning TrackDraw into a social platform or support console that can casually mutate user work.
@@ -594,7 +604,6 @@ Why:
 
 Focus:
 
-- Gallery collections management: add dashboard controls for creating, ordering, publishing, and assigning curated gallery collections
 - Share lifecycle inspector: expose share owner, project, token state, expiry/revocation, gallery listing, embed availability, and latest publish/update metadata in one operator view
 - Contextual account/project diagnostics: add inspect affordances inside existing Users, Gallery, Share, API, and Audit surfaces instead of a standalone diagnostics page
 - API usage dashboard: show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects — started with a /dashboard/api-keys page listing all keys across accounts with status, request count, last-used, expiry, and a clickable inspect sheet showing rate limit config, permissions, and owner details
@@ -660,7 +669,7 @@ Later slices:
 Important boundary:
 
 - The Race Pack is now the handoff document for briefing, print, and sharing
-- A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
+- Keep setup improvements inside the Race Pack and event-preparation flow rather than creating a separate Build mode
 - Live race overlay rendering, OBS presentation, RotorHazard event handling, and position estimation should stay in `rh-stream-overlays`, not in TrackDraw
 
 ### 5. Backlog And Research Tracks
@@ -700,74 +709,6 @@ Important boundary:
 - Do not turn TrackDraw into a general texture editor; keep the first version focused on replacing banner artwork on known official-size surfaces
 - Require an account for custom banner artwork so assets have a durable owner, can be reused across projects, and do not depend on fragile browser-local files
 
-#### Heatmap And Flow Analysis (`No account required`)
-
-Add lightweight visual feedback for rhythm, density, and bottlenecks once it returns from backlog.
-
-Suggested first slices:
-
-- Density overlay
-- Suspicious spacing cues
-- Route rhythm cues
-
-#### AR Mode Evaluation (`Research`)
-
-Keep AR parked as a later research track until real product pull appears from users or venue-side workflows. It remains an exciting possible direction, but it should not compete with nearer-term product work until there is clearer demand.
-
-Suggested first slices if interest appears:
-
-- Validate Android WebXR feasibility
-- Identify a practical iOS fallback
-- Test whether full-track placement is useful and accurate enough for real venue-side decisions
-
-#### Track DNA And Layout Analysis (`No account required`)
-
-Turn route and layout analysis into clearer reusable signals that help compare tracks, explain style, and support later recommendation or AI-oriented work.
-
-Suggested first slices:
-
-- Validate whether any compact track-character summary actually helps real layout decisions instead of adding decorative scoring
-- Rule-based pattern recognition for shapes such as S-turns, hairpins, or figure-8 sections if the output can be labeled clearly and kept stable under normal edits
-- Compact flow, speed, technical, or complexity scoring only if the output stays explainable and actionable
-- Descriptive track tags such as faster, more technical, or more flowy only if they remain stable under normal layout edits
-- Derived section tags or labels from detected route patterns only if they make review faster without creating noisy false positives
-- Follow-up flow analysis that expands beyond current warnings into alignment and rhythm-oriented feedback where it stays actionable
-
-#### Build Mode / Setup Sequence (`No account required`)
-
-Turn a finished layout into a dedicated build/setup surface instead of continuing to expand the Race Pack, but keep it as a later workflow track rather than a near-term roadmap focus.
-
-Suggested first slices:
-
-- Dedicated build-mode view
-- Map-linked setup steps
-- Grouped build phases and check-off flow
-- Crew and venue assumptions
-
-#### Comments And Review Mode (`Account-backed`)
-
-Allow feedback to be anchored to obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, account, and publishing tracks.
-
-Why later:
-
-- Simple note-taking is plausible, but the more meaningful version depends on identity, ownership, and shared project context
-- Richer review workflows are easier to define once account ownership and publishing boundaries are clearer
-
-Suggested first slices:
-
-- Pinned notes anchored to a selected obstacle as a local-first first pass
-- Notes anchored to a route waypoint or path segment without requiring identity first
-- Read-only review mode that surfaces notes clearly without exposing editing tools
-- Richer threaded comments only if simple anchored notes prove useful
-  and an account-backed identity model exists
-
-#### Research Tracks (`Research`)
-
-- Velocidrone experimental export follow-up
-  - The core compatibility question is answered: TrackDraw can already generate an experimental `.trk` file that imports into Velocidrone
-  - Next step is validation and orientation correctness, especially gate front/back direction
-- Desktop and mobile wrapper evaluation
-
 ### 6. Accounts Boundary
 
 Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
@@ -775,7 +716,7 @@ Be deliberate about what should stay usable without an account versus what actua
 Keep these usable without an account where possible:
 
 - Core editing, preview, import/export, and local project work
-- Local inventory, venue setup, and lightweight notes in their initial versions
+- Local inventory and venue setup
 - One-off temporary share publishing with explicit expiry
 
 Likely account-backed follow-up:
@@ -785,9 +726,7 @@ Likely account-backed follow-up:
 - Durable published embeds
 - Version history for account-backed published shares
 - Operator-controlled gallery visibility through feature, hide, restore, and delete actions
-- Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
-- Identity-aware comments and review threads
 
 ## v1.14.0 Archive
 
@@ -1228,6 +1167,6 @@ The production runtime and deployment path are now treated as validated. Develop
 
 ### Inventory And Buildability Validation (`No account required`)
 
-This initial release is also complete. TrackDraw now supports local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates. The next work from here belongs to `Build mode / setup sequence`, not to more expansion of the basic inventory comparison layer.
+This initial release is also complete. TrackDraw now supports local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates. Any next work belongs to the focused Race Pack and race-day workflow follow-up, not to more expansion of the basic inventory comparison layer.
 
 </details>

@@ -77,7 +77,7 @@ This access model applies regardless of platform:
 - Use language-scoped permissions and suggestion/review roles where the selected plan supports them.
 - Do not allow direct pushes from contributors to GitHub or `main`.
 - Do not give normal translators platform API tokens, GitHub tokens, repository access, source-string edit permissions, or project administration rights.
-- Existing target languages may use Crowdin AI/machine translation as their maintained baseline when no regular translator is available. A maintainer owns release sampling and blocking QA; human contributors can improve the baseline later.
+- Existing target languages use previously approved perfect Translation Memory matches plus human contributions. A maintainer may seed missing strings through a separate no-cost assisted batch that is imported as unapproved Crowdin content and reviewed there. Paid Crowdin AI and machine translation stay disabled; missing target messages use TrackDraw's English fallback until target copy is accepted.
 - Assign a language leader when a language has recurring human contributors or needs sustained terminology review. Do not make that role a prerequisite for every synchronization round of an existing language.
 - Add contributors to language-scoped teams, for example a Chinese translator team limited to `zh-CN` and translatable components only.
 - Start new contributors with suggestion-only access where possible. They can propose translations without directly changing the accepted translation state.
@@ -106,12 +106,12 @@ If a contributor leaves, remove them from platform teams or disable the account.
 - Keep all translation changes reviewable as normal pull requests.
 - Preserve CI checks for catalog integrity, unresolved English keys, placeholders, and intentional hardcoded-copy exceptions. Missing target keys are allowed only because build and runtime catalogs provide a tested English fallback.
 - Support external contributors without requiring direct repository write access.
-- Add new languages only when there is either an owner for terminology review or an explicit decision to support a machine-maintained baseline with maintainer sampling, especially for compact UI labels and export/PDF/Race Pack copy.
+- Add new languages only when there is an owner for terminology review and enough initial contributor coverage to make the language useful, especially for compact UI labels and export/PDF/Race Pack copy.
 - Prevent translation growth from making the Cloudflare Worker package grow linearly with every added language.
 
 ## Selected pilot
 
-TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns `nl`, `de`, and `zh-CN` generation and editing during the pilot; English remains in GitHub. Crowdin AI/machine translation supplies the initial target copy when regular translators are unavailable, with maintainer QA and sampling before the localization pull request is merged. The repository retains all catalogs and production keeps using generated Static Assets.
+TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns `nl`, `de`, and `zh-CN` target editing during the pilot; English remains in GitHub. The no-cost workflow reuses only previously approved perfect Translation Memory matches and relies on human contributions or separately reviewed maintainer-seeded batches for remaining target copy. Missing messages use TrackDraw's tested English fallback. The repository retains all catalogs and production keeps using generated Static Assets.
 
 The setup, update cycle, evaluation criteria, and rollback are documented in `docs/research/crowdin-pilot.md`. The initial repository round trip exposed two integration concerns: native synchronization attributed commits to the authorizing maintainer and exported untranslated ICU messages as English target text. The repository-owned GitHub Action avoids personal commit attribution and skips untranslated target strings so the existing runtime fallback remains responsible for temporary English copy.
 
@@ -133,4 +133,4 @@ The setup, update cycle, evaluation criteria, and rollback are documented in `do
 
 ## Status
 
-Crowdin is selected for a bounded three-month pilot; the permanent platform decision remains open until the evaluation. The project and initial repository round trip are active. Repository fallback and GitHub Action synchronization are in place, while registering Action secrets, disabling the native integration, and completing the bot-authored round trip remain operator steps.
+Crowdin is selected for a bounded three-month pilot; the permanent platform decision remains open until the evaluation. Repository fallback and GitHub Action synchronization are active, and the first bot-authored `l10n_crowdin` pull request completed the normal review and CI flow. TM-only automatic reuse remains an operator-managed Crowdin project setting, while paid AI and MT stay disabled and quota, contributor experience, translation quality, and maintenance effort are evaluated through 2026-11-10.

@@ -27,7 +27,7 @@ The next TrackDraw priority is generated flightpath validation first, translatio
 ## Follow-up
 
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
-      Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
+      Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
 
 - [x] Track Preflight and inspector focus (`No account required`)
       Bring existing route, numbering, timing, and inventory signals into one compact advisory summary at the top of the Layout inspector. Use `Incomplete`, `Review`, and `Ready` without a score or safety claim, make issues jump to the relevant item or route context, and keep sharing and export non-blocking.
@@ -37,6 +37,15 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Replace repeated lead pills and status cards with the preflight summary, show elevation analysis only in route-relevant contexts, collapse inactive timing and advanced placement details on mobile, flatten the placed-items list, and move render density behind advanced settings.
   - [x] Inspector accessibility fundamentals
         Give inspector fields programmatic labels, restore visible focus, and make the Project/Layout/Selection tabs follow the expected keyboard pattern while preserving automatic Selection context and mobile touch behavior.
+
+- [ ] Faster editor actions and safe project variants (`No account required`, `Account-backed`)
+      Reduce repeated navigation and precision work without adding more permanent header controls. Keep each improvement independently shippable and reuse existing editor and project actions rather than introducing parallel state or workflows.
+  - [ ] Searchable command palette
+        Add a keyboard-first `Cmd/Ctrl+K` palette for existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings. Make unavailable actions explain their state, keep the results context-aware, and use the palette to avoid continued header growth rather than hiding essential primary actions.
+  - [ ] Multi-selection align and distribute
+        Add explicit horizontal and vertical alignment plus equal-spacing actions for compatible selected items. Preserve lock behavior, treat each operation as one undoable change, keep route waypoints outside the first slice, and expose the actions without crowding the canvas or inspector.
+  - [ ] Duplicate project as an independent variant
+        Let users duplicate a device or account project from Project Manager so they can explore an alternative layout without overwriting the original. Copy the editable design into a clearly named independent project, but do not copy share ownership, publication state, or restore history.
 
 - [ ] Production observability and scheduled-maintenance hardening
       Establish a privacy-safe production baseline across route families and background work without adding duplicate release validation. Use deliberate Workers log/trace sampling, actionable thresholds, and a practical notification path for 5xx responses, exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures.
@@ -65,17 +74,17 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [ ] Hosted versus self-hosted decision
         Run a bounded Crowdin Free pilot first; retain self-hosted Weblate as the fallback. Decide only after validating quota, permissions, repository sync, contributor review, licensing, and ongoing operational cost.
   - [ ] Crowdin Free pilot
-        Run the reversible pilot through 2026-11-10, shifting the end date if activation happens later. Import only the ten translatable namespaces with `nl`/`de`/`zh-CN`, validate `common.json` end to end first, and apply separately for the open-source grant without depending on eligibility.
+        Run the reversible no-cost pilot through 2026-11-10, shifting the end date if activation happens later. Import only the ten translatable namespaces with `nl`/`de`/`zh-CN`, reuse only previously approved perfect Translation Memory matches, leave paid Crowdin AI/MT disabled, and allow reviewable maintainer-seeded translations to enter only through Crowdin when contributor coverage lags. Validate `common.json` end to end first, and apply separately for the open-source grant without depending on eligibility.
   - [x] Reversible pilot foundation
         Added repository-owned Crowdin mapping, recursive English fallback for partial target catalogs and generated Static Assets, integrity checks for stale keys, empty values, and placeholders, plus a documented three-month evaluation and rollback path.
   - [x] Worker bundle impact measured
         A fresh dry run measured 2,116.79 KiB gzip. Locale JSON remains in Cloudflare Static Assets rather than the Worker handler, so changing translation platforms would not materially shrink the Worker bundle.
   - [x] Weblate production requirements researched
         If self-hosting becomes necessary, use an ephemeral pilot before a separate production stack with TLS, SMTP, restricted access, persistent storage, off-host backups, restore testing, monitoring, and deliberate upgrades. A permanent ACC environment is not initially required.
-  - [ ] Repository sync workflow
-        The initial native-integration round trip exposed personal commit attribution and untranslated ICU source text in target catalogs. Migrate synchronization to the repository-owned Crowdin GitHub Action, export only translated strings, and validate its bot-authored localization pull request through normal code review and existing locale integrity checks.
-  - [ ] Translator guidance
-        Document the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary before inviting broader contributor translation work.
+  - [x] Repository sync workflow
+        Migrated synchronization to the repository-owned Crowdin GitHub Action, which exports only translated strings and attributes generated commits to Crowdin Bot. The first bot-authored `l10n_crowdin` pull request completed normal code review and locale integrity checks in [#699](https://github.com/dutchdronesquad/trackdraw/pull/699).
+  - [x] Translator guidance
+        Documented the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary. The public contribution path now directs translators to Crowdin through [#700](https://github.com/dutchdronesquad/trackdraw/pull/700).
 
 - [x] Simplified Chinese export and integration follow-up (`No account required`)
       Finished the export and supporting locale work left after the Simplified Chinese product-language rollout, reimplemented against current `main` with the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) used only as reference.
@@ -93,8 +102,6 @@ The next TrackDraw priority is generated flightpath validation first, translatio
 
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
-  - [ ] Per-waypoint curve strength (`Research`)
-        Only pursue if automatic smoothing is not sufficient and if there is an interaction model that works on both desktop and mobile. Direct canvas handles are likely too fiddly on touch; validate an inspector- or gesture-based alternative first before committing to an approach.
   - [ ] 3D maneuver curve optimization (`Research`)
         Powerloops, split-S maneuvers, and similar moves are inherently 3D: a powerloop is a full vertical circle back through a gate, a split-S is a downward half-loop with a direction reversal. The current CatmullRom route renders these as flat horizontal curves, which is physically wrong. The goal is geometry-driven optimization with no manual annotation — the user just draws waypoints that describe the spatial intent (a tight loop near a gate, a 180° arc with elevation change), and the optimizer automatically detects the pattern and generates the correct 3D curve. The 2D canvas shows a recognizable indicator for the detected maneuver section; the 3D preview renders the actual vertical loop or half-loop. Research document: `docs/research/maneuver-curve-optimization.md`.
   - [ ] True 3D curve replacement for detected maneuvers
@@ -102,17 +109,8 @@ The next TrackDraw priority is generated flightpath validation first, translatio
 
 ## Later Product Follow-up
 
-- [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
-      Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.
-
 - [ ] Share version history (`Lower priority`, `Account-backed`)
       Let owners update published shares with clear version history, current-version state, and rollback options once share lifecycle work becomes a priority again.
-
-- [ ] Gallery featured collections (`Lower priority`, `Account-backed`)
-      Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples when gallery growth warrants it.
-
-- [ ] Presets store (`Lower priority`, `Account-backed`)
-      Let users publish a preset to a community store where others can browse and save it. Keep out of scope until account-backed preset storage is proven in practice. Research document: `docs/research/presets-store.md`.
 
 - [ ] Race-day workflow depth (`No account required`)
       Keep this behind generated flightpath validation and focused 3D controls. The first future slice should deepen the existing Race Pack and event-preparation flow only where it improves practical setup and handoff.
@@ -130,64 +128,6 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Surface the estimate only where it helps race-day setup, such as timing/overlay preparation notes, and avoid presenting it as a guaranteed race result prediction.
   - [ ] Validation against real heats
         Compare the first-lap estimate with actual RotorHazard lap data across a few real tracks before relying on it as the preferred baseline.
-
-## Backlog And Research
-
-- [ ] Track DNA and layout analysis (`Research`)
-      Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.
-  - [ ] Product usefulness test
-        Validate whether any track-character summary actually helps decisions instead of adding decorative scoring.
-  - [ ] Rule-based pattern recognition
-        Detect route patterns such as S-turns, hairpins, or figure-8 sections only if the labels stay explainable and stable under normal edits.
-  - [ ] Derived section tags
-        Turn useful detected patterns into lightweight route tags or labels only if they speed up review without creating noisy false positives.
-
-- [ ] Heatmap and flow analysis (`No account required`)
-      Add lightweight visual feedback for rhythm, density, and bottlenecks.
-  - [ ] Density overlay
-        Highlight obstacle clusters and repeated-turn pressure zones.
-  - [ ] Suspicious spacing cues
-        Flag unusually tight or inconsistent spacing.
-  - [ ] Route rhythm cues
-        Add lightweight route rhythm cues.
-
-- [ ] AR mode evaluation (`Research`)
-      Keep AR parked as a later research track until real product demand appears from venue-side workflows or user feedback.
-  - [ ] Platform feasibility if demand appears
-        Validate a practical Android WebXR path and a separate iOS fallback before committing to product work.
-  - [ ] Full-track placement usefulness if demand appears
-        Test whether full-track venue projection is accurate and useful enough to help real setup decisions without creating misleading precision.
-
-- [ ] Build mode / setup sequence (`No account required`)
-      Turn a finished layout into a dedicated build/setup surface instead of extending the Race Pack indefinitely, but keep it as a later workflow track rather than a near-term follow-up.
-  - [ ] Dedicated build-mode view
-        Add a dedicated build-mode page or mode.
-  - [ ] Map-linked setup steps
-        Show setup steps with the relevant obstacles highlighted on the map.
-  - [ ] Grouped build phases and check-off flow
-        Organize setup into phases with practical check-off flow.
-  - [ ] Crew and venue assumptions
-        Let setup order and timing adapt to crew size and venue constraints.
-
-- [ ] Comments and review mode (`Account-backed`)
-      Add anchored feedback around obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, account, and publishing tracks.
-  - [ ] Pinned obstacle notes
-        Add simple notes attached to specific obstacles.
-  - [ ] Route-section notes
-        Let notes attach to route waypoints or path segments.
-  - [ ] Read-only review surface
-        Surface anchored notes clearly in read-only review.
-  - [ ] Threaded comments follow-up
-        Consider richer review threads only if simple notes prove useful.
-
-- [ ] Desktop and mobile wrapper evaluation (`Research`)
-      Evaluate whether Electron or Capacitor would materially improve local project handling, native file workflows, or offline resilience.
-  - [ ] Product-problem validation
-        Identify which user pain points would justify a wrapper over improving the web app.
-  - [ ] Technical architecture evaluation
-        Decide whether a wrapper should load the hosted app or require its own runtime.
-  - [ ] Platform recommendation
-        Recommend web-first, Electron, Capacitor, or no wrapper for now.
 
 ## v1.14.0 Archive
 

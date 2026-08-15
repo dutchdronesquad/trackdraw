@@ -1,12 +1,12 @@
 # Crowdin localization pilot
 
-Status: Crowdin project activated and initial repository round trip completed; migration from the user-authorized native integration to the repository-owned GitHub Action and enabling automatic translation remain operator steps.
+Status: Crowdin project activated, synchronization migrated to the repository-owned GitHub Action, and the first bot-authored localization pull request completed. The no-cost pilot uses previously approved perfect Translation Memory matches, human contributions, and reviewed maintainer-seeded imports; paid Crowdin AI and machine translation are disabled. The pilot evaluation continues through 2026-11-10.
 
 Pilot window: 2026-08-10 through 2026-11-10. If the GitHub integration is activated later, move the end date so the evaluation still covers three full months.
 
 ## Goal
 
-Use Crowdin as the only generation, editing, and review surface for Dutch, German, and Simplified Chinese long enough to judge machine-assisted quality, contributor usability, maintenance effort, quota pressure, and pull-request noise. English source copy remains owned by normal TrackDraw feature pull requests. Dedicated translators are welcome but are not required for every existing target language: Crowdin AI/machine translation supplies the initial version and humans can improve it later.
+Use Crowdin as the only target editing and review surface for Dutch, German, and Simplified Chinese long enough to judge contributor usability, Translation Memory reuse, maintenance effort, quota pressure, and pull-request noise. English source copy remains owned by normal TrackDraw feature pull requests. Crowdin may apply previously approved perfect Translation Memory matches, while contributors or reviewable maintainer-seeded batches supply the remaining target copy. Missing messages stay untranslated in Crowdin and use TrackDraw's tested English runtime fallback until target copy is accepted.
 
 The pilot stays reversible. Translation JSON remains versioned in Git, production continues to load generated Cloudflare Static Assets, and TrackDraw has no runtime dependency on Crowdin.
 
@@ -32,23 +32,11 @@ Do not edit target-language JSON directly during the pilot, except for a product
 7. Keep repository translation upload disabled after the one-time import. Crowdin remains the source of truth for target catalogs.
 8. Confirm that Crowdin recognizes nested JSON, ICU plurals, and placeholders before inviting translators.
 9. Pause the native Crowdin GitHub integration by clearing its sync schedule before merging the Action workflow. Keep the connection available for rollback until the first Action-generated pull request succeeds.
-10. Under **Settings > Auto-Translate**, enable automatic translation when new source content is uploaded. Process untranslated strings only, use Crowdin AI or a configured machine-translation engine, and do not replace existing human translations.
-11. Give the automatic translator TrackDraw-specific guidance: concise browser UI copy, an informal but clear product tone, preservation of `TrackDraw`, FPV terminology, ICU placeholders, units, and technical tokens, and no invented product behavior.
-12. Confirm the selected engine and plan cover Dutch, German, and Simplified Chinese. Keep the auto-translation accuracy/queue results available for the maintainer review before export.
+10. Under **Settings > Auto-Translate**, enable only **TM Auto-Translate** for new content. Use **Perfect match** and approve only perfect matches that were approved previously. Keep TM auto-substitution disabled so near-matches cannot be promoted into automatic target copy.
+11. Keep **MT Auto-Translate** and **AI Auto-Translate** disabled. Do not add Crowdin Credits or configure a paid provider API key for translation generation.
+12. Confirm the project default Translation Memory is assigned to Dutch, German, and Simplified Chinese. Keep the glossary and source-matching option available for intentional FPV and product terms, but let every non-perfect match remain untranslated for contributor review.
 
-Use this as the starting instruction for Crowdin AI and refine it through the glossary rather than adding conflicting instructions per batch:
-
-```text
-Translate concise TrackDraw browser UI copy from en-US into the target language.
-Use natural, clear, informal product language rather than a word-for-word translation.
-Preserve TrackDraw, FPV terms, URLs, file formats, keyboard shortcuts, units,
-technical tokens, HTML/tags, and every ICU placeholder exactly. Prefer the project
-glossary and translation memory. Keep labels compact enough for controls. Do not
-invent features, promises, privacy behavior, or technical meaning. Return only the
-translated message.
-```
-
-Auto-Translate is a Crowdin project setting, not a repository setting. Enabling or changing it is therefore an explicit operator action and cannot be inferred from `crowdin.yml` or the GitHub Action alone.
+Auto-Translate is a Crowdin project setting, not a repository setting. The repository cannot confirm its state from `crowdin.yml` or the GitHub Action. The no-cost configuration is therefore an explicit operator responsibility: TM Perfect matches only, with MT and AI disabled.
 
 Never commit a Crowdin API token or project credential. The Action reads both values from GitHub Actions secrets through the environment variable references in `crowdin.yml`.
 
@@ -60,7 +48,7 @@ Keep QA checks enabled, but distinguish runtime-breaking syntax from linguistic 
 - set **Spelling mistakes**, punctuation, capitalization, and length checks to **Warning** so a false positive cannot block an otherwise valid translation;
 - leave untranslated strings untranslated instead of saving the English source as a target translation.
 
-Generated translations are provisional, not disposable. Crowdin QA must pass before export, and a maintainer reviews a small sample plus sensitive or space-constrained strings. A dedicated language coordinator is not required for each synchronization round. When a human later corrects a translation, retain that translation and configure future auto-translation runs to skip it.
+Translation Memory matches and contributor translations remain reviewable Crowdin content. Crowdin QA must pass before export, and a maintainer reviews sensitive or space-constrained strings plus a small sample of other changes. A dedicated language coordinator is not required for each synchronization round. Human corrections must remain in Crowdin and should be approved so future perfect TM reuse preserves them.
 
 Before starting the localization workflow, the maintainer checks:
 
@@ -78,28 +66,35 @@ An `ISSUES FOUND` or `Spellcheck failed` language indicator means at least one s
 1. A feature pull request changes English source messages and application code.
 2. CI validates English key usage, catalog integrity, and hardcoded-copy rules. Target catalogs may temporarily omit new keys.
 3. After merge, the `Crowdin` GitHub Action uploads changed English source files to Crowdin.
-4. Crowdin automatically translates newly uploaded, untranslated strings. Translation memory and existing human translations remain preferred and are not replaced.
-5. Human contributors can suggest or approve improvements when available, but their absence does not block the existing languages.
-6. A maintainer checks the auto-translation queue, blocking QA findings, placeholders, and a representative sample. Pay extra attention to compact controls, warnings, export copy, and FPV terminology.
+4. Crowdin applies only previously approved perfect Translation Memory matches. It leaves every other newly uploaded string untranslated.
+5. Human contributors suggest or translate the remaining strings. When contributor coverage is not yet available, a maintainer may seed the missing keys through the separate no-cost assisted-import flow below. Neither path blocks a product release because TrackDraw uses the tested English fallback for missing target keys.
+6. A maintainer checks blocking QA findings, placeholders, and a representative sample of changed translations. Pay extra attention to compact controls, warnings, export copy, and FPV terminology.
 7. A maintainer manually runs the `Crowdin` workflow when the batch is ready. Running it once per week or release is preferred over a schedule during the pilot.
 8. The Action opens or updates `l10n_crowdin` without pushing directly to `main`. The PR and GitHub operation are attributed to `github-actions[bot]`; translation commits use `Crowdin Bot` as their author.
 9. TrackDraw CI rejects stale extra keys, empty values, and placeholder mismatches. Missing target keys remain safe English fallbacks.
-10. A maintainer reviews and merges the localization pull request. Machine-generated wording can ship after this lightweight review and be corrected later through Crowdin.
+10. A maintainer reviews and merges the localization pull request. Untranslated keys remain absent and continue to use English fallback until a later contributor update.
 
 During the pilot, prefer one intentional localization pull request per week or release over hourly repository churn.
 
 The Action exports with `skip_untranslated_strings` enabled. Crowdin therefore omits untranslated target keys instead of copying English ICU source messages into target catalogs. TrackDraw's tested runtime fallback supplies English until a real translation is available. The Action's commit message deliberately does not contain `[ci skip]`, so localization pull requests remain subject to the normal repository checks. GitHub may require a maintainer to approve workflows initiated by `github-actions[bot]`.
 
-## Agent-generated target translations
+## Maintainer-seeded translation batches
 
-Coding agents must keep normal feature work English-only, even if they can translate all supported languages. Generating target copy directly in Git bypasses Crowdin's glossary, translation memory, QA state, and later human corrections.
+Coding agents must keep normal feature work English-only, even if they can translate all supported languages. TrackDraw can still use already available no-cost assistance to seed a small translation batch after the English source has reached Crowdin. This is a separate localization operation, not part of the feature branch.
 
-If a branch already contains useful agent-generated target translations, choose one of these paths before merge:
+For a maintainer-requested seed batch:
 
-1. Remove the target-only edits and let Crowdin auto-translate the merged English source; or
-2. Treat the edits as a deliberate one-time baseline import, review them, import them into Crowdin, confirm the resulting Crowdin export, and only then merge the Crowdin-generated localization PR.
+1. Let the repository Action upload the merged English source to Crowdin first.
+2. Identify only keys that remain untranslated. Never regenerate a key that already has a Crowdin translation or suggestion.
+3. Generate partial nested JSON files per namespace and target locale in a temporary directory outside the repository. Preserve keys, ICU syntax, placeholders, tags, units, URLs, shortcuts, and intentional FPV terminology exactly.
+4. Review the batch for natural language, compact controls, warnings, destructive actions, and privacy or security meaning before upload.
+5. In Crowdin, open **Translations > Upload existing translations**, upload the partial key-value JSON files, verify every file and target-language mapping, keep automatic approval disabled, and import them as unapproved translations.
+6. Inspect the upload summary and Crowdin QA results. Approve the batch only after resolving blocking placeholder, ICU, and tag issues and sampling the wording in context.
+7. Run the repository `Crowdin` workflow manually and merge only the bot-authored `l10n_crowdin` pull request after normal CI and review.
 
-Do not permanently enable repository translation upload and do not merge the same target changes independently through a feature PR. After reconciliation, Crowdin resumes ownership of all target catalogs.
+Crowdin maps JSON uploads by key and skips source-identical or already identical values by default. Restricting the seed to missing keys avoids competing suggestions and protects existing human corrections. Do not permanently enable repository translation upload, commit the temporary seed files, or merge the same target changes through another branch.
+
+If a normal feature branch already contains useful agent-generated target translations, either remove them or convert only its missing keys into this temporary Crowdin seed flow after the English feature change reaches `main`.
 
 ## Native integration cutover
 
@@ -121,7 +116,7 @@ Extra target keys are ignored at runtime and rejected by CI. Placeholder changes
 
 Review the pilot on 2026-11-10 using:
 
-- machine-translation coverage, active human contributors when available, and the amount of maintainer review required;
+- perfect Translation Memory reuse, human translation coverage, active contributors, and the amount of maintainer review required;
 - median time from a merged English string to an approved translation;
 - translation pull-request frequency, conflicts, and maintainer time;
 - placeholder, terminology, and compact-label issues found in review;

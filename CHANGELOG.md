@@ -6,6 +6,12 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Easier feedback and community links
+
+Studio and read-only shared tracks now provide a consistent Feedback action for reporting a problem, sharing an idea, or asking a question. Users can review and copy the report before opening GitHub, and optional app context is limited to the TrackDraw version, route family, browser, and device without including project, account, or design data.
+
+The homepage footer now also links to TrackDraw on Facebook and Instagram while keeping the direct GitHub issue link available.
+
 ### Track preflight and a leaner inspector
 
 The Layout inspector now brings route, timing, numbering, and configured inventory checks together in one advisory Preflight summary. Issues open the related obstacle or Race Line, while sharing and export remain available. Repeated status cards and project details have been reduced, route analysis appears only where it is relevant, and the mobile inspector keeps inactive timing and duplicate quick actions out of the way.
@@ -15,10 +21,6 @@ The Layout inspector now brings route, timing, numbering, and configured invento
 TrackDraw's translations are now open to community contributions on [Crowdin](https://crowdin.com/project/trackdraw). Use the new translation link on the homepage to suggest clearer Dutch, German, or Simplified Chinese wording and help make TrackDraw easier to use for more FPV clubs and race organizers.
 
 Translation updates can ship independently from product releases. Text that has not been translated yet safely falls back to English, so contributors can improve the language packs incrementally.
-
-### Locale-aware visual exports and integrations
-
-PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese. Simplified Chinese now uses the standard `zh-CN` locale identifier while existing `zh` preferences continue to work and migrate automatically.
 
 ## [1.14.0]
 

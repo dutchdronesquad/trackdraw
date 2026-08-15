@@ -45,10 +45,12 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 - English product copy in `lang/en-US/**` is the source of truth and belongs in normal feature pull requests.
 - Do not edit `lang/nl-NL/**`, `lang/de-DE/**`, or `lang/zh-CN/**` in a feature pull request, even when you can generate plausible translations. Crowdin owns those target catalogs.
 - Do not copy new English keys into target catalogs as placeholders. Missing target keys intentionally use the tested English runtime fallback.
-- After English reaches `main`, the Crowdin workflow uploads it automatically. Crowdin then supplies initial AI/machine translations; those translations return through the `l10n_crowdin` localization pull request.
-- Human translations and corrections in Crowdin take precedence over generated translations. Do not overwrite them from the repository.
+- After English reaches `main`, the Crowdin workflow uploads it automatically. Crowdin may reuse previously approved perfect Translation Memory matches, while contributors create or improve the remaining translations in Crowdin; accepted target updates return through the `l10n_crowdin` localization pull request.
+- Paid Crowdin AI and machine translation are disabled. Missing translations intentionally use the tested English fallback until Crowdin receives reviewed target copy.
+- Normal feature work stays English-only. After its English source has reached Crowdin, a maintainer may explicitly request a separate no-cost assisted seeding round. Generate only the missing target keys in temporary files, import them into Crowdin as unapproved translations, and let Crowdin remain the only route back into Git. Never commit the temporary target files or overwrite an existing Crowdin translation.
+- Human translations and corrections in Crowdin take precedence over Translation Memory suggestions. Do not overwrite them from the repository.
 - Direct target-catalog edits are allowed only in a production emergency or an explicitly requested one-time reconciliation. Reconcile such changes back into Crowdin immediately instead of creating a second source of truth.
-- If a working tree already contains agent-generated target translations, do not silently keep, discard, or regenerate them. Flag them for reconciliation with Crowdin and keep subsequent feature work English-only.
+- If a working tree already contains agent-generated target translations, do not silently keep, discard, or regenerate them. Flag them for reconciliation through the same Crowdin import-and-review flow and keep subsequent feature work English-only.
 - A new English key does not require target-key parity, but every translatable namespace file must still exist for every supported target locale.
 - Run `npm run i18n:check` and `npm run i18n:scan-hardcoded` when changing product copy. See `CONTRIBUTING.md` and `docs/research/crowdin-pilot.md` for the synchronization and review workflow.
 

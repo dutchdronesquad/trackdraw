@@ -34,7 +34,7 @@ Approve phase 1 (architecture + editor namespace pilot) if TrackDraw accepts:
 - the editor namespace ships first as the pilot before other surfaces are migrated
 - untranslated strings fall back to the English message, never to a missing-key error
 
-At this phase gate, automatic machine translation was intentionally deferred until the editor pilot was stable. The later Crowdin pilot now allows machine-assisted target copy inside Crowdin; locale-based URL redirection and changes to the share/embed routing contract remain out of scope.
+At this phase gate, automatic machine translation was intentionally deferred until the editor pilot was stable. The later Crowdin pilot keeps paid AI and machine translation disabled, reuses only previously approved perfect Translation Memory matches, and accepts remaining copy from contributors or reviewed maintainer-seeded imports inside Crowdin; locale-based URL redirection and changes to the share/embed routing contract remain out of scope.
 
 ## Go / No-Go Criteria
 
