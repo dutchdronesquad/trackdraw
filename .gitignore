@@ -13,6 +13,7 @@
 # testing
 /coverage
 .pytest_cache
+/design-qa.md
 
 # python tooling
 __pycache__/

@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { getAccountRoleLabel, type AccountRole } from "@/lib/account/roles";
 import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react";
@@ -30,7 +29,6 @@ type DashboardNavUserProps = {
 };
 
 export default function DashboardNavUser({ user }: DashboardNavUserProps) {
-  const { isMobile } = useSidebar();
   const t = useTranslations("dashboard.navUser");
   const [signingOut, setSigningOut] = useState(false);
   const roleLabel = getAccountRoleLabel(user.role);
@@ -71,7 +69,7 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-64 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side="top"
             align="end"
             sideOffset={4}
           >

@@ -7,7 +7,7 @@ function getThemeFromDom(): "dark" | "light" {
 }
 
 export function useTheme(): "dark" | "light" {
-  const [theme, setTheme] = useState<"dark" | "light">(getThemeFromDom);
+  const [theme, setTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
     const update = () => setTheme(getThemeFromDom());

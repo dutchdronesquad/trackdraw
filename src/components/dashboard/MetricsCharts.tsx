@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useId, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, CalendarIcon, Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import {
@@ -29,6 +29,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
   Popover,
@@ -218,9 +219,11 @@ function addCalendarMonths(date: Date, months: number): Date {
 function UserGrowthComboChart({
   growthData,
   newUsersLabel,
+  compact = false,
 }: {
   growthData: GrowthData;
   newUsersLabel: string;
+  compact?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.userGrowth");
   const { userGrowth, userGrowthCumulative } = growthData;
@@ -246,7 +249,10 @@ function UserGrowthComboChart({
 
   return (
     <div className="space-y-3">
-      <ChartContainer config={growthComboConfig} className="h-64 w-full">
+      <ChartContainer
+        config={growthComboConfig}
+        className={cn(compact ? "h-52" : "h-64", "w-full")}
+      >
         <ComposedChart
           accessibilityLayer
           data={data}
@@ -316,17 +322,26 @@ function UserGrowthComboChart({
           />
         </ComposedChart>
       </ChartContainer>
-      <DataTableDisclosure
-        label={t("viewData")}
-        columns={[t("periodColumn"), t("totalUsers"), newUsersLabel]}
-        rows={data.map((row) => [row.label, row.totalUsers, row.newUsers])}
-      />
+      {compact ? null : (
+        <DataTableDisclosure
+          label={t("viewData")}
+          columns={[t("periodColumn"), t("totalUsers"), newUsersLabel]}
+          rows={data.map((row) => [row.label, row.totalUsers, row.newUsers])}
+        />
+      )}
     </div>
   );
 }
 
-function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
+function UserGrowthSummary({
+  growthData,
+  compact = false,
+}: {
+  growthData: GrowthData;
+  compact?: boolean;
+}) {
   const t = useTranslations("dashboard.metrics.userGrowth");
+  const locale = useLocale();
   const periodName = t(`periods.${growthData.bucket}`);
   const totalNewUsers = growthData.userGrowth.reduce(
     (sum, row) => sum + row.users,
@@ -344,7 +359,12 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
   }, null);
 
   return (
-    <div className="divide-y border-t sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:pt-3">
+    <div
+      className={cn(
+        "divide-y border-t sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0",
+        compact ? "sm:pt-2" : "sm:pt-3"
+      )}
+    >
       <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pr-3 sm:text-left">
         <p className="text-muted-foreground text-sm leading-snug">
           {t("summary.newInRange")}
@@ -358,7 +378,9 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
           {t("summary.avgPerPeriod", { period: periodName })}
         </p>
         <p className="shrink-0 text-sm font-semibold tabular-nums">
-          {averagePerPeriod.toLocaleString()}
+          {new Intl.NumberFormat(locale, {
+            maximumFractionDigits: 1,
+          }).format(averagePerPeriod)}
         </p>
       </div>
       <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pl-3 sm:text-right">
@@ -432,18 +454,14 @@ const RangePickerTrigger = forwardRef<
       variant="ghost"
       size="sm"
       className={cn(
-        "border-input bg-background hover:bg-muted hover:text-foreground data-[state=open]:bg-muted h-9 w-auto max-w-[9.5rem] justify-start gap-2 rounded-lg border px-2.5 text-left font-normal shadow-xs sm:w-56 sm:max-w-none",
+        "border-input bg-background hover:bg-muted hover:text-foreground data-[state=open]:bg-muted h-8 w-auto max-w-[12rem] justify-start gap-2 rounded-lg border px-3 text-left text-xs font-normal shadow-xs",
         className
       )}
+      aria-label={`${t("picker.range")} ${label}`}
       {...triggerProps}
     >
       <CalendarIcon className="text-muted-foreground size-4 shrink-0" />
-      <span className="min-w-0 flex-1">
-        <span className="text-muted-foreground block text-xs leading-none font-medium uppercase">
-          {t("picker.range")}
-        </span>
-        <span className="block truncate text-sm leading-snug">{label}</span>
-      </span>
+      <span className="min-w-0 truncate">{label}</span>
     </Button>
   );
 });
@@ -500,6 +518,7 @@ function RangePickerContent({
               <Button
                 key={value}
                 type="button"
+                aria-pressed={activeRange === value}
                 variant={activeRange === value ? "secondary" : "ghost"}
                 size="sm"
                 className="border-border/60 h-9 justify-start rounded-lg border px-2.5 text-xs"
@@ -587,6 +606,7 @@ function RangePickerContent({
             <Button
               key={value}
               type="button"
+              aria-pressed={activeRange === value}
               variant={activeRange === value ? "secondary" : "ghost"}
               size="sm"
               className="h-8 justify-start px-2 text-xs"
@@ -631,7 +651,7 @@ function RangePickerContent({
   );
 }
 
-function UserGrowthRangePicker({
+export function UserGrowthRangePicker({
   activeRange,
   customRange,
   today,
@@ -678,13 +698,9 @@ function UserGrowthRangePicker({
             setDrawerOpen(nextOpen);
           }}
         >
-          <RangePickerTrigger
-            label={triggerLabel}
-            onClick={() => {
-              resetDraft();
-              setDrawerOpen(true);
-            }}
-          />
+          <DrawerTrigger asChild>
+            <RangePickerTrigger label={triggerLabel} />
+          </DrawerTrigger>
           <DrawerContent className="border-border/60 bg-card gap-0 overflow-hidden rounded-t-[1.25rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] data-[vaul-drawer-direction=bottom]:max-h-[90dvh]">
             <DrawerHeader className="border-border/60 bg-card/96 border-b px-4 pt-3 pb-3 text-left backdrop-blur-xs">
               <DrawerTitle className="text-sm">{t("picker.range")}</DrawerTitle>
@@ -748,16 +764,41 @@ export function UserGrowthCard({
   growthByRange,
   growthTimeline,
   bare = false,
+  compact = false,
+  activeRange,
+  activeCustomRange,
+  onPresetSelect,
+  onCustomApply,
+  showRangePicker = true,
 }: {
   growthByRange: GrowthByRange;
   growthTimeline: GrowthTimeline;
   bare?: boolean;
+  compact?: boolean;
+  activeRange?: GrowthRange;
+  activeCustomRange?: GrowthCustomRange | null;
+  onPresetSelect?: (range: GrowthPresetRange) => void;
+  onCustomApply?: (range: GrowthCustomRange) => void;
+  showRangePicker?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.userGrowth");
-  const [range, setRange] = useState<GrowthRange>("3m");
-  const [customRange, setCustomRange] = useState<GrowthCustomRange | null>(
-    null
-  );
+  const [internalRange, setInternalRange] = useState<GrowthRange>("3m");
+  const [internalCustomRange, setInternalCustomRange] =
+    useState<GrowthCustomRange | null>(null);
+  const range = activeRange ?? internalRange;
+  const customRange =
+    activeCustomRange !== undefined ? activeCustomRange : internalCustomRange;
+  const selectPreset = (value: GrowthPresetRange) => {
+    if (onPresetSelect) onPresetSelect(value);
+    else setInternalRange(value);
+  };
+  const applyCustom = (value: GrowthCustomRange) => {
+    if (onCustomApply) onCustomApply(value);
+    else {
+      setInternalCustomRange(value);
+      setInternalRange("custom");
+    }
+  };
   const customGrowthData = useMemo(
     () =>
       customRange ? buildCustomGrowthData(growthTimeline, customRange) : null,
@@ -779,29 +820,34 @@ export function UserGrowthCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
           <h3 className="text-sm font-semibold">{t("title")}</h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">
+          <p
+            className={cn(
+              "text-muted-foreground text-sm",
+              compact ? "sr-only" : "leading-relaxed"
+            )}
+          >
             {t("description")}
           </p>
         </div>
-        <div className="shrink-0">
-          <UserGrowthRangePicker
-            activeRange={range}
-            customRange={customRange}
-            today={growthTimeline.today}
-            onPresetSelect={(value) => setRange(value)}
-            onCustomApply={(value) => {
-              setCustomRange(value);
-              setRange("custom");
-            }}
-          />
-        </div>
+        {showRangePicker ? (
+          <div className="shrink-0">
+            <UserGrowthRangePicker
+              activeRange={range}
+              customRange={customRange}
+              today={growthTimeline.today}
+              onPresetSelect={selectPreset}
+              onCustomApply={applyCustom}
+            />
+          </div>
+        ) : null}
       </div>
-      <div className="space-y-3 pt-3">
+      <div className={cn("space-y-3", compact ? "pt-2" : "pt-3")}>
         <UserGrowthComboChart
           growthData={growthData}
           newUsersLabel={newUsersLabel}
+          compact={compact}
         />
-        <UserGrowthSummary growthData={growthData} />
+        <UserGrowthSummary growthData={growthData} compact={compact} />
       </div>
     </>
   );
@@ -817,10 +863,10 @@ export function UserGrowthCard({
 
 // --- Activation, content health, distributions, usage, and retention ---
 
-function formatMonth(period: string) {
+function formatMonth(period: string, locale: string) {
   const date = new Date(`${period}-01T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return period;
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     year: "2-digit",
     timeZone: "UTC",
@@ -889,6 +935,7 @@ export function ContentGrowthChart({
   data: ProductInsights["contentGrowth"];
 }) {
   const t = useTranslations("dashboard.metrics.contentGrowth");
+  const locale = useLocale();
   const config = {
     projects: { label: t("projects"), color: "var(--chart-1)" },
     shares: { label: t("shares"), color: "var(--chart-4)" },
@@ -896,7 +943,7 @@ export function ContentGrowthChart({
   } satisfies ChartConfig;
   const chartData = data.map((row) => ({
     ...row,
-    label: formatMonth(row.period),
+    label: formatMonth(row.period, locale),
   }));
 
   if (chartData.length === 0) {
@@ -1301,6 +1348,11 @@ function UsageComparison({
     );
   }
   const previous = previousEventCount(usage, eventType);
+  if (current < 30 || previous < 30) {
+    return (
+      <span className="text-muted-foreground text-xs">{t("lowVolume")}</span>
+    );
+  }
   if (previous === 0) return null;
   const delta = Math.round(((current - previous) / previous) * 100);
   return (
@@ -1316,10 +1368,12 @@ function UsageBreakdownRows({
   rows,
   total,
   emptyLabel,
+  compact = false,
 }: {
   rows: Array<{ key: string; label: string; count: number }>;
   total: number;
   emptyLabel: string;
+  compact?: boolean;
 }) {
   if (total === 0) {
     return (
@@ -1330,12 +1384,17 @@ function UsageBreakdownRows({
   }
 
   return (
-    <div className="space-y-2.5 py-1">
+    <div className={cn(compact ? "space-y-0.5" : "space-y-2.5", "py-1")}>
       {rows.map((row) => {
         const pct = Math.round((row.count / total) * 100);
         return (
-          <div key={row.key} className="space-y-1">
-            <div className="flex items-center justify-between gap-3 text-sm">
+          <div key={row.key} className={compact ? "space-y-0.5" : "space-y-1"}>
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3",
+                compact ? "text-xs" : "text-sm"
+              )}
+            >
               <span className="text-foreground min-w-0 leading-snug">
                 {row.label}
               </span>
@@ -1347,7 +1406,10 @@ function UsageBreakdownRows({
               </span>
             </div>
             <div
-              className="bg-muted h-2 overflow-hidden rounded-full"
+              className={cn(
+                "bg-muted overflow-hidden rounded-full",
+                compact ? "h-1" : "h-2"
+              )}
               aria-hidden="true"
             >
               <div
@@ -1364,8 +1426,10 @@ function UsageBreakdownRows({
 
 export function ExportUsageBreakdown({
   usage,
+  compact = false,
 }: {
   usage: ProductInsights["usage"];
+  compact?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.exportUsage");
   const knownFormats = [
@@ -1393,11 +1457,30 @@ export function ExportUsageBreakdown({
     .map((row) => ({ key: row.format, label: row.format, count: row.count }));
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-end justify-between gap-3 border-b pb-3">
-        <span className="text-muted-foreground text-sm">{t("summary")}</span>
+    <div className={compact ? "space-y-2" : "space-y-3"}>
+      <div
+        className={cn(
+          "flex items-end justify-between gap-3 border-b",
+          compact ? "pb-2" : "pb-3"
+        )}
+      >
+        <span
+          className={cn(
+            "text-muted-foreground",
+            compact ? "text-xs" : "text-sm"
+          )}
+        >
+          {t("summary")}
+        </span>
         <div className="text-right">
-          <p className="text-xl font-bold tabular-nums">{usage.exports30d}</p>
+          <p
+            className={cn(
+              "font-bold tabular-nums",
+              compact ? "text-lg" : "text-xl"
+            )}
+          >
+            {usage.exports30d}
+          </p>
           <UsageComparison
             usage={usage}
             current={usage.exports30d}
@@ -1409,6 +1492,7 @@ export function ExportUsageBreakdown({
         rows={[...rows, ...extras]}
         total={usage.exports30d}
         emptyLabel={t("noData")}
+        compact={compact}
       />
     </div>
   );
@@ -1464,6 +1548,7 @@ export function EmbedReachTable({
   usage: ProductInsights["usage"];
 }) {
   const t = useTranslations("dashboard.metrics.embedReach");
+  const locale = useLocale();
   const knownViews = usage.embedReferrerSummary30d.views;
 
   if (usage.embedReferrers30d.length === 0) {
@@ -1563,7 +1648,7 @@ export function EmbedReachTable({
                   </td>
                   <td className="py-3 pl-3 text-right tabular-nums">
                     <time dateTime={referrer.lastSeen}>
-                      {new Intl.DateTimeFormat(undefined, {
+                      {new Intl.DateTimeFormat(locale, {
                         day: "numeric",
                         month: "short",
                         timeZone: "UTC",
@@ -1714,6 +1799,76 @@ export function EditorUsageBreakdown({
           ))}
         </div>
       </div>
+      <div className="space-y-3 border-b pb-4">
+        <div>
+          <p className="text-sm font-semibold">{t("funnel.title")}</p>
+          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+            {t("funnel.description")}
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b text-left">
+                <th
+                  scope="col"
+                  className="w-1/2 py-2 pr-3 text-left font-medium"
+                >
+                  {t("funnel.step")}
+                </th>
+                <th
+                  scope="col"
+                  className="w-1/4 px-3 py-2 text-right font-medium"
+                >
+                  {t("funnel.anonymous")}
+                </th>
+                <th
+                  scope="col"
+                  className="w-1/4 py-2 pl-3 text-right font-medium"
+                >
+                  {t("funnel.account")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(["started", "edited", "valuable"] as const).map((step) => (
+                <tr key={step} className="border-b last:border-0">
+                  <th scope="row" className="py-2.5 pr-3 text-left font-medium">
+                    {t(`funnel.steps.${step}`)}
+                  </th>
+                  <td className="px-3 py-2.5 text-right tabular-nums">
+                    {usage.creatorFunnel30d.anonymous[step]}
+                  </td>
+                  <td className="py-2.5 pl-3 text-right tabular-nums">
+                    {usage.creatorFunnel30d.account[step]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <dl className="grid gap-3 border-t pt-3 sm:grid-cols-2">
+          <div className="flex items-center justify-between gap-3 sm:block">
+            <dt className="text-muted-foreground text-sm">
+              {t("segments.newCreators")}
+            </dt>
+            <dd className="font-semibold tabular-nums sm:mt-1 sm:text-lg">
+              {usage.accountCreatorSegments30d.newCreators}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-3 sm:block">
+            <dt className="text-muted-foreground text-sm">
+              {t("segments.returningCreators")}
+            </dt>
+            <dd className="font-semibold tabular-nums sm:mt-1 sm:text-lg">
+              {usage.accountCreatorSegments30d.returningCreators}
+            </dd>
+          </div>
+        </dl>
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          {t("segments.note")}
+        </p>
+      </div>
       <div className="grid sm:grid-cols-3 sm:divide-x">
         {primaryStats.slice(3).map(([key, value]) => (
           <div
@@ -1770,6 +1925,7 @@ export function RetentionCohorts({
   retention: ProductInsights["retention"];
 }) {
   const t = useTranslations("dashboard.metrics.retention");
+  const locale = useLocale();
   if (retention.length === 0) {
     return (
       <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
@@ -1813,7 +1969,7 @@ export function RetentionCohorts({
               className="hover:bg-muted/35 border-b transition-colors last:border-0"
             >
               <td className="py-2.5 pr-3 font-medium">
-                {formatMonth(row.cohort)}
+                {formatMonth(row.cohort, locale)}
               </td>
               <td className="px-3 py-2.5 text-right tabular-nums">
                 {row.users}

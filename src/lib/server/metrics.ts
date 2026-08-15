@@ -97,6 +97,14 @@ export type ProductUsageMetrics = {
   trackingDays: number;
   anonymousSessions30d: number;
   accountSessions30d: number;
+  creatorFunnel30d: {
+    anonymous: { started: number; edited: number; valuable: number };
+    account: { started: number; edited: number; valuable: number };
+  };
+  accountCreatorSegments30d: {
+    newCreators: number;
+    returningCreators: number;
+  };
   shareViews30d: number;
   exports30d: number;
   preview3dOpens30d: number;
@@ -658,16 +666,59 @@ export async function getProductInsights(): Promise<ProductInsights> {
     db
       .prepare(
         `
+          with session_journeys as (
+            select
+              session_id,
+              max(case when user_id is not null then user_id end) as user_id,
+              max(case when user_id is not null then 1 else 0 end) as signed_in,
+              max(case when event_type = 'editor.session_started' then 1 else 0 end) as started,
+              min(case when event_type = 'editor.meaningful_edit_completed' then created_at end) as first_edit_at,
+              max(case
+                when event_type in ('export.completed', 'share.created', 'publication.gallery_published')
+                then created_at
+              end) as last_outcome_at
+            from product_events
+            where contract_version = '1.0.0'
+              and session_id is not null
+              and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            group by session_id
+          )
           select
-            count(distinct case when user_id is null then session_id end) as anonymous_sessions,
-            count(distinct case when user_id is not null then session_id end) as account_sessions
-          from product_events
-          where event_type = 'editor.session_started'
-            and contract_version = '1.0.0'
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            count(case when started = 1 and signed_in = 0 then 1 end) as anonymous_sessions,
+            count(case when started = 1 and signed_in = 1 then 1 end) as account_sessions,
+            count(case when started = 1 and signed_in = 0 then 1 end) as anonymous_started,
+            count(case when started = 1 and signed_in = 0 and first_edit_at is not null then 1 end) as anonymous_edited,
+            count(case when started = 1 and signed_in = 0 and last_outcome_at > first_edit_at then 1 end) as anonymous_valuable,
+            count(case when started = 1 and signed_in = 1 then 1 end) as account_started,
+            count(case when started = 1 and signed_in = 1 and first_edit_at is not null then 1 end) as account_edited,
+            count(case when started = 1 and signed_in = 1 and last_outcome_at > first_edit_at then 1 end) as account_valuable,
+            count(distinct case
+              when started = 1 and signed_in = 1
+                and activation.activated_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+              then session_journeys.user_id
+            end) as new_creators,
+            count(distinct case
+              when started = 1 and signed_in = 1
+                and activation.activated_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+              then session_journeys.user_id
+            end) as returning_creators
+          from session_journeys
+          left join product_metric_creator_activations activation
+            on activation.user_id = session_journeys.user_id
         `
       )
-      .first<{ anonymous_sessions: number; account_sessions: number }>(),
+      .first<{
+        anonymous_sessions: number;
+        account_sessions: number;
+        anonymous_started: number;
+        anonymous_edited: number;
+        anonymous_valuable: number;
+        account_started: number;
+        account_edited: number;
+        account_valuable: number;
+        new_creators: number;
+        returning_creators: number;
+      }>(),
     db
       .prepare(
         `
@@ -744,6 +795,22 @@ export async function getProductInsights(): Promise<ProductInsights> {
       trackingDays: trackingRow?.tracking_days ?? 0,
       anonymousSessions30d: sessionRow?.anonymous_sessions ?? 0,
       accountSessions30d: sessionRow?.account_sessions ?? 0,
+      creatorFunnel30d: {
+        anonymous: {
+          started: sessionRow?.anonymous_started ?? 0,
+          edited: sessionRow?.anonymous_edited ?? 0,
+          valuable: sessionRow?.anonymous_valuable ?? 0,
+        },
+        account: {
+          started: sessionRow?.account_started ?? 0,
+          edited: sessionRow?.account_edited ?? 0,
+          valuable: sessionRow?.account_valuable ?? 0,
+        },
+      },
+      accountCreatorSegments30d: {
+        newCreators: sessionRow?.new_creators ?? 0,
+        returningCreators: sessionRow?.returning_creators ?? 0,
+      },
       shareViews30d: eventCount(eventRows, "share.viewed"),
       exports30d: eventCount(eventRows, "export.completed"),
       preview3dOpens30d: eventCount(eventRows, "editor.3d_opened"),
