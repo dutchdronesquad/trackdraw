@@ -1,17 +1,25 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   ActivationFunnel,
+  EditorUsageBreakdown,
   EmbedReachTable,
   GrowthTabs,
   PlanLimitSimulator,
   UsageTabs,
   UserGrowthCard,
 } from "@/components/dashboard/MetricsCharts";
-import type { GrowthByRange, ProductInsights } from "@/lib/server/metrics";
+import MetricsWorkspace from "@/components/dashboard/MetricsWorkspace";
+import type { MetricsExplorerData } from "@/lib/metrics-explorer";
+import type {
+  AdminMetrics,
+  GrowthByRange,
+  ProductInsights,
+} from "@/lib/server/metrics";
+import type { DailyCockpitData } from "@/lib/server/dashboard-cockpit";
 
 const growthData = {
   bucket: "month" as const,
@@ -47,11 +55,16 @@ describe("UserGrowthCard", () => {
       />
     );
 
-    const desktopTrigger = screen
-      .getAllByRole("button", { name: "Range Last 3 months" })
-      .find((button) => button.getAttribute("aria-haspopup") === "dialog");
+    const rangeTriggers = screen.getAllByRole("button", {
+      name: "Range Last 3 months",
+    });
+    const dialogTriggers = rangeTriggers.filter(
+      (button) => button.getAttribute("aria-haspopup") === "dialog"
+    );
+    const desktopTrigger = dialogTriggers.at(-1);
 
     expect(desktopTrigger).toBeTruthy();
+    expect(dialogTriggers).toHaveLength(2);
     expect(desktopTrigger?.className).toContain("hover:bg-muted");
     expect(desktopTrigger?.className).not.toContain("hover:bg-accent");
     expect(container.querySelectorAll("[data-chart]")).toHaveLength(1);
@@ -60,6 +73,11 @@ describe("UserGrowthCard", () => {
 
     expect(screen.getByText("Presets")).toBeTruthy();
     expect(desktopTrigger?.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      screen
+        .getAllByRole("button", { name: "Last 3 months" })
+        .some((button) => button.getAttribute("aria-pressed") === "true")
+    ).toBe(true);
   });
 });
 
@@ -71,6 +89,14 @@ const usage = {
   trackingDays: 30,
   anonymousSessions30d: 4,
   accountSessions30d: 6,
+  creatorFunnel30d: {
+    anonymous: { started: 4, edited: 3, valuable: 1 },
+    account: { started: 6, edited: 5, valuable: 3 },
+  },
+  accountCreatorSegments30d: {
+    newCreators: 2,
+    returningCreators: 3,
+  },
   shareViews30d: 12,
   exports30d: 5,
   preview3dOpens30d: 3,
@@ -137,6 +163,26 @@ describe("metrics decision views", () => {
     ).toBeTruthy();
   });
 
+  it("left-aligns creator-funnel journey steps", () => {
+    render(<EditorUsageBreakdown usage={usage} />);
+
+    const stepHeader = screen.getByRole("columnheader", {
+      name: "Journey step",
+    });
+    expect(stepHeader.className).toContain("text-left");
+    expect(stepHeader.closest("table")?.className).toContain("table-fixed");
+
+    for (const name of [
+      "Editor started",
+      "Meaningful edit",
+      "Valuable outcome",
+    ]) {
+      expect(screen.getByRole("rowheader", { name }).className).toContain(
+        "text-left"
+      );
+    }
+  });
+
   it("keeps user and content growth in one switchable panel", async () => {
     const user = userEvent.setup();
     render(
@@ -198,5 +244,200 @@ describe("metrics decision views", () => {
         name: "Projects free-plan limit value",
       })
     ).toBeTruthy();
+  });
+
+  it("keeps existing growth and usage views inside the contract journey", async () => {
+    const user = userEvent.setup();
+    const metrics = {
+      users: {
+        total: 12,
+        newThisWeek: 1,
+        newThisMonth: 2,
+        neverCreatedProject: 2,
+        activeLastThirtyDays: 8,
+      },
+      projects: {
+        total: 10,
+        active: 8,
+        archived: 2,
+        avgPerUser: 1,
+        maxPerUser: 3,
+      },
+      shares: {
+        total: 5,
+        expired: 1,
+        revoked: 0,
+        totalActive: 4,
+        avgPerUser: 1,
+        maxPerUser: 2,
+      },
+      presets: { total: 3, avgPerUser: 1, maxPerUser: 1 },
+      gallery: {
+        total: 2,
+        listed: 1,
+        featured: 1,
+        hidden: 0,
+        missingPreview: 0,
+      },
+      apiKeys: { active: 1, total: 1 },
+      userDistribution: [],
+    } satisfies AdminMetrics;
+    const metricRow = {
+      metric_id: "MTR-001" as const,
+      day_utc: "2026-08-14",
+      dimension: "",
+      window_days: 7 as const,
+      numerator: 8,
+      denominator: null,
+      sample_size: 10,
+      completeness_state: "complete" as const,
+      quality_status: "healthy" as const,
+      updated_at: "2026-08-15T03:17:00.000Z",
+    };
+    const cockpit = {
+      generatedAt: "2026-08-15T12:00:00.000Z",
+      warning: null,
+      operations: {
+        missingGalleryPreviews: 0,
+        exportFailures: 0,
+        publicationFailures: 0,
+        unusedApiKeys: 0,
+        expiredApiKeys: 0,
+        analyticsPipelineGaps: 0,
+        buildingMetrics: 0,
+        availability: { failures: true, pipeline: true },
+      },
+      headlines: [
+        {
+          id: "MTR-001",
+          windowDays: 7,
+          minimumVolume: 30,
+          valueKind: "count",
+          unfavorableDirection: "down",
+          drilldown: "/dashboard/metrics#product-use",
+          current: metricRow,
+          live: null,
+          previous: { ...metricRow, day_utc: "2026-08-07", numerator: 7 },
+          comparisonReady: true,
+          quality: "healthy",
+          measuredSince: "2026-07-01",
+        },
+        ...(["MTR-004", "MTR-005", "MTR-006"] as const).map((id) => ({
+          id,
+          windowDays: id === "MTR-005" ? (30 as const) : (7 as const),
+          minimumVolume: id === "MTR-005" ? 20 : 30,
+          valueKind: "rate" as const,
+          unfavorableDirection: "down" as const,
+          drilldown: "/dashboard/metrics",
+          current: {
+            ...metricRow,
+            metric_id: id,
+            window_days: id === "MTR-005" ? (30 as const) : (7 as const),
+            numerator: id === "MTR-004" ? 0 : 4,
+            denominator: id === "MTR-004" ? 0 : 10,
+          },
+          live: null,
+          previous: null,
+          comparisonReady: false,
+          quality: "building" as const,
+          measuredSince: "2026-07-01",
+        })),
+      ],
+    } satisfies DailyCockpitData;
+    const emptyMetric = {
+      id: "MTR-008" as const,
+      windowDays: 28 as const,
+      measuredSince: "2026-07-01",
+      quality: "building" as const,
+      rows: [],
+    };
+    const explorer = {
+      generatedAt: "2026-08-15T12:00:00.000Z",
+      acquisition: emptyMetric,
+      adoption: { ...emptyMetric, id: "MTR-009" },
+      retention: { ...emptyMetric, id: "MTR-005", windowDays: 30 },
+    } satisfies MetricsExplorerData;
+
+    const { container } = render(
+      <MetricsWorkspace
+        metrics={metrics}
+        insights={{
+          activation: {
+            registered: 12,
+            createdProject: 10,
+            createdShare: 5,
+            publishedToGallery: 2,
+          },
+          contentGrowth: [],
+          usage,
+          retention: [],
+        }}
+        growthByRange={growthByRange}
+        growthTimeline={{
+          dailyGrowth: [{ date: "2026-07-01", users: 2 }],
+          totalUsers: 12,
+          today: "2026-07-09",
+        }}
+        cockpit={cockpit}
+        explorer={explorer}
+        header={{
+          title: "Product metrics",
+          subtitle: "Aggregate product health",
+          updatedLabel: "Updated",
+          lastUpdated: "15 Aug 2026",
+          dateTime: "2026-08-15T12:00:00.000Z",
+        }}
+      />
+    );
+
+    expect(container.querySelectorAll("[data-chart]")).toHaveLength(1);
+    expect(screen.getByText("Completed exports")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /^Acquisition Building/ })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /^Activation Building 0%/ })
+    ).toBeTruthy();
+    expect(screen.queryAllByRole("combobox")).toHaveLength(0);
+    expect(
+      screen.getAllByRole("button", { name: "Range Last 3 months" })
+    ).toHaveLength(2);
+
+    const journey = screen.getByRole("navigation", {
+      name: "Product journey metrics",
+    });
+    const evidence = screen.getByRole("region", { name: "Journey evidence" });
+    expect(within(journey).queryByText(/MTR-\d+/)).toBeNull();
+    expect(within(evidence).queryByText(/MTR-\d+/)).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Close metric details" })
+    ).toBeNull();
+    expect(within(evidence).getByText("Active creators")).toBeTruthy();
+    expect(within(evidence).queryByText(/Distinct signed-in users/)).toBeNull();
+    expect(within(evidence).queryByText("Trend")).toBeNull();
+    expect(within(evidence).getByRole("table").className).toContain("text-sm");
+    expect(screen.queryByRole("button", { name: "Editor usage" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Sharing + Embed reach" })
+    ).toBeNull();
+
+    await user.click(
+      within(journey).getByRole("button", { name: /^Acquisition Building/ })
+    );
+    const acquisitionHeading = screen.getByRole("heading", {
+      name: "Acquisition source mix",
+    });
+    expect(acquisitionHeading).toBeTruthy();
+    expect(acquisitionHeading.closest('[role="tabpanel"]')).toBeNull();
+    expect(
+      screen
+        .getByRole("button", { name: "Acquisition sources" })
+        .getAttribute("aria-pressed")
+    ).toBe("true");
+    expect(screen.getByText("No data for this period.")).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Sharing" }));
+    expect(screen.getByText("events.example.org")).toBeTruthy();
+    expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
   });
 });

@@ -230,6 +230,160 @@
     }
   },
   "metrics": {
+    "explorer": {
+      "header": {
+        "title": "Product metrics",
+        "subtitle": "Aggregate product health"
+      },
+      "quality": {
+        "healthy": "Healthy",
+        "building": "Building",
+        "low_volume": "Low volume",
+        "degraded": "Degraded",
+        "invalid": "Invalid",
+        "not_started": "Not started"
+      },
+      "comparison": {
+        "unavailable": "No reliable comparison",
+        "points": "{value, number, ::+0;-0} pp"
+      },
+      "empty": {
+        "noData": "No data for this period.",
+        "notStarted": "Tracking has not started."
+      },
+      "windowDays": "{days}d",
+      "journey": {
+        "label": "Product journey metrics",
+        "acquisition": { "label": "Acquisition", "value": "Source mix" },
+        "activation": { "label": "Activation", "value": "Valuable sessions" },
+        "engagement": { "label": "Engagement", "value": "Active creators" },
+        "sharing": { "label": "Sharing", "value": "Published sessions" },
+        "retention": { "label": "Retention", "value": "30-day return" }
+      },
+      "views": {
+        "label": "Metrics analysis views",
+        "overview": "Overview",
+        "acquisition": "Acquisition",
+        "editor": "Editor",
+        "exports": "Exports",
+        "sharing": "Sharing",
+        "retention": "Retention",
+        "userGrowth": "User growth",
+        "about": "About these metrics"
+      },
+      "overview": {
+        "exportTitle": "Export usage",
+        "exportNote": "Completed exports in the last 30 days."
+      },
+      "evidence": {
+        "title": "Journey evidence",
+        "metric": "Metric",
+        "current": "Current",
+        "previous": "Previous",
+        "change": "Change",
+        "quality": "Quality",
+        "window": "Window"
+      },
+      "explore": {
+        "label": "Explore more views:",
+        "acquisition": "Acquisition sources",
+        "content": "Content growth",
+        "retention": "Retention cohorts"
+      },
+      "metrics": {
+        "MTR-001": {
+          "name": "Active creators",
+          "definition": "Distinct signed-in users or session-scoped anonymous actors that completed at least one meaningful edit during the last seven complete UTC days.",
+          "owner": "Product",
+          "privacy": "Anonymous activity is session-scoped and is never joined to an account. This count represents actors, not deduplicated people."
+        },
+        "MTR-004": {
+          "name": "Valuable session rate",
+          "definition": "Creator sessions with a meaningful edit followed by a completed export, share creation, or gallery publication, divided by editor sessions.",
+          "owner": "Product",
+          "privacy": "The metric uses aggregate session outcomes and does not expose projects, shares, or individual sessions."
+        },
+        "MTR-005": {
+          "name": "Signed-in 30-day return rate",
+          "definition": "Signed-in creators who returned in a different editor session within 30 days after their first meaningful edit, divided by fully matured activated creators.",
+          "owner": "Product",
+          "privacy": "Anonymous retention is unavailable because TrackDraw does not persist an anonymous identifier across visits."
+        },
+        "MTR-006": {
+          "name": "Published browser sessions",
+          "definition": "Distinct browser sessions that viewed a published share or embed during the last seven complete UTC days.",
+          "owner": "Product",
+          "privacy": "Temporary links are excluded and browser sessions are not treated as people."
+        },
+        "MTR-008": {
+          "name": "Acquisition source mix",
+          "definition": "Eligible entry sessions grouped into bounded source categories during the last 28 complete UTC days, excluding internal navigation.",
+          "owner": "Product",
+          "privacy": "Full URLs, paths, search terms, campaign values, and hostnames are not retained in acquisition events; cells below five sessions are merged."
+        },
+        "MTR-009": {
+          "name": "Feature adoption",
+          "definition": "The share of eligible creator sessions that used each meaningful feature at least once during the last 28 complete UTC days.",
+          "owner": "Product",
+          "privacy": "Adoption measures completed feature use, not clicks, panel opens, project content, or individual behavior."
+        }
+      },
+      "sources": {
+        "direct": "Direct",
+        "search": "Search",
+        "social": "Social",
+        "community": "Community",
+        "referral": "Referral",
+        "campaign": "Campaign",
+        "unknown": "Unknown",
+        "other": "Other low-volume sources"
+      },
+      "features": {
+        "preview_3d": "3D preview",
+        "import": "Import",
+        "export": "Export",
+        "share_link": "Share link",
+        "gallery_publication": "Gallery publication"
+      },
+      "acquisition": {
+        "title": "Acquisition source mix",
+        "description": "Where eligible sessions first reached TrackDraw."
+      },
+      "editor": {
+        "title": "Editor usage",
+        "description": "Editor activity split between anonymous and signed-in sessions."
+      },
+      "adoption": {
+        "title": "Feature adoption",
+        "description": "Completed feature use among eligible creator sessions."
+      },
+      "content": {
+        "title": "Content growth",
+        "description": "Projects, shares, and presets over time."
+      },
+      "sharing": {
+        "title": "Share and embed sessions",
+        "description": "Public views split between share pages and embeds.",
+        "healthTitle": "Sharing and gallery health",
+        "healthDescription": "Current lifecycle and publication readiness for shared content.",
+        "embedTitle": "Thresholded embed reach",
+        "embedDescription": "Qualifying views by website and track."
+      },
+      "retention": {
+        "title": "Creator retention",
+        "description": "30-day return among matured signed-in creator cohorts.",
+        "cohort": "Activation cohort",
+        "activated": "Activated",
+        "returned": "Returned",
+        "rate": "30-day rate",
+        "quality": "Quality",
+        "empty": "Mature creator-activation cohorts will appear after the observation window is complete."
+      },
+      "dictionary": {
+        "title": "Product metrics data dictionary",
+        "description": "Stable metric identifiers, contract definitions, reporting windows, quality status, minimum volume, and ownership govern every analytical view."
+      }
+    },
     "kpi": {
       "activeAccounts": {
         "label": "Active accounts",
@@ -346,6 +500,7 @@
     },
     "comparison": {
       "building": "30-day comparison is building",
+      "lowVolume": "Comparison hidden for low volume",
       "flat": "No change vs previous 30d",
       "changeUp": "Up {pct}% vs previous 30d",
       "changeDown": "Down {pct}% vs previous 30d"
@@ -488,6 +643,23 @@
       "placed": "Elements placed",
       "importedShapes": "Shapes imported",
       "avgImport": "Avg. per import",
+      "funnel": {
+        "title": "Anonymous and signed-in creator funnels",
+        "description": "Aggregate sessions in the last 30 days. A valuable session completes a meaningful edit before an export, share, or publication outcome.",
+        "step": "Journey step",
+        "anonymous": "Anonymous",
+        "account": "Signed in",
+        "steps": {
+          "started": "Editor started",
+          "edited": "Meaningful edit",
+          "valuable": "Valuable outcome"
+        }
+      },
+      "segments": {
+        "newCreators": "Newly activated signed-in creators",
+        "returningCreators": "Returning signed-in creators",
+        "note": "Creator segments are available for signed-in creators."
+      },
       "topTypes": "Most placed element types",
       "noData": "No element placements have been tracked in the last 30 days."
     },

@@ -182,7 +182,18 @@ describe("dashboard metrics", () => {
         first: { imported_shapes: 24, avg_shapes: 12 },
       }),
       createD1Statement({
-        first: { anonymous_sessions: 5, account_sessions: 9 },
+        first: {
+          anonymous_sessions: 5,
+          account_sessions: 9,
+          anonymous_started: 5,
+          anonymous_edited: 3,
+          anonymous_valuable: 2,
+          account_started: 9,
+          account_edited: 7,
+          account_valuable: 4,
+          new_creators: 3,
+          returning_creators: 4,
+        },
       }),
       createD1Statement({ first: { keys_used: 2 } }),
       createD1AllStatement([
@@ -206,6 +217,11 @@ describe("dashboard metrics", () => {
     expect(String(mocks.prepare.mock.calls[0][0])).toContain(
       "g.gallery_state <> 'unlisted'"
     );
+    const sessionJourneySql = mocks.prepare.mock.calls
+      .map(([sql]) => String(sql))
+      .find((sql) => sql.includes("with session_journeys as"));
+    expect(sessionJourneySql).toContain("last_outcome_at > first_edit_at");
+    expect(sessionJourneySql).toContain("product_metric_creator_activations");
     expect(insights.contentGrowth).toHaveLength(2);
     expect(insights.usage).toMatchObject({
       totalEvents30d: 33,
@@ -229,6 +245,14 @@ describe("dashboard metrics", () => {
       trackingDays: 82,
       anonymousSessions30d: 5,
       accountSessions30d: 9,
+      creatorFunnel30d: {
+        anonymous: { started: 5, edited: 3, valuable: 2 },
+        account: { started: 9, edited: 7, valuable: 4 },
+      },
+      accountCreatorSegments30d: {
+        newCreators: 3,
+        returningCreators: 4,
+      },
       shareViews30d: 7,
       exports30d: 4,
       preview3dOpens30d: 3,
