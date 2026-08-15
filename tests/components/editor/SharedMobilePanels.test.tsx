@@ -51,6 +51,7 @@ function renderMobilePanels(
     onSetMobileObstacleNumbersEnabled: vi.fn(),
     onSetMobileRulersEnabled: vi.fn(),
     onShare: vi.fn(),
+    onFeedback: vi.fn(),
     onStartFlyThrough: vi.fn(),
     onTabChange: vi.fn(),
     onSetReadOnlyMenuOpen: vi.fn(),
@@ -100,6 +101,17 @@ describe("shared MobilePanels", () => {
       screen.getByRole("link", { name: "Edit copy" }).getAttribute("href")
     ).toBe("/studio?fromShare=1");
     expect(screen.queryByRole("button", { name: "View" })).toBeNull();
+  });
+
+  it("opens feedback directly from the shared mobile toolbar", async () => {
+    const user = userEvent.setup();
+    const onFeedback = vi.fn();
+
+    renderMobilePanels({ onFeedback });
+
+    await user.click(screen.getByRole("button", { name: "Feedback" }));
+
+    expect(onFeedback).toHaveBeenCalledTimes(1);
   });
 
   it("hides share actions inside the embed view drawer", () => {

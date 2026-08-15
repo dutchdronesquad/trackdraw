@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Scan, Share2 } from "lucide-react";
+import { ArrowRight, MessageCircle, Scan, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
@@ -19,6 +19,7 @@ export interface MobilePanelsProps {
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onShare: () => void;
+  onFeedback: () => void;
   onStartFlyThrough: () => void;
   onTabChange: (tab: "2d" | "3d") => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
@@ -40,6 +41,7 @@ export default function MobilePanels({
   onSetMobileObstacleNumbersEnabled,
   onSetMobileRulersEnabled,
   onShare,
+  onFeedback,
   onStartFlyThrough,
   onTabChange,
   onSetReadOnlyMenuOpen,
@@ -76,6 +78,19 @@ export default function MobilePanels({
           >
             <Scan className="size-3.5" />
             <span>{embedMode ? t("nav.view") : t("nav.preview")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onFeedback}
+            className={cn(
+              "flex min-w-0 items-center font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white",
+              embedMode
+                ? "gap-1.5 rounded-full px-3 py-2 text-xs"
+                : "flex-1 flex-col gap-1 rounded-lg px-2 py-2 text-[11px]"
+            )}
+          >
+            <MessageCircle className="size-3.5" />
+            <span>{t("nav.feedback")}</span>
           </button>
           {!embedMode ? (
             <button
@@ -117,6 +132,7 @@ export default function MobilePanels({
           onSetMobileObstacleNumbersEnabled={onSetMobileObstacleNumbersEnabled}
           onSetMobileRulersEnabled={onSetMobileRulersEnabled}
           onShare={onShare}
+          onFeedback={onFeedback}
           onStartFlyThrough={onStartFlyThrough}
           onTabChange={onTabChange}
           saveStatusLabel={saveStatusLabel}

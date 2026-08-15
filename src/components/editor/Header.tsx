@@ -92,6 +92,7 @@ interface HeaderProps {
   onOpenProjectManager?: () => void;
   onSaveSnapshot?: () => void;
   onOpenShortcuts?: () => void;
+  onFeedback?: () => void;
   readOnly?: boolean;
   hideTabsOnMobile?: boolean;
   collapsed?: boolean;
@@ -116,6 +117,7 @@ export default function Header({
   onOpenProjectManager,
   onSaveSnapshot,
   onOpenShortcuts,
+  onFeedback,
   readOnly = false,
   collapsed,
   onToggleCollapsed,
@@ -181,6 +183,10 @@ export default function Header({
           ? t("statusSyncing")
           : t("statusSynced");
   const canRetryStatus = statusTone === "error" && Boolean(onRetrySync);
+
+  const openFeedback = () => {
+    onFeedback?.();
+  };
   const headerActionClass =
     "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
 
@@ -259,7 +265,7 @@ export default function Header({
 
         {!readOnly && (
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden items-center justify-center lg:flex"
+            className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden items-center justify-center xl:flex"
             style={{ right: INSPECTOR_WIDTH }}
           >
             <div className="flex max-w-md items-center gap-2 px-6">
@@ -484,6 +490,7 @@ export default function Header({
                 onImport={onImport}
                 onExport={onExport}
                 onShare={onShare}
+                onFeedback={openFeedback}
               />
             ) : (
               <button

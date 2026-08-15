@@ -60,6 +60,11 @@ const ShareDialog = dynamic(() => import("@/components/dialogs/ShareDialog"), {
   ssr: false,
 });
 
+const FeedbackDialog = dynamic(
+  () => import("@/components/dialogs/FeedbackDialog"),
+  { ssr: false }
+);
+
 const Header = dynamic(() => import("./Header"), {
   ssr: false,
 });
@@ -100,6 +105,7 @@ export default function EditorShell({
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     if (hasVisited3D) return;
@@ -158,6 +164,7 @@ export default function EditorShell({
             onToggleObstacleNumbers={() =>
               setShowObstacleNumbers((current) => !current)
             }
+            onFeedback={() => setFeedbackOpen(true)}
           />
 
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -210,6 +217,7 @@ export default function EditorShell({
               setShareOpen(true);
               setReadOnlyMenuOpen(false);
             }}
+            onFeedback={() => setFeedbackOpen(true)}
             onStartFlyThrough={() => {
               handleTabChange("3d");
               setPendingFlyThroughStart(true);
@@ -234,6 +242,7 @@ export default function EditorShell({
           existingShareMode={existingShareMode}
         />
       ) : null}
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </>
   );
 }

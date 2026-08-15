@@ -6,7 +6,8 @@
     "import": "Import",
     "importTooltip": "Import JSON",
     "export": "Export",
-    "exportTooltip": "Export track"
+    "exportTooltip": "Export track",
+    "feedbackSupport": "Feedback"
   },
   "contextMenu": {
     "quickActions": "Quick actions",
@@ -107,6 +108,7 @@
     "retrySync": "Retry account sync ({status})",
     "share": "Share",
     "export": "Export",
+    "feedbackSupport": "Feedback",
     "openAppMenu": "Open app menu",
     "hideObstacleNumbers": "Hide obstacle numbers",
     "showObstacleNumbers": "Show obstacle numbers"
@@ -137,6 +139,9 @@
     "importDescription": "Bring in a JSON project file",
     "exportLabel": "Export",
     "exportDescription": "Download PNG, PDF, SVG or JSON",
+    "supportSection": "Support",
+    "feedbackLabel": "Feedback",
+    "feedbackDescription": "Report a problem, share an idea or ask a question",
     "themeLabel": "Theme",
     "themeDescription": "Switch light, dark or system",
     "signOut": "Sign out",
@@ -319,6 +324,11 @@
         "sectionLabel": "Share",
         "editableCopy": "Editable copy",
         "shareButton": "Share"
+      },
+      "support": {
+        "sectionLabel": "Support",
+        "label": "Feedback",
+        "description": "Report a problem, share an idea or ask a question"
       }
     },
     "multiSelect": {
@@ -393,6 +403,7 @@
         "view": "View",
         "review": "Review",
         "share": "Share",
+        "feedback": "Feedback",
         "editCopy": "Edit copy",
         "preview": "Preview"
       },

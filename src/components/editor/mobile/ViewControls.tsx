@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Scan, Share2, ArrowRight } from "lucide-react";
+import { Play, Scan, Share2, ArrowRight, MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ interface EditorMobileViewControlsProps {
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onShare?: () => void;
+  onFeedback?: () => void;
   onStartFlyThrough: () => void;
   snapEnabled?: boolean;
   onToggleSnapEnabled?: () => void;
@@ -85,6 +86,7 @@ export function ViewControls({
   onSetMobileObstacleNumbersEnabled,
   onSetMobileRulersEnabled,
   onShare,
+  onFeedback,
   onStartFlyThrough,
   onTabChange,
   onToggleSnapEnabled,
@@ -264,6 +266,31 @@ export function ViewControls({
               </span>
             </button>
           </div>
+        </div>
+      ) : null}
+      {readOnly && onFeedback ? (
+        <div>
+          <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+            {t("support.sectionLabel")}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              closePanel?.();
+              onFeedback();
+            }}
+            className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+          >
+            <MessageCircle className="size-4 shrink-0" />
+            <span>
+              <span className="block text-[11px] font-medium">
+                {t("support.label")}
+              </span>
+              <span className="text-muted-foreground/75 mt-0.5 block text-[11px] leading-snug">
+                {t("support.description")}
+              </span>
+            </span>
+          </button>
         </div>
       ) : null}
     </>

@@ -10,6 +10,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  MessageCircle,
   Share2,
   UserRound,
 } from "lucide-react";
@@ -25,6 +26,7 @@ type MobileAppMenuProps = {
   onImport: () => void;
   onExport: () => void;
   onShare: () => void;
+  onFeedback: () => void;
   onOpenAccount?: () => void;
   defaultOpen?: boolean;
   hideTrigger?: boolean;
@@ -129,6 +131,7 @@ export default function MobileAppMenu({
   onImport,
   onExport,
   onShare,
+  onFeedback,
   onOpenAccount,
   defaultOpen = false,
   hideTrigger = false,
@@ -320,6 +323,15 @@ export default function MobileAppMenu({
                     label={t("exportLabel")}
                     description={t("exportDescription")}
                     onClick={() => closeAndRun(onExport)}
+                  />
+                </MenuSection>
+
+                <MenuSection title={t("supportSection")}>
+                  <MenuRow
+                    icon={<MessageCircle className="size-4" />}
+                    label={t("feedbackLabel")}
+                    description={t("feedbackDescription")}
+                    onClick={() => closeAndRun(onFeedback)}
                   />
                 </MenuSection>
               </div>

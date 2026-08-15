@@ -1,4 +1,49 @@
 {
+  "feedback": {
+    "title": "Share feedback",
+    "subtitle": "Share a problem, idea, or question. Review everything before GitHub opens.",
+    "categoryLabel": "Feedback type",
+    "titleLabel": "Short title",
+    "detailsLabel": "Details",
+    "stepsLabel": "Steps to reproduce (optional)",
+    "addSteps": "Add reproduction steps",
+    "hideSteps": "Hide reproduction steps",
+    "stepsPlaceholder": "1. Open…\n2. Select…\n3. The problem appears…",
+    "contextLabel": "Include app context",
+    "contextDescription": "Version {version}, {routeFamily}, {browser}, and {device} only.",
+    "previewLabel": "Preview GitHub report",
+    "hidePreview": "Hide GitHub report preview",
+    "previewEmpty": "Add a title and details to prepare the report.",
+    "publicWarning": "Your report will be public on GitHub. TrackDraw never adds project, account, or design data.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copiedStatus": "Report copied.",
+    "copyFailed": "Could not copy. The preview is open so you can copy it manually.",
+    "openGitHub": "Review on GitHub",
+    "categories": {
+      "bug": {
+        "shortTitle": "Problem",
+        "title": "Report a problem",
+        "description": "Something is broken, confusing, or behaving unexpectedly.",
+        "titlePlaceholder": "What went wrong?",
+        "detailsPlaceholder": "What did you expect, and what happened instead?"
+      },
+      "idea": {
+        "shortTitle": "Idea",
+        "title": "Share an idea",
+        "description": "Suggest an improvement or a new way TrackDraw could help.",
+        "titlePlaceholder": "Summarize your idea",
+        "detailsPlaceholder": "What problem would this solve, and when would you use it?"
+      },
+      "question": {
+        "shortTitle": "Question",
+        "title": "Ask a question",
+        "description": "Ask about a workflow or something you cannot find.",
+        "titlePlaceholder": "What would you like to know?",
+        "detailsPlaceholder": "Describe what you are trying to do and where you get stuck."
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",

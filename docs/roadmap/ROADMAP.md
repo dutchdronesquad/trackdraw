@@ -219,6 +219,45 @@ Important boundary:
 - Do not make automatic Worker rollback a priority unless operational evidence shows that it would materially improve recovery
 - Do not log share tokens, API keys, session identifiers, email addresses, design payloads, or other sensitive user data
 
+#### Product Feedback And GitHub Issue Handoff (`No account required`, `Account-backed`)
+
+Give signed-in and anonymous users one clear way to share an idea, ask a question, or report a problem without turning TrackDraw into a community or ticketing platform.
+
+Why now:
+
+- The combination of an early account base and substantial anonymous use is enough to make support signals useful, while the current product has no consistent place to leave them
+- Bug reports are more actionable when the user can include safe product context at the moment the problem occurs
+- Technical users should be able to reach the public GitHub issue flow directly, while people without a GitHub account still need a lightweight in-product option
+
+First slice:
+
+- Add one consistent `Feedback` entry across desktop and mobile navigation, with choices for an idea, a problem, or a question
+- Keep the in-product form usable without a TrackDraw account; let signed-in users optionally include contact details or account context with explicit consent
+- Send technical issue reports to the repository's GitHub issue form with a preview of prefilled title, category, TrackDraw version, route family, browser, and device context before leaving TrackDraw
+- Warn that GitHub issues are public, never prefill project content, share tokens, API keys, email addresses, or design data, and let the user remove diagnostic context before continuing
+- Provide a small private feedback form for users who do not want to use GitHub, with a clear success state and a retry/copy fallback when submission fails
+- Add basic abuse protection, rate limiting, retention, and privacy-safe dashboard triage for private submissions without requiring identity
+- Define closed, versioned product-event schemas before tracking coarse funnel events such as feedback entry opened, route chosen, handoff started, and private submission completed; never record the report body in product analytics
+
+Current shipped foundation:
+
+- Studio and read-only/share viewers expose the same `Feedback` entry on desktop and mobile, with routes for a problem, idea, or question
+- The GitHub handoff shows the complete public report before leaving TrackDraw and lets the user remove coarse version, surface, browser, and device context
+- The handoff never derives project content, share tokens, account details, or design data
+- Users can copy the reviewed report instead of continuing to GitHub; private in-product submission remains a separate follow-up with its own storage, moderation, abuse, and retention requirements
+
+Later follow-up:
+
+- Let operators label, close, or link a private report to a public GitHub issue without automatically publishing the user's text
+- Add optional screenshot or diagnostic attachment support only after upload limits, sensitive-data review, retention, and deletion behavior are defined
+- Use recurring report themes to drive targeted reliability work instead of adding voting, public comments, or a broad support console
+
+Important boundary:
+
+- Core feedback must not require a TrackDraw account or GitHub account
+- Do not automatically create a public GitHub issue on a user's behalf; the user reviews and submits it through GitHub
+- Keep this separate from anchored design comments and shared review mode, which have different ownership and collaboration requirements
+
 #### Regional Measurement Units
 
 International users should be able to work in familiar Metric or Imperial measurement presets without TrackDraw changing its internal geometry model.
