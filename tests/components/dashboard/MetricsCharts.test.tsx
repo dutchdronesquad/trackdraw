@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -229,9 +235,11 @@ describe("metrics decision views", () => {
   it("labels both controls in every plan-limit simulator", () => {
     render(
       <PlanLimitSimulator
+        activeCreators={2}
         userDistribution={[
           [1, 2, 3],
           [6, 7, 8],
+          [25, 1, 1],
         ]}
       />
     );
@@ -244,6 +252,61 @@ describe("metrics decision views", () => {
         name: "Projects free-plan limit value",
       })
     ).toBeTruthy();
+    const projectLimit = screen.getByRole("spinbutton", {
+      name: "Projects free-plan limit value",
+    });
+    expect(projectLimit.getAttribute("max")).toBe("20");
+    fireEvent.change(projectLimit, { target: { value: "999" } });
+    expect((projectLimit as HTMLInputElement).value).toBe("5");
+    expect(screen.getAllByText("21+")).toHaveLength(3);
+    expect(screen.getByText("Scenario impact")).toBeTruthy();
+    expect(screen.getByText("Commercial signals")).toBeTruthy();
+  });
+
+  it("keeps cost and behavioral scenarios labelled as assumptions", async () => {
+    const user = userEvent.setup();
+    render(
+      <PlanLimitSimulator
+        activeCreators={10}
+        userDistribution={[
+          [4, 1, 1],
+          [6, 1, 1],
+        ]}
+      />
+    );
+
+    expect(screen.getAllByText("Simulated").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 near limit")).toBeTruthy();
+    expect(
+      screen.getByText("100% of accounts with content · 1 near · 1 above")
+    ).toBeTruthy();
+    expect(screen.getAllByText("n/a").length).toBeGreaterThan(0);
+
+    await user.type(
+      screen.getByLabelText("Monthly infrastructure cost"),
+      "100"
+    );
+    await user.type(
+      screen.getByLabelText("Source or evidence"),
+      "July invoice"
+    );
+
+    expect(screen.getByText("Paid plan calculator")).toBeTruthy();
+    expect(screen.getByText("€10.00 per active creator")).toBeTruthy();
+    expect(
+      screen.getByText("0.5 expected paid creators · €200.00 break-even")
+    ).toBeTruthy();
+    expect(screen.getByText("€666.67")).toBeTruthy();
+    const advanced = screen
+      .getByText("Advanced assumptions")
+      .closest("details");
+    expect(advanced?.hasAttribute("open")).toBe(false);
+    expect(
+      screen.getByText(
+        "Derived from July invoice and the observed 30-day active-creator count."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Conversion · unavailable")).toBeTruthy();
   });
 
   it("keeps existing growth and usage views inside the contract journey", async () => {
@@ -402,7 +465,6 @@ describe("metrics decision views", () => {
     expect(
       screen.getAllByRole("button", { name: "Range Last 3 months" })
     ).toHaveLength(2);
-
     const journey = screen.getByRole("navigation", {
       name: "Product journey metrics",
     });
