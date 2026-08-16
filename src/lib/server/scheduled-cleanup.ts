@@ -2,6 +2,7 @@ import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
 import { runProductMetricMaintenance } from "@/lib/server/product-metric-aggregates";
+import { cleanupExpiredLocalizationDemand } from "@/lib/server/localization-demand";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
 
 type CleanupPreparedStatement = {
@@ -16,7 +17,11 @@ type CleanupDatabase = {
 };
 
 export type ScheduledCleanupTaskName =
-  "shares" | "api_keys" | "product_events" | "embed_referrers";
+  | "shares"
+  | "api_keys"
+  | "product_events"
+  | "embed_referrers"
+  | "localization_demand";
 
 export type ScheduledCleanupTask = {
   name: ScheduledCleanupTaskName;
@@ -126,6 +131,10 @@ export function createScheduledCleanupTasks(
     {
       name: "embed_referrers",
       run: () => cleanupExpiredEmbedReferrers(db),
+    },
+    {
+      name: "localization_demand",
+      run: () => cleanupExpiredLocalizationDemand(db),
     },
   ];
 }

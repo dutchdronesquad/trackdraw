@@ -139,9 +139,10 @@ describe("scheduled cleanup", () => {
       "api_keys",
       "product_events",
       "embed_referrers",
+      "localization_demand",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
-    expect(run).toHaveBeenCalledTimes(6);
+    expect(run).toHaveBeenCalledTimes(7);
   });
 
   it("uses a privacy-safe fallback for non-Error rejections", async () => {

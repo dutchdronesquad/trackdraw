@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
@@ -54,6 +54,8 @@ import {
   showLockedSelectionActionBlockedToast,
 } from "@/components/canvas/editor/useTrackCanvasShortcuts";
 import { trackProductEvent } from "@/lib/product-events";
+import { trackLocalizationDemand } from "@/lib/localization-demand";
+import type { SupportedLocale } from "@/lib/i18n/locales";
 
 const Header = dynamic(() => import("./Header"), { ssr: false });
 const SharedHeader = dynamic(() => import("./viewer/Header"), { ssr: false });
@@ -107,6 +109,7 @@ export default function EditorShell({
   useDeveloperModeShortcut();
 
   const t = useTranslations("editor");
+  const locale = useLocale() as SupportedLocale;
   const tShapes = useTranslations("shapes") as unknown as Translate;
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled } = useDeveloperMode();
@@ -222,6 +225,7 @@ export default function EditorShell({
       { projectId: design.id },
       { oncePerSession: `editor-session:${design.id}` }
     );
+    trackLocalizationDemand(locale);
     if (initialTab === "3d") {
       trackProductEvent(
         "editor.3d_opened",
@@ -229,7 +233,7 @@ export default function EditorShell({
         { oncePerSession: `editor-3d:${design.id}` }
       );
     }
-  }, [design.id, initialTab, readOnly]);
+  }, [design.id, initialTab, locale, readOnly]);
 
   const {
     shareOpen,

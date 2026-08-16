@@ -581,8 +581,10 @@ export async function getProductMetricMeasurementStates(
       `select metric_id, contract_version, measured_since, completeness_state,
               last_aggregated_day, last_success_at
        from product_metric_measurement_state
+       where contract_version = ?
        order by metric_id`
     )
+    .bind(CONTRACT_VERSION)
     .all<ProductMetricMeasurementState>();
   return result.results;
 }
