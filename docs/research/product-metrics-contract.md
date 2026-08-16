@@ -15,7 +15,7 @@
 
 This document is the source of truth for TrackDraw product-event names, payloads, identities, and metric definitions. Implementation code and dashboards must reference the stable `EVT-*` and `MTR-*` identifiers below. Event names are API values and may not be repurposed. A changed meaning or payload requires a new event ID or a major contract version; an optional backwards-compatible enum value requires a minor version; wording-only clarification requires a patch version.
 
-The contract covers product measurement only. Security audit logs, operational logs, billing records, Cloudflare HTTP analytics, and the separate thresholded embed-referrer aggregate are different datasets with different purposes and must not be joined into product metrics unless a later contract version explicitly permits it.
+The contract covers product-event measurement only. Security audit logs, operational logs, billing records, Cloudflare HTTP analytics, the separate thresholded embed-referrer aggregate, and the identifier-free [`trackdraw-localization-demand`](./localization-demand-metrics.md) aggregate are different datasets with different purposes and must not be joined into product metrics unless a later contract version explicitly permits it.
 
 ## Normative privacy boundary
 

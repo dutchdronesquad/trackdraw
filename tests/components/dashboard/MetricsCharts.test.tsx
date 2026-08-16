@@ -453,6 +453,26 @@ describe("metrics decision views", () => {
         }}
         cockpit={cockpit}
         explorer={explorer}
+        localizationDemand={{
+          id: "L10N-001",
+          windowDays: 28,
+          measuredSince: "2026-06-01",
+          quality: "healthy",
+          comparisonReady: true,
+          totalCreatorSessions: 24,
+          unsupportedCreatorSessions: 7,
+          languages: [
+            {
+              language: "fr",
+              creatorSessions: 7,
+              previousCreatorSessions: 4,
+              share: 7 / 24,
+              supported: false,
+              countries: [{ country: "FR", creatorSessions: 5 }],
+            },
+          ],
+          servedLocales: [{ locale: "en", creatorSessions: 24, share: 1 }],
+        }}
         header={{
           title: "Product metrics",
           subtitle: "Aggregate product health",
@@ -472,6 +492,11 @@ describe("metrics decision views", () => {
       screen.getByRole("button", { name: /^Activation Building 0%/ })
     ).toBeTruthy();
     expect(screen.queryAllByRole("combobox")).toHaveLength(0);
+    expect(screen.getAllByRole("tab")).toHaveLength(5);
+    expect(screen.getByRole("tab", { name: "Creators" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Creation" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Distribution" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "Localization" })).toBeNull();
     expect(
       screen.getAllByRole("button", { name: "Range Last 3 months" })
     ).toHaveLength(2);
@@ -493,10 +518,10 @@ describe("metrics decision views", () => {
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
     ).toBeNull();
 
-    await user.click(screen.getByRole("tab", { name: "Acquisition" }));
-    expect(
-      screen.getByRole("tab", { name: "Acquisition" }).className
-    ).toContain("min-h-11");
+    await user.click(screen.getByRole("tab", { name: "Audience" }));
+    expect(screen.getByRole("tab", { name: "Audience" }).className).toContain(
+      "min-h-11"
+    );
     const acquisitionHeading = screen.getByRole("heading", {
       name: "Acquisition source mix",
     });
@@ -507,7 +532,20 @@ describe("metrics decision views", () => {
     ).toBeNull();
     expect(screen.getByText("No data for this period.")).toBeTruthy();
 
-    await user.click(screen.getByRole("tab", { name: "Sharing" }));
+    expect(
+      screen.getByRole("heading", { name: "Localization demand" })
+    ).toBeTruthy();
+    expect(screen.getByText("French")).toBeTruthy();
+    expect(screen.getByText("Translation candidate")).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Creators" }));
+    expect(screen.getByText("Creator retention")).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Creation" }));
+    expect(screen.getByText("Content growth")).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Distribution" }));
+    expect(screen.getByText("Export usage")).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
   });

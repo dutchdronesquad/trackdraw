@@ -5,6 +5,7 @@ import {
   createScheduledCleanupTasks,
   runScheduledCleanup,
 } from "./src/lib/server/scheduled-cleanup";
+import { addInternalCountryHeader } from "./src/lib/server/request-country";
 
 type D1PreparedStatement = {
   bind(...values: unknown[]): D1PreparedStatement;
@@ -37,6 +38,9 @@ const worker = {
     const earlyResponse = getEarlyWorkerResponse(request);
     if (earlyResponse) return earlyResponse;
 
+    if (new URL(request.url).pathname === "/api/localization-demand") {
+      request = addInternalCountryHeader(request);
+    }
     return handler.fetch(request, env, ctx);
   },
 

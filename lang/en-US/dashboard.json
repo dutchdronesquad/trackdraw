@@ -88,7 +88,7 @@
       "drilldown": "View analytical context"
     },
     "quality": {
-      "not_started": "Not started",
+      "not_started": "Awaiting first complete period",
       "building": "Building",
       "low_volume": "Low volume",
       "healthy": "Healthy",
@@ -243,7 +243,7 @@
         "low_volume": "Low volume",
         "degraded": "Degraded",
         "invalid": "Invalid",
-        "not_started": "Not started"
+        "not_started": "Awaiting first complete period"
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -251,7 +251,7 @@
       },
       "empty": {
         "noData": "No data for this period.",
-        "notStarted": "Tracking has not started."
+        "notStarted": "Waiting for the first complete measurement period."
       },
       "windowDays": "{days}d",
       "journey": {
@@ -265,12 +265,10 @@
       "views": {
         "label": "Metrics analysis views",
         "overview": "Overview",
-        "acquisition": "Acquisition",
-        "content": "Content",
-        "editor": "Editor",
-        "exports": "Exports",
-        "sharing": "Sharing",
-        "retention": "Retention",
+        "creators": "Creators",
+        "audience": "Audience",
+        "creation": "Creation",
+        "distribution": "Distribution",
         "userGrowth": "User growth"
       },
       "overview": {
@@ -344,6 +342,30 @@
       "acquisition": {
         "title": "Acquisition source mix",
         "description": "Where eligible sessions first reached TrackDraw."
+      },
+      "localization": {
+        "title": "Localization demand",
+        "description": "Preferred browser languages among creator sessions, with thresholded country context for translation decisions.",
+        "language": "Preferred language",
+        "current": "Current 28d",
+        "share": "Share",
+        "previous": "Previous 28d",
+        "countries": "Leading countries",
+        "support": "TrackDraw support",
+        "supported": "Supported",
+        "candidate": "Translation candidate",
+        "grouped": "Grouped",
+        "unavailable": "Unavailable",
+        "totalSessions": "{count} creator sessions",
+        "unsupportedSessions": "{count} preferred an unsupported language",
+        "unsupportedSuppressed": "Unsupported-language total is below the disclosure threshold",
+        "servedLocales": "Interface use: {locales}",
+        "otherLanguages": "Other low-volume languages",
+        "unknownLanguage": "Unknown language",
+        "otherCountries": "Other low-volume countries",
+        "unknownCountry": "Unknown country",
+        "notStarted": "Localization demand measurement has not started.",
+        "noData": "No creator sessions in this complete period."
       },
       "editor": {
         "title": "Editor usage",

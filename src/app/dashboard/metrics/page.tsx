@@ -17,6 +17,7 @@ import {
   getProductInsights,
 } from "@/lib/server/metrics";
 import { getMetricsExplorerData } from "@/lib/server/metrics-explorer";
+import { getLocalizationDemandMetrics } from "@/lib/server/localization-demand";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
@@ -37,15 +38,23 @@ export default async function DashboardMetricsPage() {
   }
 
   const now = new Date();
-  const [metrics, insights, growthByRange, growthTimeline, cockpit, explorer] =
-    await Promise.all([
-      getAdminMetrics(),
-      getProductInsights(),
-      getGrowthByRange(),
-      getGrowthTimeline(),
-      getDailyCockpit(now),
-      getMetricsExplorerData(now),
-    ]);
+  const [
+    metrics,
+    insights,
+    growthByRange,
+    growthTimeline,
+    cockpit,
+    explorer,
+    localizationDemand,
+  ] = await Promise.all([
+    getAdminMetrics(),
+    getProductInsights(),
+    getGrowthByRange(),
+    getGrowthTimeline(),
+    getDailyCockpit(now),
+    getMetricsExplorerData(now),
+    getLocalizationDemandMetrics(now),
+  ]);
 
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
@@ -72,6 +81,7 @@ export default async function DashboardMetricsPage() {
           growthTimeline={growthTimeline}
           cockpit={cockpit}
           explorer={explorer}
+          localizationDemand={localizationDemand}
           header={{
             title: tMetrics("explorer.header.title"),
             subtitle: tMetrics("explorer.header.subtitle"),

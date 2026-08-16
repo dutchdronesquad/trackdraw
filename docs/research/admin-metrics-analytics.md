@@ -185,6 +185,8 @@ TrackDraw already runs on Cloudflare. Cloudflare Web Analytics is:
 
 This is the right starting point. It covers country distribution, referral sources, top pages, and visit trends.
 
+Cloudflare traffic by country does not establish where people actively use the editor or which interface language they prefer. TrackDraw therefore measures future localization demand separately under [`L10N-001`](./localization-demand-metrics.md): an identifier-free daily aggregate of creator sessions by normalized primary browser language, selected interface locale, and thresholded country context. It must not be reconstructed from Cloudflare traffic or joined to product events.
+
 ### Alternative: Plausible or Fathom
 
 If more detail is needed later (custom events, funnels, goal tracking), external analytics products can be evaluated separately. A vendor's privacy or compliance claim does not by itself determine TrackDraw's GDPR legal basis or whether Dutch device-storage rules require consent.

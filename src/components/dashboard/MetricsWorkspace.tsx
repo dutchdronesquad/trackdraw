@@ -3,13 +3,11 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  Activity,
   Circle,
-  Compass,
   Download,
+  Languages,
   LayoutDashboard,
   PenTool,
-  RefreshCcw,
   Share2,
   type LucideIcon,
   Users,
@@ -43,6 +41,7 @@ import type {
   GrowthTimeline,
 } from "@/lib/metrics-growth";
 import type { ProductMetricId } from "@/lib/server/product-metric-aggregates";
+import type { LocalizationDemandMetrics } from "@/lib/server/localization-demand";
 import { cn } from "@/lib/utils";
 
 type MetricsWorkspaceProps = {
@@ -52,6 +51,7 @@ type MetricsWorkspaceProps = {
   growthTimeline: GrowthTimeline;
   cockpit: DailyCockpitData;
   explorer: MetricsExplorerData;
+  localizationDemand: LocalizationDemandMetrics;
   header?: {
     title: string;
     subtitle: string;
@@ -75,45 +75,27 @@ type MetricSnapshot = {
 };
 
 type MetricsView =
-  | "overview"
-  | "user-growth"
-  | "editor"
-  | "exports"
-  | "sharing"
-  | "acquisition"
-  | "content"
-  | "retention";
+  "overview" | "creators" | "audience" | "creation" | "distribution";
 
 const JOURNEY_STAGES = [
-  { key: "acquisition", id: "MTR-008", view: "acquisition" },
-  { key: "activation", id: "MTR-004", view: "editor" },
+  { key: "acquisition", id: "MTR-008", view: "audience" },
+  { key: "activation", id: "MTR-004", view: "creation" },
   { key: "engagement", id: "MTR-001", view: "overview" },
-  { key: "sharing", id: "MTR-006", view: "sharing" },
-  { key: "retention", id: "MTR-005", view: "retention" },
+  { key: "sharing", id: "MTR-006", view: "distribution" },
+  { key: "retention", id: "MTR-005", view: "creators" },
 ] as const;
 
 const EVIDENCE_METRICS = ["MTR-001", "MTR-004", "MTR-006", "MTR-005"] as const;
 
 const METRICS_VIEWS = [
   { view: "overview", key: "overview", icon: LayoutDashboard },
-  { view: "user-growth", key: "userGrowth", icon: Users },
-  { view: "acquisition", key: "acquisition", icon: Compass },
-  { view: "editor", key: "editor", icon: PenTool },
-  { view: "content", key: "content", icon: Activity },
-  { view: "exports", key: "exports", icon: Download },
-  { view: "sharing", key: "sharing", icon: Share2 },
-  { view: "retention", key: "retention", icon: RefreshCcw },
+  { view: "creators", key: "creators", icon: Users },
+  { view: "audience", key: "audience", icon: Languages },
+  { view: "creation", key: "creation", icon: PenTool },
+  { view: "distribution", key: "distribution", icon: Share2 },
 ] as const satisfies ReadonlyArray<{
   view: MetricsView;
-  key:
-    | "overview"
-    | "userGrowth"
-    | "acquisition"
-    | "editor"
-    | "content"
-    | "exports"
-    | "sharing"
-    | "retention";
+  key: "overview" | "creators" | "audience" | "creation" | "distribution";
   icon: LucideIcon;
 }>;
 
@@ -356,6 +338,145 @@ function RetentionTable({ metric }: { metric: MetricsExplorerMetric }) {
   );
 }
 
+function LocalizationDemandTable({
+  metrics,
+}: {
+  metrics: LocalizationDemandMetrics;
+}) {
+  const t = useTranslations("dashboard.metrics.explorer.localization");
+  const locale = useLocale();
+  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const percent = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "percent",
+        maximumFractionDigits: 0,
+      }),
+    [locale]
+  );
+  const languageNames = useMemo(
+    () => new Intl.DisplayNames([locale], { type: "language" }),
+    [locale]
+  );
+  const countryNames = useMemo(
+    () => new Intl.DisplayNames([locale], { type: "region" }),
+    [locale]
+  );
+
+  const formatLanguage = (language: string) => {
+    if (language === "other") return t("otherLanguages");
+    if (language === "unknown") return t("unknownLanguage");
+    return languageNames.of(language) ?? language.toUpperCase();
+  };
+  const formatCountry = (country: string) => {
+    if (country === "other") return t("otherCountries");
+    if (country === "unknown") return t("unknownCountry");
+    return countryNames.of(country) ?? country;
+  };
+
+  if (metrics.languages.length === 0) {
+    return (
+      <div className="text-muted-foreground flex min-h-48 items-center justify-center text-center text-sm">
+        {t(metrics.quality === "not_started" ? "notStarted" : "noData")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-xs">
+        <span>
+          {t("totalSessions", {
+            count: number.format(metrics.totalCreatorSessions),
+          })}
+        </span>
+        <span>
+          {metrics.unsupportedCreatorSessions === null
+            ? t("unsupportedSuppressed")
+            : t("unsupportedSessions", {
+                count: number.format(metrics.unsupportedCreatorSessions),
+              })}
+        </span>
+        <span>
+          {t("servedLocales", {
+            locales: metrics.servedLocales
+              .map(
+                (row) =>
+                  `${formatLanguage(row.locale)} ${percent.format(row.share)}`
+              )
+              .join(" · "),
+          })}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[46rem] text-sm">
+          <thead>
+            <tr className="text-muted-foreground border-b text-left text-xs">
+              <th scope="col" className="py-2 pr-3 font-medium">
+                {t("language")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("current")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("share")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("previous")}
+              </th>
+              <th scope="col" className="px-3 py-2 font-medium">
+                {t("countries")}
+              </th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">
+                {t("support")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {metrics.languages.map((row) => (
+              <tr key={row.language} className="border-b last:border-0">
+                <td className="py-3 pr-3 font-medium">
+                  {formatLanguage(row.language)}
+                </td>
+                <td className="px-3 py-3 text-right font-semibold tabular-nums">
+                  {number.format(row.creatorSessions)}
+                </td>
+                <td className="px-3 py-3 text-right tabular-nums">
+                  {percent.format(row.share)}
+                </td>
+                <td className="px-3 py-3 text-right tabular-nums">
+                  {metrics.comparisonReady
+                    ? number.format(row.previousCreatorSessions)
+                    : "—"}
+                </td>
+                <td className="text-muted-foreground px-3 py-3 text-xs">
+                  {row.countries.length > 0
+                    ? row.countries
+                        .slice(0, 4)
+                        .map(
+                          (country) =>
+                            `${formatCountry(country.country)} ${number.format(country.creatorSessions)}`
+                        )
+                        .join(" · ")
+                    : "—"}
+                </td>
+                <td className="py-3 pl-3 text-right text-xs font-medium">
+                  {row.supported === null
+                    ? t(row.language === "unknown" ? "unavailable" : "grouped")
+                    : row.supported
+                      ? t("supported")
+                      : t("candidate")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function MetricsWorkspace({
   metrics,
   insights,
@@ -363,6 +484,7 @@ export default function MetricsWorkspace({
   growthTimeline,
   cockpit,
   explorer,
+  localizationDemand,
   header,
 }: MetricsWorkspaceProps) {
   const t = useTranslations("dashboard.metrics.explorer");
@@ -582,7 +704,7 @@ export default function MetricsWorkspace({
             </section>
             <section
               className="bg-card min-w-0 rounded-md border p-3"
-              aria-label={t("views.exports")}
+              aria-label={t("overview.exportTitle")}
             >
               <div className="mb-2 flex items-start justify-between gap-3">
                 <Download
@@ -683,9 +805,9 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
 
-        <TabsContent value="user-growth" className="mt-3">
+        <TabsContent value="creators" className="mt-4 space-y-4">
           <section
-            className="bg-card min-w-0 rounded-md border p-3"
+            className="bg-card min-w-0 rounded-xl border p-4 sm:p-5"
             aria-label={t("views.userGrowth")}
           >
             <UserGrowthCard
@@ -702,9 +824,23 @@ export default function MetricsWorkspace({
               showRangePicker={!header}
             />
           </section>
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("retention.title")}
+                </h2>
+                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+                  {t("retention.description")}
+                </p>
+              </div>
+              <QualityLabel quality={explorer.retention.quality} />
+            </div>
+            <RetentionTable metric={explorer.retention} />
+          </section>
         </TabsContent>
 
-        <TabsContent value="acquisition" className="mt-4">
+        <TabsContent value="audience" className="mt-4 space-y-4">
           <section className="bg-card rounded-xl border p-4 sm:p-5">
             <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -722,9 +858,23 @@ export default function MetricsWorkspace({
               namespace="sources"
             />
           </section>
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("localization.title")}
+                </h2>
+                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+                  {t("localization.description")}
+                </p>
+              </div>
+              <QualityLabel quality={localizationDemand.quality} />
+            </div>
+            <LocalizationDemandTable metrics={localizationDemand} />
+          </section>
         </TabsContent>
 
-        <TabsContent value="editor" className="mt-4 space-y-4">
+        <TabsContent value="creation" className="mt-4 space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
             <section className="bg-card rounded-xl border p-4 sm:p-5">
               <h2 className="text-base font-semibold">{t("editor.title")}</h2>
@@ -753,9 +903,6 @@ export default function MetricsWorkspace({
               />
             </section>
           </div>
-        </TabsContent>
-
-        <TabsContent value="content" className="mt-4">
           <section className="bg-card rounded-xl border p-4 sm:p-5">
             <h2 className="text-base font-semibold">{t("content.title")}</h2>
             <p className="text-muted-foreground mt-1 text-sm">
@@ -767,22 +914,19 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
 
-        <TabsContent value="exports" className="mt-4">
-          <section className="bg-card max-w-4xl rounded-xl border p-4 sm:p-5">
-            <h2 className="text-base font-semibold">
-              {t("overview.exportTitle")}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("overview.exportNote")}
-            </p>
-            <div className="mt-5">
-              <ExportUsageBreakdown usage={insights.usage} />
-            </div>
-          </section>
-        </TabsContent>
-
-        <TabsContent value="sharing" className="mt-4 space-y-4">
+        <TabsContent value="distribution" className="mt-4 space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
+            <section className="bg-card rounded-xl border p-4 sm:p-5">
+              <h2 className="text-base font-semibold">
+                {t("overview.exportTitle")}
+              </h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {t("overview.exportNote")}
+              </p>
+              <div className="mt-5">
+                <ExportUsageBreakdown usage={insights.usage} />
+              </div>
+            </section>
             <section className="bg-card rounded-xl border p-4 sm:p-5">
               <h2 className="text-base font-semibold">{t("sharing.title")}</h2>
               <p className="text-muted-foreground mt-1 text-sm">
@@ -792,21 +936,21 @@ export default function MetricsWorkspace({
                 <ShareUsageBreakdown usage={insights.usage} />
               </div>
             </section>
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <h2 className="text-base font-semibold">
-                {t("sharing.healthTitle")}
-              </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("sharing.healthDescription")}
-              </p>
-              <div className="mt-5">
-                <SharingHealth
-                  shares={metrics.shares}
-                  gallery={metrics.gallery}
-                />
-              </div>
-            </section>
           </div>
+          <section className="bg-card rounded-xl border p-4 sm:p-5">
+            <h2 className="text-base font-semibold">
+              {t("sharing.healthTitle")}
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("sharing.healthDescription")}
+            </p>
+            <div className="mt-5">
+              <SharingHealth
+                shares={metrics.shares}
+                gallery={metrics.gallery}
+              />
+            </div>
+          </section>
           <section className="bg-card rounded-xl border p-4 sm:p-5">
             <h2 className="text-base font-semibold">
               {t("sharing.embedTitle")}
@@ -817,23 +961,6 @@ export default function MetricsWorkspace({
             <div className="mt-5">
               <EmbedReachTable usage={insights.usage} />
             </div>
-          </section>
-        </TabsContent>
-
-        <TabsContent value="retention" className="mt-4">
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("retention.title")}
-                </h2>
-                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("retention.description")}
-                </p>
-              </div>
-              <QualityLabel quality={explorer.retention.quality} />
-            </div>
-            <RetentionTable metric={explorer.retention} />
           </section>
         </TabsContent>
       </Tabs>

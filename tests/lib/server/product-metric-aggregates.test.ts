@@ -4,11 +4,25 @@ import { createD1Statement, installD1Statements } from "../../helpers/d1";
 vi.mock("server-only", () => ({}));
 
 import {
+  getProductMetricMeasurementStates,
   getProductMetricSeries,
   runProductMetricMaintenance,
 } from "@/lib/server/product-metric-aggregates";
 
 describe("product metric aggregates", () => {
+  it("keeps independent metric contracts out of product-event pipeline state", async () => {
+    const prepare = vi.fn();
+    const statement = createD1Statement({ all: { results: [] } });
+    installD1Statements(prepare, [statement]);
+
+    await getProductMetricMeasurementStates({
+      prepare,
+    } as Parameters<typeof getProductMetricMeasurementStates>[0]);
+
+    expect(statement.sql).toContain("where contract_version = ?");
+    expect(statement.bind).toHaveBeenCalledWith("1.0.0");
+  });
+
   it("backfills complete UTC days with retry-safe anonymous metric rows", async () => {
     const prepare = vi.fn();
     const activation = createD1Statement({ run: { meta: { changes: 1 } } });
