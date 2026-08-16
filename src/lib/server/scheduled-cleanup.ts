@@ -2,7 +2,7 @@ import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
 import { runProductMetricMaintenance } from "@/lib/server/product-metric-aggregates";
-import { cleanupExpiredLocalizationDemand } from "@/lib/server/localization-demand";
+import { cleanupExpiredLocalizationDemand } from "@/lib/server/localization-demand-retention";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
 
 type CleanupPreparedStatement = {

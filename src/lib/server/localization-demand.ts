@@ -5,18 +5,6 @@ import { getDatabase } from "@/lib/server/db";
 const DISCLOSURE_THRESHOLD = 5;
 const MINIMUM_HEALTHY_VOLUME = 30;
 const WINDOW_DAYS = 28;
-const RETENTION_MONTHS = 24;
-
-type D1PreparedStatement = {
-  bind(...values: unknown[]): D1PreparedStatement;
-  first<T>(): Promise<T | null>;
-  all<T>(): Promise<{ results: T[] }>;
-  run<T = unknown>(): Promise<T>;
-};
-
-type D1Database = {
-  prepare(query: string): D1PreparedStatement;
-};
 
 type LocalizationDemandRow = {
   preferred_language: LocalizationDemandLanguage | "unknown";
@@ -282,13 +270,4 @@ export async function getLocalizationDemandMetrics(
       .filter((row) => row.creatorSessions > 0)
       .sort((left, right) => right.creatorSessions - left.creatorSessions),
   };
-}
-
-export async function cleanupExpiredLocalizationDemand(db: D1Database) {
-  return db
-    .prepare(
-      `delete from localization_demand_daily
-       where day_utc < date('now', '-${RETENTION_MONTHS} months')`
-    )
-    .run();
 }

@@ -14,10 +14,10 @@ vi.mock("@/lib/server/db", () => ({
 }));
 
 import {
-  cleanupExpiredLocalizationDemand,
   getLocalizationDemandMetrics,
   recordLocalizationDemand,
 } from "@/lib/server/localization-demand";
+import { cleanupExpiredLocalizationDemand } from "@/lib/server/localization-demand-retention";
 
 beforeEach(() => {
   mocks.prepare.mockReset();
