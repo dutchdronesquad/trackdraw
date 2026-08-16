@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { supportedLocales } from "@/lib/i18n/locales";
 import {
   createD1AllStatement,
   createD1Statement,
@@ -119,6 +120,29 @@ describe("localization demand aggregation", () => {
     ]);
   });
 
+  it("derives supported language primaries from the locale configuration", async () => {
+    const rows = createD1AllStatement(
+      supportedLocales.map((locale) => ({
+        preferred_language: locale.toLowerCase().replace(/-.*/, ""),
+        served_locale: "en",
+        country_code: "unknown",
+        current_sessions: 5,
+        previous_sessions: 0,
+      }))
+    );
+    const state = createD1Statement({
+      first: { measured_since: "2026-05-01" },
+    });
+    installD1Statements(mocks.prepare, [rows, state]);
+
+    const metrics = await getLocalizationDemandMetrics(
+      new Date("2026-08-16T12:00:00.000Z")
+    );
+
+    expect(metrics.languages).toHaveLength(supportedLocales.length);
+    expect(metrics.languages.every((row) => row.supported)).toBe(true);
+  });
+
   it("removes aggregates after 24 months", async () => {
     const statement = createD1Statement({ run: {} });
     const db = { prepare: vi.fn((_query: string) => statement) };
@@ -132,5 +156,18 @@ describe("localization demand aggregation", () => {
     );
     expect(String(db.prepare.mock.calls[0]?.[0])).toContain("-24 months");
     expect(statement.run).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to the default retention window for non-finite values", async () => {
+    const statement = createD1Statement({ run: {} });
+    const db = { prepare: vi.fn((_query: string) => statement) };
+
+    await cleanupExpiredLocalizationDemand(
+      db as Parameters<typeof cleanupExpiredLocalizationDemand>[0],
+      Number.NaN
+    );
+
+    expect(String(db.prepare.mock.calls[0]?.[0])).toContain("-24 months");
+    expect(String(db.prepare.mock.calls[0]?.[0])).not.toContain("NaN");
   });
 });

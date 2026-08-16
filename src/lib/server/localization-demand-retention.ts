@@ -8,7 +8,9 @@ export async function cleanupExpiredLocalizationDemand(
   db: D1Database,
   retentionMonths = LOCALIZATION_DEMAND_RETENTION_MONTHS
 ) {
-  const months = Math.max(1, Math.trunc(retentionMonths));
+  const months = Number.isFinite(retentionMonths)
+    ? Math.max(1, Math.trunc(retentionMonths))
+    : LOCALIZATION_DEMAND_RETENTION_MONTHS;
   return db
     .prepare(
       `delete from localization_demand_daily

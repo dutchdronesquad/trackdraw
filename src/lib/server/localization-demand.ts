@@ -37,7 +37,9 @@ export type LocalizationDemandMetrics = {
   }>;
 };
 
-const supportedLanguageSet = new Set<string>(["en", "nl", "de", "zh"]);
+const supportedLanguageSet = new Set<string>(
+  supportedLocales.map((locale) => locale.toLowerCase().replace(/-.*/, ""))
+);
 
 function utcDay(date: Date) {
   return date.toISOString().slice(0, 10);
