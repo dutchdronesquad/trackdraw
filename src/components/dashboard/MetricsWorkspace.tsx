@@ -22,6 +22,12 @@ import {
   UserGrowthCard,
   UserGrowthRangePicker,
 } from "@/components/dashboard/MetricsCharts";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   MetricsExplorerData,
@@ -618,38 +624,51 @@ export default function MetricsWorkspace({
                 key={id}
                 className="after:bg-border relative snap-start after:absolute after:top-2.5 after:left-8 after:h-px after:w-[calc(100%-2rem)] last:after:hidden"
               >
-                <button
-                  type="button"
-                  onClick={() => setActiveView(view)}
-                  className={cn(
-                    "focus-visible:ring-ring group relative z-10 flex min-h-24 w-full flex-col items-start gap-1 px-2 pb-3 text-left focus-visible:ring-2 focus-visible:outline-none",
-                    active
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  aria-current={active ? "step" : undefined}
-                >
-                  <span
-                    className={cn(
-                      "bg-background mb-1 flex size-5 items-center justify-center rounded-full border text-[10px] font-semibold tabular-nums",
-                      active
-                        ? "border-sky-500 text-sky-500"
-                        : "border-muted-foreground/60"
-                    )}
-                    aria-hidden="true"
-                  >
-                    {index + 1}
-                  </span>
-                  <span className="text-xs font-medium">
-                    {t(`journey.${key}.label`)}
-                  </span>
-                  <QualityLabel quality={snapshot.quality} />
-                  <span className="mt-0.5 text-base font-semibold tabular-nums">
-                    {snapshot.valueKind === "mix" || snapshot.value === null
-                      ? t(`journey.${key}.value`)
-                      : formatValue(snapshot, number, percent)}
-                  </span>
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => setActiveView(view)}
+                        className={cn(
+                          "focus-visible:ring-ring group relative z-10 flex min-h-24 w-full flex-col items-start gap-1 px-2 pb-3 text-left focus-visible:ring-2 focus-visible:outline-none",
+                          active
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        aria-current={active ? "step" : undefined}
+                      >
+                        <span
+                          className={cn(
+                            "bg-background mb-1 flex size-5 items-center justify-center rounded-full border text-[10px] font-semibold tabular-nums",
+                            active
+                              ? "border-sky-500 text-sky-500"
+                              : "border-muted-foreground/60"
+                          )}
+                          aria-hidden="true"
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="text-xs font-medium">
+                          {t(`journey.${key}.label`)}
+                        </span>
+                        <QualityLabel quality={snapshot.quality} />
+                        <span className="mt-0.5 text-base font-semibold tabular-nums">
+                          {snapshot.valueKind === "mix" ||
+                          snapshot.value === null
+                            ? t(`journey.${key}.value`)
+                            : formatValue(snapshot, number, percent)}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-64 text-left">
+                      <p className="font-medium">{t(`metrics.${id}.name`)}</p>
+                      <p className="text-xs opacity-80">
+                        {t(`metrics.${id}.definition`)}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </li>
             );
           })}
