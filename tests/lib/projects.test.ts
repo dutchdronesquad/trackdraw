@@ -160,9 +160,11 @@ describe("local project persistence", () => {
       source.id = "project-1";
       source.title = "Race day layout";
 
-      const duplicate = createProjectDuplicate(source, "Copy of Race day layout", [
-        "Race day layout",
-      ]);
+      const duplicate = createProjectDuplicate(
+        source,
+        "Copy of Race day layout",
+        ["Race day layout"]
+      );
 
       expect(duplicate.id).not.toBe(source.id);
       expect(duplicate.title).toBe("Copy of Race day layout");
@@ -173,10 +175,11 @@ describe("local project persistence", () => {
       source.id = "project-1";
       source.title = "Race day layout";
 
-      const duplicate = createProjectDuplicate(source, "Copy of Race day layout", [
-        "Race day layout",
+      const duplicate = createProjectDuplicate(
+        source,
         "Copy of Race day layout",
-      ]);
+        ["Race day layout", "Copy of Race day layout"]
+      );
 
       expect(duplicate.title).toBe("Copy of Race day layout (2)");
     });
@@ -188,7 +191,11 @@ describe("local project persistence", () => {
       source.createdAt = "2020-01-01T00:00:00.000Z";
       source.updatedAt = "2020-01-01T00:00:00.000Z";
 
-      const duplicate = createProjectDuplicate(source, "Copy of Race day layout", []);
+      const duplicate = createProjectDuplicate(
+        source,
+        "Copy of Race day layout",
+        []
+      );
 
       expect(duplicate.createdAt).not.toBe(source.createdAt);
       expect(duplicate.updatedAt).not.toBe(source.updatedAt);

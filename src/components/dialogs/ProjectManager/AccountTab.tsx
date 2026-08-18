@@ -266,9 +266,7 @@ export function ProjectManagerAccountTab({
                         title: projectTitle,
                       }
                     )}
-                    title={t(
-                      "projectManager.account.actions.duplicateProject"
-                    )}
+                    title={t("projectManager.account.actions.duplicateProject")}
                     onClick={() => onDuplicateAccountProject(proj.id)}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   >
