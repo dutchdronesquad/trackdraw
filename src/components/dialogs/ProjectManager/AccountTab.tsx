@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Cloud, CloudUpload, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
 import {
   CurrentBadge,
@@ -52,6 +53,7 @@ export function ProjectManagerAccountTab({
 }: ProjectManagerAccountTabProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
+  const isMobile = useIsMobile();
   const sorted = [...accountProjects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
@@ -255,9 +257,7 @@ export function ProjectManagerAccountTab({
                 </button>
               ) : null}
               {onDuplicateAccountProject ? (
-                <DesktopActionTooltip
-                  label={t("projectManager.account.actions.duplicateProject")}
-                >
+                isMobile ? (
                   <button
                     type="button"
                     aria-label={t(
@@ -266,12 +266,33 @@ export function ProjectManagerAccountTab({
                         title: projectTitle,
                       }
                     )}
+                    title={t(
+                      "projectManager.account.actions.duplicateProject"
+                    )}
                     onClick={() => onDuplicateAccountProject(proj.id)}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   >
                     <Copy className="size-3.5" />
                   </button>
-                </DesktopActionTooltip>
+                ) : (
+                  <DesktopActionTooltip
+                    label={t("projectManager.account.actions.duplicateProject")}
+                  >
+                    <button
+                      type="button"
+                      aria-label={t(
+                        "projectManager.account.aria.duplicateProjectFor",
+                        {
+                          title: projectTitle,
+                        }
+                      )}
+                      onClick={() => onDuplicateAccountProject(proj.id)}
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    >
+                      <Copy className="size-3.5" />
+                    </button>
+                  </DesktopActionTooltip>
+                )
               ) : null}
               {!showSyncButton && !onDuplicateAccountProject ? (
                 <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
