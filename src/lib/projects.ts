@@ -225,6 +225,46 @@ export function deleteProjects(ids: string[]): void {
   }
 }
 
+/**
+ * Disambiguate a candidate title against titles already in use, appending
+ * "(2)", "(3)", ... only when the candidate collides with an existing title.
+ */
+export function ensureUniqueProjectTitle(
+  candidateTitle: string,
+  existingTitles: string[]
+): string {
+  const takenTitles = new Set(existingTitles);
+  if (!takenTitles.has(candidateTitle)) return candidateTitle;
+
+  let suffix = 2;
+  let next = `${candidateTitle} (${suffix})`;
+  while (takenTitles.has(next)) {
+    suffix += 1;
+    next = `${candidateTitle} (${suffix})`;
+  }
+  return next;
+}
+
+/**
+ * Build an independent copy of a design: a new id and reset timestamps, so
+ * the copy never aliases the source project, its sync state, its shares, or
+ * its restore history — all of which are keyed off the design id.
+ */
+export function createProjectDuplicate(
+  source: TrackDesign,
+  candidateTitle: string,
+  existingTitles: string[]
+): TrackDesign {
+  const timestamp = new Date().toISOString();
+  return {
+    ...source,
+    id: nanoid(),
+    title: ensureUniqueProjectTitle(candidateTitle, existingTitles),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
 export function renameProject(id: string, title: string): void {
   const list = listProjects().map((p) => (p.id === id ? { ...p, title } : p));
   writeJson(PROJECT_LIST_KEY, list);

@@ -23,6 +23,8 @@ interface ProjectManagerDialogProps {
   onDeleteProject?: (id: string) => void;
   onDeleteProjects?: (ids: string[]) => void;
   onRenameProject?: (id: string, title: string) => void;
+  onDuplicateProject?: (id: string) => void;
+  onDuplicateAccountProject?: (id: string) => void;
   onExportProject?: (id: string) => void;
   onRestorePoint?: (id: string) => void;
   onDeleteRestorePoint?: (id: string) => void;
@@ -58,6 +60,8 @@ export default function ProjectManagerDialog({
   onDeleteProject,
   onDeleteProjects,
   onRenameProject,
+  onDuplicateProject,
+  onDuplicateAccountProject,
   onExportProject,
   onRestorePoint,
   onDeleteRestorePoint,
@@ -163,6 +167,7 @@ export default function ProjectManagerDialog({
         onDeleteProject={onDeleteProject}
         onDeleteProjects={onDeleteProjects}
         onRenameProject={onRenameProject}
+        onDuplicateProject={onDuplicateProject}
         onExportProject={onExportProject}
         onResolveConflict={onResolveConflict}
         onOpenChange={onOpenChange}
@@ -178,6 +183,7 @@ export default function ProjectManagerDialog({
         projectSyncMetaById={projectSyncMetaById}
         onOpenAccountProject={onOpenAccountProject}
         onSyncProject={onSyncProject}
+        onDuplicateAccountProject={onDuplicateAccountProject}
         onResolveConflict={onResolveConflict}
         onOpenChange={onOpenChange}
       />

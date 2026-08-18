@@ -681,6 +681,7 @@
         "exportProjectAsJson": "Export {title} as JSON",
         "manageProject": "Manage {title}",
         "renameProject": "Rename {title}",
+        "duplicateProjectFor": "Duplicate {title}",
         "deleteProject": "Delete {title}"
       },
       "actions": {
@@ -691,6 +692,8 @@
         "cleanUpLocal": "Clean up local",
         "cleanUpLocalDescription": "Remove older copies from this device only.",
         "renameDescription": "Give this project a clearer name.",
+        "duplicateProject": "Duplicate project",
+        "duplicateProjectDescription": "Create an independent copy to explore a variant.",
         "openBadge": "open"
       },
       "export": {
@@ -723,7 +726,8 @@
       "aria": {
         "resolveVersionConflictFor": "Resolve version conflict for {title}",
         "retrySyncFor": "Retry sync for {title}",
-        "syncPendingChangesFor": "Sync pending changes for {title}"
+        "syncPendingChangesFor": "Sync pending changes for {title}",
+        "duplicateProjectFor": "Duplicate {title}"
       },
       "meta": {
         "accountCopyWaitingToSync": "{itemLabel} · account copy waiting to sync",
@@ -750,7 +754,8 @@
       },
       "actions": {
         "retrySync": "Retry sync",
-        "syncPendingChanges": "Sync pending changes"
+        "syncPendingChanges": "Sync pending changes",
+        "duplicateProject": "Duplicate project"
       },
       "fallback": {
         "untitled": "Untitled"
