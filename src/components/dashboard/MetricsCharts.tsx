@@ -1507,22 +1507,25 @@ export function ExportUsageBreakdown({
   compact?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.exportUsage");
-  const knownFormats = [
-    "png",
-    "svg",
-    "render3d",
-    "racePack",
-    "json",
-    "webm",
-    "velocidrone",
-  ] as const;
+  const formatTranslationKeys = {
+    png: "png",
+    svg: "svg",
+    render_3d: "render3d",
+    race_pack: "racePack",
+    json: "json",
+    webm: "webm",
+    velocidrone: "velocidrone",
+  } as const;
+  const knownFormats = Object.keys(
+    formatTranslationKeys
+  ) as (keyof typeof formatTranslationKeys)[];
   const counts = new Map(
     usage.exportFormats30d.map((row) => [row.format, row.count])
   );
   const rows = knownFormats
     .map((format) => ({
       key: format,
-      label: t(`formats.${format}`),
+      label: t(`formats.${formatTranslationKeys[format]}`),
       count: counts.get(format) ?? 0,
     }))
     .filter((row) => row.count > 0);
