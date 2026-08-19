@@ -2,8 +2,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createProjectDuplicate,
   createRestorePoint,
   deleteProjects,
+  ensureUniqueProjectTitle,
   listRestorePoints,
   listRestorePointsForProject,
   listProjects,
@@ -122,6 +124,81 @@ describe("local project persistence", () => {
     expect(loadRestorePoint(droppedRestorePoint.id)).toBeNull();
     expect(loadRestorePoint(otherRestorePoint.id)).toMatchObject({
       id: "project-2",
+    });
+  });
+
+  describe("ensureUniqueProjectTitle", () => {
+    it("returns the candidate title unchanged when it does not collide", () => {
+      expect(ensureUniqueProjectTitle("Race day layout", [])).toBe(
+        "Race day layout"
+      );
+      expect(
+        ensureUniqueProjectTitle("Race day layout", ["Other layout"])
+      ).toBe("Race day layout");
+    });
+
+    it("appends (2) on a first collision", () => {
+      expect(
+        ensureUniqueProjectTitle("Race day layout", ["Race day layout"])
+      ).toBe("Race day layout (2)");
+    });
+
+    it("keeps incrementing the suffix until it finds a free title", () => {
+      expect(
+        ensureUniqueProjectTitle("Race day layout", [
+          "Race day layout",
+          "Race day layout (2)",
+          "Race day layout (3)",
+        ])
+      ).toBe("Race day layout (4)");
+    });
+  });
+
+  describe("createProjectDuplicate", () => {
+    it("gives the duplicate a fresh id and disambiguated title", () => {
+      const source = createDefaultDesign();
+      source.id = "project-1";
+      source.title = "Race day layout";
+
+      const duplicate = createProjectDuplicate(
+        source,
+        "Copy of Race day layout",
+        ["Race day layout"]
+      );
+
+      expect(duplicate.id).not.toBe(source.id);
+      expect(duplicate.title).toBe("Copy of Race day layout");
+    });
+
+    it("disambiguates the title when it collides with an existing project", () => {
+      const source = createDefaultDesign();
+      source.id = "project-1";
+      source.title = "Race day layout";
+
+      const duplicate = createProjectDuplicate(
+        source,
+        "Copy of Race day layout",
+        ["Race day layout", "Copy of Race day layout"]
+      );
+
+      expect(duplicate.title).toBe("Copy of Race day layout (2)");
+    });
+
+    it("resets createdAt and updatedAt instead of inheriting the source's", () => {
+      const source = createDefaultDesign();
+      source.id = "project-1";
+      source.title = "Race day layout";
+      source.createdAt = "2020-01-01T00:00:00.000Z";
+      source.updatedAt = "2020-01-01T00:00:00.000Z";
+
+      const duplicate = createProjectDuplicate(
+        source,
+        "Copy of Race day layout",
+        []
+      );
+
+      expect(duplicate.createdAt).not.toBe(source.createdAt);
+      expect(duplicate.updatedAt).not.toBe(source.updatedAt);
     });
   });
 });

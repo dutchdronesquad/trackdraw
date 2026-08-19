@@ -4,6 +4,12 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
+## [Unreleased]
+
+### Duplicate a project
+
+Project Manager now has a Duplicate action for both device and account projects. Duplicating creates an independent, clearly named copy of the design, without carrying over the source project's share links, publication state, or restore history.
+
 ## [1.15.0]
 
 ### Easier feedback and community links

@@ -7,6 +7,7 @@ import {
   Check,
   Cloud,
   CloudUpload,
+  Copy,
   Download,
   FilePlus,
   FolderOpen,
@@ -51,6 +52,7 @@ interface ProjectManagerDeviceTabProps {
   onDeleteProject?: (id: string) => void;
   onDeleteProjects?: (ids: string[]) => void;
   onRenameProject?: (id: string, title: string) => void;
+  onDuplicateProject?: (id: string) => void;
   onExportProject?: (id: string) => void;
   onResolveConflict?: (id: string) => void;
   onOpenChange: (open: boolean) => void;
@@ -68,6 +70,7 @@ export function ProjectManagerDeviceTab({
   onDeleteProject,
   onDeleteProjects,
   onRenameProject,
+  onDuplicateProject,
   onExportProject,
   onResolveConflict,
   onOpenChange,
@@ -383,6 +386,29 @@ export function ProjectManagerDeviceTab({
                   </button>
                 </DesktopActionTooltip>
               ) : null}
+              {onDuplicateProject && !isConfirming && !isMobile ? (
+                <DesktopActionTooltip
+                  label={t("projectManager.device.actions.duplicateProject")}
+                >
+                  <button
+                    type="button"
+                    aria-label={t(
+                      "projectManager.device.aria.duplicateProjectFor",
+                      {
+                        title: projectTitle,
+                      }
+                    )}
+                    onClick={() => onDuplicateProject(p.id)}
+                    className={cn(
+                      "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                      !isMobile &&
+                        "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                    )}
+                  >
+                    <Copy className="size-3.5" />
+                  </button>
+                </DesktopActionTooltip>
+              ) : null}
               {onExportProject && !isConfirming && !isMobile ? (
                 <DesktopActionTooltip
                   label={t("projectManager.device.export.json")}
@@ -410,6 +436,7 @@ export function ProjectManagerDeviceTab({
                 onSyncProject ||
                 onExportProject ||
                 onRenameProject ||
+                onDuplicateProject ||
                 (onDeleteProject && !isCurrent) ? (
                   <button
                     type="button"
@@ -774,6 +801,30 @@ export function ProjectManagerDeviceTab({
                         </span>
                         <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
                           {t("projectManager.device.actions.renameDescription")}
+                        </span>
+                      </span>
+                    </button>
+                  ) : null}
+                  {onDuplicateProject ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDuplicateProject(mobileActionProject.id);
+                        closeMobileActions();
+                      }}
+                      className="border-border/60 hover:bg-muted flex min-h-16 w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                    >
+                      <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
+                        <Copy className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-foreground block text-sm font-medium">
+                          {t("projectManager.device.actions.duplicateProject")}
+                        </span>
+                        <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
+                          {t(
+                            "projectManager.device.actions.duplicateProjectDescription"
+                          )}
                         </span>
                       </span>
                     </button>

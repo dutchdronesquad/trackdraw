@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { toast } from "sonner";
 import { getDesignShapes } from "@/lib/track/design";
 import {
+  createProjectDuplicate,
   deleteProject,
   listProjects,
   listRestorePointsForProject,
@@ -884,6 +885,74 @@ export function useAccountProjectSync({
     ]
   );
 
+  const handleDuplicateAccountProject = useCallback(
+    async (projectId: string) => {
+      if (!authUserId) {
+        toast.error("Sign in to duplicate account projects");
+        return null;
+      }
+
+      try {
+        let source = loadProject(projectId);
+        if (!source) {
+          const response = await fetch(`/api/projects/${projectId}`, {
+            method: "GET",
+          });
+          const payload = (await response.json()) as {
+            ok: boolean;
+            error?: string;
+            project?: { design: TrackDesign };
+          };
+          if (!response.ok || !payload.ok || !payload.project) {
+            throw new Error(payload.error ?? "Failed to load project");
+          }
+          source = payload.project.design;
+        }
+
+        const existingTitles = [
+          ...listProjects().map((p) => p.title),
+          ...accountProjectsRef.current.map((p) => p.title),
+        ];
+        const trimmedTitle = source.title?.trim();
+        const candidateTitle = trimmedTitle
+          ? /^copy of /i.test(trimmedTitle)
+            ? trimmedTitle
+            : `Copy of ${trimmedTitle}`
+          : "Untitled track copy";
+        const duplicate = createProjectDuplicate(
+          source,
+          candidateTitle,
+          existingTitles
+        );
+
+        saveProject(duplicate);
+        setProjects(listProjects());
+        // The duplicate always lands as local-only — it never inherits the
+        // source project's sync status, share links, or restore history,
+        // all of which are keyed off the source's project id, not this one.
+        setProjectSyncMetaById((previous) => ({
+          ...previous,
+          [duplicate.id]: {
+            status: "local-only",
+            lastSyncedAt: null,
+            error: null,
+          },
+        }));
+        toast.success("Project duplicated", {
+          description: `"${duplicate.title}" was saved to this device as a new project.`,
+        });
+        return duplicate;
+      } catch {
+        toast.error("Could not duplicate project", {
+          description:
+            "TrackDraw could not load the account copy to duplicate. Try again.",
+        });
+        return null;
+      }
+    },
+    [authUserId, setProjects]
+  );
+
   const handleKeepLocalConflictCopy = useCallback(() => {
     const currentDesign = designRef.current;
     const nextTimestamp = new Date().toISOString();
@@ -954,6 +1023,7 @@ export function useAccountProjectSync({
     markProjectSyncFailed,
     handleSyncProject,
     handleOpenAccountProject,
+    handleDuplicateAccountProject,
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,

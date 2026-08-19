@@ -1,11 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Cloud, CloudUpload } from "lucide-react";
+import { Cloud, CloudUpload, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
 import {
   CurrentBadge,
+  DesktopActionTooltip,
   EmptyState,
   formatRelativeTime,
   getDisplayTitle,
@@ -31,6 +33,7 @@ interface ProjectManagerAccountTabProps {
   projectSyncMetaById: Record<string, ProjectSyncMeta>;
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
+  onDuplicateAccountProject?: (id: string) => void;
   onResolveConflict?: (id: string) => void;
   onOpenChange: (open: boolean) => void;
 }
@@ -44,11 +47,13 @@ export function ProjectManagerAccountTab({
   projectSyncMetaById,
   onOpenAccountProject,
   onSyncProject,
+  onDuplicateAccountProject,
   onResolveConflict,
   onOpenChange,
 }: ProjectManagerAccountTabProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
+  const isMobile = useIsMobile();
   const sorted = [...accountProjects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
@@ -108,6 +113,10 @@ export function ProjectManagerAccountTab({
         const hasSyncFailure = syncMeta?.status === "failed";
         const hasPendingChanges = syncMeta?.status === "pending";
         const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
+        const showSyncButton =
+          Boolean(onSyncProject) &&
+          isCurrent &&
+          (hasConflict || hasSyncFailure || hasPendingChanges);
         const projectTitle = getDisplayTitle(
           proj.title,
           t("projectManager.account.fallback.untitled")
@@ -199,9 +208,7 @@ export function ProjectManagerAccountTab({
               className="flex shrink-0 items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
-              {onSyncProject &&
-              isCurrent &&
-              (hasConflict || hasSyncFailure || hasPendingChanges) ? (
+              {showSyncButton ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -209,7 +216,7 @@ export function ProjectManagerAccountTab({
                       onResolveConflict?.(proj.id);
                       onOpenChange(false);
                     } else {
-                      onSyncProject(proj.id);
+                      onSyncProject?.(proj.id);
                     }
                   }}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
@@ -248,9 +255,46 @@ export function ProjectManagerAccountTab({
                     <Cloud className="size-3.5" />
                   )}
                 </button>
-              ) : (
+              ) : null}
+              {onDuplicateAccountProject ? (
+                isMobile ? (
+                  <button
+                    type="button"
+                    aria-label={t(
+                      "projectManager.account.aria.duplicateProjectFor",
+                      {
+                        title: projectTitle,
+                      }
+                    )}
+                    title={t("projectManager.account.actions.duplicateProject")}
+                    onClick={() => onDuplicateAccountProject(proj.id)}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                  >
+                    <Copy className="size-3.5" />
+                  </button>
+                ) : (
+                  <DesktopActionTooltip
+                    label={t("projectManager.account.actions.duplicateProject")}
+                  >
+                    <button
+                      type="button"
+                      aria-label={t(
+                        "projectManager.account.aria.duplicateProjectFor",
+                        {
+                          title: projectTitle,
+                        }
+                      )}
+                      onClick={() => onDuplicateAccountProject(proj.id)}
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    >
+                      <Copy className="size-3.5" />
+                    </button>
+                  </DesktopActionTooltip>
+                )
+              ) : null}
+              {!showSyncButton && !onDuplicateAccountProject ? (
                 <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
-              )}
+              ) : null}
             </div>
           </div>
         );

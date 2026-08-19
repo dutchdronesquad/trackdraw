@@ -280,6 +280,7 @@ export default function EditorShell({
     handleDeleteProject,
     handleDeleteProjects,
     handleRenameProject,
+    handleDuplicateProject,
     handleRestorePoint,
     handleDeleteRestorePoint,
     snapshotCurrentDesign,
@@ -309,6 +310,7 @@ export default function EditorShell({
     markProjectSyncFailed,
     handleSyncProject,
     handleOpenAccountProject,
+    handleDuplicateAccountProject,
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,
@@ -999,6 +1001,12 @@ export default function EditorShell({
           onDeleteProject={handleDeleteProject}
           onDeleteProjects={handleDeleteProjects}
           onRenameProject={handleRenameProject}
+          onDuplicateProject={handleDuplicateProject}
+          onDuplicateAccountProject={
+            authUser && cloudProjectsAvailable
+              ? handleDuplicateAccountProject
+              : undefined
+          }
           onExportProject={handleExportProject}
           onRestorePoint={handleRestorePoint}
           onDeleteRestorePoint={handleDeleteRestorePoint}

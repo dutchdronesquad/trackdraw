@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   createRestorePoint,
+  createProjectDuplicate,
   deleteProject,
   deleteProjects,
   deleteRestorePoint,
@@ -41,7 +42,7 @@ function toLocalSaveError(error: unknown) {
   return new Error("Could not save local project data.");
 }
 
-function getSharedEditableCopyTitle(
+export function getCopyTitle(
   title: string,
   tShell: (
     key: string,
@@ -66,7 +67,7 @@ function createSharedEditableCopy(
   return {
     ...design,
     id: nanoid(),
-    title: getSharedEditableCopyTitle(design.title, tShell),
+    title: getCopyTitle(design.title, tShell),
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -351,6 +352,38 @@ export function useEditorProjects({
     [design.id]
   );
 
+  const handleDuplicateProject = useCallback(
+    (id: string) => {
+      const source = id === design.id ? design : loadProject(id);
+      if (!source) {
+        toast.error(tShell("duplicateProjectFailed"));
+        return null;
+      }
+
+      const existingTitles = listProjects().map((p) => p.title);
+      const candidateTitle = getCopyTitle(source.title, tShell);
+      const duplicate = createProjectDuplicate(
+        source,
+        candidateTitle,
+        existingTitles
+      );
+      const result = saveProjectWithResult(duplicate);
+      if (!result.ok) {
+        toast.error(tShell("duplicateProjectFailed"));
+        return null;
+      }
+
+      setProjects(listProjects());
+      toast.success(tShell("projectDuplicated"), {
+        description: tShell("projectDuplicatedDescription", {
+          title: duplicate.title,
+        }),
+      });
+      return duplicate;
+    },
+    [design, tShell]
+  );
+
   const refreshAfterImport = useCallback((designId: string) => {
     setProjects(listProjects());
     setRestorePoints(listRestorePointsForProject(designId));
@@ -385,6 +418,7 @@ export function useEditorProjects({
     handleDeleteProject,
     handleDeleteProjects,
     handleRenameProject,
+    handleDuplicateProject,
     handleRestorePoint,
     handleDeleteRestorePoint,
     refreshAfterImport,
