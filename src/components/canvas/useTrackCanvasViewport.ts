@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 
 interface TrackCanvasViewportParams {
@@ -48,6 +48,8 @@ export function useTrackCanvasViewport({
     };
   }, [stageInstance, syncTransform]);
 
+  const isPortraitRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
@@ -55,15 +57,24 @@ export function useTrackCanvasViewport({
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
-      setViewportSize({
-        width: Math.max(1, Math.floor(entry.contentRect.width)),
-        height: Math.max(1, Math.floor(entry.contentRect.height)),
-      });
+      const width = Math.max(1, Math.floor(entry.contentRect.width));
+      const height = Math.max(1, Math.floor(entry.contentRect.height));
+
+      const isPortrait = height >= width;
+      if (
+        isPortraitRef.current !== null &&
+        isPortraitRef.current !== isPortrait
+      ) {
+        setManualView(false);
+      }
+      isPortraitRef.current = isPortrait;
+
+      setViewportSize({ width, height });
     });
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [containerRef, setViewportSize]);
+  }, [containerRef, setManualView, setViewportSize]);
 
   useEffect(() => {
     if (hasManualViewRef.current) return;
