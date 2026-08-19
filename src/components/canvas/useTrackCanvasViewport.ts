@@ -61,7 +61,11 @@ export function useTrackCanvasViewport({
       const height = Math.max(1, Math.floor(entry.contentRect.height));
 
       const isPortrait = height >= width;
+      const isTouchDevice =
+        typeof window !== "undefined" &&
+        window.matchMedia("(pointer: coarse)").matches;
       if (
+        isTouchDevice &&
         isPortraitRef.current !== null &&
         isPortraitRef.current !== isPortrait
       ) {

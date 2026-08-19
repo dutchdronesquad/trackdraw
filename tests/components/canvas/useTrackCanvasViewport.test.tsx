@@ -55,6 +55,30 @@ function asKonvaStage(stage: StageMock): KonvaStage {
   return stage as unknown as KonvaStage;
 }
 
+function stubPointerType(pointer: "coarse" | "fine") {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: query === "(pointer: coarse)" && pointer === "coarse",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+  );
+}
+
+function resize(
+  observer: ResizeObserverMock,
+  size: { width: number; height: number }
+) {
+  act(() => {
+    observer.callback(
+      [{ contentRect: size } as ResizeObserverEntry],
+      observer as unknown as ResizeObserver
+    );
+  });
+}
+
 function Harness({
   contentDragActive = false,
   hasManualView = false,
@@ -151,6 +175,35 @@ describe("useTrackCanvasViewport", () => {
     });
 
     expect(setViewportSize).toHaveBeenCalledWith({ width: 249, height: 1 });
+  });
+
+  it("resets manual view on a touch device when the orientation flips", () => {
+    stubPointerType("coarse");
+    const setManualView = vi.fn();
+    render(<Harness setManualView={setManualView} />);
+    const observer = ResizeObserverMock.instances.at(-1)!;
+
+    resize(observer, { width: 400, height: 800 }); // portrait
+    expect(setManualView).not.toHaveBeenCalled();
+
+    resize(observer, { width: 800, height: 400 }); // flips to landscape
+    expect(setManualView).toHaveBeenCalledWith(false);
+
+    setManualView.mockClear();
+    resize(observer, { width: 820, height: 410 }); // still landscape
+    expect(setManualView).not.toHaveBeenCalled();
+  });
+
+  it("does not reset manual view on non-touch devices when dimensions flip", () => {
+    stubPointerType("fine");
+    const setManualView = vi.fn();
+    render(<Harness setManualView={setManualView} />);
+    const observer = ResizeObserverMock.instances.at(-1)!;
+
+    resize(observer, { width: 400, height: 800 });
+    resize(observer, { width: 800, height: 400 });
+
+    expect(setManualView).not.toHaveBeenCalled();
   });
 
   it("pans the stage with the middle mouse button when content is not being dragged", () => {
