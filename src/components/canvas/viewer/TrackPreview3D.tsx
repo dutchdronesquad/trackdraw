@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
@@ -71,7 +71,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     useCatalogTextureWarmup(shapes);
     const hasPath = useEditor(selectHasPath);
     const theme = useTheme();
-    const isMobile = useIsMobile();
+    const isMobile = useIsTouchDevice();
     const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
     const cz = field.height / 2;

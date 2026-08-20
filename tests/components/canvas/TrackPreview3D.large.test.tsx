@@ -81,7 +81,7 @@ vi.mock("@react-three/drei", () => ({
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
-  useIsMobile: () => previewTestState.isMobile,
+  useIsTouchDevice: () => previewTestState.isMobile,
 }));
 
 vi.mock("@/hooks/useTheme", () => ({
