@@ -181,7 +181,7 @@ export function useEditorProjects({
             performance.now() - startedAt
           );
           onSeedTokenImported?.();
-          // oxlint-disable-next-line react/react-compiler -- report the completed import
+          // oxlint-disable-next-line react/set-state-in-effect -- report the completed import
           setSaveStatusLabel(tShell("editableCopyCreated"));
         } catch (error) {
           reportLocalSaveFailure(error, onSeedTokenImported);
