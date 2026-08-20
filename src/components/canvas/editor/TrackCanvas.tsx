@@ -71,7 +71,7 @@ import {
 } from "@/lib/track/shape-groups";
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTouchDevice } from "@/hooks/use-mobile";
 import { useTranslations } from "next-intl";
 import {
   getShapeDisplayLabel,
@@ -321,8 +321,9 @@ const TrackCanvas = memo(
       () => (showObstacleNumbers ? getObstacleNumberMap(design) : null),
       [design, showObstacleNumbers]
     );
-    const isMobile = useIsMobile();
-    const showRulers = !isMobile || mobileRulersEnabled;
+    const isNarrowViewport = useIsMobile();
+    const isMobile = useIsTouchDevice();
+    const showRulers = !isNarrowViewport || mobileRulersEnabled;
     const showDesktopCanvasChrome = viewportSize.width >= 1024;
     const selectionRef = useRef(selection);
     const selectionIdSet = useMemo(() => new Set(selection), [selection]);
