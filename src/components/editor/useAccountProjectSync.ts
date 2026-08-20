@@ -228,7 +228,7 @@ export function useAccountProjectSync({
 
   useEffect(() => {
     if (!authUserId || readOnly) return;
-    // oxlint-disable-next-line react/react-compiler -- refresh account data after identity changes
+    // oxlint-disable-next-line react/set-state-in-effect -- refresh account data after identity changes
     void refreshAccountProjects();
   }, [authUserId, readOnly, refreshAccountProjects]);
 
@@ -270,7 +270,7 @@ export function useAccountProjectSync({
 
   useEffect(() => {
     if (!projectManagerOpen || !authUserId || readOnly) return;
-    // oxlint-disable-next-line react/react-compiler -- refresh share data when the manager opens
+    // oxlint-disable-next-line react/set-state-in-effect -- refresh share data when the manager opens
     void refreshAccountShares();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountShares]);
 
@@ -322,7 +322,7 @@ export function useAccountProjectSync({
 
     if (!nextUserId) {
       pendingReentryConflictCheckRef.current = false;
-      // oxlint-disable-next-line react/react-compiler -- clear conflicts after signing out
+      // oxlint-disable-next-line react/set-state-in-effect -- clear conflicts after signing out
       setProjectVersionConflict(null);
     }
 
@@ -718,9 +718,9 @@ export function useAccountProjectSync({
   const currentProjectHasPendingChanges =
     isAccountProject &&
     currentProjectSyncMeta?.status !== "conflict" &&
-    // oxlint-disable-next-line react/react-compiler -- compare stable account-sync snapshots
+    // oxlint-disable-next-line react/refs -- compare stable account-sync snapshots
     openedFromAccountSignatureRef.current !== currentProjectSyncSignature &&
-    // oxlint-disable-next-line react/react-compiler -- compare stable account-sync snapshots
+    // oxlint-disable-next-line react/refs -- compare stable account-sync snapshots
     lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
 
   const headerStatus: HeaderStatus = readOnly

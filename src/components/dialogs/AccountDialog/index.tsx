@@ -69,7 +69,7 @@ export default function AccountDialog({
 
   useEffect(() => {
     if (!open) return;
-    // oxlint-disable-next-line react/react-compiler -- initialize dialog-local form state
+    // oxlint-disable-next-line react/set-state-in-effect -- initialize dialog-local form state
     setName(user?.name ?? "");
     setEmail(user?.email ?? "");
     setEmailEditOpen(false);

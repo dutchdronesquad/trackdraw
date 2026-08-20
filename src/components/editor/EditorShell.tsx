@@ -435,7 +435,7 @@ export default function EditorShell({
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
     if (selection.length === 0) {
-      // oxlint-disable-next-line react/react-compiler -- close mobile UI after deselection
+      // oxlint-disable-next-line react/set-state-in-effect -- close mobile UI after deselection
       setMobileInspectorOpen(false);
       setMobileMultiSelectEnabled(false);
     }
@@ -443,7 +443,7 @@ export default function EditorShell({
 
   useEffect(() => {
     if (activeTool === "polyline" || mobileDraftPathState.active) return;
-    // oxlint-disable-next-line react/react-compiler -- close the path builder after tool changes
+    // oxlint-disable-next-line react/set-state-in-effect -- close the path builder after tool changes
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 

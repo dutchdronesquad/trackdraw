@@ -78,7 +78,6 @@
         "nextjs/no-duplicate-head": "error",
         "nextjs/no-head-import-in-document": "error",
         "nextjs/no-script-component-in-head": "error",
-        "react/react-compiler": "error",
         "react/rules-of-hooks": "error",
         "react/exhaustive-deps": "warn"
       },
