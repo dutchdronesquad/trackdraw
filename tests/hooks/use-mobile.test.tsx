@@ -49,7 +49,9 @@ function stubMatchMedia(initialMatches: boolean) {
   return mql;
 }
 
-function stubMatchMediaByQuery(mqlsByQuery: Record<string, MediaQueryListMock>) {
+function stubMatchMediaByQuery(
+  mqlsByQuery: Record<string, MediaQueryListMock>
+) {
   vi.stubGlobal(
     "matchMedia",
     vi.fn((query: string) => mqlsByQuery[query])

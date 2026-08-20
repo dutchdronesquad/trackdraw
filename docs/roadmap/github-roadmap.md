@@ -35,8 +35,8 @@ The next TrackDraw priority is generated flightpath validation first, completion
         Add a keyboard-first `Cmd/Ctrl+K` palette for existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings. Make unavailable actions explain their state, keep the results context-aware, and use the palette to avoid continued header growth rather than hiding essential primary actions.
   - [ ] Multi-selection align and distribute
         Add explicit horizontal and vertical alignment plus equal-spacing actions for compatible selected items. Preserve lock behavior, treat each operation as one undoable change, keep route waypoints outside the first slice, and expose the actions without crowding the canvas or inspector.
-  - [ ] Duplicate project as an independent variant
-        Let users duplicate a device or account project from Project Manager so they can explore an alternative layout without overwriting the original. Copy the editable design into a clearly named independent project, but do not copy share ownership, publication state, or restore history.
+  - [x] Duplicate project as an independent variant
+        Added project duplication from Project Manager for both device and account projects, opening a clearly named independent copy of the editable design. Share ownership, publication state, and restore history are not copied.
 
 - [ ] Production observability and scheduled-maintenance hardening
       Establish a privacy-safe production baseline across route families and background work without adding duplicate release validation. Use deliberate Workers log/trace sampling, actionable thresholds, and a practical notification path for 5xx responses, exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures.
