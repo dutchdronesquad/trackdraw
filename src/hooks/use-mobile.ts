@@ -20,3 +20,23 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
+
+// Unlike useIsMobile, this stays stable across a device rotation: a phone's
+// width can cross the mobile breakpoint in landscape even though it's still
+// a touch device, which flips touch-only interaction behavior mid-session.
+export function useIsTouchDevice() {
+  const [isTouchDevice, setIsTouchDevice] = React.useState<boolean>(
+    typeof window !== "undefined"
+      ? window.matchMedia("(pointer: coarse)").matches
+      : false
+  );
+
+  React.useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)");
+    const onChange = () => setIsTouchDevice(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isTouchDevice;
+}
