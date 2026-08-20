@@ -15,7 +15,7 @@ import {
 } from "react";
 import * as THREE from "three";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import type {
@@ -293,7 +293,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const editableSelectedPolyline =
       selectedPolyline && !selectedPolyline.locked ? selectedPolyline : null;
     const theme = useTheme();
-    const isMobile = useIsMobile();
+    const isMobile = useIsTouchDevice();
     const { enabled: devMode } = useDeveloperMode();
     const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
