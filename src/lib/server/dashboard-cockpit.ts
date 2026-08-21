@@ -78,10 +78,7 @@ function failureCount(rows: ProductMetricDailyRow[], operation: string) {
     .reduce((total, row) => total + row.numerator, 0);
 }
 
-function hasPipelineIssue(
-  states: ProductMetricMeasurementState[],
-  now: Date
-) {
+function hasPipelineIssue(states: ProductMetricMeasurementState[], now: Date) {
   const activeStates = states.filter(
     (state) => state.measured_since <= utcDay(now)
   );

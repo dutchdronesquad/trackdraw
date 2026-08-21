@@ -405,7 +405,7 @@ function LocalizationDemandTable({
   return (
     <div>
       <dl className="grid border-b pb-5 sm:grid-cols-3">
-        <div className="pb-4 sm:pb-0 sm:pr-5">
+        <div className="pb-4 sm:pr-5 sm:pb-0">
           <dd className="text-2xl font-semibold tracking-tight tabular-nums">
             {number.format(metrics.totalCreatorSessions)}
           </dd>
@@ -504,7 +504,8 @@ function LocalizationDemandTable({
                 </p>
                 {row.countries.length > 0 ? (
                   <p className="mt-1 pl-3.5">
-                    {t("leadingCountries")}: {row.countries
+                    {t("leadingCountries")}:{" "}
+                    {row.countries
                       .slice(0, 4)
                       .map(
                         (country) =>
@@ -554,10 +555,7 @@ function LocalizationDemandTable({
           </div>
           <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
             {metrics.servedLocales.map((row, index) => (
-              <li
-                key={row.locale}
-                className="flex items-center gap-2 text-xs"
-              >
+              <li key={row.locale} className="flex items-center gap-2 text-xs">
                 <span
                   className="size-2 rounded-full"
                   style={{
