@@ -9,8 +9,14 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Inspector from "@/components/inspector/Inspector";
+import { TooltipProvider } from "@/components/AppTooltip";
 import { useEditor } from "@/store/editor";
-import { gateDraft, resetEditorStore } from "../../helpers/editor-store";
+import {
+  flagDraft,
+  gateDraft,
+  polylineDraft,
+  resetEditorStore,
+} from "../../helpers/editor-store";
 
 vi.mock("@/components/inspector/ElevationChart", () => ({
   default: () => <div data-testid="elevation-chart" />,
@@ -21,6 +27,13 @@ vi.mock("@/components/editor/SaveAsPresetDialog", () => ({
 }));
 
 describe("Inspector tab switching", () => {
+  const renderInspector = () =>
+    render(
+      <TooltipProvider delayDuration={0}>
+        <Inspector mobileInline />
+      </TooltipProvider>
+    );
+
   beforeEach(() => {
     resetEditorStore();
     vi.stubGlobal(
@@ -45,7 +58,7 @@ describe("Inspector tab switching", () => {
       useEditor.getState().setSelection([gateId]);
     });
 
-    render(<Inspector mobileInline />);
+    renderInspector();
 
     fireEvent.click(screen.getByRole("tab", { name: "Layout" }));
     expect(
@@ -68,7 +81,7 @@ describe("Inspector tab switching", () => {
     act(() => {
       useEditor.getState().setSelection([gateId]);
     });
-    render(<Inspector mobileInline />);
+    renderInspector();
 
     const layoutTab = screen.getByRole("tab", { name: "Layout" });
     const selectionTab = screen.getByRole("tab", { name: "Selection" });
@@ -80,5 +93,41 @@ describe("Inspector tab switching", () => {
     expect(document.activeElement).toBe(layoutTab);
     expect(layoutTab.tabIndex).toBe(0);
     expect(selectionTab.tabIndex).toBe(-1);
+  });
+
+  it("exposes arrange actions for compatible multi-selections", () => {
+    const firstId = useEditor.getState().addShape(gateDraft({ x: 1 }));
+    const secondId = useEditor.getState().addShape(flagDraft({ x: 5 }));
+    act(() => useEditor.getState().setSelection([firstId, secondId]));
+
+    renderInspector();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Align horizontal centers" })
+    );
+    expect(useEditor.getState().track.design.shapeById[firstId]?.x).toBe(3);
+    expect(useEditor.getState().track.design.shapeById[secondId]?.x).toBe(3);
+    expect(
+      screen.getByRole("button", { name: "Space evenly horizontally" })
+    ).toHaveProperty("disabled", true);
+  });
+
+  it("does not expose arrange actions for path-only selections", () => {
+    const firstId = useEditor.getState().addShape(polylineDraft());
+    const secondId = useEditor.getState().addShape(
+      polylineDraft({
+        points: [
+          { x: 2, y: 0 },
+          { x: 6, y: 0 },
+        ],
+      })
+    );
+    act(() => useEditor.getState().setSelection([firstId, secondId]));
+
+    renderInspector();
+
+    expect(
+      screen.queryByRole("button", { name: "Align horizontal centers" })
+    ).toBeNull();
   });
 });

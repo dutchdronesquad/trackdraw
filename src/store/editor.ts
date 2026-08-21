@@ -15,6 +15,7 @@ import {
 } from "@/lib/track/design";
 import {
   appendPolylinePoint,
+  arrangeShapes,
   applyShapePatch,
   closePolyline,
   duplicateShapes,
@@ -81,6 +82,7 @@ interface EditorState {
   joinPolylines: EditorTrackActions["joinPolylines"];
   closePolyline: EditorTrackActions["closePolyline"];
   nudgeShapes: EditorTrackActions["nudgeShapes"];
+  arrangeShapes: EditorTrackActions["arrangeShapes"];
   updateField: EditorTrackActions["updateField"];
   updateDesignMeta: EditorTrackActions["updateDesignMeta"];
   setMapReference: EditorTrackActions["setMapReference"];
@@ -402,6 +404,16 @@ export const useEditor = create<EditorState>()(
           if (!nudgeShapes(draft.track.design.shapeById, ids, dx, dy)) return;
           touchTrackDesign(draft);
         }),
+
+      arrangeShapes: (ids, mode) => {
+        let changed = false;
+        set((draft) => {
+          if (!arrangeShapes(draft.track.design.shapeById, ids, mode)) return;
+          touchTrackDesign(draft);
+          changed = true;
+        });
+        if (changed) trackMeaningfulEdit("transform");
+      },
 
       duplicateShapes: (ids) =>
         set((draft) => {

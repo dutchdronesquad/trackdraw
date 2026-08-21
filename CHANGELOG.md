@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Faster multi-selection layout
+
+Selected track items can now be aligned or evenly distributed horizontally and vertically from the inspector. Locked items remain fixed, Race Lines stay outside these operations, and each arrangement can be undone in one step.
+
 ### Duplicate a project
 
 Project Manager now has a Duplicate action for both device and account projects. Duplicating creates an independent, clearly named copy of the design, without carrying over the source project's share links, publication state, or restore history.

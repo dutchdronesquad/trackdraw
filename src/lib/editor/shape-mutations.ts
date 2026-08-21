@@ -8,6 +8,12 @@ import type {
   TrackDesign,
 } from "@/lib/types";
 
+export type ArrangeShapesMode =
+  | "align-horizontal"
+  | "align-vertical"
+  | "distribute-horizontal"
+  | "distribute-vertical";
+
 function reversePolyline(path: PolylineShape): PolylineShape {
   return {
     ...path,
@@ -205,6 +211,51 @@ export function nudgeShapes(
       shape.x += dx;
       shape.y += dy;
     }
+    changed = true;
+  }
+
+  return changed;
+}
+
+export function arrangeShapes(
+  shapeById: TrackDesign["shapeById"],
+  ids: string[],
+  mode: ArrangeShapesMode
+) {
+  const shapes = ids
+    .map((id) => shapeById[id])
+    .filter((shape): shape is Exclude<Shape, PolylineShape> =>
+      Boolean(shape && shape.kind !== "polyline" && !shape.locked)
+    );
+  const isDistribution = mode.startsWith("distribute");
+  if (shapes.length < (isDistribution ? 3 : 2)) return false;
+
+  const axis = mode.endsWith("horizontal") ? "x" : "y";
+  const targetPositions = new Map<string, number>();
+
+  if (isDistribution) {
+    const ordered = shapes
+      .map((shape, index) => ({ shape, index }))
+      .sort((a, b) => a.shape[axis] - b.shape[axis] || a.index - b.index);
+    const first = ordered[0].shape[axis];
+    const last = ordered.at(-1)!.shape[axis];
+    const step = (last - first) / (ordered.length - 1);
+    ordered.forEach(({ shape }, index) => {
+      targetPositions.set(shape.id, first + step * index);
+    });
+  } else {
+    const target =
+      shapes.reduce((total, shape) => total + shape[axis], 0) / shapes.length;
+    shapes.forEach((shape) => targetPositions.set(shape.id, target));
+  }
+
+  let changed = false;
+  for (const shape of shapes) {
+    const target = targetPositions.get(shape.id);
+    if (target === undefined || Object.is(shape[axis], target)) {
+      continue;
+    }
+    shape[axis] = target;
     changed = true;
   }
 
