@@ -198,7 +198,7 @@ describe("DashboardSharesManager", () => {
 
     expect(screen.getByText("Automatic cleanup is active")).toBeTruthy();
     expect(
-      screen.getByText(/background job runs daily at 03:17 UTC/i)
+      screen.getByText(/background job runs daily at 00:17 UTC/i)
     ).toBeTruthy();
     expect(screen.getByText(/revoked for more than 30 days/i)).toBeTruthy();
     expect(

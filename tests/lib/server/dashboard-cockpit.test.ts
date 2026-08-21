@@ -97,7 +97,7 @@ describe("daily cockpit server data", () => {
         measured_since: "2026-07-01",
         completeness_state: "complete",
         last_aggregated_day: "2026-08-12",
-        last_success_at: "2026-08-13T03:17:00.000Z",
+        last_success_at: "2026-08-13T00:17:00.000Z",
       }))
     );
 

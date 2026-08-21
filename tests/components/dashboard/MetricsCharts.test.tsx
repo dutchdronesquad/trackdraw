@@ -365,7 +365,7 @@ describe("metrics decision views", () => {
       sample_size: 10,
       completeness_state: "complete" as const,
       quality_status: "healthy" as const,
-      updated_at: "2026-08-15T03:17:00.000Z",
+      updated_at: "2026-08-15T00:17:00.000Z",
     };
     const cockpit = {
       generatedAt: "2026-08-15T12:00:00.000Z",
