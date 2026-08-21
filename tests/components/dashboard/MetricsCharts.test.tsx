@@ -457,21 +457,36 @@ describe("metrics decision views", () => {
           id: "L10N-001",
           windowDays: 28,
           measuredSince: "2026-06-01",
-          quality: "healthy",
-          comparisonReady: true,
-          totalCreatorSessions: 24,
-          unsupportedCreatorSessions: 7,
+          quality: "building",
+          comparisonReady: false,
+          totalCreatorSessions: 27,
+          unsupportedCreatorSessions: 5,
           languages: [
             {
-              language: "fr",
-              creatorSessions: 7,
-              previousCreatorSessions: 4,
-              share: 7 / 24,
-              supported: false,
-              countries: [{ country: "FR", creatorSessions: 5 }],
+              language: "en",
+              creatorSessions: 18,
+              previousCreatorSessions: 0,
+              share: 18 / 27,
+              supported: true,
+              countries: [
+                { country: "other", creatorSessions: 11 },
+                { country: "US", creatorSessions: 7 },
+              ],
+            },
+            {
+              language: "other",
+              creatorSessions: 9,
+              previousCreatorSessions: 0,
+              share: 9 / 27,
+              supported: null,
+              countries: [],
             },
           ],
-          servedLocales: [{ locale: "en", creatorSessions: 24, share: 1 }],
+          servedLocales: [
+            { locale: "en", creatorSessions: 24, share: 24 / 27 },
+            { locale: "zh-CN", creatorSessions: 2, share: 2 / 27 },
+            { locale: "de", creatorSessions: 1, share: 1 / 27 },
+          ],
         }}
         header={{
           title: "Product metrics",
@@ -535,8 +550,20 @@ describe("metrics decision views", () => {
     expect(
       screen.getByRole("heading", { name: "Localization demand" })
     ).toBeTruthy();
-    expect(screen.getByText("French")).toBeTruthy();
-    expect(screen.getByText("Translation candidate")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Preferred browser language" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Interface language used" })
+    ).toBeTruthy();
+    expect(screen.getByText("Grouped for privacy")).toBeTruthy();
+    expect(
+      screen.getByText("Translation candidates above threshold")
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Previous-period comparison will appear/)
+    ).toBeTruthy();
+    expect(screen.queryByText("Previous 28d")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
     expect(screen.getByText("Creator retention")).toBeTruthy();

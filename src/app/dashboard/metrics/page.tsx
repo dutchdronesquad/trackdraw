@@ -18,6 +18,7 @@ import {
 } from "@/lib/server/metrics";
 import { getMetricsExplorerData } from "@/lib/server/metrics-explorer";
 import { getLocalizationDemandMetrics } from "@/lib/server/localization-demand";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
@@ -60,7 +61,7 @@ export default async function DashboardMetricsPage() {
   const tCommon = await getTranslations("common");
   const tMetrics = await getTranslations("dashboard.metrics");
   const locale = await getLocale();
-  const lastUpdated = new Intl.DateTimeFormat(locale, {
+  const lastUpdated = create24HourDateTimeFormatter(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(now);

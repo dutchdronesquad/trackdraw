@@ -17,6 +17,7 @@ import {
 } from "@/lib/projects";
 import { isDevAuthShimEnabled } from "@/lib/auth-client";
 import type { TrackDesign } from "@/lib/types";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 import {
   classifyProductOperationFailure,
   trackProductEvent,
@@ -597,7 +598,7 @@ export function useAccountProjectSync({
         }));
 
         if (options?.updateStatusLabel) {
-          const time = new Intl.DateTimeFormat(undefined, {
+          const time = create24HourDateTimeFormatter(undefined, {
             hour: "2-digit",
             minute: "2-digit",
           }).format(new Date(syncedAt));
@@ -736,7 +737,7 @@ export function useAccountProjectSync({
               ? { label: "Changes pending", tone: "pending" }
               : currentProjectSyncMeta?.lastSyncedAt
                 ? {
-                    label: `Synced ${new Intl.DateTimeFormat(undefined, {
+                    label: `Synced ${create24HourDateTimeFormatter(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",
                     }).format(new Date(currentProjectSyncMeta.lastSyncedAt))}`,

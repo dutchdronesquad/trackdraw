@@ -15,7 +15,7 @@
   "workers_dev": false,
   "preview_urls": false,
   "triggers": {
-    "crons": ["17 3 * * *"],
+    "crons": ["17 0 * * *"],
   },
   "assets": {
     "directory": ".open-next/assets",

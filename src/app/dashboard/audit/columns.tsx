@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account/roles";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 export type AuditEventActor = {
   id: string;
@@ -44,7 +45,7 @@ export type Translate = (
 
 export function formatDateTime(value: string) {
   try {
-    return new Intl.DateTimeFormat("en-GB", {
+    return create24HourDateTimeFormatter("en-GB", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(value));

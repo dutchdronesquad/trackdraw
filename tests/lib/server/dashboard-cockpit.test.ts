@@ -88,4 +88,38 @@ describe("daily cockpit server data", () => {
     expect(cockpit.operations.buildingMetrics).toBe(1);
     expect(cockpit.operations.analyticsPipelineGaps).toBe(0);
   });
+
+  it("keeps the pipeline healthy while the next daily run is not due", async () => {
+    mocks.getMeasurementStates.mockResolvedValue(
+      Array.from({ length: 10 }, (_, index) => ({
+        metric_id: `MTR-${String(index + 1).padStart(3, "0")}`,
+        contract_version: "1.0.0",
+        measured_since: "2026-07-01",
+        completeness_state: "complete",
+        last_aggregated_day: "2026-08-12",
+        last_success_at: "2026-08-13T03:17:00.000Z",
+      }))
+    );
+
+    const cockpit = await getDailyCockpit(new Date("2026-08-14T00:15:00.000Z"));
+
+    expect(cockpit.operations.analyticsPipelineGaps).toBe(0);
+  });
+
+  it("reports one pipeline issue when the daily success SLA expires", async () => {
+    mocks.getMeasurementStates.mockResolvedValue(
+      Array.from({ length: 10 }, (_, index) => ({
+        metric_id: `MTR-${String(index + 1).padStart(3, "0")}`,
+        contract_version: "1.0.0",
+        measured_since: "2026-07-01",
+        completeness_state: "complete",
+        last_aggregated_day: "2026-08-12",
+        last_success_at: "2026-08-13T00:17:00.000Z",
+      }))
+    );
+
+    const cockpit = await getDailyCockpit(new Date("2026-08-14T01:18:00.000Z"));
+
+    expect(cockpit.operations.analyticsPipelineGaps).toBe(1);
+  });
 });

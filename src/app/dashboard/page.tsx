@@ -31,6 +31,7 @@ import {
 } from "@/lib/server/gallery";
 import { getOverviewStats, type RecentUser } from "@/lib/server/metrics";
 import { getDailyCockpit } from "@/lib/server/dashboard-cockpit";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 // --- Helpers ---
 
@@ -362,7 +363,7 @@ export default async function DashboardPage() {
   const tPages = await getTranslations("dashboard.pages");
   const locale = await getLocale();
   const updatedAt = cockpit
-    ? new Intl.DateTimeFormat(locale, {
+    ? create24HourDateTimeFormatter(locale, {
         timeZone: "Europe/Amsterdam",
         dateStyle: "medium",
         timeStyle: "short",

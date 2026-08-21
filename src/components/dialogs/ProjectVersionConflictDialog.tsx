@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useTranslations } from "next-intl";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 type ProjectVersionConflictDialogProps = {
   open: boolean;
@@ -17,7 +18,7 @@ type ProjectVersionConflictDialogProps = {
 
 function formatDateTime(iso: string) {
   try {
-    return new Intl.DateTimeFormat(undefined, {
+    return create24HourDateTimeFormatter(undefined, {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(iso));

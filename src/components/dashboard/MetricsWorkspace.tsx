@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   Circle,
   Download,
+  Info,
   Languages,
   LayoutDashboard,
   PenTool,
@@ -379,6 +380,19 @@ function LocalizationDemandTable({
     if (country === "unknown") return t("unknownCountry");
     return countryNames.of(country) ?? country;
   };
+  const translationCandidateCount = metrics.languages.filter(
+    (row) => row.supported === false
+  ).length;
+  const interfaceSummary = metrics.servedLocales
+    .map((row) => `${formatLanguage(row.locale)} ${percent.format(row.share)}`)
+    .join(", ");
+  const chartColors = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+  ];
 
   if (metrics.languages.length === 0) {
     return (
@@ -389,96 +403,179 @@ function LocalizationDemandTable({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-xs">
-        <span>
-          {t("totalSessions", {
-            count: number.format(metrics.totalCreatorSessions),
-          })}
-        </span>
-        <span>
-          {metrics.unsupportedCreatorSessions === null
-            ? t("unsupportedSuppressed")
-            : t("unsupportedSessions", {
-                count: number.format(metrics.unsupportedCreatorSessions),
-              })}
-        </span>
-        <span>
-          {t("servedLocales", {
-            locales: metrics.servedLocales
-              .map(
-                (row) =>
-                  `${formatLanguage(row.locale)} ${percent.format(row.share)}`
-              )
-              .join(" · "),
-          })}
-        </span>
-      </div>
+    <div>
+      <dl className="grid border-b pb-5 sm:grid-cols-3">
+        <div className="pb-4 sm:pb-0 sm:pr-5">
+          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
+            {number.format(metrics.totalCreatorSessions)}
+          </dd>
+          <dt className="text-muted-foreground mt-1 text-xs">
+            {t("creatorSessions")}
+          </dt>
+        </div>
+        <div className="border-t py-4 sm:border-t-0 sm:border-l sm:px-5 sm:py-0">
+          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
+            {metrics.unsupportedCreatorSessions === null
+              ? t("belowThresholdValue")
+              : number.format(metrics.unsupportedCreatorSessions)}
+          </dd>
+          <dt className="text-muted-foreground mt-1 text-xs">
+            {t("unsupportedLanguageSessions")}
+          </dt>
+        </div>
+        <div className="border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
+          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
+            {number.format(translationCandidateCount)}
+          </dd>
+          <dt className="text-muted-foreground mt-1 text-xs">
+            {t("translationCandidates")}
+          </dt>
+        </div>
+      </dl>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[46rem] text-sm">
-          <thead>
-            <tr className="text-muted-foreground border-b text-left text-xs">
-              <th scope="col" className="py-2 pr-3 font-medium">
-                {t("language")}
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                {t("current")}
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                {t("share")}
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                {t("previous")}
-              </th>
-              <th scope="col" className="px-3 py-2 font-medium">
-                {t("countries")}
-              </th>
-              <th scope="col" className="py-2 pl-3 text-right font-medium">
-                {t("support")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {metrics.languages.map((row) => (
-              <tr key={row.language} className="border-b last:border-0">
-                <td className="py-3 pr-3 font-medium">
+      <section className="border-b py-5" aria-labelledby="preferred-language">
+        <h3 id="preferred-language" className="text-sm font-semibold">
+          {t("preferredBrowserLanguage")}
+        </h3>
+        <div className="text-muted-foreground mt-4 hidden grid-cols-[minmax(12rem,1fr)_8rem_minmax(16rem,1fr)_minmax(16rem,1.4fr)] gap-6 border-b pb-2 text-xs lg:grid">
+          <span>{t("language")}</span>
+          <span>{t("sessions")}</span>
+          <span>{t("share")}</span>
+          <span>{t("status")}</span>
+        </div>
+        <ul className="mt-3 divide-y">
+          {metrics.languages.map((row) => (
+            <li
+              key={row.language}
+              className="grid gap-3 py-3 first:pt-0 last:pb-0 lg:grid-cols-[minmax(12rem,1fr)_8rem_minmax(16rem,1fr)_minmax(16rem,1.4fr)] lg:items-start lg:gap-6"
+            >
+              <div>
+                <p className="text-sm font-medium">
                   {formatLanguage(row.language)}
-                </td>
-                <td className="px-3 py-3 text-right font-semibold tabular-nums">
-                  {number.format(row.creatorSessions)}
-                </td>
-                <td className="px-3 py-3 text-right tabular-nums">
-                  {percent.format(row.share)}
-                </td>
-                <td className="px-3 py-3 text-right tabular-nums">
-                  {metrics.comparisonReady
-                    ? number.format(row.previousCreatorSessions)
-                    : "—"}
-                </td>
-                <td className="text-muted-foreground px-3 py-3 text-xs">
-                  {row.countries.length > 0
-                    ? row.countries
-                        .slice(0, 4)
-                        .map(
-                          (country) =>
-                            `${formatCountry(country.country)} ${number.format(country.creatorSessions)}`
-                        )
-                        .join(" · ")
-                    : "—"}
-                </td>
-                <td className="py-3 pl-3 text-right text-xs font-medium">
+                </p>
+              </div>
+              <div className="text-muted-foreground text-xs tabular-nums">
+                {t("sessionCount", {
+                  count: number.format(row.creatorSessions),
+                })}
+                {metrics.comparisonReady ? (
+                  <p className="mt-1.5">
+                    {t("previousPeriod", {
+                      count: number.format(row.previousCreatorSessions),
+                    })}
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="w-9 shrink-0 text-xs font-medium tabular-nums">
+                    {percent.format(row.share)}
+                  </span>
+                  <div
+                    className="bg-muted h-1.5 min-w-0 flex-1 overflow-hidden rounded-full"
+                    role="progressbar"
+                    aria-label={`${formatLanguage(row.language)} ${percent.format(row.share)}`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(row.share * 100)}
+                  >
+                    <div
+                      className="h-full rounded-full bg-[var(--chart-1)]"
+                      style={{ width: `${Math.min(row.share * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="text-muted-foreground text-xs">
+                <p className="flex items-center gap-2 font-medium">
+                  <span
+                    className="bg-muted-foreground size-1.5 shrink-0 rounded-full"
+                    aria-hidden="true"
+                  />
                   {row.supported === null
-                    ? t(row.language === "unknown" ? "unavailable" : "grouped")
+                    ? t(
+                        row.language === "unknown"
+                          ? "unavailable"
+                          : "groupedForPrivacy"
+                      )
                     : row.supported
                       ? t("supported")
                       : t("candidate")}
-                </td>
-              </tr>
+                </p>
+                {row.countries.length > 0 ? (
+                  <p className="mt-1 pl-3.5">
+                    {t("leadingCountries")}: {row.countries
+                      .slice(0, 4)
+                      .map(
+                        (country) =>
+                          `${formatCountry(country.country)} ${number.format(country.creatorSessions)}`
+                      )
+                      .join(" · ")}
+                  </p>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="text-muted-foreground mt-4 flex items-start gap-2 text-xs leading-relaxed">
+          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <p>
+            {metrics.comparisonReady
+              ? t("privacyNote")
+              : t("privacyAndComparisonNote")}
+          </p>
+        </div>
+      </section>
+
+      {metrics.servedLocales.length > 0 ? (
+        <section className="pt-5" aria-labelledby="interface-language">
+          <h3 id="interface-language" className="text-sm font-semibold">
+            {t("interfaceLanguageUsed")}
+          </h3>
+          <p className="text-muted-foreground mt-1 text-xs">
+            {t("interfaceLanguageDescription")}
+          </p>
+          <div
+            className="bg-muted mt-4 flex h-2.5 overflow-hidden rounded-full"
+            role="img"
+            aria-label={t("interfaceLanguageSummary", {
+              locales: interfaceSummary,
+            })}
+          >
+            {metrics.servedLocales.map((row, index) => (
+              <div
+                key={row.locale}
+                style={{
+                  width: `${Math.min(row.share * 100, 100)}%`,
+                  backgroundColor: chartColors[index % chartColors.length],
+                }}
+              />
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+          <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+            {metrics.servedLocales.map((row, index) => (
+              <li
+                key={row.locale}
+                className="flex items-center gap-2 text-xs"
+              >
+                <span
+                  className="size-2 rounded-full"
+                  style={{
+                    backgroundColor: chartColors[index % chartColors.length],
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="text-muted-foreground">
+                  {formatLanguage(row.locale)}
+                </span>
+                <span className="font-medium tabular-nums">
+                  {percent.format(row.share)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
