@@ -30,7 +30,7 @@ function row(
     sample_size: denominator,
     completeness_state: "complete",
     quality_status: "healthy",
-    updated_at: `${day}T03:17:00.000Z`,
+    updated_at: `${day}T00:17:00.000Z`,
     ...overrides,
   };
 }
@@ -42,7 +42,7 @@ function state(metricId: ProductMetricId): ProductMetricMeasurementState {
     measured_since: "2026-01-01",
     completeness_state: "complete",
     last_aggregated_day: "2026-08-14",
-    last_success_at: "2026-08-15T03:17:00.000Z",
+    last_success_at: "2026-08-15T00:17:00.000Z",
   };
 }
 

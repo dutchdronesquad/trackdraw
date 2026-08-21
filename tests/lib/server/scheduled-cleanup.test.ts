@@ -9,8 +9,8 @@ import {
 vi.mock("server-only", () => ({}));
 
 const scheduledContext = {
-  cron: "17 3 * * *",
-  scheduledTime: Date.UTC(2026, 6, 23, 3, 17),
+  cron: "17 0 * * *",
+  scheduledTime: Date.UTC(2026, 6, 23, 0, 17),
 };
 
 function createLogger() {

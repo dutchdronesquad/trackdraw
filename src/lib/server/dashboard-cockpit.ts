@@ -51,6 +51,7 @@ const SERIES_RANGES: ReadonlyArray<{
   { metricId: "MTR-010", historyDays: 70 },
 ];
 const UNUSED_API_KEY_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const PRODUCT_METRIC_PIPELINE_SUCCESS_SLA_MS = 25 * 60 * 60 * 1000;
 
 function utcDay(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -77,18 +78,32 @@ function failureCount(rows: ProductMetricDailyRow[], operation: string) {
     .reduce((total, row) => total + row.numerator, 0);
 }
 
-function hasPipelineGap(
-  state: ProductMetricMeasurementState,
-  lastCompleteDay: string
-) {
+function hasPipelineIssue(states: ProductMetricMeasurementState[], now: Date) {
+  const activeStates = states.filter(
+    (state) => state.measured_since <= utcDay(now)
+  );
+  if (activeStates.length === 0) return false;
   if (
-    state.completeness_state === "invalid" ||
-    state.completeness_state === "incomplete"
+    activeStates.some(
+      (state) =>
+        state.completeness_state === "invalid" ||
+        state.completeness_state === "incomplete"
+    )
   ) {
     return true;
   }
-  if (state.measured_since > lastCompleteDay) return false;
-  return state.last_aggregated_day !== lastCompleteDay;
+
+  const lastSuccessTimes = activeStates.flatMap((state) => {
+    if (!state.last_success_at) return [];
+    const time = new Date(state.last_success_at).getTime();
+    return Number.isFinite(time) ? [time] : [];
+  });
+  if (lastSuccessTimes.length === 0) return false;
+
+  return (
+    now.getTime() - Math.min(...lastSuccessTimes) >
+    PRODUCT_METRIC_PIPELINE_SUCCESS_SLA_MS
+  );
 }
 
 export async function getDailyCockpit(
@@ -175,7 +190,6 @@ export async function getDailyCockpit(
     };
   });
   const failureRows = series["MTR-010"] ?? [];
-  const lastCompleteDay = addUtcDays(today, -1);
   const failureMetricsAvailable = latestCompleteRows(failureRows).length > 0;
   const pipelineAvailable = states.length > 0;
   const warningSeries = failureMetricsAvailable
@@ -192,9 +206,7 @@ export async function getDailyCockpit(
       publicationFailures: failureCount(failureRows, "gallery_publish"),
       unusedApiKeys: Number(apiKeyRow?.unused ?? 0),
       expiredApiKeys: Number(apiKeyRow?.expired ?? 0),
-      analyticsPipelineGaps: states.filter((state) =>
-        hasPipelineGap(state, lastCompleteDay)
-      ).length,
+      analyticsPipelineGaps: hasPipelineIssue(states, now) ? 1 : 0,
       buildingMetrics: states.filter(
         (state) =>
           state.completeness_state === "building" ||

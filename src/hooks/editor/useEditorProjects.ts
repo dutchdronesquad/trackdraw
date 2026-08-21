@@ -24,13 +24,14 @@ import {
 import { decodeDesign } from "@/lib/share";
 import { nowIso } from "@/lib/track/design";
 import { recordPerfSample } from "@/lib/perf";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 import { useEditor } from "@/store/editor";
 import { toast } from "sonner";
 import { nanoid } from "nanoid";
 import type { TrackDesign } from "@/lib/types";
 
 function formatLocalSaveTime(date = new Date()) {
-  return new Intl.DateTimeFormat(undefined, {
+  return create24HourDateTimeFormatter(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
@@ -267,7 +268,7 @@ export function useEditorProjects({
     createRestorePoint(design);
     setRestorePoints(listRestorePointsForProject(design.id));
     setActiveRestorePointId(null);
-    const time = new Intl.DateTimeFormat(undefined, {
+    const time = create24HourDateTimeFormatter(undefined, {
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date());

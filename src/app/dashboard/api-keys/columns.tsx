@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AdminApiKey } from "@/lib/server/api-keys";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 export type ApiKeyStatus = "active" | "expired" | "disabled";
 export type Translate = (
@@ -55,7 +56,7 @@ export function formatDate(value: string | null) {
 export function formatDateTime(value: string | null) {
   if (!value) return "—";
   try {
-    return new Intl.DateTimeFormat("en-GB", {
+    return create24HourDateTimeFormatter("en-GB", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(value));

@@ -321,11 +321,11 @@ The five retention owners run concurrently and settle independently. Within the 
 
 If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying is safe: metric rows use deterministic keys with upserts, and every retention query is a threshold-based `DELETE`. Aggregation catches up at no more than seven complete UTC days per invocation and the query helper combines stored daily snapshots with only today's small live raw-event window.
 
-The cron schedule is configured in `wrangler.jsonc`. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
+The cron schedule is configured in `wrangler.jsonc`. It runs at 00:17 UTC so the previous complete UTC day is aggregated shortly after it closes. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 
 ```bash
 npx wrangler dev --env dev --test-scheduled
-curl "http://localhost:8787/cdn-cgi/handler/scheduled?cron=17+3+*+*+*&format=json"
+curl "http://localhost:8787/cdn-cgi/handler/scheduled?cron=17+0+*+*+*&format=json"
 ```
 
 Cloudflare documents scheduled handler testing and cron triggers here:
