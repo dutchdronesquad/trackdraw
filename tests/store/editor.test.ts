@@ -1301,6 +1301,85 @@ describe("editor store history", () => {
     expect(nextDesign.shapeById[secondId]).toMatchObject({ x: 9, y: 7 });
   });
 
+  it("aligns compatible shapes around their shared center as one undoable change", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(gateDraft({ x: 1, y: 2 }));
+    const secondId = state.addShape(flagDraft({ x: 5, y: 8 }));
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:12:15.000Z");
+    state.arrangeShapes([firstId, secondId], "align-horizontal");
+
+    let design = useEditor.getState().track.design;
+    expect(design.shapeById[firstId]).toMatchObject({ x: 3, y: 2 });
+    expect(design.shapeById[secondId]).toMatchObject({ x: 3, y: 8 });
+    expectDesignUpdatedAt("2026-04-13T10:12:15.000Z");
+    expectPastStatesCount(1);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    design = useEditor.getState().track.design;
+    expect(design.shapeById[firstId]).toMatchObject({ x: 1, y: 2 });
+    expect(design.shapeById[secondId]).toMatchObject({ x: 5, y: 8 });
+  });
+
+  it("distributes compatible shapes evenly while excluding paths and preserving locks", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(gateDraft({ x: 0, y: 0, locked: true }));
+    const secondId = state.addShape(flagDraft({ x: 2, y: 3 }));
+    const thirdId = state.addShape(coneDraft({ x: 9, y: 6 }));
+    const fourthId = state.addShape(ladderDraft({ x: 12, y: 9 }));
+    const pathId = state.addShape(polylineDraft({ x: 40, y: 40 }));
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:12:16.000Z");
+    state.arrangeShapes(
+      [firstId, secondId, pathId, thirdId, fourthId],
+      "distribute-horizontal"
+    );
+
+    const design = useEditor.getState().track.design;
+    expect(design.shapeById[firstId]).toMatchObject({ x: 0, y: 0 });
+    expect(design.shapeById[secondId]).toMatchObject({ x: 2, y: 3 });
+    expect(design.shapeById[thirdId]).toMatchObject({ x: 7, y: 6 });
+    expect(design.shapeById[fourthId]).toMatchObject({ x: 12, y: 9 });
+    expect(design.shapeById[pathId]).toMatchObject({ x: 40, y: 40 });
+    expectPastStatesCount(1);
+  });
+
+  it("excludes locked items from alignment and skips arrange no-ops", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape(gateDraft({ x: 2, y: 4, locked: true }));
+    const editableId = state.addShape(flagDraft({ x: 8, y: 9 }));
+    const otherEditableId = state.addShape(coneDraft({ x: 12, y: 5 }));
+    const pathId = state.addShape(polylineDraft());
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:12:17.000Z");
+    state.arrangeShapes(
+      [editableId, lockedId, otherEditableId, pathId],
+      "align-vertical"
+    );
+
+    expect(useEditor.getState().track.design.shapeById[lockedId]).toMatchObject(
+      {
+        x: 2,
+        y: 4,
+      }
+    );
+    expect(
+      useEditor.getState().track.design.shapeById[editableId]
+    ).toMatchObject({ x: 8, y: 7 });
+    expect(
+      useEditor.getState().track.design.shapeById[otherEditableId]
+    ).toMatchObject({ x: 12, y: 7 });
+    expectPastStatesCount(1);
+
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+    state.arrangeShapes([lockedId, pathId], "align-horizontal");
+    expectNoDesignHistoryChange(beforeUpdatedAt);
+  });
+
   it("reorderShapes moves a shape before another", () => {
     const state = useEditor.getState();
     const a = state.addShape(coneDraft());

@@ -71,6 +71,7 @@ function Inspector({
     setMapReferenceOpacity,
     setMapReferenceRotation,
     addShape,
+    arrangeShapes,
     reorderShapes,
   } = useTrackActions();
   const { setSelection } = useSessionActions();
@@ -209,6 +210,7 @@ function Inspector({
         setSelection={selectAndOpenSelectionPanel}
         ungroupSelection={ungroupSelection}
         updateShapesCatalogType={updateShapesCatalogType}
+        arrangeShapes={arrangeShapes}
         onSaveAsPreset={
           canSavePresets ? () => setSaveAsPresetManuallyOpen(true) : undefined
         }

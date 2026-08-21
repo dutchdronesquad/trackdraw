@@ -33,7 +33,7 @@ The next TrackDraw priority is generated flightpath validation first, completion
       Reduce repeated navigation and precision work without adding more permanent header controls. Keep each improvement independently shippable and reuse existing editor and project actions rather than introducing parallel state or workflows.
   - [ ] Searchable command palette
         Add a keyboard-first `Cmd/Ctrl+K` palette for existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings. Make unavailable actions explain their state, keep the results context-aware, and use the palette to avoid continued header growth rather than hiding essential primary actions.
-  - [ ] Multi-selection align and distribute
+  - [x] Multi-selection align and distribute
         Add explicit horizontal and vertical alignment plus equal-spacing actions for compatible selected items. Preserve lock behavior, treat each operation as one undoable change, keep route waypoints outside the first slice, and expose the actions without crowding the canvas or inspector.
   - [x] Duplicate project as an independent variant
         Added project duplication from Project Manager for both device and account projects, opening a clearly named independent copy of the editable design. Share ownership, publication state, and restore history are not copied.

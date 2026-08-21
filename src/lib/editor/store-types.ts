@@ -10,6 +10,7 @@ import type {
 import type { EditorTool } from "@/lib/editor/tool-registry";
 import type { DraftPoint, RectLike } from "@/lib/canvas/shared";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
+import type { ArrangeShapesMode } from "@/lib/editor/shape-mutations";
 
 export interface EditorTrackState {
   design: TrackDesign;
@@ -91,6 +92,7 @@ export interface EditorTrackActions {
   joinPolylines: (ids: string[]) => string | null;
   closePolyline: (id: string) => boolean;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
+  arrangeShapes: (ids: string[], mode: ArrangeShapesMode) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (
     patch: Partial<

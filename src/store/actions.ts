@@ -26,6 +26,7 @@ export function useTrackActions() {
   const joinPolylines = useEditor((state) => state.joinPolylines);
   const closePolyline = useEditor((state) => state.closePolyline);
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
+  const arrangeShapes = useEditor((state) => state.arrangeShapes);
   const updateField = useEditor((state) => state.updateField);
   const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
   const setMapReference = useEditor((state) => state.setMapReference);
@@ -67,6 +68,7 @@ export function useTrackActions() {
     joinPolylines,
     closePolyline,
     nudgeShapes,
+    arrangeShapes,
     updateField,
     updateDesignMeta,
     setMapReference,

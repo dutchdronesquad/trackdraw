@@ -17,7 +17,19 @@ import {
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
-import { Bookmark, Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
+import {
+  AlignHorizontalDistributeCenter,
+  AlignHorizontalSpaceBetween,
+  AlignVerticalDistributeCenter,
+  AlignVerticalSpaceBetween,
+  Bookmark,
+  Copy,
+  GitMerge,
+  Group,
+  Trash2,
+  Ungroup,
+} from "lucide-react";
+import type { ArrangeShapesMode } from "@/lib/editor/shape-mutations";
 import {
   inspectorActionBtnClass,
   inspectorActionBtnDangerClass,
@@ -34,6 +46,11 @@ import {
   Section,
   useInspectorInputBatch,
 } from "@/components/inspector/shared";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
 import { InspectorLead, InspectorScrollBody } from "./layout";
 import { useTranslations } from "next-intl";
 
@@ -51,6 +68,7 @@ export interface MultiInspectorViewProps {
     ids: string[],
     entryId: TrackElementCatalogId
   ) => void;
+  arrangeShapes: (ids: string[], mode: ArrangeShapesMode) => void;
   onSaveAsPreset?: () => void;
   mobileInline?: boolean;
 }
@@ -102,6 +120,7 @@ export function MultiInspectorView({
   setSelection,
   ungroupSelection,
   updateShapesCatalogType,
+  arrangeShapes,
   onSaveAsPreset,
   mobileInline = false,
 }: MultiInspectorViewProps) {
@@ -143,6 +162,40 @@ export function MultiInspectorView({
   const placeableCount = selectedShapes.filter(
     (s) => s.kind !== "polyline"
   ).length;
+  const editablePlaceableCount = selectedShapes.filter(
+    (shape) => shape.kind !== "polyline" && !shape.locked
+  ).length;
+  const arrangeActions: Array<{
+    mode: ArrangeShapesMode;
+    label: string;
+    icon: typeof AlignHorizontalDistributeCenter;
+    minimum: number;
+  }> = [
+    {
+      mode: "align-horizontal",
+      label: t("multiSelection.arrange.alignHorizontal"),
+      icon: AlignHorizontalDistributeCenter,
+      minimum: 2,
+    },
+    {
+      mode: "align-vertical",
+      label: t("multiSelection.arrange.alignVertical"),
+      icon: AlignVerticalDistributeCenter,
+      minimum: 2,
+    },
+    {
+      mode: "distribute-horizontal",
+      label: t("multiSelection.arrange.distributeHorizontal"),
+      icon: AlignHorizontalSpaceBetween,
+      minimum: 3,
+    },
+    {
+      mode: "distribute-vertical",
+      label: t("multiSelection.arrange.distributeVertical"),
+      icon: AlignVerticalSpaceBetween,
+      minimum: 3,
+    },
+  ];
   const batchCatalogKind = getBatchCatalogKind(selectedShapes);
   const batchCatalogEntries = batchCatalogKind
     ? getCatalogEntriesByKind(batchCatalogKind)
@@ -280,6 +333,44 @@ export function MultiInspectorView({
                 ))}
             </div>
           </Section>
+          {placeableCount >= 2 ? (
+            <Section
+              title={t("multiSelection.arrange.sectionTitle")}
+              collapsible={false}
+            >
+              <div
+                role="group"
+                aria-label={t("multiSelection.arrange.sectionTitle")}
+                className="border-border/40 bg-muted/35 grid grid-cols-4 gap-1 rounded-lg border p-1"
+              >
+                {arrangeActions.map(({ mode, label, icon: Icon, minimum }) => (
+                  <Tooltip key={mode}>
+                    <TooltipTrigger asChild>
+                      <span className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => arrangeShapes(selection, mode)}
+                          aria-label={label}
+                          disabled={editablePlaceableCount < minimum}
+                          className="text-muted-foreground hover:bg-background/90 hover:text-foreground focus-visible:ring-ring/40 flex h-8 w-full items-center justify-center rounded-md transition-[color,background-color,box-shadow] hover:shadow-xs focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:shadow-none lg:h-7"
+                        >
+                          <Icon className="size-4 shrink-0" />
+                        </button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={6}>
+                      {label}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              {hasLockedSelection ? (
+                <p className="text-muted-foreground px-0.5 text-[10px] leading-relaxed">
+                  {t("multiSelection.lockedItemsNote")}
+                </p>
+              ) : null}
+            </Section>
+          ) : null}
           {batchCatalogEntries ? (
             <Section title={t("catalog.sectionTitle")} defaultOpen>
               <Row label={tCommon("labels.type")}>

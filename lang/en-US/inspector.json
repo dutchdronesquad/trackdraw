@@ -134,7 +134,14 @@
     "groupCountMeta": "{count, plural, one {1 group} other {{count} groups}}",
     "joinAvailableMeta": "join available",
     "saveSectionLabel": "Save section",
-    "lockedItemsNote": "Locked items stay unchanged."
+    "lockedItemsNote": "Locked items stay unchanged.",
+    "arrange": {
+      "sectionTitle": "Arrange",
+      "alignHorizontal": "Align horizontal centers",
+      "alignVertical": "Align vertical centers",
+      "distributeHorizontal": "Space evenly horizontally",
+      "distributeVertical": "Space evenly vertically"
+    }
   },
   "polyline": {
     "sectionTitle": "Race Line",
