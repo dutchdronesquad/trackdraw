@@ -57,6 +57,14 @@ export const toolShortcuts = {
   ),
 } as Partial<Record<EditorTool, string>>;
 
+export function getToolForShortcut(key: string): EditorTool | null {
+  const normalizedKey = key.toUpperCase();
+  const entry = Object.entries(toolShortcuts).find(
+    ([, shortcut]) => shortcut?.toUpperCase() === normalizedKey
+  );
+  return (entry?.[0] as EditorTool | undefined) ?? null;
+}
+
 export const toolCatalogEntryIds = Object.fromEntries(
   getTrackItemToolConfigs()
     .filter((tool) => Boolean(tool.defaultCatalogEntryId))

@@ -87,6 +87,68 @@
     "canvas2d": "2D canvas",
     "preview3d": "3D preview"
   },
+  "commandPalette": {
+    "title": "Command palette",
+    "description": "Search and run TrackDraw actions",
+    "placeholder": "Search actions…",
+    "searchLabel": "Search commands",
+    "resultsLabel": "Available commands",
+    "empty": "No matching actions",
+    "escapeKey": "Esc",
+    "hintNavigate": "↑↓ Navigate",
+    "hintRun": "Enter Run",
+    "groups": {
+      "navigate": "Navigate",
+      "view": "View",
+      "transfer": "Share and transfer",
+      "support": "Support"
+    },
+    "actions": {
+      "projects": {
+        "label": "Project Manager",
+        "description": "Open and manage saved projects"
+      },
+      "accountSettings": {
+        "label": "Account settings",
+        "description": "Manage profile, security and API keys"
+      },
+      "shortcuts": {
+        "label": "Keyboard shortcuts",
+        "description": "Review editor keys and shortcuts"
+      },
+      "view2d": {
+        "label": "Open 2D canvas",
+        "description": "Switch to the editable top-down view",
+        "alreadyActive": "Already viewing the 2D canvas"
+      },
+      "view3d": {
+        "label": "Open 3D preview",
+        "description": "Review the track in three dimensions",
+        "alreadyActive": "Already viewing the 3D preview"
+      },
+      "flyThrough": {
+        "label": "Start fly-through",
+        "description": "Preview the race line from the pilot view",
+        "noPathReason": "Draw a path first to enable fly-through"
+      },
+      "share": {
+        "label": "Share",
+        "description": "Publish a read-only link for this track"
+      },
+      "export": {
+        "label": "Export",
+        "description": "Download PNG, PDF, SVG or JSON"
+      },
+      "import": {
+        "label": "Import",
+        "description": "Bring in a JSON project file"
+      },
+      "feedback": {
+        "label": "Feedback",
+        "description": "Report a problem, share an idea or ask a question"
+      }
+    }
+  },
   "elementPlacementControl": {
     "official": "Official",
     "typeLabel": "{tool} type"

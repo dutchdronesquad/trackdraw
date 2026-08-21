@@ -18,6 +18,7 @@ export function useEditorDialogs({
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
   const [presetPickerOpen, setPresetPickerOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const mobileNewProjectTimerRef = useRef<number | null>(null);
 
   const openNewProjectDialog = useCallback(() => {
@@ -61,6 +62,8 @@ export function useEditorDialogs({
     setProjectManagerOpen,
     presetPickerOpen,
     setPresetPickerOpen,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
     openNewProjectDialog,
   };
 }

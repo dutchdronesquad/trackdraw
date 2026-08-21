@@ -862,17 +862,43 @@
   },
   "keyboardShortcuts": {
     "dialogTitle": "Keyboard Shortcuts",
-    "dialogSubtitle": "Available keyboard and canvas shortcuts in the studio.",
+    "dialogSubtitle": "Find the shortcut you need and fly faster.",
     "sectionTools": "Tools",
     "sectionSelection": "Selection",
     "sectionPathEditing": "Path Editing",
     "sectionCanvas": "Canvas",
+    "systemLayoutHint": "Shortcuts follow your system layout (Cmd on Mac, Ctrl on Windows and Linux).",
+    "categories": {
+      "label": "Shortcut categories",
+      "essentials": "Essentials",
+      "tools": "Tools",
+      "edit": "Edit",
+      "canvas": "Canvas"
+    },
+    "search": {
+      "label": "Search keyboard shortcuts",
+      "placeholder": "Search shortcuts…",
+      "results": "{count, plural, =0 {No results} =1 {1 result} other {# results}}",
+      "emptyTitle": "No shortcuts found",
+      "emptyBody": "Try an action, tool, or key combination."
+    },
+    "table": {
+      "description": "What it does",
+      "shortcut": "Shortcut"
+    },
+    "keys": {
+      "or": "or"
+    },
     "shortcuts": {
+      "undo": "Undo",
+      "redo": "Redo",
       "duplicateItems": "Duplicate selected items",
       "copyItems": "Copy selected items",
       "pasteItems": "Paste copied items",
       "rotateLeft": "Rotate selected items left",
       "rotateRight": "Rotate selected items right",
+      "rotateLeftSmall": "Rotate left precisely",
+      "rotateRightSmall": "Rotate right precisely",
       "mouseRotateSnap": "Mouse rotate snap",
       "mouseRotateFine": "Fine mouse rotate",
       "keyRotateFine": "Fine key rotate",
@@ -888,7 +914,39 @@
       "panView": "Pan view",
       "bypassSnap": "Temporarily bypass snap",
       "zoom": "Zoom",
+      "toggleSidebar": "Toggle sidebar",
+      "openCommandPalette": "Open command palette",
       "saveSnapshot": "Save snapshot"
+    },
+    "descriptions": {
+      "activateTool": "Activate the {tool} tool",
+      "undo": "Undo the last action",
+      "redo": "Redo the last undone action",
+      "duplicateItems": "Duplicate selected items",
+      "copyItems": "Copy selected items",
+      "pasteItems": "Paste copied items",
+      "rotateLeft": "Rotate the selection counter-clockwise",
+      "rotateRight": "Rotate the selection clockwise",
+      "rotateLeftSmall": "Rotate counter-clockwise in smaller steps",
+      "rotateRightSmall": "Rotate clockwise in smaller steps",
+      "mouseRotateSnap": "Rotate by dragging with snap enabled",
+      "mouseRotateFine": "Rotate freely while dragging",
+      "keyRotateFine": "Rotate in one degree steps",
+      "deleteItems": "Delete the selected items",
+      "nudgeItems": "Move the selection by one grid step",
+      "fineNudge": "Move the selection in small steps",
+      "finishPath": "Finish the path being drawn",
+      "removeLastPoint": "Remove the last point from the draft path",
+      "deletePathPoint": "Delete the selected path point",
+      "cancelDraft": "Cancel the current path draft",
+      "fitView": "Fit the whole field in view",
+      "clearSelection": "Clear selection and return to the Select tool",
+      "panView": "Pan the canvas with the mouse",
+      "bypassSnap": "Temporarily disable snapping",
+      "zoom": "Zoom the canvas in or out",
+      "toggleSidebar": "Show or hide the editor sidebar",
+      "openCommandPalette": "Search commands and actions",
+      "saveSnapshot": "Save a project snapshot"
     }
   },
   "versionConflict": {
