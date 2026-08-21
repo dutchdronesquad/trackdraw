@@ -13,18 +13,6 @@ vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => mobileState.isMobile,
 }));
 
-vi.mock("framer-motion", () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-  motion: {
-    div: ({
-      children,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> & {
-      children?: React.ReactNode;
-    }) => <div {...props}>{children}</div>,
-  },
-}));
-
 vi.mock("@/components/MobileDrawer", () => ({
   MobileDrawer: ({
     children,
@@ -48,35 +36,44 @@ describe("KeyboardShortcutsDialog", () => {
     mobileState.isMobile = false;
   });
 
-  it("opens with tools shortcuts and expands another section on desktop", async () => {
-    const user = userEvent.setup();
-
+  it("opens as a searchable desktop dialog with essential shortcuts", () => {
     render(<KeyboardShortcutsDialog open onOpenChange={vi.fn()} />);
 
-    expect(screen.getByText("Keyboard Shortcuts")).toBeTruthy();
-    expect(screen.getByText("Gate")).toBeTruthy();
-    expect(screen.getByText("G")).toBeTruthy();
-    expect(screen.getByText("Tower")).toBeTruthy();
-    expect(screen.getByText("T")).toBeTruthy();
-    expect(screen.queryByText("Save snapshot")).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: "Project" }));
-
-    expect(screen.getByText("Save snapshot")).toBeTruthy();
-    expect(screen.getByText("Ctrl/Cmd")).toBeTruthy();
-    expect(screen.getByText("S")).toBeTruthy();
+    expect(
+      screen.getByRole("dialog", { name: "Keyboard Shortcuts" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("searchbox", { name: "Search keyboard shortcuts" })
+    ).toBeTruthy();
+    expect(screen.getAllByText("Essentials").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Undo").length).toBeGreaterThan(0);
   });
 
-  it("collapses the open shortcuts section when clicked again", async () => {
+  it("filters shortcuts by action, description, or key", async () => {
     const user = userEvent.setup();
 
     render(<KeyboardShortcutsDialog open onOpenChange={vi.fn()} />);
 
-    expect(screen.getByText("Select")).toBeTruthy();
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search keyboard shortcuts" }),
+      "barrier"
+    );
 
-    await user.click(screen.getByRole("button", { name: "Tools" }));
+    expect(screen.getByText("Barrier")).toBeTruthy();
+    expect(screen.getByText("Activate the Barrier tool")).toBeTruthy();
+  });
 
-    expect(screen.queryByText("Select")).toBeNull();
+  it("switches between shortcut categories", async () => {
+    const user = userEvent.setup();
+
+    render(<KeyboardShortcutsDialog open onOpenChange={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /Project/ }));
+
+    expect(screen.getByText("Save snapshot")).toBeTruthy();
+    expect(screen.getAllByText("Open command palette").length).toBeGreaterThan(
+      0
+    );
   });
 
   it("uses the mobile drawer shell on small screens", () => {

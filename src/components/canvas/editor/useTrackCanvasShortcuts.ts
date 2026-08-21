@@ -4,7 +4,10 @@ import { type RefObject, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useHistorySession } from "@/hooks/account/useHistorySession";
 import { isPolylineShape } from "@/lib/track/shape-utils";
-import type { EditorTool } from "@/lib/editor/tool-registry";
+import {
+  getToolForShortcut,
+  type EditorTool,
+} from "@/lib/editor/tool-registry";
 import type { Shape, ShapeDraft } from "@/lib/types";
 import {
   clipboard,
@@ -314,37 +317,9 @@ export function useTrackCanvasShortcuts({
         removeShapes(selectionRef.current);
       }
 
-      switch (key.toLowerCase()) {
-        case "v":
-          setActiveTool("select");
-          break;
-        case "h":
-          setActiveTool("grab");
-          break;
-        case "g":
-          setActiveTool("gate");
-          break;
-        case "f":
-          setActiveTool("flag");
-          break;
-        case "c":
-          if (!meta) setActiveTool("cone");
-          break;
-        case "l":
-          setActiveTool("label");
-          break;
-        case "p":
-          setActiveTool("polyline");
-          break;
-        case "s":
-          if (!meta) setActiveTool("startfinish");
-          break;
-        case "r":
-          setActiveTool("ladder");
-          break;
-        case "d":
-          if (!meta) setActiveTool("divegate");
-          break;
+      if (!meta) {
+        const shortcutTool = getToolForShortcut(key);
+        if (shortcutTool) setActiveTool(shortcutTool);
       }
     };
 

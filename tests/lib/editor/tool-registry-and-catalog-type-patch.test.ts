@@ -9,6 +9,7 @@ import {
 import {
   createShapeForTool,
   getShapeDisplayLabel,
+  getToolForShortcut,
   getToolLabel,
   toolShortcuts,
 } from "@/lib/editor/tool-registry";
@@ -47,6 +48,9 @@ describe("editor tool helpers", () => {
     expect(toolShortcuts.tower).toBe("T");
     expect(toolShortcuts.divegate).toBe("D");
     expect(toolShortcuts.preset).toBeUndefined();
+    expect(getToolForShortcut("t")).toBe("tower");
+    expect(getToolForShortcut("B")).toBe("barrier");
+    expect(getToolForShortcut("?")).toBeNull();
   });
 
   it("creates default shape drafts for supported placement tools", () => {

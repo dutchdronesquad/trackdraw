@@ -162,13 +162,9 @@ Why:
 - Alignment snapping helps while dragging, but it does not replace deliberate multi-selection alignment and equal-spacing operations
 - Users need a low-risk way to try an alternative layout without overwriting a working design or manually exporting and reimporting a project
 
-Remaining slices:
-
-- Add a keyboard-first `Cmd/Ctrl+K` command palette that searches existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings
-- Keep palette results context-aware, explain disabled actions, and call the existing handlers rather than duplicating editor or dialog state
-
 Current shipped foundation:
 
+- Searchable command palette: `Cmd/Ctrl+K` searches existing project, view, share, transfer, support, and account actions, explains contextually unavailable actions, and delegates to the existing editor handlers
 - Project duplication: users can duplicate a device or account project from Project Manager into a clearly named independent project for exploring a variant, copying editable project content only and not inheriting published-share ownership, gallery state, or restore history
 - Multi-selection arrange: compatible selected items can be aligned or evenly distributed horizontally and vertically from the inspector; locked items remain fixed, route waypoints stay outside the operation, and each action is one undoable change
 

@@ -67,6 +67,9 @@ const Toolbar = dynamic(() => import("./Toolbar"), { ssr: false });
 const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
   ssr: false,
 });
+const CommandPalette = dynamic(() => import("./CommandPalette"), {
+  ssr: false,
+});
 
 const EditorMobilePanels = dynamic(
   () =>
@@ -250,6 +253,8 @@ export default function EditorShell({
     setProjectManagerOpen,
     presetPickerOpen,
     setPresetPickerOpen,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
     openNewProjectDialog,
   } = useEditorDialogs({
     isMobile,
@@ -262,6 +267,12 @@ export default function EditorShell({
     const nextQuery = params.toString();
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
     router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const openAccountSettings = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("account", "profile");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [pathname, router, searchParams]);
 
   const {
@@ -1033,6 +1044,27 @@ export default function EditorShell({
           onOpenCloudConflictVersion={handleOpenCloudConflictVersion}
           onKeepLocalConflictCopy={handleKeepLocalConflictCopy}
         />
+
+        {!readOnly ? (
+          <CommandPalette
+            open={commandPaletteOpen}
+            onOpenChange={setCommandPaletteOpen}
+            activeView={tab}
+            hasPath={hasPath}
+            onOpenProjects={() => setProjectManagerOpen(true)}
+            onOpenAccountSettings={openAccountSettings}
+            onOpenShortcuts={() => setShortcutsOpen(true)}
+            onSwitchView={handleTabChange}
+            onStartFlyThrough={() => {
+              handleTabChange("3d");
+              setPendingFlyThroughStart(true);
+            }}
+            onShare={() => setShareOpen(true)}
+            onExport={() => setExportOpen(true)}
+            onImport={() => setImportOpen(true)}
+            onFeedback={() => setFeedbackOpen(true)}
+          />
+        ) : null}
 
         <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
 

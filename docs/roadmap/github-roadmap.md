@@ -29,10 +29,10 @@ The next TrackDraw priority is generated flightpath validation first, completion
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
 
-- [ ] Faster editor actions and safe project variants (`No account required`, `Account-backed`)
+- [x] Faster editor actions and safe project variants (`No account required`, `Account-backed`)
       Reduce repeated navigation and precision work without adding more permanent header controls. Keep each improvement independently shippable and reuse existing editor and project actions rather than introducing parallel state or workflows.
-  - [ ] Searchable command palette
-        Add a keyboard-first `Cmd/Ctrl+K` palette for existing actions such as Project Manager, Export, Share, Feedback, 3D Preview, and settings. Make unavailable actions explain their state, keep the results context-aware, and use the palette to avoid continued header growth rather than hiding essential primary actions.
+  - [x] Searchable command palette
+        Added a keyboard-first `Cmd/Ctrl+K` palette for existing project, view, share, transfer, support, and account actions. Search includes action keywords, unavailable actions explain their current context, and selecting an action delegates to the existing editor handler.
   - [x] Multi-selection align and distribute
         Add explicit horizontal and vertical alignment plus equal-spacing actions for compatible selected items. Preserve lock behavior, treat each operation as one undoable change, keep route waypoints outside the first slice, and expose the actions without crowding the canvas or inspector.
   - [x] Duplicate project as an independent variant

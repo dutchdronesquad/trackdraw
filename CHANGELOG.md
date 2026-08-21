@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Faster access to editor actions
+
+Press `Cmd/Ctrl+K` in Studio to search and run existing actions such as Project Manager, 3D Preview, Share, Export, Feedback, and account settings. Actions that are unavailable in the current track or view now explain what is needed.
+
 ### Faster multi-selection layout
 
 Selected track items can now be aligned or evenly distributed horizontally and vertically from the inspector. Locked items remain fixed, Race Lines stay outside these operations, and each arrangement can be undone in one step.
