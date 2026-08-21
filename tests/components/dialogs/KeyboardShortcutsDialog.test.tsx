@@ -76,6 +76,18 @@ describe("KeyboardShortcutsDialog", () => {
     );
   });
 
+  it("uses symbols and the localized alternative label for shortcut chords", async () => {
+    const user = userEvent.setup();
+
+    render(<KeyboardShortcutsDialog open onOpenChange={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /Edit/ }));
+
+    expect(
+      screen.getByLabelText("Ctrl/Cmd + Shift + Z or Ctrl + Y")
+    ).toBeTruthy();
+  });
+
   it("uses the mobile drawer shell on small screens", () => {
     mobileState.isMobile = true;
 

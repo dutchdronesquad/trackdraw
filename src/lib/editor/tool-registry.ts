@@ -58,9 +58,9 @@ export const toolShortcuts = {
 } as Partial<Record<EditorTool, string>>;
 
 export function getToolForShortcut(key: string): EditorTool | null {
-  const normalizedKey = key.toLocaleUpperCase();
+  const normalizedKey = key.toUpperCase();
   const entry = Object.entries(toolShortcuts).find(
-    ([, shortcut]) => shortcut?.toLocaleUpperCase() === normalizedKey
+    ([, shortcut]) => shortcut?.toUpperCase() === normalizedKey
   );
   return (entry?.[0] as EditorTool | undefined) ?? null;
 }

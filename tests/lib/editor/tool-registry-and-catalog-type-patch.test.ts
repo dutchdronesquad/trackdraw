@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildCatalogTypePatch,
   buildBarrierCatalogTypePatch,
@@ -51,6 +51,19 @@ describe("editor tool helpers", () => {
     expect(getToolForShortcut("t")).toBe("tower");
     expect(getToolForShortcut("B")).toBe("barrier");
     expect(getToolForShortcut("?")).toBeNull();
+  });
+
+  it("matches shortcut keys without locale-sensitive case conversion", () => {
+    const localeUpperCase = vi
+      .spyOn(String.prototype, "toLocaleUpperCase")
+      .mockReturnValue("NOT-A-SHORTCUT");
+
+    try {
+      expect(getToolForShortcut("t")).toBe("tower");
+      expect(localeUpperCase).not.toHaveBeenCalled();
+    } finally {
+      localeUpperCase.mockRestore();
+    }
   });
 
   it("creates default shape drafts for supported placement tools", () => {

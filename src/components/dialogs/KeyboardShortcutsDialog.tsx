@@ -84,8 +84,8 @@ function ShortcutKeys({
   alternativeLabel: string;
 }) {
   const shortcutLabel = item.shortcuts
-    .map((chord) => chord.join(" plus "))
-    .join(" or ");
+    .map((chord) => chord.join(" + "))
+    .join(` ${alternativeLabel} `);
 
   return (
     <div
