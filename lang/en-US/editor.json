@@ -545,7 +545,10 @@
     "exportSuccess": "Project JSON exported",
     "embeddedTrack": "Embedded track",
     "sharedPreview": "Shared preview",
-    "loading3d": "Loading 3D…"
+    "loading3d": "Loading 3D…",
+    "portraitOnlyEyebrow": "Mobile editor",
+    "portraitOnlyTitle": "Turn your phone upright",
+    "portraitOnlyDescription": "The TrackDraw editor is designed for portrait mode on mobile. Rotate your phone to continue editing."
   },
   "languagePicker": {
     "ariaLabel": "Language"

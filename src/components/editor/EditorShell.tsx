@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -22,7 +23,7 @@ import { downloadJsonFile } from "@/lib/export/download-json";
 import { findPresetById } from "@/lib/planning/layout-presets";
 import { useUserPresets } from "@/store/user-presets";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobileLandscape, useIsMobileLayout } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   useDeveloperMode,
@@ -34,6 +35,7 @@ import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { useCompleteProfile } from "@/hooks/account/useCompleteProfile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+import { RotateCcw, Smartphone } from "lucide-react";
 import type { EditorView } from "@/lib/editor/view";
 import {
   useSessionActions,
@@ -182,7 +184,9 @@ export default function EditorShell({
     unitSystem,
     vertexSelection,
   });
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileLayout();
+  const isMobileLandscape = useIsMobileLandscape();
+  const prefersReducedMotion = useReducedMotion();
   const { data: authSession } = authClient.useSession();
   const authUser = authSession?.user ?? null;
   const router = useRouter();
@@ -620,7 +624,9 @@ export default function EditorShell({
               onImport={() => setImportOpen(true)}
               onOpenProjectManager={() => setProjectManagerOpen(true)}
               onSaveSnapshot={() => void handleManualSave()}
-              onOpenShortcuts={() => setShortcutsOpen(true)}
+              onOpenShortcuts={
+                isMobile ? undefined : () => setShortcutsOpen(true)
+              }
               onFeedback={() => setFeedbackOpen(true)}
               readOnly={false}
               hideTabsOnMobile
@@ -947,6 +953,90 @@ export default function EditorShell({
             studioHref={studioHref}
             tab={tab}
           />
+        ) : null}
+
+        {isMobileLandscape && !readOnly ? (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-landscape-title"
+            aria-describedby="mobile-landscape-description"
+            className="fixed inset-0 z-[60] flex overflow-hidden bg-slate-950 p-6 text-center text-white"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-35"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, rgb(148 163 184 / 0.22) 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+              }}
+            />
+            <motion.div
+              aria-hidden="true"
+              className="bg-brand-primary/18 absolute inset-0 m-auto size-72 rounded-full blur-3xl"
+              animate={
+                prefersReducedMotion
+                  ? undefined
+                  : { opacity: [0.7, 1, 0.7], scale: [0.94, 1.06, 0.94] }
+              }
+              transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
+            />
+
+            <motion.div
+              className="relative m-auto flex max-w-sm flex-col items-center"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
+              <motion.div
+                className="relative mb-5 flex size-24 items-center justify-center"
+                initial={
+                  prefersReducedMotion ? false : { rotate: -90, scale: 0.86 }
+                }
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 17,
+                  delay: 0.08,
+                }}
+              >
+                <div className="border-brand-primary/25 bg-brand-primary/10 absolute inset-0 rounded-full border" />
+                <div className="border-brand-primary/15 absolute inset-2 rounded-full border" />
+                <Smartphone className="text-brand-primary relative size-10 stroke-[1.6]" />
+                <motion.span
+                  className="bg-brand-primary text-primary-foreground absolute -top-1 -right-1 flex size-8 items-center justify-center rounded-full shadow-[0_8px_24px_rgb(30_147_219_/_0.35)]"
+                  initial={prefersReducedMotion ? false : { scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 18,
+                    delay: 0.28,
+                  }}
+                >
+                  <RotateCcw className="size-4 stroke-[2.25]" />
+                </motion.span>
+              </motion.div>
+
+              <p className="text-brand-primary mb-2 text-[11px] font-semibold tracking-[0.18em] uppercase">
+                {t("shell.portraitOnlyEyebrow")}
+              </p>
+              <h2
+                id="mobile-landscape-title"
+                className="text-2xl font-semibold tracking-tight text-balance"
+              >
+                {t("shell.portraitOnlyTitle")}
+              </h2>
+              <p
+                id="mobile-landscape-description"
+                className="mt-2 max-w-xs text-sm leading-relaxed text-balance text-white/58"
+              >
+                {t("shell.portraitOnlyDescription")}
+              </p>
+            </motion.div>
+          </div>
         ) : null}
 
         <EditorDialogsHost

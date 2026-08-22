@@ -2,7 +2,12 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useIsMobile, useIsTouchDevice } from "@/hooks/use-mobile";
+import {
+  useIsMobile,
+  useIsMobileLandscape,
+  useIsMobileLayout,
+  useIsTouchDevice,
+} from "@/hooks/use-mobile";
 
 type MediaQueryListMock = {
   matches: boolean;
@@ -113,5 +118,64 @@ describe("useIsTouchDevice", () => {
     });
 
     expect(result.current).toBe(true);
+  });
+});
+
+describe("useIsMobileLayout", () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps the mobile shell active for a coarse pointer in phone landscape", () => {
+    const layoutMql = createMql(
+      "(max-width: 767px), (max-width: 1023px) and (pointer: coarse)",
+      true
+    );
+    stubMatchMediaByQuery({
+      "(max-width: 767px), (max-width: 1023px) and (pointer: coarse)":
+        layoutMql,
+    });
+
+    const { result } = renderHook(() => useIsMobileLayout());
+
+    expect(result.current).toBe(true);
+  });
+
+  it("hands a wide touch viewport back to the desktop shell", () => {
+    const layoutMql = createMql(
+      "(max-width: 767px), (max-width: 1023px) and (pointer: coarse)",
+      true
+    );
+    stubMatchMediaByQuery({
+      "(max-width: 767px), (max-width: 1023px) and (pointer: coarse)":
+        layoutMql,
+    });
+
+    const { result } = renderHook(() => useIsMobileLayout());
+
+    act(() => layoutMql.fireChange(false));
+
+    expect(result.current).toBe(false);
+  });
+});
+
+describe("useIsMobileLandscape", () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("tracks phone landscape orientation", () => {
+    const query =
+      "(max-width: 1023px) and (pointer: coarse) and (orientation: landscape)";
+    const landscapeMql = createMql(query, true);
+    stubMatchMediaByQuery({ [query]: landscapeMql });
+
+    const { result } = renderHook(() => useIsMobileLandscape());
+    expect(result.current).toBe(true);
+
+    act(() => landscapeMql.fireChange(false));
+    expect(result.current).toBe(false);
   });
 });
