@@ -961,7 +961,7 @@ export default function EditorShell({
             aria-modal="true"
             aria-labelledby="mobile-landscape-title"
             aria-describedby="mobile-landscape-description"
-            className="fixed inset-0 z-50 flex overflow-hidden bg-slate-950 p-6 text-center text-white"
+            className="fixed inset-0 z-[60] flex overflow-hidden bg-slate-950 p-6 text-center text-white"
           >
             <div
               aria-hidden="true"
