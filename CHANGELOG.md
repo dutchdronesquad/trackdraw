@@ -10,6 +10,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 Press `Cmd/Ctrl+K` in Studio to search and run existing actions such as Project Manager, 3D Preview, Share, Export, Feedback, and account settings. Actions that are unavailable in the current track or view now explain what is needed.
 
+### More reliable mobile rotation
+
+Rotating a phone between portrait and landscape now keeps the track fitted to the 2D canvas and preserves touch interactions. Pinch-to-zoom, two-finger panning, selection, placement, and 3D camera controls continue to work after the screen orientation changes.
+
 ### Faster multi-selection layout
 
 Selected track items can now be aligned or evenly distributed horizontally and vertically from the inspector. Locked items remain fixed, Race Lines stay outside these operations, and each arrangement can be undone in one step.
