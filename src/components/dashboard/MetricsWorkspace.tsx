@@ -79,6 +79,7 @@ type MetricSnapshot = {
   quality: MetricsExplorerQuality;
   windowDays: number;
   measuredSince: string | null;
+  generatedAt: string;
 };
 
 type MetricsView =
@@ -164,8 +165,32 @@ function formatRowValue(row: MetricsExplorerRow, percent: Intl.NumberFormat) {
   return row.value === null ? "—" : percent.format(row.value);
 }
 
-function QualityLabel({ quality }: { quality: MetricsExplorerQuality }) {
+const BUILDING_WINDOW_DAYS = 28;
+
+function buildingProgressDays(measuredSince: string, generatedAt: string) {
+  const elapsedMs =
+    Date.parse(generatedAt) - Date.parse(`${measuredSince}T00:00:00.000Z`);
+  const elapsed = Math.floor(elapsedMs / 86_400_000);
+  return {
+    elapsed: Math.min(Math.max(elapsed, 0), BUILDING_WINDOW_DAYS),
+    total: BUILDING_WINDOW_DAYS,
+  };
+}
+
+function QualityLabel({
+  quality,
+  measuredSince,
+  generatedAt,
+}: {
+  quality: MetricsExplorerQuality;
+  measuredSince?: string | null;
+  generatedAt?: string;
+}) {
   const t = useTranslations("dashboard.metrics.explorer.quality");
+  const progress =
+    quality === "building" && measuredSince && generatedAt
+      ? buildingProgressDays(measuredSince, generatedAt)
+      : null;
   return (
     <span
       className={cn(
@@ -174,7 +199,12 @@ function QualityLabel({ quality }: { quality: MetricsExplorerQuality }) {
       )}
     >
       <Circle className="size-2 fill-current" aria-hidden="true" />
-      {t(quality)}
+      {progress
+        ? t("buildingProgress", {
+            elapsed: progress.elapsed,
+            total: progress.total,
+          })
+        : t(quality)}
     </span>
   );
 }
@@ -644,6 +674,7 @@ export default function MetricsWorkspace({
           quality: metric.quality,
           windowDays: metric.windowDays,
           measuredSince: metric.measuredSince,
+          generatedAt: cockpit.generatedAt,
         } satisfies MetricSnapshot,
       ] as const;
     });
@@ -664,6 +695,7 @@ export default function MetricsWorkspace({
           quality: explorer.acquisition.quality,
           windowDays: explorer.acquisition.windowDays,
           measuredSince: explorer.acquisition.measuredSince,
+          generatedAt: explorer.generatedAt,
         },
       ],
       [
@@ -682,6 +714,7 @@ export default function MetricsWorkspace({
           quality: explorer.adoption.quality,
           windowDays: explorer.adoption.windowDays,
           measuredSince: explorer.adoption.measuredSince,
+          generatedAt: explorer.generatedAt,
         },
       ],
     ];
@@ -758,7 +791,11 @@ export default function MetricsWorkspace({
                         <span className="text-xs font-medium">
                           {t(`journey.${key}.label`)}
                         </span>
-                        <QualityLabel quality={snapshot.quality} />
+                        <QualityLabel
+                          quality={snapshot.quality}
+                          measuredSince={snapshot.measuredSince}
+                          generatedAt={snapshot.generatedAt}
+                        />
                         <span className="mt-0.5 text-base font-semibold tabular-nums">
                           {snapshot.valueKind === "mix" ||
                           snapshot.value === null
@@ -916,7 +953,11 @@ export default function MetricsWorkspace({
                           <MetricDelta snapshot={snapshot} percent={percent} />
                         </td>
                         <td className="px-3 py-2 text-right">
-                          <QualityLabel quality={snapshot.quality} />
+                          <QualityLabel
+                            quality={snapshot.quality}
+                            measuredSince={snapshot.measuredSince}
+                            generatedAt={snapshot.generatedAt}
+                          />
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums sm:pr-5">
                           {t("windowDays", { days: snapshot.windowDays })}
@@ -959,7 +1000,11 @@ export default function MetricsWorkspace({
                   {t("retention.description")}
                 </p>
               </div>
-              <QualityLabel quality={explorer.retention.quality} />
+              <QualityLabel
+                quality={explorer.retention.quality}
+                measuredSince={explorer.retention.measuredSince}
+                generatedAt={explorer.generatedAt}
+              />
             </div>
             <RetentionTable metric={explorer.retention} />
           </section>
@@ -976,7 +1021,11 @@ export default function MetricsWorkspace({
                   {t("acquisition.description")}
                 </p>
               </div>
-              <QualityLabel quality={explorer.acquisition.quality} />
+              <QualityLabel
+                quality={explorer.acquisition.quality}
+                measuredSince={explorer.acquisition.measuredSince}
+                generatedAt={explorer.generatedAt}
+              />
             </div>
             <ExplorerBarRows
               metric={explorer.acquisition}
@@ -1020,7 +1069,11 @@ export default function MetricsWorkspace({
                     {t("adoption.description")}
                   </p>
                 </div>
-                <QualityLabel quality={explorer.adoption.quality} />
+                <QualityLabel
+                  quality={explorer.adoption.quality}
+                  measuredSince={explorer.adoption.measuredSince}
+                  generatedAt={explorer.generatedAt}
+                />
               </div>
               <ExplorerBarRows
                 metric={explorer.adoption}

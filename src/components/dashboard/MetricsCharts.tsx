@@ -1419,7 +1419,12 @@ function UsageComparison({
   const t = useTranslations("dashboard.metrics.comparison");
   if (!hasComparisonBaseline(usage)) {
     return (
-      <span className="text-muted-foreground text-xs">{t("building")}</span>
+      <span className="text-muted-foreground text-xs">
+        {t("buildingProgress", {
+          elapsed: Math.min(usage.trackingDays, 60),
+          total: 60,
+        })}
+      </span>
     );
   }
   const previous = previousEventCount(usage, eventType);

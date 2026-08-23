@@ -243,7 +243,8 @@
         "low_volume": "Low volume",
         "degraded": "Degraded",
         "invalid": "Invalid",
-        "not_started": "Awaiting first complete period"
+        "not_started": "Awaiting first complete period",
+        "buildingProgress": "Building — {elapsed}/{total}d"
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -535,6 +536,7 @@
     },
     "comparison": {
       "building": "30-day comparison is building",
+      "buildingProgress": "30-day comparison is building — {elapsed}/{total}d",
       "lowVolume": "Comparison hidden for low volume",
       "flat": "No change vs previous 30d",
       "changeUp": "Up {pct}% vs previous 30d",
