@@ -79,6 +79,7 @@ type MetricSnapshot = {
   quality: MetricsExplorerQuality;
   windowDays: number;
   measuredSince: string | null;
+  generatedAt: string;
 };
 
 type MetricsView =
@@ -673,6 +674,7 @@ export default function MetricsWorkspace({
           quality: metric.quality,
           windowDays: metric.windowDays,
           measuredSince: metric.measuredSince,
+          generatedAt: cockpit.generatedAt,
         } satisfies MetricSnapshot,
       ] as const;
     });
@@ -693,6 +695,7 @@ export default function MetricsWorkspace({
           quality: explorer.acquisition.quality,
           windowDays: explorer.acquisition.windowDays,
           measuredSince: explorer.acquisition.measuredSince,
+          generatedAt: explorer.generatedAt,
         },
       ],
       [
@@ -711,6 +714,7 @@ export default function MetricsWorkspace({
           quality: explorer.adoption.quality,
           windowDays: explorer.adoption.windowDays,
           measuredSince: explorer.adoption.measuredSince,
+          generatedAt: explorer.generatedAt,
         },
       ],
     ];
@@ -790,7 +794,7 @@ export default function MetricsWorkspace({
                         <QualityLabel
                           quality={snapshot.quality}
                           measuredSince={snapshot.measuredSince}
-                          generatedAt={explorer.generatedAt}
+                          generatedAt={snapshot.generatedAt}
                         />
                         <span className="mt-0.5 text-base font-semibold tabular-nums">
                           {snapshot.valueKind === "mix" ||
@@ -952,7 +956,7 @@ export default function MetricsWorkspace({
                           <QualityLabel
                             quality={snapshot.quality}
                             measuredSince={snapshot.measuredSince}
-                            generatedAt={explorer.generatedAt}
+                            generatedAt={snapshot.generatedAt}
                           />
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums sm:pr-5">
