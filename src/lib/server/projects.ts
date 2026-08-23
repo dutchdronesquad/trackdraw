@@ -7,6 +7,7 @@ import {
 } from "@/lib/track/design";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
 import { getDatabase } from "@/lib/server/db";
+import { revokeSharesForProject } from "@/lib/server/shares";
 
 type ProjectRow = {
   id: string;
@@ -345,7 +346,7 @@ export async function archiveProjectForUser(
   const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db
+  const result = await db
     .prepare(
       `
         update projects
@@ -354,5 +355,11 @@ export async function archiveProjectForUser(
       `
     )
     .bind(now, now, projectId, ownerUserId)
-    .run();
+    .run<{ meta?: { changes?: number } }>();
+
+  // Only cascade if this call actually archived the project — a 0-row match
+  // (wrong owner, already archived, or unknown id) must not revoke shares.
+  if ((result.meta?.changes ?? 0) > 0) {
+    await revokeSharesForProject(projectId, ownerUserId);
+  }
 }

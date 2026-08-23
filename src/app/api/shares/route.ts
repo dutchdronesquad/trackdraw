@@ -3,7 +3,7 @@ import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { getProjectForUser } from "@/lib/server/projects";
+import { getProjectForUser, saveProjectForUser } from "@/lib/server/projects";
 import {
   createShare,
   getShareByProjectIdForUser,
@@ -90,10 +90,22 @@ export async function POST(request: Request) {
       }
     }
 
+    let projectId = body.projectId ?? null;
+    if (user && !projectId) {
+      // Reuse the design id as the project id, matching the convention
+      // useAccountProjectSync's "Sync to account" flow already uses, so a
+      // repeated publish of the same design promotes/updates the same
+      // project instead of creating a new one every time.
+      const project = await saveProjectForUser(user.id, design, {
+        projectId: design.id,
+      });
+      projectId = project.id;
+    }
+
     const share = await createShare(design, {
       expiresInDays: user ? undefined : (body.expiresInDays ?? 90),
       ownerUserId: user?.id ?? null,
-      projectId: body.projectId ?? null,
+      projectId,
     });
     const path = buildStoredSharePath(
       share.token,

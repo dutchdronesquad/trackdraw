@@ -51,6 +51,7 @@ import {
   getSharesByUserId,
   resolveStoredShare,
   revokeShare,
+  revokeSharesForProject,
 } from "@/lib/server/shares";
 
 afterEach(() => {
@@ -237,6 +238,51 @@ describe("deleteSharesOwnedByUser", () => {
     expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(2, "tok-b");
     expect(deleteB.bind).toHaveBeenCalledWith("tok-b");
     expect(deleteB.run).toHaveBeenCalledOnce();
+  });
+});
+
+describe("revokeSharesForProject", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
+    mocks.prepare.mockReset();
+    mocks.deleteGalleryEntry.mockReset();
+  });
+
+  it("does nothing when the project has no active shares", async () => {
+    const selectStmt = createD1AllStatement([]);
+    installStatements([selectStmt]);
+
+    await revokeSharesForProject("project-1", "user-1");
+
+    expect(selectStmt.bind).toHaveBeenCalledWith("project-1", "user-1");
+    expect(mocks.deleteGalleryEntry).not.toHaveBeenCalled();
+  });
+
+  it("revokes every active share for the project, scoped to the owner", async () => {
+    const selectStmt = createD1AllStatement([
+      { token: "tok-a" },
+      { token: "tok-b" },
+    ]);
+    const revokeA = createStatement();
+    const revokeB = createStatement();
+    installStatements([selectStmt, revokeA, revokeB]);
+
+    await revokeSharesForProject("project-1", "user-1");
+
+    expect(selectStmt.bind).toHaveBeenCalledWith("project-1", "user-1");
+    expect(revokeA.bind).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      "tok-a"
+    );
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(1, "tok-a");
+    expect(revokeB.bind).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      "tok-b"
+    );
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(2, "tok-b");
   });
 });
 

@@ -17,6 +17,7 @@ vi.mock("@/lib/server/auth-session", () => ({
 
 vi.mock("@/lib/server/projects", () => ({
   getProjectForUser: vi.fn(),
+  saveProjectForUser: vi.fn(),
 }));
 
 vi.mock("@/lib/server/shares", () => ({
@@ -27,7 +28,7 @@ vi.mock("@/lib/server/shares", () => ({
 
 import { GET, POST } from "@/app/api/shares/route";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
-import { getProjectForUser } from "@/lib/server/projects";
+import { getProjectForUser, saveProjectForUser } from "@/lib/server/projects";
 import {
   createShare,
   getShareByProjectIdForUser,
@@ -127,6 +128,55 @@ describe("shares API route", () => {
         projectId: "project-1",
       }
     );
+  });
+
+  it("auto-promotes an unsaved design to a project when a signed-in user publishes without a projectId", async () => {
+    const design = createDefaultDesign();
+    const project = createStoredProjectFixture({ id: design.id, design });
+    const share = createStoredShareFixture({
+      expiresAt: null,
+      ownerUserId: testUser.id,
+      projectId: project.id,
+      shareType: "published",
+    });
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
+    vi.mocked(saveProjectForUser).mockResolvedValue(project);
+    vi.mocked(createShare).mockResolvedValue(share);
+
+    const response = await POST(postRequest({ design, view: "2d" }));
+
+    expect(response.status).toBe(200);
+    expect(getProjectForUser).not.toHaveBeenCalled();
+    expect(saveProjectForUser).toHaveBeenCalledWith(
+      testUser.id,
+      expect.objectContaining({ id: design.id }),
+      { projectId: design.id }
+    );
+    expect(createShare).toHaveBeenCalledWith(
+      expect.objectContaining({ id: design.id }),
+      {
+        expiresInDays: undefined,
+        ownerUserId: testUser.id,
+        projectId: project.id,
+      }
+    );
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      share: { projectId: project.id },
+    });
+  });
+
+  it("does not auto-create a project for anonymous share publishes", async () => {
+    const design = createDefaultDesign();
+    const share = createStoredShareFixture({
+      expiresAt: "2026-05-02T12:00:00.000Z",
+    });
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
+    vi.mocked(createShare).mockResolvedValue(share);
+
+    await POST(postRequest({ design, view: "2d" }));
+
+    expect(saveProjectForUser).not.toHaveBeenCalled();
   });
 
   it("rejects project-linked publish for anonymous users", async () => {
