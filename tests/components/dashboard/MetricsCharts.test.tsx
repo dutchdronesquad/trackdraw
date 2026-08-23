@@ -504,7 +504,7 @@ describe("metrics decision views", () => {
       screen.getByRole("button", { name: /^Acquisition Building/ })
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: /^Activation Building 0%/ })
+      screen.getByRole("button", { name: /^Activation Building — \d+\/28d 0%/ })
     ).toBeTruthy();
     expect(screen.queryAllByRole("combobox")).toHaveLength(0);
     expect(screen.getAllByRole("tab")).toHaveLength(5);
