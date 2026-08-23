@@ -23,6 +23,10 @@
     src="https://img.shields.io/badge/license-AGPL--3.0--only-blue"
     alt="License"
   /></a>
+  <a href="https://crowdin.com/project/trackdraw"><img
+    src="https://badges.crowdin.net/trackdraw/localized.svg"
+    alt="Crowdin"
+  /></a>
 </p>
 
 <p align="center">
