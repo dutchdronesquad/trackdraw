@@ -514,6 +514,13 @@ function LocalizationDemandTable({
                       .join(" · ")}
                   </p>
                 ) : null}
+                {row.groupedLanguageCount != null ? (
+                  <p className="mt-1 pl-3.5">
+                    {t("groupedForPrivacyDetail", {
+                      count: number.format(row.groupedLanguageCount),
+                    })}
+                  </p>
+                ) : null}
               </div>
             </li>
           ))}
@@ -544,34 +551,38 @@ function LocalizationDemandTable({
             })}
           >
             {metrics.servedLocales.map((row, index) => (
-              <div
-                key={row.locale}
-                style={{
-                  width: `${Math.min(row.share * 100, 100)}%`,
-                  backgroundColor: chartColors[index % chartColors.length],
-                }}
-              />
+              <TooltipProvider key={row.locale} delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`${formatLanguage(row.locale)} ${percent.format(row.share)}`}
+                      className="focus-visible:ring-ring p-0 outline-none focus-visible:ring-2 focus-visible:ring-inset"
+                      style={{
+                        width: `${Math.min(row.share * 100, 100)}%`,
+                        backgroundColor:
+                          chartColors[index % chartColors.length],
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="flex items-center gap-2">
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{
+                        backgroundColor:
+                          chartColors[index % chartColors.length],
+                      }}
+                      aria-hidden="true"
+                    />
+                    <span>{formatLanguage(row.locale)}</span>
+                    <span className="font-semibold tabular-nums">
+                      {percent.format(row.share)}
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
-          <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-            {metrics.servedLocales.map((row, index) => (
-              <li key={row.locale} className="flex items-center gap-2 text-xs">
-                <span
-                  className="size-2 rounded-full"
-                  style={{
-                    backgroundColor: chartColors[index % chartColors.length],
-                  }}
-                  aria-hidden="true"
-                />
-                <span className="text-muted-foreground">
-                  {formatLanguage(row.locale)}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {percent.format(row.share)}
-                </span>
-              </li>
-            ))}
-          </ul>
         </section>
       ) : null}
     </div>

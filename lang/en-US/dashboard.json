@@ -356,6 +356,7 @@
         "sessionCount": "{count} sessions",
         "leadingCountries": "Leading countries",
         "groupedForPrivacy": "Grouped for privacy",
+        "groupedForPrivacyDetail": "{count} languages below the 5-session disclosure threshold, combined so no individual creator is identifiable.",
         "previousPeriod": "Previous 28d: {count}",
         "privacyNote": "Individual languages appear after 5 creator sessions.",
         "privacyAndComparisonNote": "Individual languages appear after 5 creator sessions. Previous-period comparison will appear when the measurement period is complete.",

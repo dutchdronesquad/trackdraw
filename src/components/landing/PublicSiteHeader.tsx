@@ -10,12 +10,15 @@ import {
   Home,
   Images,
   ListChecks,
+  LogIn,
   Menu,
 } from "lucide-react";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { MobileDrawerHeader } from "@/components/MobileDrawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import UserAvatar from "@/components/UserAvatar";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 type PublicSiteHeaderProps = {
@@ -134,6 +137,12 @@ export function PublicSiteHeader({
 }: PublicSiteHeaderProps) {
   const t = useTranslations("landing");
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
+  const { data: session } = authClient.useSession();
+  const user = session?.user ?? null;
+  const accountHref =
+    user?.role === "moderator" || user?.role === "admin"
+      ? "/dashboard"
+      : "/studio";
 
   const navItems: NavItem[] = [
     {
@@ -241,16 +250,67 @@ export function PublicSiteHeader({
                 <ThemeToggle />
               </div>
             </div>
-            <Link
-              href="/studio"
-              prefetch={false}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
-            >
-              {t("header.openStudio")} <ArrowRight className="size-3.5" />
-            </Link>
+
+            <div className="bg-border/60 h-5 w-px" aria-hidden="true" />
+
+            <div className="flex items-center gap-3">
+              {user ? (
+                <Link
+                  href={accountHref}
+                  prefetch={false}
+                  aria-label={t("header.account")}
+                  className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-2 rounded-full px-1 transition-colors"
+                >
+                  <UserAvatar
+                    name={user.name}
+                    email={user.email}
+                    className="size-7 text-[11px]"
+                  />
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  prefetch={false}
+                  className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center px-1 text-sm font-medium transition-colors"
+                >
+                  {t("header.login")}
+                </Link>
+              )}
+              <Link
+                href="/studio"
+                prefetch={false}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
+              >
+                {t("header.openStudio")} <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
           </div>
 
-          <div className="sm:hidden">
+          <div className="flex items-center gap-2 sm:hidden">
+            {user ? (
+              <Link
+                href={accountHref}
+                prefetch={false}
+                aria-label={t("header.account")}
+                className="inline-flex size-8 items-center justify-center"
+              >
+                <UserAvatar
+                  name={user.name}
+                  email={user.email}
+                  className="size-7 text-[11px]"
+                />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                prefetch={false}
+                aria-label={t("header.login")}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-md transition-colors"
+              >
+                <LogIn className="size-4" />
+              </Link>
+            )}
+
             <button
               type="button"
               onClick={(event) => {
@@ -302,14 +362,14 @@ export function PublicSiteHeader({
                   </div>
 
                   <div className="border-border/60 bg-background shrink-0 border-t px-3 py-3">
-                    <div className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border px-3 py-1">
+                    <div className="bg-card divide-border/60 divide-y rounded-2xl px-3 py-1">
                       <div className="flex items-center justify-between gap-3 py-2.5">
                         <p className="text-[13px] font-medium">
                           {t("header.languageAriaLabel")}
                         </p>
                         <LanguagePicker
                           variant="full"
-                          className="h-8 w-36 shrink-0"
+                          className="bg-muted h-8 w-36 shrink-0 border-0"
                         />
                       </div>
                       <div className="flex items-center justify-between gap-3 py-2.5">

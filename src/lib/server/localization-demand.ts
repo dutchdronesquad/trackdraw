@@ -29,6 +29,7 @@ export type LocalizationDemandMetrics = {
     share: number;
     supported: boolean | null;
     countries: Array<{ country: string; creatorSessions: number }>;
+    groupedLanguageCount?: number;
   }>;
   servedLocales: Array<{
     locale: SupportedLocale;
@@ -49,6 +50,18 @@ function addUtcDays(day: string, days: number) {
   const date = new Date(`${day}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return utcDay(date);
+}
+
+function sumCurrentSessions(rows: LocalizationDemandRow[]) {
+  return rows.reduce((sum, row) => sum + row.current_sessions, 0);
+}
+
+function sumPreviousSessions(rows: LocalizationDemandRow[]) {
+  return rows.reduce((sum, row) => sum + row.previous_sessions, 0);
+}
+
+function shareOf(sessions: number, total: number) {
+  return total === 0 ? 0 : sessions / total;
 }
 
 function mergeCountries(
@@ -170,7 +183,10 @@ export async function getLocalizationDemandMetrics(
           ? "low_volume"
           : "healthy";
 
-  const languageRows = new Map<string, LocalizationDemandRow[]>();
+  const languageRows = new Map<
+    LocalizationDemandLanguage | "unknown",
+    LocalizationDemandRow[]
+  >();
   for (const row of rows) {
     const current = languageRows.get(row.preferred_language) ?? [];
     current.push(row);
@@ -180,45 +196,34 @@ export async function getLocalizationDemandMetrics(
   const visibleLanguages: LocalizationDemandMetrics["languages"] = [];
   const hiddenRows: LocalizationDemandRow[] = [];
   for (const [language, groupedRows] of languageRows) {
-    const creatorSessions = groupedRows.reduce(
-      (sum, row) => sum + row.current_sessions,
-      0
-    );
+    const creatorSessions = sumCurrentSessions(groupedRows);
     if (creatorSessions < DISCLOSURE_THRESHOLD) {
       hiddenRows.push(...groupedRows);
       continue;
     }
-    const previousCreatorSessions = groupedRows.reduce(
-      (sum, row) => sum + row.previous_sessions,
-      0
-    );
     visibleLanguages.push({
-      language: language as LocalizationDemandLanguage | "unknown",
+      language,
       creatorSessions,
-      previousCreatorSessions,
-      share:
-        totalCreatorSessions === 0 ? 0 : creatorSessions / totalCreatorSessions,
+      previousCreatorSessions: sumPreviousSessions(groupedRows),
+      share: shareOf(creatorSessions, totalCreatorSessions),
       supported:
         language === "unknown" ? null : supportedLanguageSet.has(language),
       countries: mergeCountries(groupedRows),
     });
   }
   if (hiddenRows.length > 0) {
-    const creatorSessions = hiddenRows.reduce(
-      (sum, row) => sum + row.current_sessions,
-      0
-    );
+    const creatorSessions = sumCurrentSessions(hiddenRows);
+    const groupedLanguageCount = new Set(
+      hiddenRows.map((row) => row.preferred_language)
+    ).size;
     visibleLanguages.push({
       language: "other",
       creatorSessions,
-      previousCreatorSessions: hiddenRows.reduce(
-        (sum, row) => sum + row.previous_sessions,
-        0
-      ),
-      share:
-        totalCreatorSessions === 0 ? 0 : creatorSessions / totalCreatorSessions,
+      previousCreatorSessions: sumPreviousSessions(hiddenRows),
+      share: shareOf(creatorSessions, totalCreatorSessions),
       supported: null,
       countries: [],
+      groupedLanguageCount,
     });
   }
   visibleLanguages.sort(
@@ -263,10 +268,7 @@ export async function getLocalizationDemandMetrics(
         return {
           locale,
           creatorSessions,
-          share:
-            totalCreatorSessions === 0
-              ? 0
-              : creatorSessions / totalCreatorSessions,
+          share: shareOf(creatorSessions, totalCreatorSessions),
         };
       })
       .filter((row) => row.creatorSessions > 0)

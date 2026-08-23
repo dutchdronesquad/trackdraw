@@ -90,7 +90,7 @@ export function getUsersColumns({
     },
     {
       accessorKey: "projectCount",
-      meta: { className: "hidden w-28 sm:table-cell" },
+      meta: { className: "w-28" },
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -156,7 +156,7 @@ export function getUsersColumns({
     },
     {
       accessorKey: "lastLoginAt",
-      meta: { className: "hidden w-36 sm:table-cell" },
+      meta: { className: "w-36" },
       header: ({ column }) => (
         <Button
           variant="ghost"
