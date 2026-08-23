@@ -33,6 +33,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { DashboardModule } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
@@ -183,11 +184,13 @@ function NavMenuItem({
   currentPath,
   badge,
   label,
+  onNavigate,
 }: {
   item: NavItem;
   currentPath: string;
   badge?: number;
   label: string;
+  onNavigate: () => void;
 }) {
   const isActive = isItemActive(currentPath, item);
   const Icon = item.icon;
@@ -210,6 +213,7 @@ function NavMenuItem({
           href={item.href}
           prefetch={false}
           aria-current={isActive ? "page" : undefined}
+          onClick={onNavigate}
         >
           <Icon />
           <span>{label}</span>
@@ -251,6 +255,10 @@ export default function DashboardAppSidebar({
   const currentPath = usePathname();
   const theme = useTheme();
   const t = useTranslations("dashboard.sidebar");
+  const { isMobile, setOpenMobile } = useSidebar();
+  const closeMobileSidebar = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const filteredTopItems = topNavItems.filter((item) => {
     if (item.key === "overview") return visibleModules.includes("overview");
@@ -318,6 +326,7 @@ export default function DashboardAppSidebar({
                     currentPath={currentPath}
                     badge={itemBadges[item.key]}
                     label={t(`nav.${item.titleKey}`)}
+                    onNavigate={closeMobileSidebar}
                   />
                 ))}
               </SidebarMenu>
@@ -336,6 +345,7 @@ export default function DashboardAppSidebar({
                     currentPath={currentPath}
                     badge={itemBadges[item.key]}
                     label={t(`nav.${item.titleKey}`)}
+                    onNavigate={closeMobileSidebar}
                   />
                 ))}
               </SidebarMenu>
@@ -354,6 +364,7 @@ export default function DashboardAppSidebar({
                     currentPath={currentPath}
                     badge={itemBadges[item.key]}
                     label={t(`nav.${item.titleKey}`)}
+                    onNavigate={closeMobileSidebar}
                   />
                 ))}
               </SidebarMenu>
@@ -377,7 +388,11 @@ export default function DashboardAppSidebar({
                   className="hover:bg-muted/80 hover:text-foreground"
                   asChild
                 >
-                  <Link href={item.href} prefetch={false}>
+                  <Link
+                    href={item.href}
+                    prefetch={false}
+                    onClick={closeMobileSidebar}
+                  >
                     <Icon className="group-data-[collapsible=icon]:size-4.5" />
                     <span>{label}</span>
                   </Link>
