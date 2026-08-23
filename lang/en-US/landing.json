@@ -27,6 +27,8 @@
     "themeTooltip": "Switch the public site theme.",
     "languageAriaLabel": "Language",
     "languageTooltip": "Switch the site language.",
+    "login": "Log in",
+    "account": "Account",
     "openStudio": "Open Studio"
   },
   "hero": {
