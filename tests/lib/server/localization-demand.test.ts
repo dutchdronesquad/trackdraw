@@ -118,6 +118,57 @@ describe("localization demand aggregation", () => {
       { country: "FR", creatorSessions: 6 },
       { country: "other", creatorSessions: 2 },
     ]);
+    expect(metrics.languages[2]).toMatchObject({
+      language: "other",
+      groupedLanguageCount: 1,
+    });
+  });
+
+  it("counts distinct grouped languages, not grouped rows, in the other bucket", async () => {
+    const rows = createD1AllStatement([
+      {
+        preferred_language: "de",
+        served_locale: "en",
+        country_code: "DE",
+        current_sessions: 2,
+        previous_sessions: 0,
+      },
+      {
+        preferred_language: "de",
+        served_locale: "en",
+        country_code: "AT",
+        current_sessions: 1,
+        previous_sessions: 0,
+      },
+      {
+        preferred_language: "it",
+        served_locale: "en",
+        country_code: "IT",
+        current_sessions: 3,
+        previous_sessions: 0,
+      },
+      {
+        preferred_language: "en",
+        served_locale: "en",
+        country_code: "US",
+        current_sessions: 20,
+        previous_sessions: 15,
+      },
+    ]);
+    const state = createD1Statement({
+      first: { measured_since: "2026-05-01" },
+    });
+    installD1Statements(mocks.prepare, [rows, state]);
+
+    const metrics = await getLocalizationDemandMetrics(
+      new Date("2026-08-16T12:00:00.000Z")
+    );
+
+    const other = metrics.languages.find((row) => row.language === "other");
+    expect(other).toMatchObject({
+      creatorSessions: 6,
+      groupedLanguageCount: 2,
+    });
   });
 
   it("derives supported language primaries from the locale configuration", async () => {

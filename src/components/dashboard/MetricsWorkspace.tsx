@@ -557,7 +557,7 @@ function LocalizationDemandTable({
                     <button
                       type="button"
                       aria-label={`${formatLanguage(row.locale)} ${percent.format(row.share)}`}
-                      className="outline-none"
+                      className="focus-visible:ring-ring p-0 outline-none focus-visible:ring-2 focus-visible:ring-inset"
                       style={{
                         width: `${Math.min(row.share * 100, 100)}%`,
                         backgroundColor:
