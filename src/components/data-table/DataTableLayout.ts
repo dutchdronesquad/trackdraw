@@ -7,7 +7,7 @@ export type DataTableColumnMeta = {
 };
 
 export const dataTableWrapperClassName =
-  "overflow-hidden rounded-lg border bg-background";
+  "overflow-x-auto rounded-lg border bg-background";
 
 export const dataTableClassName = "min-w-[760px] table-fixed";
 
