@@ -560,7 +560,8 @@ function LocalizationDemandTable({
                       className="outline-none"
                       style={{
                         width: `${Math.min(row.share * 100, 100)}%`,
-                        backgroundColor: chartColors[index % chartColors.length],
+                        backgroundColor:
+                          chartColors[index % chartColors.length],
                       }}
                     />
                   </TooltipTrigger>
@@ -568,7 +569,8 @@ function LocalizationDemandTable({
                     <span
                       className="size-2 shrink-0 rounded-full"
                       style={{
-                        backgroundColor: chartColors[index % chartColors.length],
+                        backgroundColor:
+                          chartColors[index % chartColors.length],
                       }}
                       aria-hidden="true"
                     />

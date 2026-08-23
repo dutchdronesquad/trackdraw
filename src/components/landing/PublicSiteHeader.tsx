@@ -369,7 +369,7 @@ export function PublicSiteHeader({
                         </p>
                         <LanguagePicker
                           variant="full"
-                          className="h-8 w-36 shrink-0 border-0 bg-muted"
+                          className="bg-muted h-8 w-36 shrink-0 border-0"
                         />
                       </div>
                       <div className="flex items-center justify-between gap-3 py-2.5">
