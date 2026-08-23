@@ -81,6 +81,14 @@ You are welcome to contribute to TrackDraw. You can find a guide on how to contr
   <img src="https://contrib.rocks/image?repo=dutchdronesquad/trackdraw" alt="Contributors" />
 </a>
 
+Want to help translate TrackDraw? See the [Translation Workflow](CONTRIBUTING.md#translation-workflow) in CONTRIBUTING.md.
+
+<a href="https://crowdin.com/project/trackdraw"><picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x, https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x">
+<source media="(prefers-color-scheme: light)" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x">
+<img style="width:140px;height:40px" src="https://badges.crowdin.net/badge/dark/crowdin-on-light.png" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x" alt="Crowdin | Agile localization for tech companies" />
+</picture></a>
+
 ## License
 
 Distributed under the **AGPL-3.0-only** License - see [LICENSE](LICENSE) for details.

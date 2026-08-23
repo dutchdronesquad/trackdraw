@@ -139,6 +139,12 @@ npm run migrate:up:production
 
 ## Translation Workflow
 
+<a href="https://crowdin.com/project/trackdraw"><picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x, https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x">
+<source media="(prefers-color-scheme: light)" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x">
+<img style="width:140px;height:40px" src="https://badges.crowdin.net/badge/dark/crowdin-on-light.png" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x" alt="Crowdin | Agile localization for tech companies" />
+</picture></a>
+
 During the Crowdin pilot, English source copy remains in `lang/en-US/` and normal feature pull requests. Dutch (`lang/nl-NL/`), German (`lang/de-DE/`), and Simplified Chinese (`lang/zh-CN/`) are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency. Generated locale assets use the same regional directory names. Product locale identifiers stored by the frontend remain the shorter `en`, `nl`, `de`, and `zh-CN` values.
 
 This applies to AI-assisted feature work too: coding agents should add or change only the English source messages. TrackDraw does not use paid Crowdin AI or machine translation to fill new target strings. Crowdin may reuse previously approved perfect Translation Memory matches; contributors translate the remaining copy in Crowdin, and missing messages safely fall back to English until then. A maintainer may also request a separate no-cost assisted seeding batch after the English source has reached Crowdin. Such a batch must contain only missing keys, be uploaded to Crowdin as unapproved translations, and return through the normal localization pull request instead of being committed directly. Keeping target editing and approval inside Crowdin preserves its glossary, translation memory, QA history, and human corrections.
