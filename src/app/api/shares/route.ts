@@ -3,7 +3,7 @@ import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { getProjectForUser } from "@/lib/server/projects";
+import { getProjectForUser, saveProjectForUser } from "@/lib/server/projects";
 import {
   createShare,
   getShareByProjectIdForUser,
@@ -90,10 +90,16 @@ export async function POST(request: Request) {
       }
     }
 
+    let projectId = body.projectId ?? null;
+    if (user && !projectId) {
+      const project = await saveProjectForUser(user.id, design);
+      projectId = project.id;
+    }
+
     const share = await createShare(design, {
       expiresInDays: user ? undefined : (body.expiresInDays ?? 90),
       ownerUserId: user?.id ?? null,
-      projectId: body.projectId ?? null,
+      projectId,
     });
     const path = buildStoredSharePath(
       share.token,

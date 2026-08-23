@@ -7,6 +7,7 @@ import {
 } from "@/lib/track/design";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
 import { getDatabase } from "@/lib/server/db";
+import { revokeSharesForProject } from "@/lib/server/shares";
 
 type ProjectRow = {
   id: string;
@@ -355,4 +356,6 @@ export async function archiveProjectForUser(
     )
     .bind(now, now, projectId, ownerUserId)
     .run();
+
+  await revokeSharesForProject(projectId);
 }
