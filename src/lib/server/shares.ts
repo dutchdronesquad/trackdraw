@@ -352,7 +352,10 @@ export async function purgeRevokedShare(token: string) {
     .run();
 }
 
-export async function revokeSharesForProject(projectId: string) {
+export async function revokeSharesForProject(
+  projectId: string,
+  ownerUserId: string
+) {
   const db = await getDatabase();
 
   const rows = await db
@@ -360,10 +363,10 @@ export async function revokeSharesForProject(projectId: string) {
       `
         select token
         from shares
-        where project_id = ? and revoked_at is null
+        where project_id = ? and owner_user_id = ? and revoked_at is null
       `
     )
-    .bind(projectId)
+    .bind(projectId, ownerUserId)
     .all<{ token: string }>();
 
   for (const row of rows.results ?? []) {

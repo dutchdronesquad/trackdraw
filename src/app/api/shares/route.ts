@@ -92,7 +92,13 @@ export async function POST(request: Request) {
 
     let projectId = body.projectId ?? null;
     if (user && !projectId) {
-      const project = await saveProjectForUser(user.id, design);
+      // Reuse the design id as the project id, matching the convention
+      // useAccountProjectSync's "Sync to account" flow already uses, so a
+      // repeated publish of the same design promotes/updates the same
+      // project instead of creating a new one every time.
+      const project = await saveProjectForUser(user.id, design, {
+        projectId: design.id,
+      });
       projectId = project.id;
     }
 

@@ -23,11 +23,19 @@ Both are proposed as independent slices — fix 1 can ship on its own regardless
 
 When a project is archived, revoke every share still pointing at it.
 
-- Add a step to `archiveProjectForUser` that runs, in the same transaction as the `archived_at` update:
-  `update shares set revoked_at = now() where project_id = ? and revoked_at is null`
+- Add a step to `archiveProjectForUser` that revokes shares tied to that project after the `archived_at` update.
 - Reuse the existing `revoked_at` column and revocation semantics already used elsewhere in `src/lib/server/shares.ts` — no new share state is introduced.
 - Do the same for any hard-delete project path, if one exists, for consistency.
 - Unarchiving (if that exists) should not un-revoke shares automatically — treat revocation as final, matching how manual share revocation already behaves.
+
+### Implemented as
+
+D1 (Cloudflare's SQLite-based product) does not expose a general multi-statement transaction API to this codebase's `getDatabase()` helper, and no other code path here wraps multiple writes in one transaction either — so this ships as two sequential statements, not one atomic transaction, matching the existing style of every other multi-step write in `src/lib/server/projects.ts`/`shares.ts`:
+
+1. `update projects set archived_at = ?, updated_at = ? where id = ? and owner_user_id = ? and archived_at is null`, checked via the D1 result's `meta.changes`.
+2. Only if step 1 actually changed a row (i.e. the caller really did own and archive that project — a 0-row match from a wrong owner or an already-archived project must not cascade), call `revokeSharesForProject(projectId, ownerUserId)`. That function selects active share tokens scoped to both `project_id` and `owner_user_id`, then calls the existing `revokeShare(token)` per token — so gallery entries and preview images are cleaned up the same way manual revocation already does, instead of a raw `UPDATE shares` that would skip that cleanup.
+
+Because this isn't atomic, a crash between step 1 and step 2 would leave the project archived with its shares still active. That's an acceptable, narrow gap: the archive write is the rarer, deliberate action here, and the existing codebase accepts the same non-atomicity elsewhere (e.g. `deleteSharesOwnedByUser`'s per-row loop).
 
 ### Risk and scope
 
@@ -66,10 +74,12 @@ When a signed-in user shares a design that has no `projectId` yet, silently crea
 
 - Matches `accounts-project-sync.md`'s existing decision: "Published shares should attach to a project, and that project can in turn belong to an account."
 - Does not require resolving the harder, still-open ROADMAP question of auto-creating a project on _every_ first edit for signed-in users — it only fires at share time, which is a narrower, lower-risk surface.
-- Implementation sketch:
-  - In `src/app/api/shares/route.ts`, before calling `createShare`, if `user` is present and `body.projectId` is absent, call a new `ensureAccountProject(user.id, design)` helper (in `src/lib/server/projects.ts`, alongside `createProjectDuplicate`) that creates the project row using the same path `handleSyncProject` uses client-side (`useAccountProjectSync.ts:647-702`), then use the resulting id as `projectId`.
-  - Client-side `ShareDialog.tsx` doesn't need to change — it can keep omitting `projectId` when none exists yet; the server fills the gap.
-  - After this ships, a share with `owner_user_id` set and `project_id = null` should no longer be created going forward. Existing rows in that state are left alone (see Migration below).
+
+Implemented as: in `src/app/api/shares/route.ts`, before calling `createShare`, if `user` is present and `body.projectId` is absent, call the existing `saveProjectForUser(user.id, design, { projectId: design.id })` — the same server-side function `POST /api/projects` already uses for "Sync to account" — and use the resulting id as `projectId`. No separate `ensureAccountProject` helper was needed; `saveProjectForUser` already creates-or-updates in one call when given a `projectId`.
+
+`design.id` is passed explicitly as the project id rather than letting `saveProjectForUser` generate a random one, matching the convention `useAccountProjectSync`'s "Sync to account" flow already uses (the account project id equals the design id). Without this, every repeated publish of the same still-unsynced design would create a brand-new project instead of reusing/updating the one from the previous publish.
+
+Client-side `ShareDialog.tsx` doesn't need to change — it can keep omitting `projectId` when none exists yet; the server fills the gap. After this ships, a share with `owner_user_id` set and `project_id = null` should no longer be created going forward. Existing rows in that state are left alone (see Migration below).
 
 **Option C — Full auto-create-project-on-first-edit (out of scope here)**
 
@@ -87,7 +97,7 @@ Do not backfill `projects` rows for existing shares that have `project_id = null
 
 ### Resolved: project visibility after auto-promote
 
-`ensureAccountProject` creates a real, fully visible account project — identical to what "Sync to account" produces — not a hidden row that only exists to satisfy the share's `project_id`. This keeps the account model consistent with `accounts-project-sync.md`, which argues against hiding account-backed state from users.
+The share route's auto-promote call to `saveProjectForUser` creates a real, fully visible account project — identical to what "Sync to account" produces — not a hidden row that only exists to satisfy the share's `project_id`. This keeps the account model consistent with `accounts-project-sync.md`, which argues against hiding account-backed state from users.
 
 ## Suggested sequencing
 

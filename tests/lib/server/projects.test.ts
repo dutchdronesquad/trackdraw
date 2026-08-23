@@ -10,12 +10,17 @@ vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   prepare: vi.fn(),
+  revokeSharesForProject: vi.fn(),
 }));
 
 vi.mock("@/lib/server/db", () => ({
   getDatabase: vi.fn(async () => ({
     prepare: mocks.prepare,
   })),
+}));
+
+vi.mock("@/lib/server/shares", () => ({
+  revokeSharesForProject: mocks.revokeSharesForProject,
 }));
 
 import {
@@ -47,6 +52,7 @@ function projectRow(design: TrackDesign) {
 describe("project server helpers", () => {
   beforeEach(() => {
     mocks.prepare.mockReset();
+    mocks.revokeSharesForProject.mockReset();
   });
 
   it("rejects stale account project saves before overwriting cloud state", async () => {
@@ -203,7 +209,7 @@ describe("project server helpers", () => {
   });
 
   it("archiveProjectForUser runs an UPDATE query with the correct bindings", async () => {
-    const runStmt = createD1Statement();
+    const runStmt = createD1Statement({ run: { meta: { changes: 1 } } });
     mocks.prepare.mockReturnValue(runStmt);
 
     await archiveProjectForUser("project-1", "user-1");
@@ -218,5 +224,26 @@ describe("project server helpers", () => {
     expect(mocks.prepare).toHaveBeenCalledWith(
       expect.stringContaining("archived_at")
     );
+  });
+
+  it("archiveProjectForUser revokes the project's shares once the archive actually changes a row", async () => {
+    const runStmt = createD1Statement({ run: { meta: { changes: 1 } } });
+    mocks.prepare.mockReturnValue(runStmt);
+
+    await archiveProjectForUser("project-1", "user-1");
+
+    expect(mocks.revokeSharesForProject).toHaveBeenCalledWith(
+      "project-1",
+      "user-1"
+    );
+  });
+
+  it("archiveProjectForUser does not revoke shares when no row matched (wrong owner or already archived)", async () => {
+    const runStmt = createD1Statement({ run: { meta: { changes: 0 } } });
+    mocks.prepare.mockReturnValue(runStmt);
+
+    await archiveProjectForUser("project-1", "someone-elses-user-id");
+
+    expect(mocks.revokeSharesForProject).not.toHaveBeenCalled();
   });
 });
