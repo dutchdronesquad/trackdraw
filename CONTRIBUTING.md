@@ -140,9 +140,9 @@ npm run migrate:up:production
 ## Translation Workflow
 
 <a href="https://crowdin.com/project/trackdraw"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x, https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x">
-  <source media="(prefers-color-scheme: light)" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x">
-  <img style="width:140px;height:40px" src="https://badges.crowdin.net/badge/dark/crowdin-on-light.png" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x" alt="Crowdin | Agile localization for tech companies" />
+<source media="(prefers-color-scheme: dark)" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x, https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x">
+<source media="(prefers-color-scheme: light)" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x">
+<img style="width:140px;height:40px" src="https://badges.crowdin.net/badge/dark/crowdin-on-light.png" srcset="https://badges.crowdin.net/badge/dark/crowdin-on-light.png 1x, https://badges.crowdin.net/badge/dark/crowdin-on-light@2x.png 2x" alt="Crowdin | Agile localization for tech companies" />
 </picture></a>
 
 During the Crowdin pilot, English source copy remains in `lang/en-US/` and normal feature pull requests. Dutch (`lang/nl-NL/`), German (`lang/de-DE/`), and Simplified Chinese (`lang/zh-CN/`) are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency. Generated locale assets use the same regional directory names. Product locale identifiers stored by the frontend remain the shorter `en`, `nl`, `de`, and `zh-CN` values.
