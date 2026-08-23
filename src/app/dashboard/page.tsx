@@ -137,10 +137,10 @@ function PlatformStat({
 }) {
   return (
     <div
-      className={`flex h-full min-w-0 items-center gap-3 border-t-2 p-4 sm:px-5 ${accent}`}
+      className={`flex h-full min-w-0 items-center gap-3 rounded-xl border border-t-2 p-3.5 sm:p-4 sm:px-5 ${accent}`}
     >
       <span
-        className={`inline-flex size-10 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
+        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg sm:size-10 ${iconTone}`}
       >
         <Icon className="size-4" />
       </span>
@@ -373,7 +373,7 @@ export default async function DashboardPage() {
   return (
     <>
       <DashboardSiteHeader title={tPages("overview")} />
-      <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-3 pt-0 sm:p-4 sm:pt-0">
+      <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-4 pt-0">
         <header className="flex items-end justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight">
             {tPages("overview")}
@@ -396,13 +396,13 @@ export default async function DashboardPage() {
               {t("sections.platformSnapshotDescription")}
             </p>
           </div>
-          <div className="grid grid-cols-1 overflow-hidden rounded-xl border sm:grid-cols-2 xl:grid-cols-4 xl:[&>*]:border-b-0 [&>*:not(:last-child)]:border-b xl:[&>*:not(:last-child)]:border-r sm:[&>*:nth-child(odd)]:border-r">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <Reveal className="h-full">
               <PlatformStat
                 label={t("kpi.totalUsers.label")}
                 value={overviewStats.totalUsers}
                 icon={Users}
-                accent="border-emerald-500/70"
+                accent="border-t-emerald-500/70"
                 iconTone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
               />
             </Reveal>
@@ -411,7 +411,7 @@ export default async function DashboardPage() {
                 label={t("kpi.activeProjects.label")}
                 value={overviewStats.activeProjects}
                 icon={FolderOpen}
-                accent="border-violet-500/70"
+                accent="border-t-violet-500/70"
                 iconTone="bg-violet-500/10 text-violet-700 dark:text-violet-300"
               />
             </Reveal>
@@ -420,7 +420,7 @@ export default async function DashboardPage() {
                 label={t("kpi.activeShares.label")}
                 value={overviewStats.activeShares}
                 icon={Link2}
-                accent="border-orange-500/70"
+                accent="border-t-orange-500/70"
                 iconTone="bg-orange-500/10 text-orange-700 dark:text-orange-300"
               />
             </Reveal>
@@ -429,7 +429,7 @@ export default async function DashboardPage() {
                 label={t("kpi.gallery.label")}
                 value={galleryStats.public}
                 icon={ImageIcon}
-                accent="border-sky-500/70"
+                accent="border-t-sky-500/70"
                 iconTone="bg-sky-500/10 text-sky-700 dark:text-sky-300"
               />
             </Reveal>

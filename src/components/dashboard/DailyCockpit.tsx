@@ -86,6 +86,8 @@ function MetricCell({
   index: number;
 }) {
   const Icon = METRIC_ICONS[id];
+  const isLastItem = index === METRIC_IDS.length - 1;
+  const isDesktopBottomRow = index >= Math.ceil(METRIC_IDS.length / 2);
   const currentDisplay = metric
     ? formatValue(
         metric.valueKind,
@@ -125,7 +127,7 @@ function MetricCell({
     <Link
       href={metric?.drilldown ?? METRIC_DRILLDOWNS[id]}
       prefetch={false}
-      className={`hover:bg-muted/35 focus-visible:ring-ring group flex min-h-28 min-w-0 gap-3 p-4 transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none ${index < 2 ? "border-b" : ""} ${index % 2 === 0 ? "sm:border-r" : ""}`}
+      className={`hover:bg-muted/35 focus-visible:ring-ring group flex min-h-28 min-w-0 gap-3 p-4 transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none ${!isLastItem ? "border-b" : ""} ${isDesktopBottomRow ? "sm:border-b-0" : ""} ${index % 2 === 0 ? "sm:border-r" : ""}`}
       aria-label={t("kpis.openDrilldown", { metric: t(`kpis.${id}.label`) })}
     >
       <span className="bg-muted text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg">
