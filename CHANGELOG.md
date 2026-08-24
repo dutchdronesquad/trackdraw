@@ -10,10 +10,6 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 Press `Cmd/Ctrl+K` in Studio to search and run existing actions such as Project Manager, 3D Preview, Share, Export, Feedback, and account settings. Actions that are unavailable in the current track or view now explain what is needed.
 
-### More reliable mobile rotation
-
-Rotating a phone between portrait and landscape now keeps the track fitted to the 2D canvas and preserves touch interactions. Pinch-to-zoom, two-finger panning, selection, placement, and 3D camera controls continue to work after the screen orientation changes.
-
 ### Faster multi-selection layout
 
 Selected track items can now be aligned or evenly distributed horizontally and vertically from the inspector. Locked items remain fixed, Race Lines stay outside these operations, and each arrangement can be undone in one step.
@@ -21,6 +17,10 @@ Selected track items can now be aligned or evenly distributed horizontally and v
 ### Duplicate a project
 
 Project Manager now has a Duplicate action for both device and account projects. Duplicating creates an independent, clearly named copy of the design, without carrying over the source project's share links, publication state, or restore history.
+
+### More reliable project syncing and sharing
+
+A brand-new design now syncs to your account automatically once you've made a meaningful edit, instead of requiring an explicit "Sync to account" click. Archiving a project also revokes any shares still pointing at it, and publishing a share for a design that isn't backed by a project yet now creates that project on the fly, so signed-in accounts no longer end up with orphaned shares.
 
 ## [1.15.0]
 
