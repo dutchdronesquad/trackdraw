@@ -337,6 +337,8 @@ export default function EditorShell({
     projectManagerOpen,
     historyPaused,
     interactionSessionDepth,
+    projects,
+    initialized,
     snapshotCurrentDesign,
     replaceDesign,
     setProjects,

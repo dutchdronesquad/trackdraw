@@ -7,6 +7,7 @@ import { getDesignShapes } from "@/lib/track/design";
 import {
   createProjectDuplicate,
   deleteProject,
+  hasMeaningfulProjectContent,
   listProjects,
   listRestorePointsForProject,
   loadProject,
@@ -89,6 +90,8 @@ type UseAccountProjectSyncOptions = {
   projectManagerOpen: boolean;
   historyPaused: boolean;
   interactionSessionDepth: number;
+  projects: ProjectMeta[];
+  initialized: boolean;
   snapshotCurrentDesign: () => void;
   replaceDesign: (design: TrackDesign) => void;
   setProjects: (projects: ProjectMeta[]) => void;
@@ -104,6 +107,8 @@ export function useAccountProjectSync({
   projectManagerOpen,
   historyPaused,
   interactionSessionDepth,
+  projects,
+  initialized,
   snapshotCurrentDesign,
   replaceDesign,
   setProjects,
@@ -139,6 +144,10 @@ export function useAccountProjectSync({
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
   const pendingReentryConflictCheckRef = useRef(false);
 
+  // Ids present here predate this session and are never auto-promoted.
+  const localProjectIdsAtLoadRef = useRef<Set<string> | null>(null);
+  const autoPromoteAttemptedIdsRef = useRef<Set<string>>(new Set());
+
   const [accountShares, setAccountShares] = useState<AccountShareItem[]>([]);
   const [accountSharesLoading, setAccountSharesLoading] = useState(false);
   const accountSharesFetchedForUserRef = useRef<string | null>(null);
@@ -146,6 +155,13 @@ export function useAccountProjectSync({
   useEffect(() => {
     designRef.current = design;
   }, [design]);
+
+  useEffect(() => {
+    if (!initialized || localProjectIdsAtLoadRef.current) return;
+    localProjectIdsAtLoadRef.current = new Set(
+      projects.map((project) => project.id)
+    );
+  }, [initialized, projects]);
 
   useEffect(() => {
     accountProjectsRef.current = accountProjects;
@@ -810,6 +826,71 @@ export function useAccountProjectSync({
     historyPaused,
     interactionSessionDepth,
     handleSyncProject,
+    markProjectSyncFailed,
+    readOnly,
+    setSaveStatusLabel,
+    syncDesignToAccount,
+  ]);
+
+  useEffect(() => {
+    if (
+      readOnly ||
+      !authUserId ||
+      !cloudProjectsAvailable ||
+      isAccountProject ||
+      historyPaused ||
+      interactionSessionDepth > 0
+    ) {
+      return;
+    }
+
+    const knownLocalIds = localProjectIdsAtLoadRef.current;
+    if (!knownLocalIds || knownLocalIds.has(currentDesignId)) return;
+    if (autoPromoteAttemptedIdsRef.current.has(currentDesignId)) return;
+    // A default title alone counts as "meaningful"; require an actual edit too.
+    if (designRef.current.updatedAt === designRef.current.createdAt) return;
+    if (!hasMeaningfulProjectContent(designRef.current)) return;
+
+    const timeoutId = window.setTimeout(() => {
+      autoPromoteAttemptedIdsRef.current.add(currentDesignId);
+      void syncDesignToAccount(designRef.current, {
+        updateStatusLabel: true,
+      }).catch((error) => {
+        if (isAccountProjectSyncConflictError(error)) {
+          setSaveStatusLabel("Review project version");
+          return;
+        }
+
+        markProjectSyncFailed(
+          currentDesignId,
+          error instanceof Error ? error.message : "Account sync failed"
+        );
+        setSaveStatusLabel("Account sync failed; saved locally");
+        toast.error("Account sync failed", {
+          description:
+            "TrackDraw saved this new project on this device, but could not create the account copy yet. Retry sync when the connection is back.",
+          action: {
+            label: "Retry",
+            onClick: () => {
+              void handleSyncProject(currentDesignId);
+            },
+          },
+        });
+        console.error("[TrackDraw auto-promote]", error);
+      });
+    }, 4000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    authUserId,
+    cloudProjectsAvailable,
+    currentDesignId,
+    currentProjectSyncSignature,
+    handleSyncProject,
+    historyPaused,
+    initialized,
+    interactionSessionDepth,
+    isAccountProject,
     markProjectSyncFailed,
     readOnly,
     setSaveStatusLabel,
