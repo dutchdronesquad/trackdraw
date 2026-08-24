@@ -87,6 +87,68 @@
     "canvas2d": "2D-canvas",
     "preview3d": "3D-preview"
   },
+  "commandPalette": {
+    "title": "Opdrachtenpalet",
+    "description": "Zoek en voer TrackDraw-acties uit",
+    "placeholder": "Acties zoeken…",
+    "searchLabel": "Opdrachten zoeken",
+    "resultsLabel": "Beschikbare opdrachten",
+    "empty": "Geen overeenkomende acties",
+    "escapeKey": "Esc",
+    "hintNavigate": "↑↓ Navigeren",
+    "hintRun": "Enter Uitvoeren",
+    "groups": {
+      "navigate": "Navigeren",
+      "view": "Weergave",
+      "transfer": "Delen en overdragen",
+      "support": "Ondersteuning"
+    },
+    "actions": {
+      "projects": {
+        "label": "Projectbeheer",
+        "description": "Open en beheer opgeslagen projecten"
+      },
+      "accountSettings": {
+        "label": "Accountinstellingen",
+        "description": "Beheer profiel, beveiliging en API-keys"
+      },
+      "shortcuts": {
+        "label": "Sneltoetsen",
+        "description": "Bekijk de toetsen en sneltoetsen van de editor"
+      },
+      "view2d": {
+        "label": "2D-canvas openen",
+        "description": "Schakel over naar de bewerkbare bovenaanzicht-weergave",
+        "alreadyActive": "Je bekijkt al het 2D-canvas"
+      },
+      "view3d": {
+        "label": "3D-preview openen",
+        "description": "Bekijk de track in drie dimensies",
+        "alreadyActive": "Je bekijkt al de 3D-preview"
+      },
+      "flyThrough": {
+        "label": "Fly-through starten",
+        "description": "Bekijk de raceline vanuit het pilotperspectief",
+        "noPathReason": "Teken eerst een path om fly-through in te schakelen"
+      },
+      "share": {
+        "label": "Delen",
+        "description": "Publiceer een alleen-lezen link voor deze track"
+      },
+      "export": {
+        "label": "Exporteren",
+        "description": "Download PNG, PDF, SVG of JSON"
+      },
+      "import": {
+        "label": "Importeren",
+        "description": "Importeer een JSON-projectbestand"
+      },
+      "feedback": {
+        "label": "Feedback",
+        "description": "Meld een probleem, deel een idee of stel een vraag"
+      }
+    }
+  },
   "elementPlacementControl": {
     "official": "Officieel",
     "typeLabel": "{tool}-type"
@@ -474,13 +536,19 @@
     "restorePointCreatedAt": "Herstelpunt aangemaakt om {time}",
     "projectOpened": "Project geopend",
     "restoredFromSnapshot": "Hersteld vanuit snapshot",
+    "projectDuplicated": "Project gedupliceerd",
+    "projectDuplicatedDescription": "\"{title}\" is op dit apparaat opgeslagen als een nieuw, onafhankelijk project.",
+    "duplicateProjectFailed": "Project dupliceren mislukt",
     "exportFailed": "Exporteren mislukt",
     "exportFailedDescription": "{message} Probeer opnieuw, of open Exporteren en download daar een project-JSON-back-up.",
     "exportFailedNoProjectDescription": "TrackDraw kon dit lokale project niet laden. Open het eerst of kies een ander opgeslagen project.",
     "exportSuccess": "Project-JSON geëxporteerd",
     "embeddedTrack": "Ingesloten track",
     "sharedPreview": "Gedeelde preview",
-    "loading3d": "3D laden…"
+    "loading3d": "3D laden…",
+    "portraitOnlyEyebrow": "Mobiele editor",
+    "portraitOnlyTitle": "Draai je telefoon rechtop",
+    "portraitOnlyDescription": "De TrackDraw-editor is ontworpen voor portretmodus op mobiel. Draai je telefoon om verder te gaan met bewerken."
   },
   "languagePicker": {
     "ariaLabel": "Taal"

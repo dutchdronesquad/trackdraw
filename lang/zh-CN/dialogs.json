@@ -681,6 +681,7 @@
         "exportProjectAsJson": "把 {title} 导出为 JSON",
         "manageProject": "管理 {title}",
         "renameProject": "重命名 {title}",
+        "duplicateProjectFor": "复制 {title}",
         "deleteProject": "删除 {title}"
       },
       "actions": {
@@ -691,6 +692,8 @@
         "cleanUpLocal": "清理本地项目",
         "cleanUpLocalDescription": "只移除当前设备上的旧副本。",
         "renameDescription": "给这个项目起个更清晰的名字。",
+        "duplicateProject": "复制项目",
+        "duplicateProjectDescription": "创建一个独立副本，用来尝试不同的变体。",
         "openBadge": "已打开"
       },
       "export": {
@@ -723,7 +726,8 @@
       "aria": {
         "resolveVersionConflictFor": "处理 {title} 的版本冲突",
         "retrySyncFor": "重试 {title} 的同步",
-        "syncPendingChangesFor": "同步 {title} 的待处理改动"
+        "syncPendingChangesFor": "同步 {title} 的待处理改动",
+        "duplicateProjectFor": "复制 {title}"
       },
       "meta": {
         "accountCopyWaitingToSync": "{itemLabel} · 账户副本等待同步",
@@ -750,7 +754,8 @@
       },
       "actions": {
         "retrySync": "重试同步",
-        "syncPendingChanges": "同步待处理改动"
+        "syncPendingChanges": "同步待处理改动",
+        "duplicateProject": "复制项目"
       },
       "fallback": {
         "untitled": "未命名"
@@ -862,12 +867,38 @@
     "sectionSelection": "选择",
     "sectionPathEditing": "路径编辑",
     "sectionCanvas": "画布",
+    "systemLayoutHint": "快捷键遵循你的系统布局（Mac 上为 Cmd，Windows 和 Linux 上为 Ctrl）。",
+    "categories": {
+      "label": "快捷键分类",
+      "essentials": "基础",
+      "tools": "工具",
+      "edit": "编辑",
+      "canvas": "画布"
+    },
+    "search": {
+      "label": "搜索快捷键",
+      "placeholder": "搜索快捷键…",
+      "results": "{count, plural, =0 {无结果} =1 {1 个结果} other {# 个结果}}",
+      "emptyTitle": "未找到快捷键",
+      "emptyBody": "试试搜索操作、工具或按键组合。"
+    },
+    "table": {
+      "description": "作用说明",
+      "shortcut": "快捷键"
+    },
+    "keys": {
+      "or": "或"
+    },
     "shortcuts": {
+      "undo": "撤销",
+      "redo": "重做",
       "duplicateItems": "复制当前选中项目",
       "copyItems": "复制当前选中项目",
       "pasteItems": "粘贴已复制项目",
       "rotateLeft": "向左旋转选中项目",
       "rotateRight": "向右旋转选中项目",
+      "rotateLeftSmall": "精确向左旋转",
+      "rotateRightSmall": "精确向右旋转",
       "mouseRotateSnap": "鼠标旋转吸附",
       "mouseRotateFine": "鼠标精细旋转",
       "keyRotateFine": "按键精细旋转",
@@ -883,7 +914,39 @@
       "panView": "平移视图",
       "bypassSnap": "临时绕过吸附",
       "zoom": "缩放",
+      "toggleSidebar": "切换侧边栏",
+      "openCommandPalette": "打开命令面板",
       "saveSnapshot": "保存快照"
+    },
+    "descriptions": {
+      "activateTool": "启用「{tool}」工具",
+      "undo": "撤销上一步操作",
+      "redo": "重做上一步被撤销的操作",
+      "duplicateItems": "复制当前选中项目",
+      "copyItems": "复制当前选中项目",
+      "pasteItems": "粘贴已复制项目",
+      "rotateLeft": "将选中内容逆时针旋转",
+      "rotateRight": "将选中内容顺时针旋转",
+      "rotateLeftSmall": "以更小的步幅逆时针旋转",
+      "rotateRightSmall": "以更小的步幅顺时针旋转",
+      "mouseRotateSnap": "拖动旋转，并启用吸附",
+      "mouseRotateFine": "拖动时自由旋转",
+      "keyRotateFine": "以 1 度为步幅旋转",
+      "deleteItems": "删除当前选中项目",
+      "nudgeItems": "按一个网格步长移动选中内容",
+      "fineNudge": "以小步幅移动选中内容",
+      "finishPath": "完成正在绘制的路径",
+      "removeLastPoint": "从草稿路径中移除最后一个点",
+      "deletePathPoint": "删除选中的路径点",
+      "cancelDraft": "取消当前的路径草稿",
+      "fitView": "让整个场地适应视图",
+      "clearSelection": "清空选择并返回选择工具",
+      "panView": "用鼠标平移画布",
+      "bypassSnap": "临时关闭吸附",
+      "zoom": "放大或缩小画布",
+      "toggleSidebar": "显示或隐藏编辑器侧边栏",
+      "openCommandPalette": "搜索命令和操作",
+      "saveSnapshot": "保存项目快照"
     }
   },
   "versionConflict": {

@@ -27,6 +27,8 @@
     "themeTooltip": "切换公开站点主题。",
     "languageAriaLabel": "语言",
     "languageTooltip": "切换站点语言。",
+    "login": "登录",
+    "account": "账户",
     "openStudio": "打开 Studio"
   },
   "hero": {

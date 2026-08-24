@@ -27,6 +27,8 @@
     "themeTooltip": "Design der öffentlichen Website wechseln.",
     "languageAriaLabel": "Sprache",
     "languageTooltip": "Sprache der Website wechseln.",
+    "login": "Anmelden",
+    "account": "Konto",
     "openStudio": "Studio öffnen"
   },
   "hero": {

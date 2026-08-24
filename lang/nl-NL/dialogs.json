@@ -681,6 +681,7 @@
         "exportProjectAsJson": "{title} exporteren als JSON",
         "manageProject": "{title} beheren",
         "renameProject": "{title} hernoemen",
+        "duplicateProjectFor": "Dupliceer {title}",
         "deleteProject": "{title} verwijderen"
       },
       "actions": {
@@ -691,6 +692,8 @@
         "cleanUpLocal": "Lokale kopieën opruimen",
         "cleanUpLocalDescription": "Verwijder oudere kopieën alleen van dit apparaat.",
         "renameDescription": "Geef dit project een duidelijkere naam.",
+        "duplicateProject": "Project dupliceren",
+        "duplicateProjectDescription": "Maak een onafhankelijke kopie om een variant te verkennen.",
         "openBadge": "open"
       },
       "export": {
@@ -723,7 +726,8 @@
       "aria": {
         "resolveVersionConflictFor": "Versieconflict oplossen voor {title}",
         "retrySyncFor": "Synchronisatie opnieuw proberen voor {title}",
-        "syncPendingChangesFor": "Wachtende wijzigingen synchroniseren voor {title}"
+        "syncPendingChangesFor": "Wachtende wijzigingen synchroniseren voor {title}",
+        "duplicateProjectFor": "Dupliceer {title}"
       },
       "meta": {
         "accountCopyWaitingToSync": "{itemLabel} · accountkopie wacht op synchronisatie",
@@ -750,7 +754,8 @@
       },
       "actions": {
         "retrySync": "Synchronisatie opnieuw proberen",
-        "syncPendingChanges": "Openstaande wijzigingen synchroniseren"
+        "syncPendingChanges": "Openstaande wijzigingen synchroniseren",
+        "duplicateProject": "Project dupliceren"
       },
       "fallback": {
         "untitled": "Naamloos"
@@ -862,12 +867,38 @@
     "sectionSelection": "Selectie",
     "sectionPathEditing": "Path bewerken",
     "sectionCanvas": "Canvas",
+    "systemLayoutHint": "Sneltoetsen volgen je systeemindeling (Cmd op Mac, Ctrl op Windows en Linux).",
+    "categories": {
+      "label": "Sneltoetscategorieën",
+      "essentials": "Basis",
+      "tools": "Gereedschappen",
+      "edit": "Bewerken",
+      "canvas": "Canvas"
+    },
+    "search": {
+      "label": "Sneltoetsen zoeken",
+      "placeholder": "Sneltoetsen zoeken…",
+      "results": "{count, plural, =0 {Geen resultaten} =1 {1 resultaat} other {# resultaten}}",
+      "emptyTitle": "Geen sneltoetsen gevonden",
+      "emptyBody": "Probeer een actie, tool of toetsencombinatie."
+    },
+    "table": {
+      "description": "Wat het doet",
+      "shortcut": "Sneltoets"
+    },
+    "keys": {
+      "or": "of"
+    },
     "shortcuts": {
+      "undo": "Ongedaan maken",
+      "redo": "Opnieuw",
       "duplicateItems": "Geselecteerde items dupliceren",
       "copyItems": "Geselecteerde items kopiëren",
       "pasteItems": "Gekopieerde items plakken",
       "rotateLeft": "Geselecteerde items naar links draaien",
       "rotateRight": "Geselecteerde items naar rechts draaien",
+      "rotateLeftSmall": "Nauwkeurig naar links draaien",
+      "rotateRightSmall": "Nauwkeurig naar rechts draaien",
       "mouseRotateSnap": "Muis roteren met snap",
       "mouseRotateFine": "Nauwkeurig draaien met muis",
       "keyRotateFine": "Nauwkeurig draaien met toets",
@@ -883,7 +914,39 @@
       "panView": "Weergave pannen",
       "bypassSnap": "Snap tijdelijk uitschakelen",
       "zoom": "Inzoomen",
+      "toggleSidebar": "Zijbalk aan/uit",
+      "openCommandPalette": "Opdrachtenpalet openen",
       "saveSnapshot": "Snapshot opslaan"
+    },
+    "descriptions": {
+      "activateTool": "Activeer het gereedschap {tool}",
+      "undo": "Maak de laatste actie ongedaan",
+      "redo": "Voer de laatst ongedaan gemaakte actie opnieuw uit",
+      "duplicateItems": "Geselecteerde items dupliceren",
+      "copyItems": "Geselecteerde items kopiëren",
+      "pasteItems": "Gekopieerde items plakken",
+      "rotateLeft": "Draai de selectie tegen de klok in",
+      "rotateRight": "Draai de selectie met de klok mee",
+      "rotateLeftSmall": "Draai tegen de klok in met kleinere stappen",
+      "rotateRightSmall": "Draai met de klok mee met kleinere stappen",
+      "mouseRotateSnap": "Roteer door te slepen met snap ingeschakeld",
+      "mouseRotateFine": "Vrij roteren tijdens het slepen",
+      "keyRotateFine": "Roteren in stappen van één graad",
+      "deleteItems": "Geselecteerde items verwijderen",
+      "nudgeItems": "Verplaats de selectie met één rasterstap",
+      "fineNudge": "Verplaats de selectie in kleine stappen",
+      "finishPath": "Rond het huidige path af",
+      "removeLastPoint": "Verwijder het laatste punt uit het conceptpath",
+      "deletePathPoint": "Verwijder het geselecteerde waypoint",
+      "cancelDraft": "Annuleer het huidige conceptpath",
+      "fitView": "Pas de weergave aan op het hele veld",
+      "clearSelection": "Wis de selectie en ga terug naar het selectiegereedschap",
+      "panView": "Pan het canvas met de muis",
+      "bypassSnap": "Schakel snap tijdelijk uit",
+      "zoom": "Zoom in of uit op het canvas",
+      "toggleSidebar": "Toon of verberg de zijbalk van de editor",
+      "openCommandPalette": "Zoek opdrachten en acties",
+      "saveSnapshot": "Sla een projectsnapshot op"
     }
   },
   "versionConflict": {

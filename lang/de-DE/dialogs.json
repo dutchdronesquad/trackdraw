@@ -681,6 +681,7 @@
         "exportProjectAsJson": "{title} als JSON exportieren",
         "manageProject": "{title} verwalten",
         "renameProject": "{title} umbenennen",
+        "duplicateProjectFor": "{title} duplizieren",
         "deleteProject": "{title} löschen"
       },
       "actions": {
@@ -691,6 +692,8 @@
         "cleanUpLocal": "Lokal aufräumen",
         "cleanUpLocalDescription": "Ältere Kopien nur von diesem Gerät entfernen.",
         "renameDescription": "Gib diesem Projekt einen klareren Namen.",
+        "duplicateProject": "Projekt duplizieren",
+        "duplicateProjectDescription": "Erstelle eine unabhängige Kopie, um eine Variante zu erkunden.",
         "openBadge": "offen"
       },
       "export": {
@@ -723,7 +726,8 @@
       "aria": {
         "resolveVersionConflictFor": "Versionskonflikt für {title} lösen",
         "retrySyncFor": "Synchronisierung für {title} erneut versuchen",
-        "syncPendingChangesFor": "Ausstehende Änderungen für {title} synchronisieren"
+        "syncPendingChangesFor": "Ausstehende Änderungen für {title} synchronisieren",
+        "duplicateProjectFor": "{title} duplizieren"
       },
       "meta": {
         "accountCopyWaitingToSync": "{itemLabel} · Kontokopie wartet auf Synchronisierung",
@@ -750,7 +754,8 @@
       },
       "actions": {
         "retrySync": "Synchronisierung erneut versuchen",
-        "syncPendingChanges": "Ausstehende Änderungen synchronisieren"
+        "syncPendingChanges": "Ausstehende Änderungen synchronisieren",
+        "duplicateProject": "Projekt duplizieren"
       },
       "fallback": {
         "untitled": "Unbenannt"
@@ -862,12 +867,38 @@
     "sectionSelection": "Auswahl",
     "sectionPathEditing": "Pfadbearbeitung",
     "sectionCanvas": "Canvas",
+    "systemLayoutHint": "Tastenkürzel folgen deinem Systemlayout (Cmd auf dem Mac, Strg auf Windows und Linux).",
+    "categories": {
+      "label": "Kürzelkategorien",
+      "essentials": "Grundlagen",
+      "tools": "Werkzeuge",
+      "edit": "Bearbeiten",
+      "canvas": "Canvas"
+    },
+    "search": {
+      "label": "Tastenkürzel durchsuchen",
+      "placeholder": "Kürzel suchen…",
+      "results": "{count, plural, =0 {Keine Ergebnisse} =1 {1 Ergebnis} other {# Ergebnisse}}",
+      "emptyTitle": "Keine Tastenkürzel gefunden",
+      "emptyBody": "Versuche eine Aktion, ein Werkzeug oder eine Tastenkombination."
+    },
+    "table": {
+      "description": "Was es bewirkt",
+      "shortcut": "Kürzel"
+    },
+    "keys": {
+      "or": "oder"
+    },
     "shortcuts": {
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
       "duplicateItems": "Ausgewählte Elemente duplizieren",
       "copyItems": "Ausgewählte Elemente kopieren",
       "pasteItems": "Kopierte Elemente einfügen",
       "rotateLeft": "Ausgewählte Elemente nach links drehen",
       "rotateRight": "Ausgewählte Elemente nach rechts drehen",
+      "rotateLeftSmall": "Präzise nach links drehen",
+      "rotateRightSmall": "Präzise nach rechts drehen",
       "mouseRotateSnap": "Mausrotation mit Snap",
       "mouseRotateFine": "Feine Mausrotation",
       "keyRotateFine": "Feine Tastenrotation",
@@ -883,7 +914,39 @@
       "panView": "Ansicht verschieben",
       "bypassSnap": "Snap vorübergehend umgehen",
       "zoom": "Zoomen",
+      "toggleSidebar": "Seitenleiste ein-/ausblenden",
+      "openCommandPalette": "Befehlspalette öffnen",
       "saveSnapshot": "Snapshot speichern"
+    },
+    "descriptions": {
+      "activateTool": "Das Werkzeug {tool} aktivieren",
+      "undo": "Die letzte Aktion rückgängig machen",
+      "redo": "Die zuletzt rückgängig gemachte Aktion wiederholen",
+      "duplicateItems": "Ausgewählte Elemente duplizieren",
+      "copyItems": "Ausgewählte Elemente kopieren",
+      "pasteItems": "Kopierte Elemente einfügen",
+      "rotateLeft": "Die Auswahl gegen den Uhrzeigersinn drehen",
+      "rotateRight": "Die Auswahl im Uhrzeigersinn drehen",
+      "rotateLeftSmall": "In kleineren Schritten gegen den Uhrzeigersinn drehen",
+      "rotateRightSmall": "In kleineren Schritten im Uhrzeigersinn drehen",
+      "mouseRotateSnap": "Durch Ziehen mit aktiviertem Snap drehen",
+      "mouseRotateFine": "Beim Ziehen frei drehen",
+      "keyRotateFine": "In Schritten von einem Grad drehen",
+      "deleteItems": "Ausgewählte Elemente löschen",
+      "nudgeItems": "Die Auswahl um einen Rasterschritt verschieben",
+      "fineNudge": "Die Auswahl in kleinen Schritten verschieben",
+      "finishPath": "Den aktuell gezeichneten Pfad abschließen",
+      "removeLastPoint": "Den letzten Punkt aus dem Entwurfspfad entfernen",
+      "deletePathPoint": "Den ausgewählten Pfadpunkt löschen",
+      "cancelDraft": "Den aktuellen Pfadentwurf abbrechen",
+      "fitView": "Die Ansicht an das gesamte Feld anpassen",
+      "clearSelection": "Auswahl aufheben und zum Auswahlwerkzeug zurückkehren",
+      "panView": "Das Canvas mit der Maus verschieben",
+      "bypassSnap": "Snap vorübergehend deaktivieren",
+      "zoom": "Das Canvas vergrößern oder verkleinern",
+      "toggleSidebar": "Die Editor-Seitenleiste ein- oder ausblenden",
+      "openCommandPalette": "Befehle und Aktionen durchsuchen",
+      "saveSnapshot": "Einen Projekt-Snapshot speichern"
     }
   },
   "versionConflict": {

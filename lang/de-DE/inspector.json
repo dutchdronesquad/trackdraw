@@ -134,7 +134,14 @@
     "groupCountMeta": "{count, plural, one {1 Gruppe} other {{count} Gruppen}}",
     "joinAvailableMeta": "Verbinden verfügbar",
     "saveSectionLabel": "Abschnitt speichern",
-    "lockedItemsNote": "Gesperrte Elemente bleiben unverändert."
+    "lockedItemsNote": "Gesperrte Elemente bleiben unverändert.",
+    "arrange": {
+      "sectionTitle": "Anordnen",
+      "alignHorizontal": "Horizontale Mitten ausrichten",
+      "alignVertical": "Vertikale Mitten ausrichten",
+      "distributeHorizontal": "Horizontal gleichmäßig verteilen",
+      "distributeVertical": "Vertikal gleichmäßig verteilen"
+    }
   },
   "polyline": {
     "sectionTitle": "Rennlinie",

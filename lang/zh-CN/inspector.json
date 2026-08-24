@@ -134,7 +134,14 @@
     "groupCountMeta": "{count, plural, one {1 个分组} other {{count} 个分组}}",
     "joinAvailableMeta": "可合并",
     "saveSectionLabel": "保存片段",
-    "lockedItemsNote": "已锁定的项目不会被改动。"
+    "lockedItemsNote": "已锁定的项目不会被改动。",
+    "arrange": {
+      "sectionTitle": "排列",
+      "alignHorizontal": "水平居中对齐",
+      "alignVertical": "垂直居中对齐",
+      "distributeHorizontal": "水平均匀分布",
+      "distributeVertical": "垂直均匀分布"
+    }
   },
   "polyline": {
     "sectionTitle": "路径",
