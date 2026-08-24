@@ -15,6 +15,7 @@ export type AuthorizationCapability =
   | "admin.users.read"
   | "admin.users.update"
   | "admin.metrics.read"
+  | "admin.metrics.run"
   | "admin.api-keys.read"
   | "audit.read"
   | "account.role.assign"
@@ -41,6 +42,7 @@ const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "admin.users.read": ["admin"],
   "admin.users.update": ["admin"],
   "admin.metrics.read": ["admin"],
+  "admin.metrics.run": ["admin"],
   "admin.api-keys.read": ["admin"],
   "audit.read": ["admin"],
   "account.role.assign": ["admin"],

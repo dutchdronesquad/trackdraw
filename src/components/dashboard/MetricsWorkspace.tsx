@@ -63,6 +63,7 @@ type MetricsWorkspaceProps = {
   cockpit: DailyCockpitData;
   explorer: MetricsExplorerData;
   localizationDemand: LocalizationDemandMetrics;
+  canRunMaintenance?: boolean;
   header?: {
     title: string;
     subtitle: string;
@@ -218,9 +219,7 @@ function QualityLabel({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" className="cursor-default text-left">
-            {label}
-          </button>
+          <span>{label}</span>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={6}>
           {t("scheduleHint")}
@@ -686,6 +685,7 @@ export default function MetricsWorkspace({
   cockpit,
   explorer,
   localizationDemand,
+  canRunMaintenance = false,
   header,
 }: MetricsWorkspaceProps) {
   const t = useTranslations("dashboard.metrics.explorer");
@@ -797,7 +797,7 @@ export default function MetricsWorkspace({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <RunMetricMaintenanceButton />
+            {canRunMaintenance ? <RunMetricMaintenanceButton /> : null}
             <UserGrowthRangePicker
               activeRange={growthRange}
               customRange={growthCustomRange}

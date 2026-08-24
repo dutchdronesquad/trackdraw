@@ -83,6 +83,10 @@ export default async function DashboardMetricsPage() {
           cockpit={cockpit}
           explorer={explorer}
           localizationDemand={localizationDemand}
+          canRunMaintenance={hasCapability(
+            currentUser.role,
+            "admin.metrics.run"
+          )}
           header={{
             title: tMetrics("explorer.header.title"),
             subtitle: tMetrics("explorer.header.subtitle"),

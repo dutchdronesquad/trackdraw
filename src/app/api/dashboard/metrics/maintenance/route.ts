@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!hasCapability(actor.role, "admin.metrics.read")) {
+  if (!hasCapability(actor.role, "admin.metrics.run")) {
     return NextResponse.json(
       {
         ok: false,
