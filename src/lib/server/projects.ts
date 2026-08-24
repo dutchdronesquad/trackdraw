@@ -357,8 +357,7 @@ export async function archiveProjectForUser(
     .bind(now, now, projectId, ownerUserId)
     .run<{ meta?: { changes?: number } }>();
 
-  // Only cascade if this call actually archived the project — a 0-row match
-  // (wrong owner, already archived, or unknown id) must not revoke shares.
+  // Only cascade if the archive actually matched a row (right owner, not already archived).
   if ((result.meta?.changes ?? 0) > 0) {
     await revokeSharesForProject(projectId, ownerUserId);
   }
