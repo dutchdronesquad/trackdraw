@@ -232,6 +232,12 @@
     }
   },
   "metrics": {
+    "maintenance": {
+      "run": "Run aggregation now",
+      "running": "Running…",
+      "success": "Metric aggregation ran successfully.",
+      "failed": "Failed to run metric aggregation."
+    },
     "explorer": {
       "header": {
         "title": "Product metrics",
@@ -244,7 +250,8 @@
         "degraded": "Degraded",
         "invalid": "Invalid",
         "not_started": "Awaiting first complete period",
-        "buildingProgress": "Building — {elapsed}/{total}d"
+        "buildingProgress": "Building — {elapsed}/{total}d",
+        "scheduleHint": "Metrics are aggregated nightly at 00:17 UTC. If this doesn't clear after the next run, check the pipeline."
       },
       "comparison": {
         "unavailable": "No reliable comparison",

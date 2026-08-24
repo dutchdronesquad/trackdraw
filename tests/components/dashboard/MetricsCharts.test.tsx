@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ActivationFunnel,
   EditorUsageBreakdown,
@@ -26,6 +26,10 @@ import type {
   ProductInsights,
 } from "@/lib/server/metrics";
 import type { DailyCockpitData } from "@/lib/server/dashboard-cockpit";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: () => {} }),
+}));
 
 const growthData = {
   bucket: "month" as const,
