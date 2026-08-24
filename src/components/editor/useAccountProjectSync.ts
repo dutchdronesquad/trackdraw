@@ -7,6 +7,7 @@ import { getDesignShapes } from "@/lib/track/design";
 import {
   createProjectDuplicate,
   deleteProject,
+  hasMeaningfulProjectContent,
   listProjects,
   listRestorePointsForProject,
   loadProject,
@@ -89,6 +90,8 @@ type UseAccountProjectSyncOptions = {
   projectManagerOpen: boolean;
   historyPaused: boolean;
   interactionSessionDepth: number;
+  projects: ProjectMeta[];
+  initialized: boolean;
   snapshotCurrentDesign: () => void;
   replaceDesign: (design: TrackDesign) => void;
   setProjects: (projects: ProjectMeta[]) => void;
@@ -104,6 +107,8 @@ export function useAccountProjectSync({
   projectManagerOpen,
   historyPaused,
   interactionSessionDepth,
+  projects,
+  initialized,
   snapshotCurrentDesign,
   replaceDesign,
   setProjects,
@@ -139,6 +144,18 @@ export function useAccountProjectSync({
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
   const pendingReentryConflictCheckRef = useRef(false);
 
+  // Snapshot of local project ids that existed the moment the local project
+  // list finished loading, captured once. A design id present here was
+  // already a device-local project before auto-promote logic engaged this
+  // session, and must never be auto-promoted (manual "Sync to account" only).
+  const localProjectIdsAtLoadRef = useRef<Set<string> | null>(null);
+  // One-shot guard: once an auto-promote attempt (success or failure) has
+  // been made for a design id, never attempt it again automatically. A
+  // failed attempt already falls back to a normal local-project save (via
+  // syncDesignToAccount's own catch/saveLocalSyncFallback), after which the
+  // design is handled by the ordinary manual Sync-to-account flow.
+  const autoPromoteAttemptedIdsRef = useRef<Set<string>>(new Set());
+
   const [accountShares, setAccountShares] = useState<AccountShareItem[]>([]);
   const [accountSharesLoading, setAccountSharesLoading] = useState(false);
   const accountSharesFetchedForUserRef = useRef<string | null>(null);
@@ -146,6 +163,13 @@ export function useAccountProjectSync({
   useEffect(() => {
     designRef.current = design;
   }, [design]);
+
+  useEffect(() => {
+    if (!initialized || localProjectIdsAtLoadRef.current) return;
+    localProjectIdsAtLoadRef.current = new Set(
+      projects.map((project) => project.id)
+    );
+  }, [initialized, projects]);
 
   useEffect(() => {
     accountProjectsRef.current = accountProjects;
@@ -810,6 +834,68 @@ export function useAccountProjectSync({
     historyPaused,
     interactionSessionDepth,
     handleSyncProject,
+    markProjectSyncFailed,
+    readOnly,
+    setSaveStatusLabel,
+    syncDesignToAccount,
+  ]);
+
+  useEffect(() => {
+    if (
+      readOnly ||
+      !authUserId ||
+      !cloudProjectsAvailable ||
+      isAccountProject ||
+      historyPaused ||
+      interactionSessionDepth > 0
+    ) {
+      return;
+    }
+
+    const knownLocalIds = localProjectIdsAtLoadRef.current;
+    if (!knownLocalIds || knownLocalIds.has(currentDesignId)) return;
+    if (autoPromoteAttemptedIdsRef.current.has(currentDesignId)) return;
+    if (!hasMeaningfulProjectContent(designRef.current)) return;
+
+    const timeoutId = window.setTimeout(() => {
+      autoPromoteAttemptedIdsRef.current.add(currentDesignId);
+      void syncDesignToAccount(designRef.current, {
+        updateStatusLabel: true,
+      }).catch((error) => {
+        if (isAccountProjectSyncConflictError(error)) {
+          setSaveStatusLabel("Review project version");
+          return;
+        }
+
+        markProjectSyncFailed(
+          currentDesignId,
+          error instanceof Error ? error.message : "Account sync failed"
+        );
+        setSaveStatusLabel("Account sync failed; saved locally");
+        toast.error("Account sync failed", {
+          description:
+            "TrackDraw saved this new project on this device, but could not create the account copy yet. Retry sync when the connection is back.",
+          action: {
+            label: "Retry",
+            onClick: () => {
+              void handleSyncProject(currentDesignId);
+            },
+          },
+        });
+        console.error("[TrackDraw auto-promote]", error);
+      });
+    }, 4000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    authUserId,
+    cloudProjectsAvailable,
+    currentDesignId,
+    currentProjectSyncSignature,
+    handleSyncProject,
+    historyPaused,
+    interactionSessionDepth,
+    isAccountProject,
     markProjectSyncFailed,
     readOnly,
     setSaveStatusLabel,
