@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   Circle,
   Download,
@@ -9,6 +11,7 @@ import {
   Languages,
   LayoutDashboard,
   PenTool,
+  RefreshCw,
   Share2,
   type LucideIcon,
   Users,
@@ -30,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import type {
   MetricsExplorerData,
   MetricsExplorerMetric,
@@ -191,7 +195,7 @@ function QualityLabel({
     quality === "building" && measuredSince && generatedAt
       ? buildingProgressDays(measuredSince, generatedAt)
       : null;
-  return (
+  const label = (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 text-xs font-medium",
@@ -206,6 +210,61 @@ function QualityLabel({
           })
         : t(quality)}
     </span>
+  );
+
+  if (quality !== "not_started" && quality !== "building") return label;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className="cursor-default text-left">
+            {label}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          {t("scheduleHint")}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function RunMetricMaintenanceButton() {
+  const t = useTranslations("dashboard.metrics.maintenance");
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  const run = async () => {
+    setPending(true);
+    try {
+      const response = await fetch("/api/dashboard/metrics/maintenance", {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+      };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? t("failed"));
+      }
+      toast.success(t("success"));
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("failed"));
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Button variant="outline" size="sm" onClick={run} disabled={pending}>
+      <RefreshCw
+        className={cn("size-4", pending && "animate-spin")}
+        aria-hidden="true"
+      />
+      {pending ? t("running") : t("run")}
+    </Button>
   );
 }
 
@@ -737,16 +796,19 @@ export default function MetricsWorkspace({
               <time dateTime={header.dateTime}>{header.lastUpdated}</time>
             </p>
           </div>
-          <UserGrowthRangePicker
-            activeRange={growthRange}
-            customRange={growthCustomRange}
-            today={growthTimeline.today}
-            onPresetSelect={setGrowthRange}
-            onCustomApply={(value) => {
-              setGrowthCustomRange(value);
-              setGrowthRange("custom");
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <RunMetricMaintenanceButton />
+            <UserGrowthRangePicker
+              activeRange={growthRange}
+              customRange={growthCustomRange}
+              today={growthTimeline.today}
+              onPresetSelect={setGrowthRange}
+              onCustomApply={(value) => {
+                setGrowthCustomRange(value);
+                setGrowthRange("custom");
+              }}
+            />
+          </div>
         </header>
       ) : null}
 
