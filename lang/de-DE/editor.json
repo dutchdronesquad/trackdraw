@@ -87,6 +87,68 @@
     "canvas2d": "2D-Canvas",
     "preview3d": "3D-Vorschau"
   },
+  "commandPalette": {
+    "title": "Befehlspalette",
+    "description": "TrackDraw-Aktionen suchen und ausführen",
+    "placeholder": "Aktionen suchen…",
+    "searchLabel": "Befehle suchen",
+    "resultsLabel": "Verfügbare Befehle",
+    "empty": "Keine passenden Aktionen",
+    "escapeKey": "Esc",
+    "hintNavigate": "↑↓ Navigieren",
+    "hintRun": "Enter Ausführen",
+    "groups": {
+      "navigate": "Navigieren",
+      "view": "Ansicht",
+      "transfer": "Teilen und übertragen",
+      "support": "Support"
+    },
+    "actions": {
+      "projects": {
+        "label": "Projektverwaltung",
+        "description": "Gespeicherte Projekte öffnen und verwalten"
+      },
+      "accountSettings": {
+        "label": "Kontoeinstellungen",
+        "description": "Profil, Sicherheit und API-Schlüssel verwalten"
+      },
+      "shortcuts": {
+        "label": "Tastenkürzel",
+        "description": "Editor-Tasten und Tastenkürzel ansehen"
+      },
+      "view2d": {
+        "label": "2D-Canvas öffnen",
+        "description": "Zur bearbeitbaren Draufsicht wechseln",
+        "alreadyActive": "Du siehst bereits das 2D-Canvas"
+      },
+      "view3d": {
+        "label": "3D-Vorschau öffnen",
+        "description": "Den Track dreidimensional ansehen",
+        "alreadyActive": "Du siehst bereits die 3D-Vorschau"
+      },
+      "flyThrough": {
+        "label": "Fly-through starten",
+        "description": "Die Ideallinie aus der Pilotenperspektive ansehen",
+        "noPathReason": "Zeichne zuerst einen Pfad, um Fly-through zu aktivieren"
+      },
+      "share": {
+        "label": "Teilen",
+        "description": "Einen schreibgeschützten Link für diesen Track veröffentlichen"
+      },
+      "export": {
+        "label": "Exportieren",
+        "description": "PNG, PDF, SVG oder JSON herunterladen"
+      },
+      "import": {
+        "label": "Importieren",
+        "description": "Eine JSON-Projektdatei importieren"
+      },
+      "feedback": {
+        "label": "Feedback",
+        "description": "Ein Problem melden, eine Idee teilen oder eine Frage stellen"
+      }
+    }
+  },
   "elementPlacementControl": {
     "official": "Offiziell",
     "typeLabel": "{tool}-Typ"
@@ -474,13 +536,19 @@
     "restorePointCreatedAt": "Wiederherstellungspunkt erstellt um {time}",
     "projectOpened": "Projekt geöffnet",
     "restoredFromSnapshot": "Aus Snapshot wiederhergestellt",
+    "projectDuplicated": "Projekt dupliziert",
+    "projectDuplicatedDescription": "\"{title}\" wurde auf diesem Gerät als neues, unabhängiges Projekt gespeichert.",
+    "duplicateProjectFailed": "Projekt konnte nicht dupliziert werden",
     "exportFailed": "Export fehlgeschlagen",
     "exportFailedDescription": "{message} Versuche es erneut oder öffne Exportieren und lade dort ein Projekt-JSON-Backup herunter.",
     "exportFailedNoProjectDescription": "TrackDraw konnte dieses lokale Projekt nicht laden. Öffne es zuerst oder wähle ein anderes gespeichertes Projekt.",
     "exportSuccess": "Projekt-JSON exportiert",
     "embeddedTrack": "Eingebetteter Track",
     "sharedPreview": "Geteilte Vorschau",
-    "loading3d": "3D wird geladen…"
+    "loading3d": "3D wird geladen…",
+    "portraitOnlyEyebrow": "Mobiler Editor",
+    "portraitOnlyTitle": "Halte dein Telefon aufrecht",
+    "portraitOnlyDescription": "Der TrackDraw-Editor ist für den Hochformat-Modus auf Mobilgeräten ausgelegt. Drehe dein Telefon, um weiter zu bearbeiten."
   },
   "languagePicker": {
     "ariaLabel": "Sprache"

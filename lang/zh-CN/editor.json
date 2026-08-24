@@ -87,6 +87,68 @@
     "canvas2d": "2D 画布",
     "preview3d": "3D 预览"
   },
+  "commandPalette": {
+    "title": "命令面板",
+    "description": "搜索并执行 TrackDraw 操作",
+    "placeholder": "搜索操作…",
+    "searchLabel": "搜索命令",
+    "resultsLabel": "可用命令",
+    "empty": "没有匹配的操作",
+    "escapeKey": "Esc",
+    "hintNavigate": "↑↓ 导航",
+    "hintRun": "Enter 运行",
+    "groups": {
+      "navigate": "导航",
+      "view": "视图",
+      "transfer": "分享与传输",
+      "support": "支持"
+    },
+    "actions": {
+      "projects": {
+        "label": "项目管理",
+        "description": "打开并管理已保存的项目"
+      },
+      "accountSettings": {
+        "label": "账户设置",
+        "description": "管理个人资料、安全设置和 API 密钥"
+      },
+      "shortcuts": {
+        "label": "键盘快捷键",
+        "description": "查看编辑器的按键与快捷键"
+      },
+      "view2d": {
+        "label": "打开 2D 画布",
+        "description": "切换到可编辑的俯视图",
+        "alreadyActive": "当前已经是 2D 画布视图"
+      },
+      "view3d": {
+        "label": "打开 3D 预览",
+        "description": "以三维方式查看赛道",
+        "alreadyActive": "当前已经是 3D 预览视图"
+      },
+      "flyThrough": {
+        "label": "开始穿越飞行",
+        "description": "从飞手视角预览赛道线路",
+        "noPathReason": "请先绘制路径以启用穿越飞行"
+      },
+      "share": {
+        "label": "分享",
+        "description": "为这条赛道发布只读链接"
+      },
+      "export": {
+        "label": "导出",
+        "description": "下载 PNG、PDF、SVG 或 JSON"
+      },
+      "import": {
+        "label": "导入",
+        "description": "导入 JSON 项目文件"
+      },
+      "feedback": {
+        "label": "反馈",
+        "description": "反馈问题、分享想法或提出疑问"
+      }
+    }
+  },
   "elementPlacementControl": {
     "official": "官方",
     "typeLabel": "{tool} 类型"
@@ -474,13 +536,19 @@
     "restorePointCreatedAt": "{time} 已创建恢复点",
     "projectOpened": "项目已打开",
     "restoredFromSnapshot": "已从快照恢复",
+    "projectDuplicated": "项目已复制",
+    "projectDuplicatedDescription": "\"{title}\" 已作为新的独立项目保存到此设备。",
+    "duplicateProjectFailed": "无法复制项目",
     "exportFailed": "导出失败",
     "exportFailedDescription": "{message} 请重试，或打开导出面板，从那里下载项目 JSON 备份。",
     "exportFailedNoProjectDescription": "TrackDraw 无法加载这个本地项目。请先打开它，或改选另一个已保存项目。",
     "exportSuccess": "项目 JSON 已导出",
     "embeddedTrack": "嵌入赛道",
     "sharedPreview": "共享预览",
-    "loading3d": "正在加载 3D…"
+    "loading3d": "正在加载 3D…",
+    "portraitOnlyEyebrow": "移动端编辑器",
+    "portraitOnlyTitle": "请将手机竖直握持",
+    "portraitOnlyDescription": "TrackDraw 编辑器在移动端专为竖屏设计。请旋转手机以继续编辑。"
   },
   "languagePicker": {
     "ariaLabel": "语言"

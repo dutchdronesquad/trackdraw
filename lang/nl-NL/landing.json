@@ -27,6 +27,8 @@
     "themeTooltip": "Wissel het thema van de publieke site.",
     "languageAriaLabel": "Taal",
     "languageTooltip": "Wissel de taal van de site.",
+    "login": "Inloggen",
+    "account": "Account",
     "openStudio": "Studio openen"
   },
   "hero": {

@@ -134,7 +134,14 @@
     "groupCountMeta": "{count, plural, one {1 groep} other {{count} groepen}}",
     "joinAvailableMeta": "samenvoegen mogelijk",
     "saveSectionLabel": "Sectie opslaan",
-    "lockedItemsNote": "Vergrendelde items blijven ongewijzigd."
+    "lockedItemsNote": "Vergrendelde items blijven ongewijzigd.",
+    "arrange": {
+      "sectionTitle": "Uitlijnen",
+      "alignHorizontal": "Horizontale middens uitlijnen",
+      "alignVertical": "Verticale middens uitlijnen",
+      "distributeHorizontal": "Gelijk verdelen horizontaal",
+      "distributeVertical": "Gelijk verdelen verticaal"
+    }
   },
   "polyline": {
     "sectionTitle": "Race Line",
