@@ -847,6 +847,8 @@ export function useAccountProjectSync({
     const knownLocalIds = localProjectIdsAtLoadRef.current;
     if (!knownLocalIds || knownLocalIds.has(currentDesignId)) return;
     if (autoPromoteAttemptedIdsRef.current.has(currentDesignId)) return;
+    // A default title alone counts as "meaningful"; require an actual edit too.
+    if (designRef.current.updatedAt === designRef.current.createdAt) return;
     if (!hasMeaningfulProjectContent(designRef.current)) return;
 
     const timeoutId = window.setTimeout(() => {
@@ -886,6 +888,7 @@ export function useAccountProjectSync({
     currentProjectSyncSignature,
     handleSyncProject,
     historyPaused,
+    initialized,
     interactionSessionDepth,
     isAccountProject,
     markProjectSyncFailed,

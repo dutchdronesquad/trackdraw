@@ -321,6 +321,7 @@ describe("useAccountProjectSync", () => {
     it("auto-promotes a brand-new signed-in draft with meaningful content", async () => {
       const design = createDefaultDesign();
       design.id = "draft-1";
+      design.updatedAt = "2026-04-20T10:05:00.000Z";
       const fetchMock = vi.fn(
         async (_input: RequestInfo | URL, init?: RequestInit) => {
           if (init?.method === "POST") {
@@ -426,6 +427,7 @@ describe("useAccountProjectSync", () => {
     it("degrades gracefully and only attempts once when auto-promote fails", async () => {
       const design = createDefaultDesign();
       design.id = "draft-3";
+      design.updatedAt = "2026-04-20T10:05:00.000Z";
       const fetchMock = vi.fn(
         async (_input: RequestInfo | URL, init?: RequestInit) => {
           if (init?.method === "POST") {
@@ -498,6 +500,98 @@ describe("useAccountProjectSync", () => {
       expect(
         fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")
       ).toHaveLength(1);
+    });
+
+    it("does not auto-promote an untouched default design", async () => {
+      const design = createDefaultDesign();
+      design.id = "draft-4";
+      const fetchMock = vi.fn(
+        async (_input: RequestInfo | URL, _init?: RequestInit) =>
+          Response.json({ ok: true, projects: [] })
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      renderAccountProjectSync({
+        authUserId: "user-1",
+        design,
+        projects: [],
+        initialized: true,
+      });
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4000);
+      });
+
+      const postCall = fetchMock.mock.calls.find(
+        ([, init]) => init?.method === "POST"
+      );
+      expect(postCall).toBeUndefined();
+    });
+
+    it("auto-promotes once local projects finish loading, not before", async () => {
+      const design = createDefaultDesign();
+      design.id = "draft-5";
+      design.updatedAt = "2026-04-20T10:05:00.000Z";
+      const fetchMock = vi.fn(
+        async (_input: RequestInfo | URL, init?: RequestInit) => {
+          if (init?.method === "POST") {
+            return Response.json({
+              ok: true,
+              project: {
+                id: design.id,
+                title: design.title,
+                updatedAt: "2026-04-20T10:30:00.000Z",
+                designUpdatedAt: design.updatedAt,
+                shapeCount: 0,
+              },
+            });
+          }
+
+          return Response.json({ ok: true, projects: [] });
+        }
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const baseOptions: HookOptions = {
+        authUserId: "user-1",
+        readOnly: false,
+        design,
+        projectManagerOpen: false,
+        historyPaused: false,
+        interactionSessionDepth: 0,
+        projects: [],
+        initialized: false,
+        snapshotCurrentDesign: vi.fn(),
+        replaceDesign: vi.fn(),
+        setProjects: vi.fn(),
+        setRestorePoints: vi.fn(),
+        setActiveRestorePointId: vi.fn(),
+        setSaveStatusLabel: vi.fn(),
+      };
+
+      const { rerender } = renderHook(
+        (initialized: boolean) =>
+          useAccountProjectSync({ ...baseOptions, initialized }),
+        { initialProps: false }
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4000);
+      });
+
+      expect(
+        fetchMock.mock.calls.find(([, init]) => init?.method === "POST")
+      ).toBeUndefined();
+
+      rerender(true);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4000);
+      });
+
+      expect(
+        fetchMock.mock.calls.find(([, init]) => init?.method === "POST")
+      ).toBeDefined();
     });
   });
 });
