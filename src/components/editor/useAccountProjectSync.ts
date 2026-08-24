@@ -144,16 +144,8 @@ export function useAccountProjectSync({
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
   const pendingReentryConflictCheckRef = useRef(false);
 
-  // Snapshot of local project ids that existed the moment the local project
-  // list finished loading, captured once. A design id present here was
-  // already a device-local project before auto-promote logic engaged this
-  // session, and must never be auto-promoted (manual "Sync to account" only).
+  // Ids present here predate this session and are never auto-promoted.
   const localProjectIdsAtLoadRef = useRef<Set<string> | null>(null);
-  // One-shot guard: once an auto-promote attempt (success or failure) has
-  // been made for a design id, never attempt it again automatically. A
-  // failed attempt already falls back to a normal local-project save (via
-  // syncDesignToAccount's own catch/saveLocalSyncFallback), after which the
-  // design is handled by the ordinary manual Sync-to-account flow.
   const autoPromoteAttemptedIdsRef = useRef<Set<string>>(new Set());
 
   const [accountShares, setAccountShares] = useState<AccountShareItem[]>([]);
