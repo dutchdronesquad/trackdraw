@@ -175,7 +175,7 @@ describe("metrics decision views", () => {
   });
 
   it("sorts export usage from highest to lowest", () => {
-    const { container } = render(
+    render(
       <ExportUsageBreakdown
         usage={{
           ...usage,
@@ -190,9 +190,9 @@ describe("metrics decision views", () => {
     );
 
     expect(
-      Array.from(container.querySelectorAll(".text-foreground")).map(
-        (row) => row.textContent
-      )
+      screen
+        .getAllByText(/^(Project file \(JSON\)|2D image \(PNG\)|custom)$/)
+        .map((row) => row.textContent)
     ).toEqual(["Project file (JSON)", "2D image (PNG)", "custom"]);
   });
 
