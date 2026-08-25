@@ -13,6 +13,7 @@ import {
   ActivationFunnel,
   EditorUsageBreakdown,
   EmbedReachTable,
+  ExportUsageBreakdown,
   GrowthTabs,
   PlanLimitSimulator,
   UsageTabs,
@@ -171,6 +172,28 @@ describe("metrics decision views", () => {
     expect(
       screen.getByRole("region", { name: "Detected embed websites" })
     ).toBeTruthy();
+  });
+
+  it("sorts export usage from highest to lowest", () => {
+    const { container } = render(
+      <ExportUsageBreakdown
+        usage={{
+          ...usage,
+          exports30d: 10,
+          exportFormats30d: [
+            { format: "png", count: 2 },
+            { format: "json", count: 7 },
+            { format: "custom", count: 1 },
+          ],
+        }}
+      />
+    );
+
+    expect(
+      Array.from(container.querySelectorAll(".text-foreground")).map(
+        (row) => row.textContent
+      )
+    ).toEqual(["Project file (JSON)", "2D image (PNG)", "custom"]);
   });
 
   it("left-aligns creator-funnel journey steps", () => {
@@ -431,7 +454,34 @@ describe("metrics decision views", () => {
     const explorer = {
       generatedAt: "2026-08-15T12:00:00.000Z",
       acquisition: emptyMetric,
-      adoption: { ...emptyMetric, id: "MTR-009" },
+      adoption: {
+        ...emptyMetric,
+        id: "MTR-009",
+        rows: [
+          {
+            dimension: "import",
+            day: "2026-08-14",
+            numerator: 2,
+            denominator: 10,
+            sampleSize: 10,
+            value: 0.2,
+            quality: "building",
+            previousValue: null,
+            comparisonReady: false,
+          },
+          {
+            dimension: "preview_3d",
+            day: "2026-08-14",
+            numerator: 7,
+            denominator: 10,
+            sampleSize: 10,
+            value: 0.7,
+            quality: "building",
+            previousValue: null,
+            comparisonReady: false,
+          },
+        ],
+      },
       retention: { ...emptyMetric, id: "MTR-005", windowDays: 30 },
     } satisfies MetricsExplorerData;
 
@@ -574,6 +624,15 @@ describe("metrics decision views", () => {
 
     await user.click(screen.getByRole("tab", { name: "Creation" }));
     expect(screen.getByText("Content growth")).toBeTruthy();
+    const adoption = screen
+      .getByRole("heading", { name: "Feature adoption" })
+      .closest("section");
+    expect(adoption).toBeTruthy();
+    expect(
+      within(adoption!)
+        .getAllByRole("img")
+        .map((row) => row.getAttribute("aria-label"))
+    ).toEqual(["3D preview: 70%", "Import: 20%"]);
 
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     expect(screen.getByText("Export usage")).toBeTruthy();

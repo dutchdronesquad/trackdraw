@@ -1538,6 +1538,10 @@ export function ExportUsageBreakdown({
   const extras = usage.exportFormats30d
     .filter((row) => !knownFormatSet.has(row.format))
     .map((row) => ({ key: row.format, label: row.format, count: row.count }));
+  const sortedRows = [...rows, ...extras].sort(
+    (left, right) =>
+      right.count - left.count || left.key.localeCompare(right.key)
+  );
 
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
@@ -1572,7 +1576,7 @@ export function ExportUsageBreakdown({
         </div>
       </div>
       <UsageBreakdownRows
-        rows={[...rows, ...extras]}
+        rows={sortedRows}
         total={usage.exports30d}
         emptyLabel={t("noData")}
         compact={compact}
