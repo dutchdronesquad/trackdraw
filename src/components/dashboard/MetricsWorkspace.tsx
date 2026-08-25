@@ -313,7 +313,9 @@ function ExplorerBarRows({
     [locale]
   );
   const rows = [...metric.rows].sort(
-    (left, right) => (right.value ?? 0) - (left.value ?? 0)
+    (left, right) =>
+      (right.value ?? 0) - (left.value ?? 0) ||
+      left.dimension.localeCompare(right.dimension)
   );
 
   if (rows.length === 0) {
