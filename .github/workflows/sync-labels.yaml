@@ -10,16 +10,19 @@ on:
       - .github/labels.yml
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   labels:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      issues: write
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v7.0.1
-      - name: 🚀 Run Label Syncer
-        uses: srealmoreno/label-sync-action@v2.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🚀 Run Label Blueprint
+        uses: klaasnicolaas/action-label-blueprint@v1
+        with:
+          prune: true
