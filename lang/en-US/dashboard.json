@@ -121,10 +121,10 @@
         "action": "Review gallery entries"
       },
       "failures": {
-        "label": "Publication and export failures",
-        "today": "{count, plural, one {# publication or export failure needs attention} other {# publication or export failures need attention}}",
-        "detail": "{export} export · {publication} gallery publication failures in the latest complete 7-day window.",
-        "action": "Review operational metrics",
+        "label": "Publication and export attempts",
+        "today": "{count, plural, one {# failed publication or export attempt recorded} other {# failed publication or export attempts recorded}}",
+        "detail": "{export} failed export attempts · {publication} failed gallery publication attempts in the latest complete 7-day window. These are recorded attempts, not unresolved items.",
+        "action": "Inspect failure breakdown",
         "exportLabel": "Export failure rate",
         "publicationLabel": "Gallery publication failure rate"
       },
@@ -328,6 +328,12 @@
           "definition": "The share of eligible creator sessions that used each meaningful feature at least once during the last 28 complete UTC days.",
           "owner": "Product",
           "privacy": "Adoption measures completed feature use, not clicks, panel opens, project content, or individual behavior."
+        },
+        "MTR-010": {
+          "name": "Categorized failure rate",
+          "definition": "Failed terminal attempts grouped by operation and category during the last seven complete UTC days, divided by successful and failed outcomes for the same operation.",
+          "owner": "TrackDraw maintainers",
+          "privacy": "The breakdown contains aggregate attempt counts only and does not expose users, sessions, projects, shares, or individual event records."
         }
       },
       "sources": {
@@ -421,6 +427,36 @@
         "rate": "30-day rate",
         "quality": "Quality",
         "empty": "Mature creator-activation cohorts will appear after the observation window is complete."
+      },
+      "operations": {
+        "title": "Publication and export attempts",
+        "description": "Failed attempts in the latest complete 7-day window. Repeated attempts are counted separately.",
+        "failedAttempts": "failed attempts",
+        "windowEnd": "Window ending {date}",
+        "operation": "Operation",
+        "category": "Category",
+        "failed": "Failed attempts",
+        "outcomes": "Terminal outcomes",
+        "rate": "Failure rate",
+        "empty": "No failed publication or export attempts were recorded in the latest complete window.",
+        "notStarted": "Waiting for the first complete publication and export failure window.",
+        "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labelled low volume. The attempt counts remain factual.",
+        "operations": {
+          "export": "Export",
+          "gallery_publish": "Gallery publication"
+        },
+        "categories": {
+          "validation": "Validation",
+          "authentication": "Authentication",
+          "authorization": "Authorization",
+          "conflict": "Conflict",
+          "rate_limited": "Rate limited",
+          "network": "Network",
+          "storage": "Storage",
+          "rendering": "Rendering",
+          "unsupported": "Unsupported",
+          "unknown": "Unknown"
+        }
       },
       "dictionary": {
         "title": "Product metrics data dictionary",

@@ -24,7 +24,7 @@ function row(
     metric_id: metricId,
     day_utc: day,
     dimension,
-    window_days: metricId === "MTR-005" ? 30 : 28,
+    window_days: metricId === "MTR-005" ? 30 : metricId === "MTR-010" ? 7 : 28,
     numerator,
     denominator,
     sample_size: denominator,
@@ -152,5 +152,53 @@ describe("metrics explorer", () => {
       "degraded",
     ]);
     expect(result.retention.quality).toBe("degraded");
+  });
+
+  it("exposes categorized failures from the latest complete seven-day window", () => {
+    const result = buildMetricsExplorerData(
+      {
+        "MTR-010": [
+          row("MTR-010", "2026-08-13", "export:rendering", 2, 18),
+          row("MTR-010", "2026-08-14", "export:rendering", 6, 20),
+          row("MTR-010", "2026-08-14", "gallery_publish:network", 4, 8),
+          row("MTR-010", "2026-08-15", "export:rendering", 7, 22, {
+            completeness_state: "incomplete",
+            quality_status: "building",
+          }),
+        ],
+      },
+      [state("MTR-010")],
+      new Date("2026-08-15T12:00:00.000Z")
+    );
+
+    expect(result.failures).toMatchObject({
+      id: "MTR-010",
+      windowDays: 7,
+      quality: "low_volume",
+    });
+    expect(
+      result.failures.rows.map((entry) => ({
+        dimension: entry.dimension,
+        day: entry.day,
+        numerator: entry.numerator,
+        denominator: entry.denominator,
+        value: entry.value,
+      }))
+    ).toEqual([
+      {
+        dimension: "export:rendering",
+        day: "2026-08-14",
+        numerator: 6,
+        denominator: 20,
+        value: 0.3,
+      },
+      {
+        dimension: "gallery_publish:network",
+        day: "2026-08-14",
+        numerator: 4,
+        denominator: 8,
+        value: 0.5,
+      },
+    ]);
   });
 });

@@ -12,6 +12,7 @@ const EXPLORER_METRICS: readonly ProductMetricId[] = [
   "MTR-005",
   "MTR-008",
   "MTR-009",
+  "MTR-010",
 ];
 
 function utcDay(date: Date) {
