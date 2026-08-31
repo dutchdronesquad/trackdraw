@@ -613,10 +613,10 @@ describe("metrics decision views", () => {
       screen.getAllByRole("button", { name: "Range Last 3 months" })
     ).toHaveLength(2);
     expect(
-      within(screen.getByRole("banner")).queryByRole("button", {
+      within(screen.getByRole("banner")).getAllByRole("button", {
         name: "Range Last 3 months",
       })
-    ).toBeNull();
+    ).toHaveLength(2);
     const evidence = screen.getByRole("region", {
       name: "Core product metrics",
     });

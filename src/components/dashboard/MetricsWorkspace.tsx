@@ -24,6 +24,7 @@ import {
   ShareUsageBreakdown,
   SharingHealth,
   UserGrowthCard,
+  UserGrowthRangePicker,
 } from "@/components/dashboard/MetricsCharts";
 import {
   Tooltip,
@@ -896,7 +897,19 @@ export default function MetricsWorkspace({
               <time dateTime={header.dateTime}>{header.lastUpdated}</time>
             </p>
           </div>
-          {canRunMaintenance ? <RunMetricMaintenanceButton /> : null}
+          <div className="flex items-center gap-2">
+            {canRunMaintenance ? <RunMetricMaintenanceButton /> : null}
+            <UserGrowthRangePicker
+              activeRange={growthRange}
+              customRange={growthCustomRange}
+              today={growthTimeline.today}
+              onPresetSelect={setGrowthRange}
+              onCustomApply={(value) => {
+                setGrowthCustomRange(value);
+                setGrowthRange("custom");
+              }}
+            />
+          </div>
         </header>
       ) : null}
 
@@ -943,7 +956,7 @@ export default function MetricsWorkspace({
                   setGrowthCustomRange(value);
                   setGrowthRange("custom");
                 }}
-                showRangePicker
+                showRangePicker={!header}
               />
             </section>
             <section
@@ -1083,7 +1096,7 @@ export default function MetricsWorkspace({
                 setGrowthCustomRange(value);
                 setGrowthRange("custom");
               }}
-              showRangePicker
+              showRangePicker={!header}
             />
           </section>
           <section className="bg-card rounded-xl border p-4 sm:p-5">
