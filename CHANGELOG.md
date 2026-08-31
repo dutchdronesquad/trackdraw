@@ -4,6 +4,12 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
+## [1.16.2]
+
+### More consistent translations
+
+Account project sync statuses, confirmations, conflicts, retry actions, and failure messages now follow the selected language, including localized sync times. Embedded tracks also show their Privacy Policy link in the selected language.
+
 ## [1.16.0]
 
 ### Faster access to editor actions
