@@ -305,16 +305,10 @@
           "privacy": "Anonymous activity is session-scoped and is never joined to an account. This count represents actors, not deduplicated people."
         },
         "MTR-002": {
-          "name": "Active creator rate",
-          "definition": "Active creators divided by distinct actors who started an editor session during the last seven complete UTC days.",
-          "owner": "Product",
-          "privacy": "Anonymous activity remains session-scoped and is never joined to an account."
+          "name": "Active creator rate"
         },
         "MTR-003": {
-          "name": "Valuable sessions",
-          "definition": "Creator sessions with a meaningful edit followed by a completed export, share creation, or gallery publication.",
-          "owner": "Product",
-          "privacy": "The metric contains aggregate session outcomes and does not expose projects, shares, or individual sessions."
+          "name": "Valuable sessions"
         },
         "MTR-004": {
           "name": "Valuable session rate",
@@ -335,10 +329,7 @@
           "privacy": "Temporary links are excluded and browser sessions are not treated as people."
         },
         "MTR-007": {
-          "name": "Publication session rate",
-          "definition": "Valuable sessions that ended in a published share or gallery publication, divided by all valuable sessions during the last 28 complete UTC days.",
-          "owner": "Product",
-          "privacy": "The metric contains aggregate session outcomes and does not expose projects, shares, or individual sessions."
+          "name": "Publication session rate"
         },
         "MTR-008": {
           "name": "Acquisition source mix",
@@ -523,10 +514,6 @@
           "unsupported": "Unsupported",
           "unknown": "Unknown"
         }
-      },
-      "dictionary": {
-        "title": "Product metrics data dictionary",
-        "description": "Stable metric identifiers, contract definitions, reporting windows, quality status, minimum volume, and ownership govern every analytical view."
       }
     },
     "kpi": {

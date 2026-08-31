@@ -114,19 +114,6 @@ const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
   operations: "distribution",
 };
 
-const DICTIONARY_METRICS = [
-  "MTR-001",
-  "MTR-002",
-  "MTR-003",
-  "MTR-004",
-  "MTR-005",
-  "MTR-006",
-  "MTR-007",
-  "MTR-008",
-  "MTR-009",
-  "MTR-010",
-] as const;
-
 const COCKPIT_FAILURE_OPERATIONS = ["export", "gallery_publish"] as const;
 
 function cockpitFailureRows(metric: MetricsExplorerMetric) {
@@ -1602,30 +1589,6 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
       </Tabs>
-
-      <details
-        id="data-dictionary"
-        className="bg-card scroll-mt-20 rounded-xl border p-4 sm:p-5"
-      >
-        <summary className="cursor-pointer text-sm font-semibold">
-          {t("dictionary.title")}
-        </summary>
-        <p className="text-muted-foreground mt-2 max-w-3xl text-sm">
-          {t("dictionary.description")}
-        </p>
-        <dl className="mt-4 grid gap-x-8 gap-y-4 md:grid-cols-2">
-          {DICTIONARY_METRICS.map((id) => (
-            <div key={id} className="border-t pt-3">
-              <dt className="text-sm font-semibold">
-                {id} · {t(`metrics.${id}.name`)}
-              </dt>
-              <dd className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t(`metrics.${id}.definition`)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </details>
     </div>
   );
 }

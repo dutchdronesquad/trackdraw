@@ -698,6 +698,7 @@ describe("metrics decision views", () => {
     expect(within(evidence).queryByText("Trend")).toBeNull();
     expect(within(evidence).getByRole("table").className).toContain("text-sm");
     expect(screen.queryByRole("button", { name: "Editor usage" })).toBeNull();
+    expect(screen.queryByText("Product metrics data dictionary")).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
     ).toBeNull();
