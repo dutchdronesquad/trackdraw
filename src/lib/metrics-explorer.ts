@@ -32,11 +32,12 @@ export type MetricsExplorerData = {
   acquisition: MetricsExplorerMetric;
   adoption: MetricsExplorerMetric;
   retention: MetricsExplorerMetric;
+  failures: MetricsExplorerMetric;
 };
 
 type MetricDefinition = {
-  id: "MTR-005" | "MTR-008" | "MTR-009";
-  windowDays: 28 | 30;
+  id: "MTR-005" | "MTR-008" | "MTR-009" | "MTR-010";
+  windowDays: 7 | 28 | 30;
   minimumVolume: number;
   valueKind: "count" | "rate";
 };
@@ -58,6 +59,12 @@ const EXPLORER_DEFINITIONS: readonly MetricDefinition[] = [
     id: "MTR-009",
     windowDays: 28,
     minimumVolume: 20,
+    valueKind: "rate",
+  },
+  {
+    id: "MTR-010",
+    windowDays: 7,
+    minimumVolume: 30,
     valueKind: "rate",
   },
 ] as const;
@@ -251,6 +258,7 @@ export function buildMetricsExplorerData(
     generatedAt: now.toISOString(),
     acquisition: mergeLowVolumeAcquisitionRows(metrics["MTR-008"]),
     adoption: metrics["MTR-009"],
+    failures: metrics["MTR-010"],
     retention: {
       ...metrics["MTR-005"],
       quality: metricQuality(retentionRows, retentionState),

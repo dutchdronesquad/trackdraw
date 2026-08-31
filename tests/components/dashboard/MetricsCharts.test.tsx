@@ -483,6 +483,36 @@ describe("metrics decision views", () => {
         ],
       },
       retention: { ...emptyMetric, id: "MTR-005", windowDays: 30 },
+      failures: {
+        ...emptyMetric,
+        id: "MTR-010",
+        windowDays: 7,
+        quality: "low_volume",
+        rows: [
+          {
+            dimension: "export:rendering",
+            day: "2026-08-14",
+            numerator: 6,
+            denominator: 20,
+            sampleSize: 20,
+            value: 0.3,
+            quality: "low_volume",
+            previousValue: null,
+            comparisonReady: false,
+          },
+          {
+            dimension: "gallery_publish:network",
+            day: "2026-08-14",
+            numerator: 4,
+            denominator: 8,
+            sampleSize: 8,
+            value: 0.5,
+            quality: "low_volume",
+            previousValue: null,
+            comparisonReady: false,
+          },
+        ],
+      },
     } satisfies MetricsExplorerData;
 
     const { container } = render(
@@ -638,5 +668,17 @@ describe("metrics decision views", () => {
     expect(screen.getByText("Export usage")).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
+    const operations = document.querySelector("#operations");
+    expect(operations).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByRole("heading", {
+        name: "Publication and export attempts",
+      })
+    ).toBeTruthy();
+    expect(within(operations as HTMLElement).getByText("10")).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText("Rendering")
+    ).toBeTruthy();
+    expect(within(operations as HTMLElement).getByText("Network")).toBeTruthy();
   });
 });

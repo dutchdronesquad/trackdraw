@@ -119,7 +119,34 @@ const DICTIONARY_METRICS = [
   "MTR-006",
   "MTR-008",
   "MTR-009",
+  "MTR-010",
 ] as const;
+
+const COCKPIT_FAILURE_OPERATIONS = ["export", "gallery_publish"] as const;
+
+function cockpitFailureRows(metric: MetricsExplorerMetric) {
+  return metric.rows
+    .map((row) => {
+      const [operation, category] = row.dimension.split(":", 2);
+      return { ...row, operation, category };
+    })
+    .filter(
+      (
+        row
+      ): row is typeof row & {
+        operation: (typeof COCKPIT_FAILURE_OPERATIONS)[number];
+        category: string;
+      } =>
+        COCKPIT_FAILURE_OPERATIONS.includes(
+          row.operation as (typeof COCKPIT_FAILURE_OPERATIONS)[number]
+        ) && Boolean(row.category)
+    )
+    .sort(
+      (left, right) =>
+        right.numerator - left.numerator ||
+        left.dimension.localeCompare(right.dimension)
+    );
+}
 
 const QUALITY_CLASS: Record<MetricsExplorerQuality, string> = {
   healthy: "text-emerald-700 dark:text-emerald-300",
@@ -705,6 +732,20 @@ export default function MetricsWorkspace({
   const [growthRange, setGrowthRange] = useState<GrowthRange>("3m");
   const [growthCustomRange, setGrowthCustomRange] =
     useState<GrowthCustomRange | null>(null);
+  const failureRows = useMemo(
+    () => cockpitFailureRows(explorer.failures),
+    [explorer.failures]
+  );
+  const failureCount = failureRows.reduce((sum, row) => sum + row.numerator, 0);
+  const failureWindowEnd = failureRows[0]?.day ?? null;
+  const date = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeZone: "UTC",
+      }),
+    [locale]
+  );
 
   const snapshots = useMemo(() => {
     const entries = cockpit.headlines.map((metric) => {
@@ -1206,6 +1247,118 @@ export default function MetricsWorkspace({
           </section>
         </TabsContent>
       </Tabs>
+
+      <section
+        id="operations"
+        className="bg-card scroll-mt-20 rounded-xl border"
+        aria-labelledby="operations-title"
+      >
+        <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
+          <div>
+            <h2 id="operations-title" className="text-base font-semibold">
+              {t("operations.title")}
+            </h2>
+            <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
+              {t("operations.description")}
+            </p>
+          </div>
+          <QualityLabel
+            quality={explorer.failures.quality}
+            measuredSince={explorer.failures.measuredSince}
+            generatedAt={explorer.generatedAt}
+          />
+        </div>
+
+        {failureRows.length > 0 ? (
+          <>
+            <div className="flex flex-col gap-1 border-b px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
+              <div>
+                <span className="text-3xl font-semibold tracking-tight tabular-nums">
+                  {number.format(failureCount)}
+                </span>
+                <span className="text-muted-foreground ml-2 text-sm">
+                  {t("operations.failedAttempts")}
+                </span>
+              </div>
+              {failureWindowEnd ? (
+                <p className="text-muted-foreground text-xs">
+                  {t("operations.windowEnd", {
+                    date: date.format(
+                      new Date(`${failureWindowEnd}T00:00:00.000Z`)
+                    ),
+                  })}
+                </p>
+              ) : null}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[44rem] text-sm">
+                <thead>
+                  <tr className="text-muted-foreground border-b text-left text-xs">
+                    <th className="px-4 py-2 font-medium sm:pl-5" scope="col">
+                      {t("operations.operation")}
+                    </th>
+                    <th className="px-3 py-2 font-medium" scope="col">
+                      {t("operations.category")}
+                    </th>
+                    <th
+                      className="px-3 py-2 text-right font-medium"
+                      scope="col"
+                    >
+                      {t("operations.failed")}
+                    </th>
+                    <th
+                      className="px-3 py-2 text-right font-medium"
+                      scope="col"
+                    >
+                      {t("operations.outcomes")}
+                    </th>
+                    <th
+                      className="px-4 py-2 text-right font-medium sm:pr-5"
+                      scope="col"
+                    >
+                      {t("operations.rate")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {failureRows.map((row) => (
+                    <tr key={row.dimension} className="border-b last:border-0">
+                      <td className="px-4 py-3 font-medium sm:pl-5">
+                        {t(`operations.operations.${row.operation}`)}
+                      </td>
+                      <td className="px-3 py-3">
+                        {t(`operations.categories.${row.category}`)}
+                      </td>
+                      <td className="px-3 py-3 text-right font-semibold tabular-nums">
+                        {number.format(row.numerator)}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums">
+                        {row.denominator === null
+                          ? "—"
+                          : number.format(row.denominator)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums sm:pr-5">
+                        {row.value === null ? "—" : percent.format(row.value)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-muted-foreground border-t px-4 py-3 text-xs leading-relaxed sm:px-5">
+              {t("operations.lowVolumeNote")}
+            </p>
+          </>
+        ) : (
+          <p className="text-muted-foreground px-4 py-8 text-center text-sm sm:px-5">
+            {t(
+              explorer.failures.quality === "not_started"
+                ? "operations.notStarted"
+                : "operations.empty"
+            )}
+          </p>
+        )}
+      </section>
 
       <details
         id="data-dictionary"
