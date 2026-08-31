@@ -304,6 +304,12 @@
           "owner": "Product",
           "privacy": "Anonymous activity is session-scoped and is never joined to an account. This count represents actors, not deduplicated people."
         },
+        "MTR-002": {
+          "name": "Active creator rate"
+        },
+        "MTR-003": {
+          "name": "Valuable sessions"
+        },
         "MTR-004": {
           "name": "Valuable session rate",
           "definition": "Creator sessions with a meaningful edit followed by a completed export, share creation, or gallery publication, divided by editor sessions.",
@@ -322,6 +328,9 @@
           "owner": "Product",
           "privacy": "Temporary links are excluded and browser sessions are not treated as people."
         },
+        "MTR-007": {
+          "name": "Publication session rate"
+        },
         "MTR-008": {
           "name": "Acquisition source mix",
           "definition": "Eligible entry sessions grouped into bounded source categories during the last 28 complete UTC days, excluding internal navigation.",
@@ -339,6 +348,17 @@
           "definition": "Failed terminal attempts grouped by operation and category during the last seven complete UTC days, divided by successful and failed outcomes for the same operation.",
           "owner": "TrackDraw maintainers",
           "privacy": "The breakdown contains aggregate attempt counts only and does not expose users, sessions, projects, shares, or individual event records."
+        }
+      },
+      "decisionMetrics": {
+        "MTR-002": {
+          "context": "{numerator, plural, one {# active creator} other {# active creators}} from {denominator, plural, one {# editor actor} other {# editor actors}}."
+        },
+        "MTR-003": {
+          "context": "{numerator, plural, one {# valuable session} other {# valuable sessions}} from {denominator, plural, one {# editor session} other {# editor sessions}}."
+        },
+        "MTR-007": {
+          "context": "{numerator, plural, one {# published session} other {# published sessions}} from {denominator, plural, one {# valuable session} other {# valuable sessions}}."
         }
       },
       "sources": {
@@ -494,10 +514,6 @@
           "unsupported": "Unsupported",
           "unknown": "Unknown"
         }
-      },
-      "dictionary": {
-        "title": "Product metrics data dictionary",
-        "description": "Stable metric identifiers, contract definitions, reporting windows, quality status, minimum volume, and ownership govern every analytical view."
       }
     },
     "kpi": {

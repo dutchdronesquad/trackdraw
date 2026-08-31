@@ -42,6 +42,9 @@ export type MetricsExplorerFailureAttempt = {
 
 export type MetricsExplorerData = {
   generatedAt: string;
+  activeCreatorRate: MetricsExplorerMetric;
+  valuableSessions: MetricsExplorerMetric;
+  publicationSessionRate: MetricsExplorerMetric;
   acquisition: MetricsExplorerMetric;
   adoption: MetricsExplorerMetric;
   retention: MetricsExplorerMetric;
@@ -50,13 +53,38 @@ export type MetricsExplorerData = {
 };
 
 type MetricDefinition = {
-  id: "MTR-005" | "MTR-008" | "MTR-009" | "MTR-010";
+  id:
+    | "MTR-002"
+    | "MTR-003"
+    | "MTR-005"
+    | "MTR-007"
+    | "MTR-008"
+    | "MTR-009"
+    | "MTR-010";
   windowDays: 7 | 28 | 30;
   minimumVolume: number;
   valueKind: "count" | "rate";
 };
 
 const EXPLORER_DEFINITIONS: readonly MetricDefinition[] = [
+  {
+    id: "MTR-002",
+    windowDays: 7,
+    minimumVolume: 30,
+    valueKind: "rate",
+  },
+  {
+    id: "MTR-003",
+    windowDays: 7,
+    minimumVolume: 30,
+    valueKind: "count",
+  },
+  {
+    id: "MTR-007",
+    windowDays: 28,
+    minimumVolume: 30,
+    valueKind: "rate",
+  },
   {
     id: "MTR-005",
     windowDays: 30,
@@ -270,6 +298,9 @@ export function buildMetricsExplorerData(
 
   return {
     generatedAt: now.toISOString(),
+    activeCreatorRate: metrics["MTR-002"],
+    valuableSessions: metrics["MTR-003"],
+    publicationSessionRate: metrics["MTR-007"],
     acquisition: mergeLowVolumeAcquisitionRows(metrics["MTR-008"]),
     adoption: metrics["MTR-009"],
     failures: metrics["MTR-010"],

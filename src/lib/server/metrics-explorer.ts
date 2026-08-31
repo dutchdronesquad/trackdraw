@@ -15,7 +15,10 @@ import {
 } from "@/lib/server/product-metric-aggregates";
 
 const EXPLORER_METRICS: readonly ProductMetricId[] = [
+  "MTR-002",
+  "MTR-003",
   "MTR-005",
+  "MTR-007",
   "MTR-008",
   "MTR-009",
   "MTR-010",

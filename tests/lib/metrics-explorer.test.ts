@@ -12,6 +12,19 @@ function addUtcDays(day: string, amount: number) {
   return date.toISOString().slice(0, 10);
 }
 
+const METRIC_WINDOW_DAYS = {
+  "MTR-001": 7,
+  "MTR-002": 7,
+  "MTR-003": 7,
+  "MTR-004": 7,
+  "MTR-005": 30,
+  "MTR-006": 7,
+  "MTR-007": 28,
+  "MTR-008": 28,
+  "MTR-009": 28,
+  "MTR-010": 7,
+} as const satisfies Record<ProductMetricId, 7 | 28 | 30>;
+
 function row(
   metricId: ProductMetricId,
   day: string,
@@ -24,7 +37,7 @@ function row(
     metric_id: metricId,
     day_utc: day,
     dimension,
-    window_days: metricId === "MTR-005" ? 30 : metricId === "MTR-010" ? 7 : 28,
+    window_days: METRIC_WINDOW_DAYS[metricId],
     numerator,
     denominator,
     sample_size: denominator,
@@ -47,6 +60,42 @@ function state(metricId: ProductMetricId): ProductMetricMeasurementState {
 }
 
 describe("metrics explorer", () => {
+  it("exposes the latest creator, value, and publication outcomes", () => {
+    const activeCreatorRate = row("MTR-002", "2026-08-14", "", 18, 30);
+    const valuableSessions = row("MTR-003", "2026-08-14", "", 12, null, {
+      sample_size: 30,
+    });
+
+    expect(activeCreatorRate.window_days).toBe(7);
+    expect(valuableSessions.window_days).toBe(7);
+
+    const result = buildMetricsExplorerData(
+      {
+        "MTR-002": [activeCreatorRate],
+        "MTR-003": [valuableSessions],
+        "MTR-007": [row("MTR-007", "2026-08-14", "", 7, 12)],
+      },
+      [state("MTR-002"), state("MTR-003"), state("MTR-007")],
+      new Date("2026-08-15T12:00:00.000Z")
+    );
+
+    expect(result.activeCreatorRate.rows[0]).toMatchObject({
+      numerator: 18,
+      denominator: 30,
+      value: 0.6,
+    });
+    expect(result.valuableSessions.rows[0]).toMatchObject({
+      numerator: 12,
+      sampleSize: 30,
+      value: 12,
+    });
+    expect(result.publicationSessionRate.rows[0]).toMatchObject({
+      numerator: 7,
+      denominator: 12,
+      value: 7 / 12,
+    });
+  });
+
   it("shows a comparison only after eight preceding healthy periods", () => {
     const currentDay = "2026-08-14";
     const acquisition = [

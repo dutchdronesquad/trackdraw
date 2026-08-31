@@ -453,6 +453,62 @@ describe("metrics decision views", () => {
     };
     const explorer = {
       generatedAt: "2026-08-15T12:00:00.000Z",
+      activeCreatorRate: {
+        ...emptyMetric,
+        id: "MTR-002",
+        windowDays: 7,
+        quality: "healthy",
+        rows: [
+          {
+            dimension: "",
+            day: "2026-08-14",
+            numerator: 18,
+            denominator: 30,
+            sampleSize: 30,
+            value: 0.6,
+            quality: "healthy",
+            previousValue: null,
+            comparisonReady: false,
+          },
+        ],
+      },
+      valuableSessions: {
+        ...emptyMetric,
+        id: "MTR-003",
+        windowDays: 7,
+        quality: "healthy",
+        rows: [
+          {
+            dimension: "",
+            day: "2026-08-14",
+            numerator: 12,
+            denominator: null,
+            sampleSize: 30,
+            value: 12,
+            quality: "healthy",
+            previousValue: null,
+            comparisonReady: false,
+          },
+        ],
+      },
+      publicationSessionRate: {
+        ...emptyMetric,
+        id: "MTR-007",
+        quality: "healthy",
+        rows: [
+          {
+            dimension: "",
+            day: "2026-08-14",
+            numerator: 7,
+            denominator: 12,
+            sampleSize: 12,
+            value: 7 / 12,
+            quality: "healthy",
+            previousValue: null,
+            comparisonReady: false,
+          },
+        ],
+      },
       acquisition: emptyMetric,
       adoption: {
         ...emptyMetric,
@@ -642,6 +698,7 @@ describe("metrics decision views", () => {
     expect(within(evidence).queryByText("Trend")).toBeNull();
     expect(within(evidence).getByRole("table").className).toContain("text-sm");
     expect(screen.queryByRole("button", { name: "Editor usage" })).toBeNull();
+    expect(screen.queryByText("Product metrics data dictionary")).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
     ).toBeNull();
@@ -681,9 +738,18 @@ describe("metrics decision views", () => {
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
     expect(screen.getByText("Creator retention")).toBeTruthy();
+    expect(screen.getByText("Active creator rate")).toBeTruthy();
+    expect(screen.getByText("60%")).toBeTruthy();
+    expect(
+      screen.getByText("18 active creators from 30 editor actors.")
+    ).toBeTruthy();
 
     await user.click(screen.getByRole("tab", { name: "Creation" }));
     expect(screen.getByText("Content growth")).toBeTruthy();
+    expect(screen.getByText("Valuable sessions")).toBeTruthy();
+    expect(
+      screen.getByText("12 valuable sessions from 30 editor sessions.")
+    ).toBeTruthy();
     const adoption = screen
       .getByRole("heading", { name: "Feature adoption" })
       .closest("section");
@@ -696,6 +762,10 @@ describe("metrics decision views", () => {
 
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     expect(screen.getByText("Export usage")).toBeTruthy();
+    expect(screen.getByText("Publication session rate")).toBeTruthy();
+    expect(
+      screen.getByText("7 published sessions from 12 valuable sessions.")
+    ).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
     const operations = document.querySelector("#operations");
