@@ -42,6 +42,9 @@
     "embedTitle": "赛道嵌入",
     "embedDescription": "TrackDraw 只读赛道嵌入视图。"
   },
+  "embed": {
+    "privacy": "隐私政策"
+  },
   "embedUnavailable": {
     "temporaryTitle": "暂时无法嵌入",
     "temporaryDescription": "只有账户发布的共享内容才支持嵌入。你可以直接打开共享链接，或登录后发布一个长期可用的嵌入。",

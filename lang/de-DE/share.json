@@ -42,6 +42,9 @@
     "embedTitle": "Track-Embed",
     "embedDescription": "Eingebettete schreibgeschützte TrackDraw-Trackansicht."
   },
+  "embed": {
+    "privacy": "Datenschutzerklärung"
+  },
   "embedUnavailable": {
     "temporaryTitle": "Embed nicht verfügbar",
     "temporaryDescription": "Embeds sind für veröffentlichte Konto-Freigaben verfügbar. Öffne den Share-Link oder melde dich an, um ein dauerhaftes Embed zu veröffentlichen.",

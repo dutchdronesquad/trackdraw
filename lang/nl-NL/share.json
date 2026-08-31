@@ -42,6 +42,9 @@
     "embedTitle": "Track embed",
     "embedDescription": "Ingesloten alleen-lezen TrackDraw-trackweergave."
   },
+  "embed": {
+    "privacy": "Privacybeleid"
+  },
   "embedUnavailable": {
     "temporaryTitle": "Embed niet beschikbaar",
     "temporaryDescription": "Embeds zijn beschikbaar voor gepubliceerde account-shares. Open de deellink of log in om een blijvende embed te publiceren.",
