@@ -9,13 +9,12 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   labels:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
       - name: 🚀 Run Label Syncer
         uses: srealmoreno/label-sync-action@v2.0.0
