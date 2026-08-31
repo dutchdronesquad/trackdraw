@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { nanoid } from "nanoid";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { getDesignShapes } from "@/lib/track/design";
 import {
@@ -116,11 +117,11 @@ export function useAccountProjectSync({
   setActiveRestorePointId,
   setSaveStatusLabel,
 }: UseAccountProjectSyncOptions) {
+  const locale = useLocale();
+  const t = useTranslations("editor.accountProjectSync");
   const cloudProjectsAvailable = !isDevAuthShimEnabled();
   const cloudProjectsUnavailableReason =
-    authUserId && !cloudProjectsAvailable
-      ? "Cloud projects are unavailable in `npm run dev`. Use `npm run preview` to test account-backed sync."
-      : null;
+    authUserId && !cloudProjectsAvailable ? t("cloudUnavailableDev") : null;
   const designRef = useRef(design);
   const [accountProjects, setAccountProjects] = useState<
     AccountProjectListItem[]
@@ -614,16 +615,18 @@ export function useAccountProjectSync({
         }));
 
         if (options?.updateStatusLabel) {
-          const time = create24HourDateTimeFormatter(undefined, {
+          const time = create24HourDateTimeFormatter(locale, {
             hour: "2-digit",
             minute: "2-digit",
           }).format(new Date(syncedAt));
-          setSaveStatusLabel(`Synced to account at ${time}`);
+          setSaveStatusLabel(t("syncedToAccountAt", { time }));
         }
 
         if (options?.showToast) {
-          toast.success("Project synced", {
-            description: `"${targetDesign.title || "Untitled"}" is now available from your account.`,
+          toast.success(t("projectSynced"), {
+            description: t("projectSyncedDescription", {
+              title: targetDesign.title || t("untitled"),
+            }),
           });
         }
       } catch (error) {
@@ -653,9 +656,11 @@ export function useAccountProjectSync({
     [
       cloudProjectsAvailable,
       cloudProjectsUnavailableReason,
+      locale,
       setSaveStatusLabel,
       markProjectSyncFailed,
       saveLocalSyncFallback,
+      t,
       upsertAccountProject,
     ]
   );
@@ -663,12 +668,12 @@ export function useAccountProjectSync({
   const handleSyncProject = useCallback(
     async (projectId: string) => {
       if (!authUserId) {
-        toast.error("Sign in to sync this project");
+        toast.error(t("signInToSync"));
         return;
       }
 
       if (!cloudProjectsAvailable) {
-        toast.error("Cloud sync unavailable", {
+        toast.error(t("cloudSyncUnavailable"), {
           description: cloudProjectsUnavailableReason ?? undefined,
         });
         return;
@@ -681,9 +686,8 @@ export function useAccountProjectSync({
           : loadProject(projectId);
 
       if (!targetDesign) {
-        toast.error("Could not load local project", {
-          description:
-            "TrackDraw could not read the saved copy on this device. Try opening another local project or export a JSON backup from the current canvas.",
+        toast.error(t("localProjectLoadFailed"), {
+          description: t("localProjectLoadFailedDescription"),
         });
         return;
       }
@@ -697,9 +701,8 @@ export function useAccountProjectSync({
         });
       } catch (error) {
         if (isAccountProjectSyncConflictError(error)) {
-          toast.message("Review project version", {
-            description:
-              "The account copy changed before this device could sync.",
+          toast.message(t("reviewProjectVersion"), {
+            description: t("accountCopyChangedDescription"),
           });
           return;
         }
@@ -708,9 +711,8 @@ export function useAccountProjectSync({
           projectId,
           error instanceof Error ? error.message : "Account sync failed"
         );
-        toast.error("Account sync failed", {
-          description:
-            "A local copy was saved on this device. Retry sync when the connection or account service is available, or export JSON if you need a manual backup.",
+        toast.error(t("accountSyncFailed"), {
+          description: t("accountSyncFailedDescription"),
         });
       } finally {
         setSyncingProjectId(null);
@@ -722,6 +724,7 @@ export function useAccountProjectSync({
       cloudProjectsUnavailableReason,
       markProjectSyncFailed,
       syncDesignToAccount,
+      t,
     ]
   );
 
@@ -741,25 +744,27 @@ export function useAccountProjectSync({
     lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
 
   const headerStatus: HeaderStatus = readOnly
-    ? { label: "Read-only shared view", tone: "default" }
+    ? { label: t("status.readOnlySharedView"), tone: "default" }
     : isAccountProject
       ? currentProjectSyncMeta?.status === "failed"
-        ? { label: "Sync failed", tone: "error" }
+        ? { label: t("status.syncFailed"), tone: "error" }
         : currentProjectSyncMeta?.status === "conflict"
-          ? { label: "Review needed", tone: "error" }
+          ? { label: t("status.reviewNeeded"), tone: "error" }
           : currentProjectSyncMeta?.status === "syncing"
-            ? { label: "Syncing…", tone: "syncing" }
+            ? { label: t("status.syncing"), tone: "syncing" }
             : currentProjectHasPendingChanges
-              ? { label: "Changes pending", tone: "pending" }
+              ? { label: t("status.changesPending"), tone: "pending" }
               : currentProjectSyncMeta?.lastSyncedAt
                 ? {
-                    label: `Synced ${create24HourDateTimeFormatter(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(currentProjectSyncMeta.lastSyncedAt))}`,
+                    label: t("status.syncedAt", {
+                      time: create24HourDateTimeFormatter(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(new Date(currentProjectSyncMeta.lastSyncedAt)),
+                    }),
                     tone: "success",
                   }
-                : { label: "Synced project", tone: "success" }
+                : { label: t("status.syncedProject"), tone: "success" }
       : null;
 
   useEffect(() => {
@@ -793,7 +798,7 @@ export function useAccountProjectSync({
         updateStatusLabel: true,
       }).catch((error) => {
         if (isAccountProjectSyncConflictError(error)) {
-          setSaveStatusLabel("Review project version");
+          setSaveStatusLabel(t("reviewProjectVersion"));
           return;
         }
 
@@ -801,12 +806,11 @@ export function useAccountProjectSync({
           currentDesignId,
           error instanceof Error ? error.message : "Account sync failed"
         );
-        setSaveStatusLabel("Account sync failed; saved locally");
-        toast.error("Account sync failed", {
-          description:
-            "TrackDraw saved the latest copy on this device, but could not update the account copy. Retry sync when the connection is back.",
+        setSaveStatusLabel(t("accountSyncFailedSavedLocally"));
+        toast.error(t("accountSyncFailed"), {
+          description: t("autosyncFailedDescription"),
           action: {
-            label: "Retry",
+            label: t("retry"),
             onClick: () => {
               void handleSyncProject(currentDesignId);
             },
@@ -830,6 +834,7 @@ export function useAccountProjectSync({
     readOnly,
     setSaveStatusLabel,
     syncDesignToAccount,
+    t,
   ]);
 
   useEffect(() => {
@@ -857,7 +862,7 @@ export function useAccountProjectSync({
         updateStatusLabel: true,
       }).catch((error) => {
         if (isAccountProjectSyncConflictError(error)) {
-          setSaveStatusLabel("Review project version");
+          setSaveStatusLabel(t("reviewProjectVersion"));
           return;
         }
 
@@ -865,12 +870,11 @@ export function useAccountProjectSync({
           currentDesignId,
           error instanceof Error ? error.message : "Account sync failed"
         );
-        setSaveStatusLabel("Account sync failed; saved locally");
-        toast.error("Account sync failed", {
-          description:
-            "TrackDraw saved this new project on this device, but could not create the account copy yet. Retry sync when the connection is back.",
+        setSaveStatusLabel(t("accountSyncFailedSavedLocally"));
+        toast.error(t("accountSyncFailed"), {
+          description: t("autoPromoteFailedDescription"),
           action: {
-            label: "Retry",
+            label: t("retry"),
             onClick: () => {
               void handleSyncProject(currentDesignId);
             },
@@ -895,17 +899,18 @@ export function useAccountProjectSync({
     readOnly,
     setSaveStatusLabel,
     syncDesignToAccount,
+    t,
   ]);
 
   const handleOpenAccountProject = useCallback(
     async (projectId: string) => {
       if (!authUserId) {
-        toast.error("Sign in to open account projects");
+        toast.error(t("signInToOpen"));
         return false;
       }
 
       if (!cloudProjectsAvailable) {
-        toast.error("Cloud projects unavailable", {
+        toast.error(t("cloudProjectsUnavailable"), {
           description: cloudProjectsUnavailableReason ?? undefined,
         });
         return false;
@@ -944,12 +949,11 @@ export function useAccountProjectSync({
           },
         }));
         setProjectVersionConflict(null);
-        setSaveStatusLabel("Project opened from account");
+        setSaveStatusLabel(t("projectOpenedFromAccount"));
         return true;
       } catch {
-        toast.error("Could not open project", {
-          description:
-            "TrackDraw could not load the account copy. Try again, or keep working from the local project if one is available.",
+        toast.error(t("openProjectFailed"), {
+          description: t("openProjectFailedDescription"),
         });
         return false;
       }
@@ -964,13 +968,14 @@ export function useAccountProjectSync({
       setRestorePoints,
       setSaveStatusLabel,
       snapshotCurrentDesign,
+      t,
     ]
   );
 
   const handleDuplicateAccountProject = useCallback(
     async (projectId: string) => {
       if (!authUserId) {
-        toast.error("Sign in to duplicate account projects");
+        toast.error(t("signInToDuplicate"));
         return null;
       }
 
@@ -1020,19 +1025,20 @@ export function useAccountProjectSync({
             error: null,
           },
         }));
-        toast.success("Project duplicated", {
-          description: `"${duplicate.title}" was saved to this device as a new project.`,
+        toast.success(t("projectDuplicated"), {
+          description: t("projectDuplicatedDescription", {
+            title: duplicate.title,
+          }),
         });
         return duplicate;
       } catch {
-        toast.error("Could not duplicate project", {
-          description:
-            "TrackDraw could not load the account copy to duplicate. Try again.",
+        toast.error(t("duplicateProjectFailed"), {
+          description: t("duplicateProjectFailedDescription"),
         });
         return null;
       }
     },
-    [authUserId, setProjects]
+    [authUserId, setProjects, t]
   );
 
   const handleKeepLocalConflictCopy = useCallback(() => {
@@ -1071,9 +1077,9 @@ export function useAccountProjectSync({
       };
       return next;
     });
-    setSaveStatusLabel("Kept as local copy");
-    toast.message("Local copy kept", {
-      description: `"${nextTitle}" now stays on this device as a separate project.`,
+    setSaveStatusLabel(t("keptAsLocalCopy"));
+    toast.message(t("localCopyKept"), {
+      description: t("localCopyKeptDescription", { title: nextTitle }),
     });
   }, [
     replaceDesign,
@@ -1081,6 +1087,7 @@ export function useAccountProjectSync({
     setProjects,
     setRestorePoints,
     setSaveStatusLabel,
+    t,
   ]);
 
   const handleOpenCloudConflictVersion = useCallback(async () => {
