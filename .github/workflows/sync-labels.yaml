@@ -3,22 +3,22 @@ name: Sync labels
 
 # yamllint disable-line rule:truthy
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/labels.yml
+  schedule:
+    - cron: "17 4 * * 1"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   labels:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       issues: write
     steps:
-      - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v7.0.1
-      - name: 🚀 Run Label Blueprint
-        uses: klaasnicolaas/action-label-blueprint@v1.0.0
+      - name: 🚀 Run Label Syncer
+        uses: srealmoreno/label-sync-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: https://raw.githubusercontent.com/dutchdronesquad/.github/main/.github/labels.yml

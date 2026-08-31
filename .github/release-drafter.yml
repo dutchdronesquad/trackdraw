@@ -6,54 +6,61 @@ sort-direction: ascending
 
 categories:
   - title: "🚨 Breaking changes"
-    labels:
-      - "breaking-change"
+    when:
+      label: "breaking-change"
   - title: "✨ New features"
-    labels:
-      - "new-feature"
+    when:
+      label: "new-feature"
   - title: "🐛 Bug fixes"
-    labels:
-      - "bugfix"
+    when:
+      label: "bugfix"
   - title: "🚀 Enhancements"
-    labels:
-      - "enhancement"
-      - "refactor"
-      - "performance"
+    when:
+      labels:
+        - "enhancement"
+        - "refactor"
+        - "performance"
   - title: "🧰 Maintenance"
-    labels:
-      - "maintenance"
-      - "ci"
+    when:
+      labels:
+        - "maintenance"
+        - "ci"
   - title: "📚 Documentation"
-    labels:
-      - "documentation"
+    when:
+      label: "documentation"
   - title: "⬆️ Dependency updates"
     collapse-after: 5
-    labels:
-      - "dependencies"
-
-exclude-labels:
-  - "sync"
-
-version-resolver:
-  major:
-    labels:
-      - "major"
-      - "breaking-change"
-  minor:
-    labels:
-      - "minor"
-      - "new-feature"
-  patch:
-    labels:
-      - "bugfix"
-      - "chore"
-      - "ci"
-      - "dependencies"
-      - "documentation"
-      - "enhancement"
-      - "performance"
-      - "refactor"
-  default: patch
+    when:
+      label: "dependencies"
+  - type: "pre-exclude"
+    when:
+      label: "sync"
+  - type: "version-resolver"
+    semver-increment: "major"
+    when:
+      labels:
+        - "major"
+        - "breaking-change"
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      labels:
+        - "minor"
+        - "new-feature"
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      labels:
+        - "bugfix"
+        - "chore"
+        - "ci"
+        - "dependencies"
+        - "documentation"
+        - "enhancement"
+        - "performance"
+        - "refactor"
+  - type: "version-resolver"
+    semver-increment: "patch"
 
 template: |
   ## What's changed
