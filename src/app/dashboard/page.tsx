@@ -374,10 +374,15 @@ export default async function DashboardPage() {
     <>
       <DashboardSiteHeader title={tPages("overview")} />
       <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-4 pt-0">
-        <header className="flex items-end justify-between gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {tPages("overview")}
-          </h1>
+        <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {tPages("overview")}
+            </h1>
+            <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+              {t("description")}
+            </p>
+          </div>
           {updatedAt ? (
             <p className="text-muted-foreground text-xs sm:text-sm">
               {t("updatedAt", { time: updatedAt })}

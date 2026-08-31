@@ -20,6 +20,7 @@ import type {
   DailyCockpitData,
   DailyCockpitHeadlineMetric,
 } from "@/lib/server/dashboard-cockpit";
+import { cn } from "@/lib/utils";
 
 const METRIC_IDS = ["MTR-001", "MTR-004", "MTR-005", "MTR-006"] as const;
 
@@ -259,7 +260,12 @@ export default async function DailyCockpit({
   const unavailableOperationCount = data
     ? operations.filter((operation) => !operation.available).length
     : 4;
-  const primaryOperation = actionableOperations[0] ?? null;
+  const separateProductWarning = Boolean(
+    data?.warning && data.warning.metricId !== "MTR-010"
+  );
+  const attentionCount =
+    actionableOperations.length + (separateProductWarning ? 1 : 0);
+  const showAttentionPanel = attentionCount > 0 || !data;
   const buildingMetricCount =
     data?.headlines.filter(
       (metric) =>
@@ -268,32 +274,24 @@ export default async function DailyCockpit({
 
   return (
     <section aria-labelledby="daily-status" className="space-y-5">
-      <div className="flex min-h-11 flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex min-h-11 flex-col gap-2 border-b pb-3 sm:flex-row sm:items-center sm:gap-4">
         <h2 id="daily-status" className="text-sm font-semibold sm:text-base">
           {t("today.title")}
         </h2>
-        {primaryOperation ? (
-          <Link
-            href={primaryOperation.href}
-            prefetch={false}
-            className="focus-visible:ring-ring group inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium text-amber-700 focus-visible:ring-2 focus-visible:outline-none dark:text-amber-300"
-          >
+        {attentionCount > 0 ? (
+          <span className="inline-flex min-h-8 items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
             <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
-            {t(`operations.${primaryOperation.key}.today`, {
-              count: primaryOperation.count,
+            {t("today.actions", {
+              count: attentionCount,
             })}
-            <ArrowRight
-              className="size-3.5 transition-transform group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
-          </Link>
+          </span>
         ) : data ? (
-          <span className="inline-flex min-h-11 items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
+          <span className="inline-flex min-h-8 items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
             <ShieldCheck className="size-4" aria-hidden="true" />
             {t("today.noActions")}
           </span>
         ) : (
-          <span className="text-muted-foreground inline-flex min-h-11 items-center gap-2 text-sm">
+          <span className="text-muted-foreground inline-flex min-h-8 items-center gap-2 text-sm">
             <CircleHelp className="size-4" aria-hidden="true" />
             {t("today.unavailable")}
           </span>
@@ -317,10 +315,15 @@ export default async function DailyCockpit({
         ) : null}
       </div>
 
-      <div className="grid min-w-0 border-b pb-5 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
+      <div
+        className={cn(
+          "grid min-w-0 border-b pb-5",
+          showAttentionPanel && "lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]"
+        )}
+      >
         <section
           aria-labelledby="cockpit-headlines"
-          className="min-w-0 lg:pr-6"
+          className={cn("min-w-0", showAttentionPanel && "lg:pr-6")}
         >
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -366,113 +369,107 @@ export default async function DailyCockpit({
           </div>
         </section>
 
-        <section
-          aria-labelledby="cockpit-operations"
-          className="order-first mb-5 min-w-0 border-b pb-5 lg:order-none lg:mb-0 lg:border-b-0 lg:border-l lg:pb-0 lg:pl-6"
-        >
-          <h2 id="cockpit-operations" className="text-base font-semibold">
-            {t("operations.title")}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("operations.description")}
-          </p>
+        {showAttentionPanel ? (
+          <section
+            aria-labelledby="cockpit-operations"
+            className="order-first mb-5 min-w-0 border-b pb-5 lg:order-none lg:mb-0 lg:border-b-0 lg:border-l lg:pb-0 lg:pl-6"
+          >
+            <h2 id="cockpit-operations" className="text-base font-semibold">
+              {t("operations.title")}
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("operations.description")}
+            </p>
 
-          {data?.warning ? (
-            <div className="mt-4 flex gap-3 border-b border-amber-500/25 pb-4">
-              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                <TriangleAlert className="size-4" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{t("warning.title")}</p>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {t("warning.detail", {
-                    metric: metricWarningLabel(
-                      data.warning.metricId,
-                      data.warning.dimension,
-                      t
-                    ),
-                    current:
-                      formatValue(
-                        warningValueKind,
-                        data.warning.currentValue,
-                        number,
-                        percent
-                      ) ?? t("notAvailable"),
-                    baseline:
-                      formatValue(
-                        warningValueKind,
-                        data.warning.historicalMedian,
-                        number,
-                        percent
-                      ) ?? t("notAvailable"),
-                  })}
-                </p>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="mt-4 divide-y">
-            {actionableOperations.length > 0 ? (
-              actionableOperations.map((operation) => {
-                const Icon = operation.icon;
-                return (
-                  <Link
-                    key={operation.key}
-                    href={operation.href}
-                    prefetch={false}
-                    className="focus-visible:ring-ring group flex min-h-11 items-start gap-3 py-3 first:pt-0 focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                      <Icon className="size-4" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-3">
-                        <span className="text-sm font-semibold">
-                          {t(`operations.${operation.key}.label`)}
-                        </span>
-                        <span className="text-lg font-semibold tabular-nums">
-                          {number.format(operation.count)}
-                        </span>
-                      </span>
-                      <span className="text-muted-foreground mt-1 block text-sm leading-relaxed">
-                        {operation.detail}
-                      </span>
-                      <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium">
-                        {operation.action}
-                        <ArrowRight
-                          className="size-3.5 transition-transform group-hover:translate-x-0.5"
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </span>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className="flex items-start gap-3 py-3 first:pt-0">
-                <span className="bg-muted text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg">
-                  {data ? (
-                    <ShieldCheck className="size-4" aria-hidden="true" />
-                  ) : (
-                    <CircleHelp className="size-4" aria-hidden="true" />
-                  )}
+            {data?.warning ? (
+              <div className="mt-4 flex gap-3 border-b border-amber-500/25 pb-4">
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                  <TriangleAlert className="size-4" aria-hidden="true" />
                 </span>
-                <div>
-                  <p className="text-sm font-semibold">
-                    {data
-                      ? t("operations.allClear")
-                      : t("operations.unavailable")}
-                  </p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{t("warning.title")}</p>
                   <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                    {data
-                      ? t("operations.clearDetail")
-                      : t("operations.unavailableDetail")}
+                    {t("warning.detail", {
+                      metric: metricWarningLabel(
+                        data.warning.metricId,
+                        data.warning.dimension,
+                        t
+                      ),
+                      current:
+                        formatValue(
+                          warningValueKind,
+                          data.warning.currentValue,
+                          number,
+                          percent
+                        ) ?? t("notAvailable"),
+                      baseline:
+                        formatValue(
+                          warningValueKind,
+                          data.warning.historicalMedian,
+                          number,
+                          percent
+                        ) ?? t("notAvailable"),
+                    })}
                   </p>
                 </div>
               </div>
-            )}
-          </div>
-        </section>
+            ) : null}
+
+            <div className="mt-4 divide-y">
+              {actionableOperations.length > 0 ? (
+                actionableOperations.map((operation) => {
+                  const Icon = operation.icon;
+                  return (
+                    <Link
+                      key={operation.key}
+                      href={operation.href}
+                      prefetch={false}
+                      className="focus-visible:ring-ring group flex min-h-11 items-start gap-3 py-3 first:pt-0 focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                        <Icon className="size-4" aria-hidden="true" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-baseline justify-between gap-3">
+                          <span className="text-sm font-semibold">
+                            {t(`operations.${operation.key}.label`)}
+                          </span>
+                          <span className="text-lg font-semibold tabular-nums">
+                            {number.format(operation.count)}
+                          </span>
+                        </span>
+                        <span className="text-muted-foreground mt-1 block text-sm leading-relaxed">
+                          {operation.detail}
+                        </span>
+                        <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium">
+                          {operation.action}
+                          <ArrowRight
+                            className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })
+              ) : !data ? (
+                <div className="flex items-start gap-3 py-3 first:pt-0">
+                  <span className="bg-muted text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg">
+                    <CircleHelp className="size-4" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {t("operations.unavailable")}
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                      {t("operations.unavailableDetail")}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
       </div>
     </section>
   );

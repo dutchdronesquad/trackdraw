@@ -1,9 +1,11 @@
 // @vitest-environment happy-dom
 
-import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import DailyCockpit from "@/components/dashboard/DailyCockpit";
 import type { DailyCockpitData } from "@/lib/server/dashboard-cockpit";
+
+afterEach(cleanup);
 
 function cockpitData({
   failureWarning = false,
@@ -94,12 +96,8 @@ describe("DailyCockpit", () => {
     render(await DailyCockpit({ data: cockpitData() }));
 
     expect(screen.getByText("No action needs attention")).toBeTruthy();
-    const attention = screen
-      .getByRole("heading", { name: "Needs attention" })
-      .closest("section");
-    expect(attention).toBeTruthy();
     expect(
-      within(attention!).queryByText("Publication and export attempts")
+      screen.queryByRole("heading", { name: "Needs attention" })
     ).toBeNull();
     expect(
       screen.queryByText(/10 failed publication or export attempts/)
@@ -113,12 +111,28 @@ describe("DailyCockpit", () => {
     ).toBe("/dashboard/metrics#creators");
   });
 
+  it("shows one summary count and one actionable panel for current work", async () => {
+    const data = cockpitData();
+    data.operations.missingGalleryPreviews = 2;
+
+    render(await DailyCockpit({ data }));
+
+    expect(screen.getByText("1 item needs attention")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Needs attention" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("link", {
+        name: /Gallery previews 2 Published gallery entries/,
+      })
+    ).toBeTruthy();
+    expect(screen.queryByText("2 gallery previews need attention")).toBeNull();
+  });
+
   it("surfaces failures when their rate triggers a reliable warning", async () => {
     render(await DailyCockpit({ data: cockpitData({ failureWarning: true }) }));
 
-    expect(
-      screen.getByText("Export or publication reliability needs review")
-    ).toBeTruthy();
+    expect(screen.getByText("1 item needs attention")).toBeTruthy();
     expect(screen.getByText("Publication and export attempts")).toBeTruthy();
     expect(
       screen.getByText(/reliable failure-rate warning is active/)
@@ -128,5 +142,23 @@ describe("DailyCockpit", () => {
         .getByRole("link", { name: /Publication and export attempts/ })
         .getAttribute("href")
     ).toBe("/dashboard/metrics#operations");
+  });
+
+  it("keeps reliable product warnings visible without an operational action", async () => {
+    const data = cockpitData();
+    data.warning = {
+      metricId: "MTR-001",
+      dimension: "",
+      currentValue: 12,
+      historicalMedian: 24,
+      absoluteChange: -12,
+      score: 4,
+    };
+
+    render(await DailyCockpit({ data }));
+
+    expect(screen.getByText("1 item needs attention")).toBeTruthy();
+    expect(screen.getByText("Reliable product warning")).toBeTruthy();
+    expect(screen.queryByText("Operational status unavailable")).toBeNull();
   });
 });
