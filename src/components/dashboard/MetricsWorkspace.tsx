@@ -116,9 +116,12 @@ const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
 
 const DICTIONARY_METRICS = [
   "MTR-001",
+  "MTR-002",
+  "MTR-003",
   "MTR-004",
   "MTR-005",
   "MTR-006",
+  "MTR-007",
   "MTR-008",
   "MTR-009",
   "MTR-010",
@@ -487,6 +490,76 @@ function RetentionTable({ metric }: { metric: MetricsExplorerMetric }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function DecisionMetric({
+  metric,
+  generatedAt,
+}: {
+  metric: MetricsExplorerMetric;
+  generatedAt: string;
+}) {
+  const t = useTranslations("dashboard.metrics.explorer");
+  const locale = useLocale();
+  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const percent = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "percent",
+        maximumFractionDigits: 0,
+      }),
+    [locale]
+  );
+  const row = metric.rows.find((entry) => entry.dimension === "");
+  const value = row?.value ?? null;
+  const context = row
+    ? t(`decisionMetrics.${metric.id}.context`, {
+        numerator: number.format(row.numerator),
+        denominator: number.format(row.denominator ?? row.sampleSize ?? 0),
+      })
+    : t("empty.noData");
+
+  return (
+    <section
+      className="bg-card flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      aria-labelledby={`decision-metric-${metric.id}`}
+    >
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <h2
+            id={`decision-metric-${metric.id}`}
+            className="text-sm font-semibold"
+          >
+            {t(`metrics.${metric.id}.name`)}
+          </h2>
+          <span className="text-muted-foreground text-xs">{metric.id}</span>
+        </div>
+        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          {context}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center justify-between gap-5 sm:justify-end">
+        <div className="text-left sm:text-right">
+          <p className="text-xl font-semibold tracking-tight tabular-nums">
+            {value === null
+              ? "—"
+              : metric.id === "MTR-003"
+                ? number.format(value)
+                : percent.format(value)}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {t("reportingPeriod.completeDays", { days: metric.windowDays })}
+          </p>
+        </div>
+        <QualityLabel
+          quality={metric.quality}
+          measuredSince={metric.measuredSince}
+          generatedAt={generatedAt}
+          windowDays={metric.windowDays}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -1081,6 +1154,10 @@ export default function MetricsWorkspace({
         </TabsContent>
 
         <TabsContent value="creators" className="mt-4 space-y-4">
+          <DecisionMetric
+            metric={explorer.activeCreatorRate}
+            generatedAt={explorer.generatedAt}
+          />
           <section
             className="bg-card min-w-0 rounded-xl border p-4 sm:p-5"
             aria-label={t("views.userGrowth")}
@@ -1158,6 +1235,10 @@ export default function MetricsWorkspace({
         </TabsContent>
 
         <TabsContent value="creation" className="mt-4 space-y-4">
+          <DecisionMetric
+            metric={explorer.valuableSessions}
+            generatedAt={explorer.generatedAt}
+          />
           <div className="grid gap-4 lg:grid-cols-2">
             <section className="bg-card rounded-xl border p-4 sm:p-5">
               <h2 className="text-base font-semibold">{t("editor.title")}</h2>
@@ -1202,6 +1283,10 @@ export default function MetricsWorkspace({
         </TabsContent>
 
         <TabsContent value="distribution" className="mt-4 space-y-4">
+          <DecisionMetric
+            metric={explorer.publicationSessionRate}
+            generatedAt={explorer.generatedAt}
+          />
           <div className="grid gap-4 lg:grid-cols-2">
             <section className="bg-card rounded-xl border p-4 sm:p-5">
               <h2 className="text-base font-semibold">

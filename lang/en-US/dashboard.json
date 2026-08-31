@@ -304,6 +304,18 @@
           "owner": "Product",
           "privacy": "Anonymous activity is session-scoped and is never joined to an account. This count represents actors, not deduplicated people."
         },
+        "MTR-002": {
+          "name": "Active creator rate",
+          "definition": "Active creators divided by distinct actors who started an editor session during the last seven complete UTC days.",
+          "owner": "Product",
+          "privacy": "Anonymous activity remains session-scoped and is never joined to an account."
+        },
+        "MTR-003": {
+          "name": "Valuable sessions",
+          "definition": "Creator sessions with a meaningful edit followed by a completed export, share creation, or gallery publication.",
+          "owner": "Product",
+          "privacy": "The metric contains aggregate session outcomes and does not expose projects, shares, or individual sessions."
+        },
         "MTR-004": {
           "name": "Valuable session rate",
           "definition": "Creator sessions with a meaningful edit followed by a completed export, share creation, or gallery publication, divided by editor sessions.",
@@ -322,6 +334,12 @@
           "owner": "Product",
           "privacy": "Temporary links are excluded and browser sessions are not treated as people."
         },
+        "MTR-007": {
+          "name": "Publication session rate",
+          "definition": "Valuable sessions that ended in a published share or gallery publication, divided by all valuable sessions during the last 28 complete UTC days.",
+          "owner": "Product",
+          "privacy": "The metric contains aggregate session outcomes and does not expose projects, shares, or individual sessions."
+        },
         "MTR-008": {
           "name": "Acquisition source mix",
           "definition": "Eligible entry sessions grouped into bounded source categories during the last 28 complete UTC days, excluding internal navigation.",
@@ -339,6 +357,17 @@
           "definition": "Failed terminal attempts grouped by operation and category during the last seven complete UTC days, divided by successful and failed outcomes for the same operation.",
           "owner": "TrackDraw maintainers",
           "privacy": "The breakdown contains aggregate attempt counts only and does not expose users, sessions, projects, shares, or individual event records."
+        }
+      },
+      "decisionMetrics": {
+        "MTR-002": {
+          "context": "{numerator} active creators from {denominator} editor actors."
+        },
+        "MTR-003": {
+          "context": "{numerator} valuable sessions from {denominator} editor sessions."
+        },
+        "MTR-007": {
+          "context": "{numerator} published sessions from {denominator} valuable sessions."
         }
       },
       "sources": {

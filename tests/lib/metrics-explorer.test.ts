@@ -47,6 +47,38 @@ function state(metricId: ProductMetricId): ProductMetricMeasurementState {
 }
 
 describe("metrics explorer", () => {
+  it("exposes the latest creator, value, and publication outcomes", () => {
+    const result = buildMetricsExplorerData(
+      {
+        "MTR-002": [row("MTR-002", "2026-08-14", "", 18, 30)],
+        "MTR-003": [
+          row("MTR-003", "2026-08-14", "", 12, null, {
+            sample_size: 30,
+          }),
+        ],
+        "MTR-007": [row("MTR-007", "2026-08-14", "", 7, 12)],
+      },
+      [state("MTR-002"), state("MTR-003"), state("MTR-007")],
+      new Date("2026-08-15T12:00:00.000Z")
+    );
+
+    expect(result.activeCreatorRate.rows[0]).toMatchObject({
+      numerator: 18,
+      denominator: 30,
+      value: 0.6,
+    });
+    expect(result.valuableSessions.rows[0]).toMatchObject({
+      numerator: 12,
+      sampleSize: 30,
+      value: 12,
+    });
+    expect(result.publicationSessionRate.rows[0]).toMatchObject({
+      numerator: 7,
+      denominator: 12,
+      value: 7 / 12,
+    });
+  });
+
   it("shows a comparison only after eight preceding healthy periods", () => {
     const currentDay = "2026-08-14";
     const acquisition = [

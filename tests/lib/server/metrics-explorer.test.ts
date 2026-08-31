@@ -74,6 +74,17 @@ describe("metrics explorer failure attempts", () => {
     );
 
     expect(result.failures.rows).toHaveLength(1);
+    expect(
+      mocks.getProductMetricSeries.mock.calls.map((call) => call[1])
+    ).toEqual([
+      "MTR-002",
+      "MTR-003",
+      "MTR-005",
+      "MTR-007",
+      "MTR-008",
+      "MTR-009",
+      "MTR-010",
+    ]);
     expect(failures.sql).toContain("event_type = 'export.failed'");
     expect(failures.sql).not.toContain("project_id");
     expect(failures.sql).not.toContain("session_id");
