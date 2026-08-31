@@ -38,10 +38,10 @@ const METRIC_ICONS: Record<(typeof METRIC_IDS)[number], LucideIcon> = {
 };
 
 const METRIC_DRILLDOWNS: Record<(typeof METRIC_IDS)[number], string> = {
-  "MTR-001": "/dashboard/metrics#product-use",
-  "MTR-004": "/dashboard/metrics#product-use",
-  "MTR-005": "/dashboard/metrics#journey",
-  "MTR-006": "/dashboard/metrics#product-use",
+  "MTR-001": "/dashboard/metrics#creators",
+  "MTR-004": "/dashboard/metrics#creation",
+  "MTR-005": "/dashboard/metrics#creators",
+  "MTR-006": "/dashboard/metrics#distribution",
 };
 
 function formatValue(
@@ -202,6 +202,7 @@ export default async function DailyCockpit({
           icon: ImageOff,
           count: data.operations.missingGalleryPreviews,
           available: true,
+          actionable: true,
           detail: t("operations.previews.detail"),
           href: "/dashboard/gallery",
           action: t("operations.previews.action"),
@@ -213,6 +214,7 @@ export default async function DailyCockpit({
             data.operations.exportFailures +
             data.operations.publicationFailures,
           available: data.operations.availability.failures,
+          actionable: data.warning?.metricId === "MTR-010",
           detail: t("operations.failures.detail", {
             export: number.format(data.operations.exportFailures),
             publication: number.format(data.operations.publicationFailures),
@@ -225,6 +227,7 @@ export default async function DailyCockpit({
           icon: KeyRound,
           count: data.operations.unusedApiKeys + data.operations.expiredApiKeys,
           available: true,
+          actionable: true,
           detail: t("operations.apiKeys.detail", {
             unused: number.format(data.operations.unusedApiKeys),
             expired: number.format(data.operations.expiredApiKeys),
@@ -237,6 +240,7 @@ export default async function DailyCockpit({
           icon: RefreshCcw,
           count: data.operations.analyticsPipelineGaps,
           available: data.operations.availability.pipeline,
+          actionable: true,
           detail: t("operations.pipeline.detail", {
             building: number.format(data.operations.buildingMetrics),
           }),
@@ -246,7 +250,8 @@ export default async function DailyCockpit({
       ]
     : [];
   const actionableOperations = operations.filter(
-    (operation) => operation.available && operation.count > 0
+    (operation) =>
+      operation.available && operation.actionable && operation.count > 0
   );
   const clearOperationCount = operations.filter(
     (operation) => operation.available && operation.count === 0

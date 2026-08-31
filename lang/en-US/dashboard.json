@@ -122,8 +122,8 @@
       },
       "failures": {
         "label": "Publication and export attempts",
-        "today": "{count, plural, one {# failed publication or export attempt recorded} other {# failed publication or export attempts recorded}}",
-        "detail": "{export} failed export attempts · {publication} failed gallery publication attempts in the latest complete 7-day window. These are recorded attempts, not unresolved items.",
+        "today": "Export or publication reliability needs review",
+        "detail": "A reliable failure-rate warning is active. The latest complete 7-day window contains {export} failed export attempts and {publication} failed gallery publication attempts.",
         "action": "Inspect failure breakdown",
         "exportLabel": "Export failure rate",
         "publicationLabel": "Gallery publication failure rate"

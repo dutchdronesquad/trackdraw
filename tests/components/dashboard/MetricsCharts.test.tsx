@@ -757,6 +757,13 @@ describe("metrics decision views", () => {
         .getByRole("tab", { name: "Distribution" })
         .getAttribute("aria-selected")
     ).toBe("true");
+    window.history.replaceState(null, "", "#creators");
+    fireEvent(window, new HashChangeEvent("hashchange"));
+    expect(
+      screen
+        .getByRole("tab", { name: "Creators" })
+        .getAttribute("aria-selected")
+    ).toBe("true");
     window.history.replaceState(null, "", window.location.pathname);
   });
 });

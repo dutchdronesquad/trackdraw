@@ -104,6 +104,15 @@ const METRICS_VIEWS = [
   icon: LucideIcon;
 }>;
 
+const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
+  overview: "overview",
+  creators: "creators",
+  audience: "audience",
+  creation: "creation",
+  distribution: "distribution",
+  operations: "distribution",
+};
+
 const DICTIONARY_METRICS = [
   "MTR-001",
   "MTR-004",
@@ -753,8 +762,12 @@ export default function MetricsWorkspace({
 
   useEffect(() => {
     const selectHashView = () => {
-      if (window.location.hash === "#operations") {
-        setActiveView("distribution");
+      const hash = window.location.hash.slice(1);
+      const view = METRICS_HASH_VIEWS[hash];
+      if (view) {
+        setActiveView(view);
+      }
+      if (hash === "operations") {
         window.requestAnimationFrame(() => {
           document
             .getElementById("operations")
@@ -868,7 +881,7 @@ export default function MetricsWorkspace({
       ...entries,
       ...explorerEntries,
     ]);
-  }, [cockpit.headlines, explorer]);
+  }, [cockpit.generatedAt, cockpit.headlines, explorer]);
 
   return (
     <div className="space-y-4">
