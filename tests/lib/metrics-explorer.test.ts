@@ -61,14 +61,18 @@ function state(metricId: ProductMetricId): ProductMetricMeasurementState {
 
 describe("metrics explorer", () => {
   it("exposes the latest creator, value, and publication outcomes", () => {
+    const activeCreatorRate = row("MTR-002", "2026-08-14", "", 18, 30);
+    const valuableSessions = row("MTR-003", "2026-08-14", "", 12, null, {
+      sample_size: 30,
+    });
+
+    expect(activeCreatorRate.window_days).toBe(7);
+    expect(valuableSessions.window_days).toBe(7);
+
     const result = buildMetricsExplorerData(
       {
-        "MTR-002": [row("MTR-002", "2026-08-14", "", 18, 30)],
-        "MTR-003": [
-          row("MTR-003", "2026-08-14", "", 12, null, {
-            sample_size: 30,
-          }),
-        ],
+        "MTR-002": [activeCreatorRate],
+        "MTR-003": [valuableSessions],
         "MTR-007": [row("MTR-007", "2026-08-14", "", 7, 12)],
       },
       [state("MTR-002"), state("MTR-003"), state("MTR-007")],
