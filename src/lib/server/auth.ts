@@ -173,10 +173,10 @@ export async function getAuth() {
       user: {
         update: {
           after: async (user, context) => {
+            const path = context?.path;
             if (
-              !context ||
-              (!context.path.includes("change-email") &&
-                !context.path.includes("verify-email"))
+              !path ||
+              (!path.includes("change-email") && !path.includes("verify-email"))
             ) {
               return;
             }

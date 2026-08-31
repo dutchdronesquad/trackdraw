@@ -101,4 +101,45 @@ describe("DashboardAuditEventsTable", () => {
       screen.getAllByText("former@trackdraw.local").length
     ).toBeGreaterThan(1);
   });
+
+  it("keeps copy actions safe when the Clipboard API is unavailable", async () => {
+    const user = userEvent.setup();
+    const clipboardDescriptor = Object.getOwnPropertyDescriptor(
+      navigator,
+      "clipboard"
+    );
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: undefined,
+    });
+
+    render(
+      <DashboardAuditEventsTable
+        events={[createEvent(4)]}
+        total={1}
+        actorCount={1}
+        targetCount={0}
+        page={1}
+        pageCount={1}
+        previousHref={null}
+        nextHref={null}
+      />
+    );
+
+    await user.click(
+      screen.getByRole("row", { name: "Inspect System Event 4" })
+    );
+
+    const copyEventId = screen.getByRole("button", {
+      name: /copy event id/i,
+    });
+    await expect(user.click(copyEventId)).resolves.toBeUndefined();
+
+    if (clipboardDescriptor) {
+      Object.defineProperty(navigator, "clipboard", clipboardDescriptor);
+    } else {
+      Reflect.deleteProperty(navigator, "clipboard");
+    }
+  });
 });

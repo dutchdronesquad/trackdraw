@@ -51,7 +51,10 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       className="size-7"
       aria-label={label}
       onClick={() => {
-        void navigator.clipboard.writeText(value).catch(() => undefined);
+        const clipboard = navigator.clipboard;
+        if (!clipboard?.writeText) return;
+
+        void clipboard.writeText(value).catch(() => undefined);
       }}
     >
       <Copy className="size-3.5" />
