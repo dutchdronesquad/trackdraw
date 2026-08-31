@@ -1097,13 +1097,35 @@
       "searchPlaceholder": "Search event, actor, target or entity...",
       "category": "Category",
       "event": "Event",
-      "actor": "Actor"
+      "actor": "Actor",
+      "target": "Target",
+      "range": "Period",
+      "from": "From date",
+      "to": "To date",
+      "allCategories": "All categories",
+      "allEvents": "All events",
+      "allActors": "All actors",
+      "allTargets": "All targets",
+      "share": "Share {token}",
+      "apply": "Apply filters",
+      "reset": "Reset"
     },
     "categoryValues": {
       "Account": "Account",
+      "Credentials": "Credentials",
+      "Projects": "Projects",
       "Gallery": "Gallery",
       "Share": "Share",
+      "Privacy": "Privacy",
       "System": "System"
+    },
+    "rangeValues": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days",
+      "all": "All time",
+      "custom": "Custom dates"
     },
     "labels": {
       "actor": "Actor",
@@ -1112,11 +1134,13 @@
       "when": "When"
     },
     "aria": {
-      "sort": "Sort audit events by {label}"
+      "sort": "Sort audit events by {label}",
+      "inspect": "Inspect {event}",
+      "copy": "Copy {label}"
     },
     "stats": {
       "visibleEvents": "Visible events",
-      "visibleEventsHelper": "Matching the latest audit window",
+      "visibleEventsHelper": "Matching the active server-side filters",
       "actors": "Actors",
       "actorsHelper": "Distinct accounts making changes",
       "targets": "Targets",
@@ -1131,27 +1155,65 @@
       "details": "Details",
       "noEvents": "No audit events match the current filters."
     },
+    "pagination": {
+      "page": "Page {page} of {pageCount}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "detail": {
+      "eventId": "Event ID",
+      "actorId": "Actor ID",
+      "actorContext": "Actor context",
+      "targetId": "Target ID",
+      "targetContext": "Target context",
+      "entityId": "Entity ID",
+      "openEntity": "Open entity",
+      "viewActorHistory": "View actor history",
+      "viewTargetHistory": "View target history",
+      "noMetadata": "No additional metadata was recorded."
+    },
     "fallback": {
-      "unknownUser": "Unknown user"
+      "unknownUser": "Unknown user",
+      "systemActor": "System"
     },
     "eventTitles": {
       "accountRoleChanged": "Role changed",
       "accountBanned": "Account banned",
       "accountUnbanned": "Account unbanned",
       "accountDeleted": "Account deleted",
+      "accountEmailChanged": "Email address changed",
+      "apiKeyCreated": "API key created",
+      "apiKeyRevoked": "API key revoked",
+      "passkeyAdded": "Passkey added",
+      "passkeyRenamed": "Passkey renamed",
+      "passkeyRemoved": "Passkey removed",
       "galleryEntryFeatured": "Gallery entry featured",
       "galleryEntryUnfeatured": "Gallery entry unfeatured",
       "galleryEntryHidden": "Gallery entry hidden",
       "galleryEntryRestored": "Gallery entry restored",
       "galleryEntryDeleted": "Gallery entry deleted",
+      "galleryEntryListed": "Gallery entry listed",
+      "galleryEntryUnlisted": "Gallery entry unlisted",
+      "galleryEntryMetadataUpdated": "Gallery details updated",
+      "privacyAnalyticsChanged": "Analytics preference changed",
+      "projectCreated": "Project created",
+      "projectArchived": "Project archived",
+      "projectForceOverwritten": "Project force-overwritten",
+      "sharePublished": "Share published",
       "shareRevoked": "Share revoked",
-      "sharePurged": "Share permanently deleted"
+      "sharePurged": "Share permanently deleted",
+      "metricsMaintenanceCompleted": "Metrics maintenance completed"
     },
     "entityLabels": {
       "accountRole": "Account role",
       "galleryEntry": "Gallery entry",
       "account": "Account",
-      "share": "Share"
+      "share": "Share",
+      "apiKey": "API key",
+      "passkey": "Passkey",
+      "project": "Project",
+      "privacyPreference": "Privacy preference",
+      "metricsMaintenance": "Metrics maintenance"
     },
     "entity": {
       "share": "Share {token}",

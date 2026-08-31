@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { auditEventTypes } from "@/lib/audit-events";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import {
@@ -78,7 +80,28 @@ export async function DELETE(request: Request, context: ProjectRouteContext) {
       );
     }
 
-    await archiveProjectForUser(projectId, user.id);
+    const project = await getProjectForUser(projectId, user.id);
+    if (!project) {
+      return NextResponse.json(
+        { ok: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    const archived = await archiveProjectForUser(projectId, user.id);
+    if (archived) {
+      await recordAuditEvent({
+        actorUserId: user.id,
+        targetUserId: user.id,
+        eventType: auditEventTypes.projectArchived,
+        entityType: "project",
+        entityId: projectId,
+        metadata: {
+          title: project.title,
+          shapeCount: project.shapeCount,
+        },
+      });
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[TrackDraw] Failed to archive project", { error });

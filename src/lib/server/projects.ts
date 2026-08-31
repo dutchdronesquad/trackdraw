@@ -360,5 +360,8 @@ export async function archiveProjectForUser(
   // Only cascade if the archive actually matched a row (right owner, not already archived).
   if ((result.meta?.changes ?? 0) > 0) {
     await revokeSharesForProject(projectId, ownerUserId);
+    return true;
   }
+
+  return false;
 }

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { auditEventTypes } from "@/lib/audit-events";
 import {
   deleteApiKeyForSession,
   getApiKeyForSession,
 } from "@/lib/server/api-keys";
-import { createAuditEvent } from "@/lib/server/audit";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 
@@ -87,25 +88,18 @@ export async function DELETE(request: Request, context: ApiKeyRouteContext) {
       throw deleteError;
     }
 
-    try {
-      await createAuditEvent({
-        actorUserId: user.id,
-        targetUserId: user.id,
-        eventType: "api_key.revoked",
-        entityType: "api_key",
-        entityId: keyId,
-        metadata: {
-          name: keyName,
-          prefix: keyPrefix,
-          start: keyStart,
-        },
-      });
-    } catch (auditError) {
-      console.error("[TrackDraw API keys] Failed to audit key revoke", {
-        keyId,
-        error: auditError,
-      });
-    }
+    await recordAuditEvent({
+      actorUserId: user.id,
+      targetUserId: user.id,
+      eventType: auditEventTypes.apiKeyRevoked,
+      entityType: "api_key",
+      entityId: keyId,
+      metadata: {
+        name: keyName,
+        prefix: keyPrefix,
+        start: keyStart,
+      },
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

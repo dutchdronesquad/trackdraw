@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auditEventTypes } from "@/lib/audit-events";
 import { z } from "zod";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -76,10 +77,10 @@ export async function PATCH(
       await createAuditEvent({
         actorUserId: actor.id,
         targetUserId: resolved.share.ownerUserId,
-        eventType: "share.revoked",
+        eventType: auditEventTypes.shareRevoked,
         entityType: "share",
-        entityId: resolved.share.id,
-        metadata: { token },
+        entityId: token,
+        metadata: { initiatedBy: "operator" },
       });
     }
 
@@ -147,10 +148,10 @@ export async function DELETE(
     await createAuditEvent({
       actorUserId: actor.id,
       targetUserId: resolved.share.ownerUserId,
-      eventType: "share.purged",
+      eventType: auditEventTypes.sharePurged,
       entityType: "share",
-      entityId: resolved.share.id,
-      metadata: { token },
+      entityId: token,
+      metadata: { initiatedBy: "operator" },
     });
 
     return NextResponse.json({ ok: true });

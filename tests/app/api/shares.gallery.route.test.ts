@@ -7,6 +7,8 @@ vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: vi.fn(),
 }));
 
+vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
+
 vi.mock("@/lib/server/authorization", () => ({
   isResourceOwner: vi.fn(),
 }));
@@ -30,6 +32,7 @@ vi.mock("@/lib/server/shares", () => ({
 }));
 
 import { DELETE, PATCH } from "@/app/api/shares/[token]/route";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
@@ -144,6 +147,14 @@ describe("owner share gallery API route", () => {
     });
     expect(moveGalleryEntryToListed).toHaveBeenCalledWith(share.token);
     expect(getOrCreateGalleryEntryForShare).toHaveBeenCalledWith(share);
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "gallery.entry.listed",
+        entityType: "gallery_entry",
+        entityId: entry.id,
+        metadata: expect.objectContaining({ initiatedBy: "owner" }),
+      })
+    );
   });
 
   it("blocks share revocation before ownership checks when the request is not trusted", async () => {
@@ -172,6 +183,13 @@ describe("owner share gallery API route", () => {
     expect(response.status).toBe(200);
     expect(revokeShare).toHaveBeenCalledWith(share.token);
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "share.revoked",
+        entityId: share.token,
+        metadata: expect.objectContaining({ initiatedBy: "owner" }),
+      })
+    );
     await expect(response.json()).resolves.toEqual({ ok: true });
   });
 
@@ -196,6 +214,7 @@ describe("owner share gallery API route", () => {
       error: "Only active shares can change gallery state",
     });
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 
   it("blocks owners from changing a hidden gallery entry", async () => {
@@ -223,6 +242,7 @@ describe("owner share gallery API route", () => {
     });
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 
   it("requires an account display name before listing in the gallery", async () => {
@@ -248,6 +268,7 @@ describe("owner share gallery API route", () => {
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 
   it("updates metadata only for listed or featured entries", async () => {
@@ -275,6 +296,12 @@ describe("owner share gallery API route", () => {
     });
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "gallery.entry.metadata_updated",
+        entityId: entry.id,
+      })
+    );
   });
 
   it("rejects metadata updates while an entry is still unlisted", async () => {
@@ -317,5 +344,11 @@ describe("owner share gallery API route", () => {
     expect(response.status).toBe(200);
     expect(deleteGalleryEntry).toHaveBeenCalledWith(share.token);
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "gallery.entry.unlisted",
+        entityId: entry.id,
+      })
+    );
   });
 });

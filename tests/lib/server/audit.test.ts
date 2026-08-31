@@ -5,6 +5,7 @@ vi.mock("server-only", () => ({}));
 const prepareMock = vi.fn();
 const bindMock = vi.fn();
 const allMock = vi.fn();
+const firstMock = vi.fn();
 
 vi.mock("@/lib/server/db", () => ({
   getDatabase: vi.fn(async () => ({
@@ -12,13 +13,19 @@ vi.mock("@/lib/server/db", () => ({
   })),
 }));
 
-import { listAuditEvents } from "@/lib/server/audit";
+import {
+  createAuditEvent,
+  listAuditEvents,
+  queryAuditEvents,
+  sanitizeAuditMetadata,
+} from "@/lib/server/audit";
 
 describe("listAuditEvents", () => {
   beforeEach(() => {
     prepareMock.mockReset();
     bindMock.mockReset();
     allMock.mockReset();
+    firstMock.mockReset();
 
     prepareMock.mockReturnValue({
       bind: bindMock,
@@ -26,10 +33,16 @@ describe("listAuditEvents", () => {
 
     bindMock.mockReturnValue({
       all: allMock,
+      first: firstMock,
     });
   });
 
   it("applies filters and maps actor and target context", async () => {
+    firstMock.mockResolvedValue({
+      count: 1,
+      actor_count: 1,
+      target_count: 1,
+    });
     allMock.mockResolvedValue({
       results: [
         {
@@ -41,6 +54,8 @@ describe("listAuditEvents", () => {
           entity_id: "user-2",
           metadata_json: '{"previousRole":"user","nextRole":"moderator"}',
           created_at: "2026-04-18T10:00:00.000Z",
+          actor_kind: "user",
+          actor_label: null,
           actor_id: "admin-1",
           actor_name: "Admin",
           actor_email: "admin@trackdraw.local",
@@ -58,12 +73,20 @@ describe("listAuditEvents", () => {
       targetUserId: "user-2",
     });
 
-    expect(prepareMock).toHaveBeenCalledTimes(1);
-    expect(bindMock).toHaveBeenCalledWith(
+    expect(prepareMock).toHaveBeenCalledTimes(2);
+    expect(bindMock).toHaveBeenNthCalledWith(
+      1,
+      "account.role.changed",
+      "admin-1",
+      "user-2"
+    );
+    expect(bindMock).toHaveBeenNthCalledWith(
+      2,
       "account.role.changed",
       "admin-1",
       "user-2",
-      20
+      20,
+      0
     );
     expect(events).toEqual([
       {
@@ -78,6 +101,9 @@ describe("listAuditEvents", () => {
           nextRole: "moderator",
         },
         createdAt: "2026-04-18T10:00:00.000Z",
+        actorKind: "user",
+        actorLabel: null,
+        targetLabel: null,
         actor: {
           id: "admin-1",
           name: "Admin",
@@ -93,6 +119,11 @@ describe("listAuditEvents", () => {
   });
 
   it("clamps the limit and safely nulls invalid metadata", async () => {
+    firstMock.mockResolvedValue({
+      count: 1,
+      actor_count: 0,
+      target_count: 0,
+    });
     allMock.mockResolvedValue({
       results: [
         {
@@ -104,6 +135,8 @@ describe("listAuditEvents", () => {
           entity_id: null,
           metadata_json: '"not-an-object"',
           created_at: "2026-04-18T11:00:00.000Z",
+          actor_kind: "system",
+          actor_label: "Maintenance job",
           actor_id: null,
           actor_name: null,
           actor_email: null,
@@ -116,7 +149,8 @@ describe("listAuditEvents", () => {
 
     const events = await listAuditEvents({ limit: 999 });
 
-    expect(bindMock).toHaveBeenCalledWith(200);
+    expect(bindMock).toHaveBeenNthCalledWith(1);
+    expect(bindMock).toHaveBeenNthCalledWith(2, 200, 0);
     expect(events).toEqual([
       {
         id: "evt-2",
@@ -127,9 +161,85 @@ describe("listAuditEvents", () => {
         entityId: null,
         metadata: null,
         createdAt: "2026-04-18T11:00:00.000Z",
+        actorKind: "system",
+        actorLabel: "Maintenance job",
+        targetLabel: null,
         actor: null,
         target: null,
       },
     ]);
+  });
+
+  it("applies server-side category, period, search, and pagination filters", async () => {
+    firstMock.mockResolvedValue({
+      count: 51,
+      actor_count: 4,
+      target_count: 3,
+    });
+    allMock.mockResolvedValue({ results: [] });
+
+    const result = await queryAuditEvents({
+      page: 2,
+      pageSize: 25,
+      category: "Credentials",
+      actorUserId: "user-1",
+      from: "2026-08-01T00:00:00.000Z",
+      to: "2026-08-31T23:59:59.999Z",
+      search: "macbook",
+    });
+
+    const sql = prepareMock.mock.calls.map(([value]) => value).join("\n");
+    expect(sql).toContain("ae.event_type like 'api_key.%'");
+    expect(sql).toContain("ae.event_type like 'credential.%'");
+    expect(sql).toContain("ae.created_at >= ?");
+    expect(sql).toContain("lower(coalesce(ae.metadata_json, '')) like ?");
+    expect(bindMock.mock.calls[1]?.slice(-2)).toEqual([25, 25]);
+    expect(result).toMatchObject({
+      page: 2,
+      pageCount: 3,
+      total: 51,
+      actorCount: 4,
+      targetCount: 3,
+    });
+  });
+
+  it("does not fail a completed mutation when audit storage is unavailable", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const run = vi.fn().mockRejectedValue(new Error("D1 unavailable"));
+    bindMock.mockReturnValue({ run });
+
+    const recorded = await createAuditEvent({
+      actorUserId: "user-1",
+      eventType: "project.archived",
+      entityType: "project",
+      entityId: "project-1",
+    });
+
+    expect(recorded).toBe(false);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[TrackDraw audit] Failed to record audit event",
+      expect.objectContaining({
+        eventType: "project.archived",
+        entityId: "project-1",
+      })
+    );
+  });
+
+  it("redacts credentials and bounds nested metadata", () => {
+    expect(
+      sanitizeAuditMetadata({
+        name: "MacBook",
+        shareToken: "share-secret",
+        nested: { authorization: "Bearer secret", safe: true },
+        publicKey: "credential-material",
+      })
+    ).toEqual({
+      name: "MacBook",
+      shareToken: "[redacted]",
+      nested: { authorization: "[redacted]", safe: true },
+      publicKey: "[redacted]",
+    });
   });
 });

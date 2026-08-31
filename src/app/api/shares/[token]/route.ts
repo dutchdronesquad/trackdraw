@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isResourceOwner } from "@/lib/server/authorization";
@@ -16,6 +17,7 @@ import {
   resolveStoredShare,
   revokeShare,
 } from "@/lib/server/shares";
+import { recordAuditEvent } from "@/lib/server/audit";
 
 type ShareTokenRouteContext = {
   params: Promise<{
@@ -119,6 +121,17 @@ export async function DELETE(
     }
 
     await revokeShare(authorized.token);
+    await recordAuditEvent({
+      actorUserId: authorized.user.id,
+      targetUserId: authorized.user.id,
+      eventType: auditEventTypes.shareRevoked,
+      entityType: "share",
+      entityId: authorized.token,
+      metadata: {
+        initiatedBy: "owner",
+        projectId: authorized.share.projectId,
+      },
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[TrackDraw] Failed to revoke share", { error });
@@ -232,6 +245,25 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
     }
 
     const updatedEntry = await getGalleryEntryByShareToken(authorized.token);
+
+    const galleryEventType =
+      body.action === "list"
+        ? auditEventTypes.galleryEntryListed
+        : body.action === "unlist"
+          ? auditEventTypes.galleryEntryUnlisted
+          : auditEventTypes.galleryEntryMetadataUpdated;
+    await recordAuditEvent({
+      actorUserId: authorized.user.id,
+      targetUserId: authorized.user.id,
+      eventType: galleryEventType,
+      entityType: "gallery_entry",
+      entityId: existingEntry?.id ?? updatedEntry?.id ?? authorized.token,
+      metadata: {
+        initiatedBy: "owner",
+        previousState: existingEntry?.galleryState ?? null,
+        nextState: updatedEntry?.galleryState ?? null,
+      },
+    });
 
     return NextResponse.json({
       ok: true,

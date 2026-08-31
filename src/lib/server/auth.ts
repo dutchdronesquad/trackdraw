@@ -1,10 +1,16 @@
 import "server-only";
 
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
 import { getSiteUrl } from "@/lib/seo";
+import {
+  recordAccountEmailChanged,
+  recordPasskeyMutation,
+  recordSelfAccountDeleted,
+} from "@/lib/server/auth-audit";
 import { getDatabase } from "@/lib/server/db";
 
 async function loadAuthEmailModule() {
@@ -149,6 +155,9 @@ export async function getAuth() {
       },
       deleteUser: {
         enabled: true,
+        afterDelete: async (user) => {
+          await recordSelfAccountDeleted(user);
+        },
       },
     },
     session: {
@@ -159,6 +168,26 @@ export async function getAuth() {
     },
     verification: {
       modelName: "verifications",
+    },
+    databaseHooks: {
+      user: {
+        update: {
+          after: async (user, context) => {
+            const path = context?.path;
+            if (
+              !path ||
+              (!path.includes("change-email") && !path.includes("verify-email"))
+            ) {
+              return;
+            }
+
+            const previousEmail = context.context.session?.user.email;
+            if (!previousEmail || previousEmail === user.email) return;
+
+            await recordAccountEmailChanged(user, previousEmail);
+          },
+        },
+      },
     },
     emailVerification: {
       autoSignInAfterVerification: true,
@@ -281,5 +310,30 @@ export async function getAuth() {
         },
       }),
     ],
+    hooks: {
+      after: createAuthMiddleware(async (context) => {
+        const returned = context.context.returned as
+          | {
+              user?: { id?: unknown };
+              userId?: unknown;
+            }
+          | undefined;
+        const userId =
+          context.context.session?.user.id ??
+          (typeof returned?.user?.id === "string"
+            ? returned.user.id
+            : typeof returned?.userId === "string"
+              ? returned.userId
+              : null);
+        if (!userId) return;
+
+        await recordPasskeyMutation({
+          path: context.path,
+          user: { id: userId },
+          body: context.body,
+          returned: context.context.returned,
+        });
+      }),
+    },
   });
 }

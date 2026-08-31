@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import {
   apiKeyExpiryDayOptions,
   createApiKeyForSession,
@@ -8,7 +9,7 @@ import {
   normalizeApiKeyRecord,
   normalizeCreatedApiKey,
 } from "@/lib/server/api-keys";
-import { createAuditEvent } from "@/lib/server/audit";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 
@@ -112,27 +113,20 @@ export async function POST(request: Request) {
     });
     const normalizedApiKey = normalizeCreatedApiKey(apiKey);
 
-    try {
-      await createAuditEvent({
-        actorUserId: user.id,
-        targetUserId: user.id,
-        eventType: "api_key.created",
-        entityType: "api_key",
-        entityId: normalizedApiKey.id,
-        metadata: {
-          name: normalizedApiKey.name,
-          prefix: normalizedApiKey.prefix,
-          start: normalizedApiKey.start,
-          expiresAt: normalizedApiKey.expiresAt,
-          permissions: normalizedApiKey.permissions,
-        },
-      });
-    } catch (auditError) {
-      console.error("[TrackDraw API keys] Failed to audit key creation", {
-        keyId: normalizedApiKey.id,
-        error: auditError,
-      });
-    }
+    await recordAuditEvent({
+      actorUserId: user.id,
+      targetUserId: user.id,
+      eventType: auditEventTypes.apiKeyCreated,
+      entityType: "api_key",
+      entityId: normalizedApiKey.id,
+      metadata: {
+        name: normalizedApiKey.name,
+        prefix: normalizedApiKey.prefix,
+        start: normalizedApiKey.start,
+        expiresAt: normalizedApiKey.expiresAt,
+        permissions: normalizedApiKey.permissions,
+      },
+    });
 
     return NextResponse.json(
       {

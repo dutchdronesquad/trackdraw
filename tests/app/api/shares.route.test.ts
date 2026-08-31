@@ -15,6 +15,8 @@ vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: vi.fn(),
 }));
 
+vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
+
 vi.mock("@/lib/server/projects", () => ({
   getProjectForUser: vi.fn(),
   saveProjectForUser: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock("@/lib/server/shares", () => ({
 }));
 
 import { GET, POST } from "@/app/api/shares/route";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { getProjectForUser, saveProjectForUser } from "@/lib/server/projects";
 import {
@@ -80,6 +83,7 @@ describe("shares API route", () => {
         projectId: null,
       }
     );
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 
   it("creates authenticated project shares as published links and ignores expiry input", async () => {
@@ -128,6 +132,17 @@ describe("shares API route", () => {
         projectId: "project-1",
       }
     );
+    expect(recordAuditEvent).toHaveBeenCalledWith({
+      actorUserId: testUser.id,
+      targetUserId: testUser.id,
+      eventType: "share.published",
+      entityType: "share",
+      entityId: share.token,
+      metadata: {
+        projectId: "project-1",
+        shareType: "published",
+      },
+    });
   });
 
   it("auto-promotes an unsaved design to a project when a signed-in user publishes without a projectId", async () => {
@@ -146,7 +161,7 @@ describe("shares API route", () => {
     const response = await POST(postRequest({ design, view: "2d" }));
 
     expect(response.status).toBe(200);
-    expect(getProjectForUser).not.toHaveBeenCalled();
+    expect(getProjectForUser).toHaveBeenCalledWith(design.id, testUser.id);
     expect(saveProjectForUser).toHaveBeenCalledWith(
       testUser.id,
       expect.objectContaining({ id: design.id }),
@@ -159,6 +174,21 @@ describe("shares API route", () => {
         ownerUserId: testUser.id,
         projectId: project.id,
       }
+    );
+    expect(recordAuditEvent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        eventType: "project.created",
+        entityId: project.id,
+        metadata: expect.objectContaining({ source: "share_publish" }),
+      })
+    );
+    expect(recordAuditEvent).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        eventType: "share.published",
+        entityId: share.token,
+      })
     );
     await expect(response.json()).resolves.toMatchObject({
       ok: true,

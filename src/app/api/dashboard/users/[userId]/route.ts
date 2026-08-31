@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import { accountRoles } from "@/lib/account/roles";
 import { createAuditEvent, listAuditEventsForUser } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -178,7 +179,8 @@ export async function PATCH(
       await createAuditEvent({
         actorUserId: actor.id,
         targetUserId: updatedUser.id,
-        eventType: "account.banned",
+        targetLabel: updatedUser.email,
+        eventType: auditEventTypes.accountBanned,
         entityType: "user",
         entityId: updatedUser.id,
         metadata: { reason: body.reason },
@@ -211,7 +213,8 @@ export async function PATCH(
       await createAuditEvent({
         actorUserId: actor.id,
         targetUserId: updatedUser.id,
-        eventType: "account.unbanned",
+        targetLabel: updatedUser.email,
+        eventType: auditEventTypes.accountUnbanned,
         entityType: "user",
         entityId: updatedUser.id,
         metadata: null,
@@ -274,7 +277,8 @@ export async function PATCH(
     await createAuditEvent({
       actorUserId: actor.id,
       targetUserId: updatedUser.id,
-      eventType: "account.role.changed",
+      targetLabel: updatedUser.email,
+      eventType: auditEventTypes.accountRoleChanged,
       entityType: "user",
       entityId: updatedUser.id,
       metadata: {
@@ -362,7 +366,8 @@ export async function DELETE(
     await createAuditEvent({
       actorUserId: actor.id,
       targetUserId: null,
-      eventType: "account.deleted",
+      targetLabel: existingUser.email,
+      eventType: auditEventTypes.accountDeleted,
       entityType: "user",
       entityId: userId,
       metadata: {

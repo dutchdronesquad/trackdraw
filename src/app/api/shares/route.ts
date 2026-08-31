@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
 import { parseEditorView } from "@/lib/editor/view";
+import { recordAuditEvent } from "@/lib/server/audit";
 
 export async function GET(request: Request) {
   try {
@@ -91,12 +93,30 @@ export async function POST(request: Request) {
     }
 
     let projectId = body.projectId ?? null;
+    let autoPromotedProjectWasCreated = false;
     if (user && !projectId) {
       // Reuse design.id so repeated publishes update the same project instead of creating a new one each time.
+      const existingProject = await getProjectForUser(design.id, user.id);
       const project = await saveProjectForUser(user.id, design, {
         projectId: design.id,
       });
       projectId = project.id;
+      autoPromotedProjectWasCreated = !existingProject;
+
+      if (autoPromotedProjectWasCreated) {
+        await recordAuditEvent({
+          actorUserId: user.id,
+          targetUserId: user.id,
+          eventType: auditEventTypes.projectCreated,
+          entityType: "project",
+          entityId: project.id,
+          metadata: {
+            title: project.title,
+            shapeCount: project.shapeCount,
+            source: "share_publish",
+          },
+        });
+      }
     }
 
     const share = await createShare(design, {
@@ -108,6 +128,20 @@ export async function POST(request: Request) {
       share.token,
       parseEditorView(body.view) ?? undefined
     );
+
+    if (user) {
+      await recordAuditEvent({
+        actorUserId: user.id,
+        targetUserId: user.id,
+        eventType: auditEventTypes.sharePublished,
+        entityType: "share",
+        entityId: share.token,
+        metadata: {
+          projectId: share.projectId,
+          shareType: share.shareType,
+        },
+      });
+    }
 
     return NextResponse.json({
       ok: true,

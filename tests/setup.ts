@@ -6,6 +6,28 @@ import * as en from "@lang/en-US";
 
 const messages = { ...en };
 
+const animationCancelPatch = Symbol.for(
+  "trackdraw.tests.animation-cancel-patch"
+);
+
+if (
+  typeof Animation !== "undefined" &&
+  !(Animation.prototype as Animation & Record<symbol, boolean>)[
+    animationCancelPatch
+  ]
+) {
+  const originalCancel = Animation.prototype.cancel;
+
+  Object.defineProperty(Animation.prototype, animationCancelPatch, {
+    configurable: true,
+    value: true,
+  });
+  Animation.prototype.cancel = function cancelWithoutUnhandledRejection() {
+    void this.finished.catch(() => undefined);
+    originalCancel.call(this);
+  };
+}
+
 vi.mock("@testing-library/react", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("@testing-library/react")>();
