@@ -19,11 +19,7 @@ export function getEarlyWorkerResponse(request: Request): Response | null {
   const method = request.method.toUpperCase();
   const isApiRequest = isApiPath(url.pathname);
 
-  if (
-    method === "POST" &&
-    request.headers.has("next-action") &&
-    !isApiRequest
-  ) {
+  if (method === "POST" && request.headers.has("next-action")) {
     return new Response("Not found", {
       status: 404,
       headers: noStoreHeaders(),
