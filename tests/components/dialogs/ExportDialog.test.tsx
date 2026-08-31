@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastLoading: vi.fn(),
   toastSuccess: vi.fn(),
+  trackProductEvent: vi.fn(),
 }));
 
 const viewport = vi.hoisted(() => ({
@@ -85,6 +86,11 @@ vi.mock("@/lib/export/exportFlythrough", () => ({
   exportFlythrough: mocks.exportFlythrough,
 }));
 
+vi.mock("@/lib/product-events", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/product-events")>()),
+  trackProductEvent: mocks.trackProductEvent,
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     error: mocks.toastError,
@@ -130,6 +136,7 @@ describe("ExportDialog mobile workflow", () => {
     mocks.toastError.mockReset();
     mocks.toastLoading.mockReset();
     mocks.toastSuccess.mockReset();
+    mocks.trackProductEvent.mockReset();
   });
 
   afterEach(() => {
@@ -544,6 +551,15 @@ describe("ExportDialog mobile workflow", () => {
             "JSON payload could not be serialized Try again, switch export format, or export the project JSON as a manual backup.",
         })
       );
+    });
+    expect(mocks.trackProductEvent).toHaveBeenCalledWith("export.failed", {
+      projectId: expect.any(String),
+      properties: {
+        format: "json",
+        category: "unknown",
+        reason: "serialization_failed",
+        surface: "editor",
+      },
     });
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });

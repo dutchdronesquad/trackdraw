@@ -20,7 +20,7 @@ describe("product metric aggregates", () => {
     } as Parameters<typeof getProductMetricMeasurementStates>[0]);
 
     expect(statement.sql).toContain("where contract_version = ?");
-    expect(statement.bind).toHaveBeenCalledWith("1.0.0");
+    expect(statement.bind).toHaveBeenCalledWith("1.1.0");
   });
 
   it("backfills complete UTC days with retry-safe anonymous metric rows", async () => {
@@ -52,7 +52,8 @@ describe("product metric aggregates", () => {
 
     expect(activation.sql).toContain("product_metric_creator_activations");
     expect(activation.sql).toContain("min(created_at)");
-    expect(aggregate.sql).toContain("contract_version = '1.0.0'");
+    expect(aggregate.sql).toContain("contract_version in ('1.0.0', '1.1.0')");
+    expect(aggregate.sql).toContain("event_type = 'export.failed'");
     expect(aggregate.sql).toContain(
       "on conflict(metric_id, day_utc, dimension) do update"
     );

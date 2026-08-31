@@ -54,6 +54,7 @@ import type {
 import type { ProductMetricId } from "@/lib/server/product-metric-aggregates";
 import type { LocalizationDemandMetrics } from "@/lib/server/localization-demand";
 import { cn } from "@/lib/utils";
+import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 type MetricsWorkspaceProps = {
   metrics: AdminMetrics;
@@ -405,7 +406,6 @@ function RetentionTable({ metric }: { metric: MetricsExplorerMetric }) {
       }),
     [locale]
   );
-
   if (metric.rows.length === 0) {
     return (
       <div className="text-muted-foreground flex min-h-48 items-center justify-center text-center text-sm">
@@ -743,6 +743,15 @@ export default function MetricsWorkspace({
       new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
+      }),
+    [locale]
+  );
+  const dateTime = useMemo(
+    () =>
+      create24HourDateTimeFormatter(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Europe/Amsterdam",
       }),
     [locale]
   );
@@ -1348,6 +1357,71 @@ export default function MetricsWorkspace({
             <p className="text-muted-foreground border-t px-4 py-3 text-xs leading-relaxed sm:px-5">
               {t("operations.lowVolumeNote")}
             </p>
+            {explorer.recentFailures.length > 0 ? (
+              <div className="border-t">
+                <div className="px-4 py-4 sm:px-5">
+                  <h3 className="text-sm font-semibold">
+                    {t("operations.recentTitle")}
+                  </h3>
+                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                    {t("operations.recentDescription")}
+                  </p>
+                </div>
+                <div className="overflow-x-auto border-t">
+                  <table className="w-full min-w-[44rem] text-sm">
+                    <thead>
+                      <tr className="text-muted-foreground border-b text-left text-xs">
+                        <th
+                          className="px-4 py-2 font-medium sm:pl-5"
+                          scope="col"
+                        >
+                          {t("operations.occurredAt")}
+                        </th>
+                        <th className="px-3 py-2 font-medium" scope="col">
+                          {t("operations.operation")}
+                        </th>
+                        <th className="px-3 py-2 font-medium" scope="col">
+                          {t("operations.format")}
+                        </th>
+                        <th
+                          className="px-4 py-2 font-medium sm:pr-5"
+                          scope="col"
+                        >
+                          {t("operations.cause")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {explorer.recentFailures.map((failure, index) => (
+                        <tr
+                          key={`${failure.occurredAt}:${failure.operation}:${index}`}
+                          className="border-b last:border-0"
+                        >
+                          <td className="px-4 py-3 tabular-nums sm:pl-5">
+                            <time dateTime={failure.occurredAt}>
+                              {dateTime.format(new Date(failure.occurredAt))}
+                            </time>
+                          </td>
+                          <td className="px-3 py-3 font-medium">
+                            {t(`operations.operations.${failure.operation}`)}
+                          </td>
+                          <td className="px-3 py-3">
+                            {failure.exportFormat
+                              ? t(`operations.formats.${failure.exportFormat}`)
+                              : "—"}
+                          </td>
+                          <td className="px-4 py-3 sm:pr-5">
+                            {failure.reason
+                              ? t(`operations.reasons.${failure.reason}`)
+                              : t("operations.detailNotRecorded")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="text-muted-foreground px-4 py-8 text-center text-sm sm:px-5">

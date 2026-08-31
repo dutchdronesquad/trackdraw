@@ -65,6 +65,46 @@ describe("POST /api/product-events", () => {
     });
   });
 
+  it("records a structured export failure without exception text", async () => {
+    const response = await POST(
+      new Request("https://trackdraw.app/api/product-events", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: "https://trackdraw.app",
+        },
+        body: JSON.stringify({
+          contractVersion: "1.1.0",
+          event: "export.failed",
+          sessionId: "0dbb9964-cbc6-4205-a92e-f75ad9cba299",
+          projectId: "project-1",
+          properties: {
+            format: "png",
+            category: "rendering",
+            reason: "rendering_failed",
+            surface: "editor",
+          },
+        }),
+      })
+    );
+
+    expect(response.status).toBe(204);
+    expect(mocks.recordProductEvent).toHaveBeenCalledWith({
+      contractVersion: "1.1.0",
+      event: "export.failed",
+      sessionId: "0dbb9964-cbc6-4205-a92e-f75ad9cba299",
+      userId: null,
+      projectId: "project-1",
+      shareToken: null,
+      properties: {
+        format: "png",
+        category: "rendering",
+        reason: "rendering_failed",
+        surface: "editor",
+      },
+    });
+  });
+
   it("rejects untrusted and unknown events", async () => {
     mocks.isTrustedRequest.mockReturnValueOnce(false);
     const untrusted = await POST(
@@ -111,6 +151,19 @@ describe("POST /api/product-events", () => {
         sessionId: null,
         projectId: "project-1",
         email: "forbidden@example.com",
+      },
+      {
+        contractVersion: "1.1.0",
+        event: "export.failed",
+        sessionId: null,
+        projectId: "project-1",
+        properties: {
+          format: "png",
+          category: "rendering",
+          reason: "rendering_failed",
+          surface: "editor",
+          exception: "private dynamic value",
+        },
       },
     ];
 

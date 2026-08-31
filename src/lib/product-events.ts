@@ -1,6 +1,13 @@
 import type { ShapeKind } from "@/lib/types";
 
-export const PRODUCT_METRICS_CONTRACT_VERSION = "1.0.0" as const;
+export const PRODUCT_METRICS_CONTRACT_VERSION = "1.1.0" as const;
+export const productMetricsContractVersions = [
+  "1.0.0",
+  PRODUCT_METRICS_CONTRACT_VERSION,
+] as const;
+
+export type ProductMetricsContractVersion =
+  (typeof productMetricsContractVersions)[number];
 
 export const productEventNames = [
   "editor.session_started",
@@ -14,6 +21,7 @@ export const productEventNames = [
   "publication.gallery_published",
   "acquisition.session_attributed",
   "operation.failed",
+  "export.failed",
 ] as const;
 
 export type ProductEventName = (typeof productEventNames)[number];
@@ -95,12 +103,28 @@ export const productEventFailureCategories = [
   "unknown",
 ] as const;
 
+export const productEventExportFailureReasons = [
+  "asset_load_failed",
+  "canvas_unavailable",
+  "flight_path_failed",
+  "font_load_failed",
+  "invalid_design",
+  "recording_failed",
+  "rendering_failed",
+  "serialization_failed",
+  "track_path_missing",
+  "unsupported_browser",
+  "unknown",
+] as const;
+
 export type ProductEventEditType = (typeof productEventEditTypes)[number];
 export type ProductEventExportFormat =
   (typeof productEventExportFormats)[number];
 export type ProductEventOperation = (typeof productEventOperations)[number];
 export type ProductEventFailureCategory =
   (typeof productEventFailureCategories)[number];
+export type ProductEventExportFailureReason =
+  (typeof productEventExportFailureReasons)[number];
 
 export type ProductEventProperties =
   | Record<string, never>
@@ -118,6 +142,12 @@ export type ProductEventProperties =
       operation: ProductEventOperation;
       category: ProductEventFailureCategory;
       surface: "editor" | "share" | "embed" | "gallery";
+    }
+  | {
+      format: ProductEventExportFormat;
+      category: ProductEventFailureCategory;
+      reason: ProductEventExportFailureReason;
+      surface: "editor";
     };
 
 export type ProductEventContext = {
@@ -222,6 +252,62 @@ export function classifyProductOperationFailure(
   if (response.status === 409) return "conflict";
   if (response.status === 429) return "rate_limited";
   return fallback;
+}
+
+export function classifyProductExportFailure(
+  format: ProductEventExportFormat,
+  error: unknown
+): {
+  category: ProductEventFailureCategory;
+  reason: ProductEventExportFailureReason;
+} {
+  const message = error instanceof Error ? error.message : "";
+  const errorName = error instanceof Error ? error.name : "";
+
+  if (errorName === "NotSupportedError") {
+    return { category: "unsupported", reason: "unsupported_browser" };
+  }
+  if (/No track path/i.test(message)) {
+    return { category: "validation", reason: "track_path_missing" };
+  }
+  if (/Could not compute flight path/i.test(message)) {
+    return { category: "rendering", reason: "flight_path_failed" };
+  }
+  if (/Velocidrone export (found|needs|could not resolve)/i.test(message)) {
+    return { category: "validation", reason: "invalid_design" };
+  }
+  if (/Nothing to export/i.test(message)) {
+    return { category: "validation", reason: "invalid_design" };
+  }
+  if (/CJK PDF font/i.test(message)) {
+    return { category: "network", reason: "font_load_failed" };
+  }
+  if (/SVG load failed/i.test(message)) {
+    return { category: "rendering", reason: "asset_load_failed" };
+  }
+  if (/No 2D context/i.test(message)) {
+    return { category: "rendering", reason: "canvas_unavailable" };
+  }
+
+  if (format === "webm") {
+    return { category: "rendering", reason: "recording_failed" };
+  }
+  if (format === "json") {
+    return { category: "unknown", reason: "serialization_failed" };
+  }
+  if (format === "velocidrone") {
+    return { category: "validation", reason: "invalid_design" };
+  }
+  if (
+    format === "png" ||
+    format === "svg" ||
+    format === "pdf" ||
+    format === "race_pack" ||
+    format === "render_3d"
+  ) {
+    return { category: "rendering", reason: "rendering_failed" };
+  }
+  return { category: "unknown", reason: "unknown" };
 }
 
 export function trackProductEvent(

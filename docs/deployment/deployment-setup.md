@@ -269,6 +269,8 @@ Migration `0016_product_metric_daily_aggregates.sql` adds identifier-free UTC da
 
 Migration `0017_localization_demand_daily.sql` adds identifier-free UTC daily localization-demand counters and registers the independent `L10N-001` measurement start. Apply it before deploying `/api/localization-demand` or the dashboard localization view. Country is derived from Cloudflare request context and is never stored with an IP address, session, account, project, or event.
 
+Migration `0019_product_metrics_export_failure_details.sql` advances the product metrics measurement state to contract version `1.1.0` and extends the existing deduplication indexes to accept both compatible v1 contract versions. Apply it before deploying structured `export.failed` events or the exact-attempt dashboard drilldown.
+
 ## Validation flow
 
 Typical local workflow:
