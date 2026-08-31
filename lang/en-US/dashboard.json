@@ -244,14 +244,18 @@
         "subtitle": "Aggregate product health"
       },
       "quality": {
-        "healthy": "Healthy",
-        "building": "Building",
-        "low_volume": "Low volume",
-        "degraded": "Degraded",
-        "invalid": "Invalid",
-        "not_started": "Awaiting first complete period",
-        "buildingProgress": "Building — {elapsed}/{total}d",
-        "scheduleHint": "Metrics are aggregated nightly at 00:17 UTC. If this doesn't clear after the next run, check the pipeline."
+        "healthy": "Ready",
+        "building": "Collecting history",
+        "low_volume": "Limited sample",
+        "degraded": "Data issue",
+        "invalid": "Unavailable",
+        "not_started": "Not collecting yet",
+        "buildingProgress": "Collecting history · {elapsed}/{total}d",
+        "catchingUp": "Catching up",
+        "buildingHint": "This value uses the latest complete {window}-day reporting period. Comparisons appear after {total} complete days of continuous measurement; {elapsed} days are available.",
+        "buildingHintGeneric": "TrackDraw is collecting comparison history. {elapsed} of {total} complete days are available.",
+        "catchingUpHint": "Enough history exists, but aggregation has not reached the latest complete day yet.",
+        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:17 UTC."
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -262,6 +266,10 @@
         "notStarted": "Waiting for the first complete measurement period."
       },
       "windowDays": "{days}d",
+      "reportingPeriod": {
+        "completeDays": "Last {days} complete days",
+        "matureCohort": "Latest mature {days}-day cohort"
+      },
       "journey": {
         "label": "Product journey metrics",
         "acquisition": { "label": "Acquisition", "value": "Source mix" },
@@ -284,13 +292,14 @@
         "exportNote": "Completed exports in the last 30 days."
       },
       "evidence": {
-        "title": "Journey evidence",
+        "title": "Core product metrics",
+        "description": "Latest complete reporting periods. Data status shows whether enough continuous history exists for reliable comparisons.",
         "metric": "Metric",
-        "current": "Current",
-        "previous": "Previous",
+        "current": "Latest period",
+        "previous": "Previous period",
         "change": "Change",
-        "quality": "Quality",
-        "window": "Window"
+        "quality": "Data status",
+        "window": "Reporting period"
       },
       "metrics": {
         "MTR-001": {
@@ -429,9 +438,11 @@
         "empty": "Mature creator-activation cohorts will appear after the observation window is complete."
       },
       "operations": {
-        "title": "Publication and export attempts",
-        "description": "Failed attempts in the latest complete 7-day window. Repeated attempts are counted separately.",
+        "title": "Export and publishing reliability",
+        "description": "Failed terminal attempts in the latest complete 7-day reporting period. Repeated attempts are counted separately.",
         "failedAttempts": "failed attempts",
+        "failedShort": "{count} failed",
+        "mobileSummary": "{outcomes} outcomes · {rate} failure rate",
         "windowEnd": "Window ending {date}",
         "operation": "Operation",
         "category": "Category",
@@ -439,11 +450,12 @@
         "outcomes": "Terminal outcomes",
         "rate": "Failure rate",
         "recentTitle": "Recent failed attempts",
-        "recentDescription": "Exact local time and privacy-safe technical detail for attempts in this window. Earlier attempts can show only the category recorded by the previous event version.",
+        "recentSummary": "View recent failed attempts ({count})",
+        "recentDescription": "Newer export events include a detailed cause. Earlier exports and gallery publications retain their timestamp and category only.",
         "occurredAt": "Occurred at",
         "format": "Format",
         "cause": "Recorded cause",
-        "detailNotRecorded": "Detail not recorded",
+        "categoryOnly": "Category only",
         "empty": "No failed publication or export attempts were recorded in the latest complete window.",
         "notStarted": "Waiting for the first complete publication and export failure window.",
         "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labeled low volume. The attempt counts remain factual.",
@@ -607,9 +619,9 @@
       }
     },
     "comparison": {
-      "building": "30-day comparison is building",
-      "buildingProgress": "30-day comparison is building — {elapsed}/{total}d",
-      "lowVolume": "Comparison hidden for low volume",
+      "building": "Collecting a comparison period",
+      "buildingProgress": "Collecting comparison history · {elapsed}/{total}d",
+      "lowVolume": "Comparison unavailable: limited sample",
       "flat": "No change vs previous 30d",
       "changeUp": "Up {pct}% vs previous 30d",
       "changeDown": "Down {pct}% vs previous 30d"

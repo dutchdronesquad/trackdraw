@@ -346,7 +346,7 @@ describe("metrics decision views", () => {
     expect(screen.getByText("Conversion · unavailable")).toBeTruthy();
   });
 
-  it("keeps existing growth and usage views inside the contract journey", async () => {
+  it("organizes the dashboard around clear decision views", async () => {
     const user = userEvent.setup();
     const metrics = {
       users: {
@@ -440,7 +440,7 @@ describe("metrics decision views", () => {
           previous: null,
           comparisonReady: false,
           quality: "building" as const,
-          measuredSince: "2026-07-01",
+          measuredSince: "2026-08-01",
         })),
       ],
     } satisfies DailyCockpitData;
@@ -601,11 +601,8 @@ describe("metrics decision views", () => {
     expect(container.querySelectorAll("[data-chart]")).toHaveLength(1);
     expect(screen.getByText("Completed exports")).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: /^Acquisition Building/ })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: /^Activation Building — \d+\/28d 0%/ })
-    ).toBeTruthy();
+      screen.queryByRole("navigation", { name: "Product journey metrics" })
+    ).toBeNull();
     expect(screen.queryAllByRole("combobox")).toHaveLength(0);
     expect(screen.getAllByRole("tab")).toHaveLength(5);
     expect(screen.getByRole("tab", { name: "Creators" })).toBeTruthy();
@@ -615,12 +612,28 @@ describe("metrics decision views", () => {
     expect(
       screen.getAllByRole("button", { name: "Range Last 3 months" })
     ).toHaveLength(2);
-    const journey = screen.getByRole("navigation", {
-      name: "Product journey metrics",
+    expect(
+      within(screen.getByRole("banner")).queryByRole("button", {
+        name: "Range Last 3 months",
+      })
+    ).toBeNull();
+    const evidence = screen.getByRole("region", {
+      name: "Core product metrics",
     });
-    const evidence = screen.getByRole("region", { name: "Journey evidence" });
-    expect(within(journey).queryByText(/MTR-\d+/)).toBeNull();
-    expect(within(evidence).queryByText(/MTR-\d+/)).toBeNull();
+    expect(within(evidence).getByText("MTR-001")).toBeTruthy();
+    expect(
+      within(evidence).getByRole("columnheader", {
+        name: "Reporting period",
+      })
+    ).toBeTruthy();
+    expect(within(evidence).getAllByText("Last 7 complete days")).toHaveLength(
+      3
+    );
+    expect(
+      within(evidence).getAllByLabelText(
+        /Collecting history.*This value uses the latest complete 7-day reporting period/
+      )
+    ).toHaveLength(2);
     expect(
       screen.queryByRole("button", { name: "Close metric details" })
     ).toBeNull();
@@ -632,6 +645,7 @@ describe("metrics decision views", () => {
     expect(
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
     ).toBeNull();
+    expect(document.querySelector("#operations")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Audience" }));
     expect(screen.getByRole("tab", { name: "Audience" }).className).toContain(
@@ -688,23 +702,61 @@ describe("metrics decision views", () => {
     expect(operations).toBeTruthy();
     expect(
       within(operations as HTMLElement).getByRole("heading", {
-        name: "Publication and export attempts",
+        name: "Export and publishing reliability",
       })
     ).toBeTruthy();
     expect(within(operations as HTMLElement).getByText("10")).toBeTruthy();
     expect(
-      within(operations as HTMLElement).getByText("Rendering")
-    ).toBeTruthy();
-    expect(within(operations as HTMLElement).getByText("Network")).toBeTruthy();
-    expect(
-      within(operations as HTMLElement).getByText(/Aug 14, 2026.*11:32/)
-    ).toBeTruthy();
-    expect(within(operations as HTMLElement).getByText("PNG")).toBeTruthy();
-    expect(
-      within(operations as HTMLElement).getByText("Image rendering failed")
+      within(operations as HTMLElement).getAllByText("Rendering").length
     ).toBeTruthy();
     expect(
-      within(operations as HTMLElement).getByText("Detail not recorded")
+      within(operations as HTMLElement).getAllByText("Network").length
     ).toBeTruthy();
+    const recentSummary = within(operations as HTMLElement).getByText(
+      "View recent failed attempts (2)"
+    );
+    const recentAttempts = recentSummary.closest("details");
+    expect(recentAttempts?.hasAttribute("open")).toBe(false);
+
+    await user.click(recentSummary);
+
+    expect(recentAttempts?.hasAttribute("open")).toBe(true);
+    expect(
+      within(recentAttempts!).getAllByText(/Aug 14, 2026.*11:32/).length
+    ).toBeGreaterThan(0);
+    expect(within(recentAttempts!).getAllByText("PNG").length).toBeGreaterThan(
+      0
+    );
+    expect(
+      within(recentAttempts!).getAllByText("Image rendering failed").length
+    ).toBeGreaterThan(0);
+    expect(
+      within(recentAttempts!).getAllByText("Rendering").length
+    ).toBeGreaterThan(0);
+    expect(
+      within(recentAttempts!).getAllByText("Category only").length
+    ).toBeGreaterThan(0);
+    expect(
+      within(recentAttempts!).queryByText("Detail not recorded")
+    ).toBeNull();
+    expect(
+      within(operations as HTMLElement).getByText("6 failed")
+    ).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText(
+        /20 outcomes.*30% failure rate/
+      )
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Overview" }));
+    expect(document.querySelector("#operations")).toBeNull();
+    window.history.replaceState(null, "", "#operations");
+    fireEvent(window, new HashChangeEvent("hashchange"));
+    expect(
+      screen
+        .getByRole("tab", { name: "Distribution" })
+        .getAttribute("aria-selected")
+    ).toBe("true");
+    window.history.replaceState(null, "", window.location.pathname);
   });
 });
