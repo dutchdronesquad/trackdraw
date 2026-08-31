@@ -513,6 +513,22 @@ describe("metrics decision views", () => {
           },
         ],
       },
+      recentFailures: [
+        {
+          occurredAt: "2026-08-14T09:32:00.000Z",
+          operation: "export",
+          category: "rendering",
+          exportFormat: "png",
+          reason: "rendering_failed",
+        },
+        {
+          occurredAt: "2026-08-14T08:15:00.000Z",
+          operation: "export",
+          category: "rendering",
+          exportFormat: null,
+          reason: null,
+        },
+      ],
     } satisfies MetricsExplorerData;
 
     const { container } = render(
@@ -680,5 +696,15 @@ describe("metrics decision views", () => {
       within(operations as HTMLElement).getByText("Rendering")
     ).toBeTruthy();
     expect(within(operations as HTMLElement).getByText("Network")).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText(/Aug 14, 2026.*11:32/)
+    ).toBeTruthy();
+    expect(within(operations as HTMLElement).getByText("PNG")).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText("Image rendering failed")
+    ).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText("Detail not recorded")
+    ).toBeTruthy();
   });
 });

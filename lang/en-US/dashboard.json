@@ -438,12 +438,41 @@
         "failed": "Failed attempts",
         "outcomes": "Terminal outcomes",
         "rate": "Failure rate",
+        "recentTitle": "Recent failed attempts",
+        "recentDescription": "Exact local time and privacy-safe technical detail for attempts in this window. Earlier attempts can show only the category recorded by the previous event version.",
+        "occurredAt": "Occurred at",
+        "format": "Format",
+        "cause": "Recorded cause",
+        "detailNotRecorded": "Detail not recorded",
         "empty": "No failed publication or export attempts were recorded in the latest complete window.",
         "notStarted": "Waiting for the first complete publication and export failure window.",
         "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labeled low volume. The attempt counts remain factual.",
         "operations": {
           "export": "Export",
           "gallery_publish": "Gallery publication"
+        },
+        "formats": {
+          "png": "PNG",
+          "svg": "SVG",
+          "json": "JSON",
+          "pdf": "PDF",
+          "webm": "WebM",
+          "race_pack": "Race Pack PDF",
+          "velocidrone": "Velocidrone TRK",
+          "render_3d": "3D PNG"
+        },
+        "reasons": {
+          "asset_load_failed": "Export asset could not be loaded",
+          "canvas_unavailable": "Browser canvas was unavailable",
+          "flight_path_failed": "Flight path could not be calculated",
+          "font_load_failed": "PDF font could not be loaded",
+          "invalid_design": "Design did not meet the export requirements",
+          "recording_failed": "Video recording failed",
+          "rendering_failed": "Image rendering failed",
+          "serialization_failed": "Project data could not be serialized",
+          "track_path_missing": "No usable track path was available",
+          "unsupported_browser": "Browser does not support this export",
+          "unknown": "Cause was not classified"
         },
         "categories": {
           "validation": "Validation",

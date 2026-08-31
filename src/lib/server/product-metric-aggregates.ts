@@ -1,4 +1,4 @@
-const CONTRACT_VERSION = "1.0.0";
+const CONTRACT_VERSION = "1.1.0";
 const AGGREGATE_RETENTION_MONTHS = 24;
 const MAX_BACKFILL_DAYS_PER_RUN = 7;
 
@@ -78,7 +78,7 @@ with
   events28 as (
     select *
     from product_events, bounds
-    where contract_version = '${CONTRACT_VERSION}'
+    where contract_version in ('1.0.0', '${CONTRACT_VERSION}')
       and created_at >= datetime(bounds.start_at, '-27 days')
       and created_at < bounds.end_at
   ),
@@ -179,13 +179,24 @@ with
       and feature_event.session_id = editor_sessions28.session_id
     group by feature_events.feature
   ),
-  failure_rows as (
+  failure_events as (
     select
       json_extract(metadata_json, '$.operation') || ':' || json_extract(metadata_json, '$.category') as dimension,
       json_extract(metadata_json, '$.operation') as operation,
-      count(*) as numerator
+      1 as numerator
     from events7
     where event_type = 'operation.failed'
+    union all
+    select
+      'export:' || json_extract(metadata_json, '$.category') as dimension,
+      'export' as operation,
+      1 as numerator
+    from events7
+    where event_type = 'export.failed'
+  ),
+  failure_rows as (
+    select dimension, operation, sum(numerator) as numerator
+    from failure_events
     group by operation, dimension
   ),
   operation_outcomes as (
@@ -218,14 +229,14 @@ with
            and activation.activated_at < bounds.end_at
            and exists (
              select 1 from product_events return_event
-             where return_event.contract_version = '${CONTRACT_VERSION}'
+             where return_event.contract_version in ('1.0.0', '${CONTRACT_VERSION}')
                and return_event.user_id = activation.user_id
                and return_event.event_type = 'editor.session_started'
                and return_event.created_at >= datetime(activation.activated_at, '+1 day')
                and return_event.created_at < datetime(activation.activated_at, '+31 days')
                and return_event.session_id <> (
                  select first_edit.session_id from product_events first_edit
-                 where first_edit.contract_version = '${CONTRACT_VERSION}'
+                 where first_edit.contract_version in ('1.0.0', '${CONTRACT_VERSION}')
                    and first_edit.user_id = activation.user_id
                    and first_edit.event_type = 'editor.meaningful_edit_completed'
                  order by first_edit.created_at limit 1
@@ -343,7 +354,7 @@ async function refreshCreatorActivations(db: ProductMetricDatabase) {
       insert into product_metric_creator_activations (user_id, activated_at)
       select user_id, min(created_at)
       from product_events
-      where contract_version = ?
+      where contract_version in ('1.0.0', '${CONTRACT_VERSION}')
         and event_type = 'editor.meaningful_edit_completed'
         and user_id is not null
         and created_at >= (
@@ -355,7 +366,7 @@ async function refreshCreatorActivations(db: ProductMetricDatabase) {
       on conflict(user_id) do update set activated_at = min(activated_at, excluded.activated_at)
     `
     )
-    .bind(CONTRACT_VERSION, CONTRACT_VERSION)
+    .bind(CONTRACT_VERSION)
     .run();
 }
 

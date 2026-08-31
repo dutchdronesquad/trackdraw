@@ -223,7 +223,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
           and not exists (
             select 1 from product_events pe
             where pe.user_id = u.id
-              and pe.contract_version = '1.0.0'
+              and pe.contract_version in ('1.0.0', '1.1.0')
               and pe.created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           )
           and not exists (
@@ -255,7 +255,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         ) or exists (
           select 1 from product_events pe
           where pe.user_id = u.id
-            and pe.contract_version = '1.0.0'
+            and pe.contract_version in ('1.0.0', '1.1.0')
             and pe.created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         ) or exists (
           select 1 from apikey ak
@@ -547,7 +547,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
               then 1 else 0
             end) as previous_count
           from product_events
-          where contract_version = '1.0.0'
+          where contract_version in ('1.0.0', '1.1.0')
             and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-60 days')
           group by event_type
         `
@@ -560,7 +560,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             min(created_at) as tracking_started_at,
             cast(julianday('now') - julianday(min(created_at)) as integer) as tracking_days
           from product_events
-          where contract_version = '1.0.0'
+          where contract_version in ('1.0.0', '1.1.0')
         `
       )
       .first<{
@@ -575,7 +575,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(*) as count
           from product_events
           where event_type = 'export.completed'
-            and contract_version = '1.0.0'
+            and contract_version in ('1.0.0', '1.1.0')
             and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by format
           order by count desc, format
@@ -590,7 +590,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             sum(coalesce(json_extract(metadata_json, '$.count'), 1)) as count
           from product_events
           where event_type = 'editor.element_placed'
-            and contract_version = '1.0.0'
+            and contract_version in ('1.0.0', '1.1.0')
             and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by kind
           order by count desc, kind
@@ -605,7 +605,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(*) as count
           from product_events
           where event_type = 'share.viewed'
-            and contract_version = '1.0.0'
+            and contract_version in ('1.0.0', '1.1.0')
             and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by surface
           order by count desc, surface
@@ -658,7 +658,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             coalesce(round(avg(cast(json_extract(metadata_json, '$.shape_count') as real)), 1), 0) as avg_shapes
           from product_events
           where event_type = 'project.imported'
-            and contract_version = '1.0.0'
+            and contract_version in ('1.0.0', '1.1.0')
             and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         `
       )
@@ -678,7 +678,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
                 then created_at
               end) as last_outcome_at
             from product_events
-            where contract_version = '1.0.0'
+            where contract_version in ('1.0.0', '1.1.0')
               and session_id is not null
               and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
             group by session_id
@@ -737,7 +737,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             sum(case when exists (
               select 1 from product_events pe
               where pe.user_id = u.id
-                and pe.contract_version = '1.0.0'
+                and pe.contract_version in ('1.0.0', '1.1.0')
                 and pe.event_type = 'editor.session_started'
                 and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
                 and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+8 days')
@@ -745,7 +745,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             sum(case when exists (
               select 1 from product_events pe
               where pe.user_id = u.id
-                and pe.contract_version = '1.0.0'
+                and pe.contract_version in ('1.0.0', '1.1.0')
                 and pe.event_type = 'editor.session_started'
                 and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
                 and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+31 days')
@@ -754,7 +754,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
           where u.createdAt >= date('now', 'start of month', '-5 months')
             and u.createdAt < date('now', 'start of month', '-1 month')
             and u.createdAt >= date(
-              (select min(created_at) from product_events where contract_version = '1.0.0' and event_type = 'editor.session_started'),
+              (select min(created_at) from product_events where contract_version in ('1.0.0', '1.1.0') and event_type = 'editor.session_started'),
               'start of month',
               '+1 month'
             )

@@ -1,6 +1,7 @@
 import "server-only";
 
 import type {
+  ProductMetricsContractVersion,
   ProductEventName,
   ProductEventProperties,
 } from "@/lib/product-events";
@@ -9,7 +10,7 @@ import { getDatabase } from "@/lib/server/db";
 const PRODUCT_EVENT_RETENTION_DAYS = 180;
 
 export type ProductEventInput = {
-  contractVersion: "1.0.0";
+  contractVersion: ProductMetricsContractVersion;
   event: ProductEventName;
   sessionId: string | null;
   userId: string | null;

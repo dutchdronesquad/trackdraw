@@ -5,10 +5,12 @@ import {
   productEventAcquisitionSources,
   productEventEditTypes,
   productEventElementKinds,
+  productEventExportFailureReasons,
   productEventExportFormats,
   productEventFailureCategories,
   productEventLandingSurfaces,
   productEventOperations,
+  productMetricsContractVersions,
 } from "@/lib/product-events";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
@@ -17,6 +19,10 @@ import { getShareByToken } from "@/lib/server/shares";
 
 const MAX_BODY_BYTES = 4096;
 const baseFields = {
+  contractVersion: z.enum(productMetricsContractVersions),
+  sessionId: z.string().uuid().nullable(),
+};
+const currentBaseFields = {
   contractVersion: z.literal(PRODUCT_METRICS_CONTRACT_VERSION),
   sessionId: z.string().uuid().nullable(),
 };
@@ -135,6 +141,21 @@ const productEventSchema = z.discriminatedUnion("event", [
           operation: z.enum(productEventOperations),
           category: z.enum(productEventFailureCategories),
           surface: z.enum(["editor", "share", "embed", "gallery"]),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...currentBaseFields,
+      event: z.literal("export.failed"),
+      projectId,
+      properties: z
+        .object({
+          format: z.enum(productEventExportFormats),
+          category: z.enum(productEventFailureCategories),
+          reason: z.enum(productEventExportFailureReasons),
+          surface: z.literal("editor"),
         })
         .strict(),
     })

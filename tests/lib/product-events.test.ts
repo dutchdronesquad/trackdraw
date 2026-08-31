@@ -2,6 +2,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  classifyProductExportFailure,
   getProductAnalyticsDisabled,
   getProductEventSessionId,
   setProductAnalyticsDisabled,
@@ -65,5 +66,40 @@ describe("product event browser identity", () => {
 
     setProductAnalyticsDisabled(false);
     expect(getProductAnalyticsDisabled()).toBe(false);
+  });
+});
+
+describe("export failure classification", () => {
+  it("maps known failures to closed privacy-safe reasons", () => {
+    expect(
+      classifyProductExportFailure(
+        "webm",
+        new Error("No track path to fly through")
+      )
+    ).toEqual({ category: "validation", reason: "track_path_missing" });
+    expect(
+      classifyProductExportFailure(
+        "velocidrone",
+        new Error("Velocidrone export needs a field with a positive size.")
+      )
+    ).toEqual({ category: "validation", reason: "invalid_design" });
+    expect(
+      classifyProductExportFailure(
+        "race_pack",
+        new Error("Unable to load the CJK PDF font (503).")
+      )
+    ).toEqual({ category: "network", reason: "font_load_failed" });
+  });
+
+  it("uses format-specific fallbacks without retaining exception text", () => {
+    expect(
+      classifyProductExportFailure("png", new Error("private dynamic value"))
+    ).toEqual({ category: "rendering", reason: "rendering_failed" });
+    expect(
+      classifyProductExportFailure(
+        "webm",
+        new DOMException("private dynamic value", "NotSupportedError")
+      )
+    ).toEqual({ category: "unsupported", reason: "unsupported_browser" });
   });
 });

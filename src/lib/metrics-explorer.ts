@@ -3,6 +3,11 @@ import type {
   ProductMetricId,
   ProductMetricMeasurementState,
 } from "@/lib/server/product-metric-aggregates";
+import type {
+  ProductEventExportFailureReason,
+  ProductEventExportFormat,
+  ProductEventFailureCategory,
+} from "@/lib/product-events";
 
 export type MetricsExplorerQuality =
   ProductMetricDailyRow["quality_status"] | "not_started";
@@ -27,12 +32,21 @@ export type MetricsExplorerMetric = {
   rows: MetricsExplorerRow[];
 };
 
+export type MetricsExplorerFailureAttempt = {
+  occurredAt: string;
+  operation: "export" | "gallery_publish";
+  category: ProductEventFailureCategory;
+  exportFormat: ProductEventExportFormat | null;
+  reason: ProductEventExportFailureReason | null;
+};
+
 export type MetricsExplorerData = {
   generatedAt: string;
   acquisition: MetricsExplorerMetric;
   adoption: MetricsExplorerMetric;
   retention: MetricsExplorerMetric;
   failures: MetricsExplorerMetric;
+  recentFailures: MetricsExplorerFailureAttempt[];
 };
 
 type MetricDefinition = {
@@ -259,6 +273,7 @@ export function buildMetricsExplorerData(
     acquisition: mergeLowVolumeAcquisitionRows(metrics["MTR-008"]),
     adoption: metrics["MTR-009"],
     failures: metrics["MTR-010"],
+    recentFailures: [],
     retention: {
       ...metrics["MTR-005"],
       quality: metricQuality(retentionRows, retentionState),

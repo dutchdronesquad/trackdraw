@@ -32,6 +32,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useLocale, useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
 import {
+  classifyProductExportFailure,
   trackProductEvent,
   type ProductEventExportFormat,
 } from "@/lib/product-events";
@@ -613,20 +614,18 @@ export default function ExportDialog({
         onOpenChange(false);
       }
     } catch (err) {
-      trackProductEvent("operation.failed", {
-        projectId: design.id,
-        properties: {
-          operation: "export",
-          category:
-            options?.eventFormat === "png" ||
-            options?.eventFormat === "svg" ||
-            options?.eventFormat === "render3d" ||
-            options?.eventFormat === "webm"
-              ? "rendering"
-              : "unknown",
-          surface: "editor",
-        },
-      });
+      if (options?.eventFormat) {
+        const format = getProductEventExportFormat(options.eventFormat);
+        const failure = classifyProductExportFailure(format, err);
+        trackProductEvent("export.failed", {
+          projectId: design.id,
+          properties: {
+            format,
+            ...failure,
+            surface: "editor",
+          },
+        });
+      }
       const message = err instanceof Error ? err.message : String(err);
       const description = t("export.errors.exportFailedDescription", {
         message,
