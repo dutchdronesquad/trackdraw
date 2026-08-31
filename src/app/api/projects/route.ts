@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import {
+  getProjectForUser,
   listProjectsForUser,
   ProjectVersionConflictError,
   saveProjectForUser,
 } from "@/lib/server/projects";
+import { recordAuditEvent } from "@/lib/server/audit";
 
 const saveProjectRequestSchema = z.object({
   design: z.unknown(),
@@ -100,6 +103,9 @@ export async function POST(request: Request) {
       );
     }
 
+    const existingProject = body.projectId
+      ? await getProjectForUser(body.projectId, user.id)
+      : null;
     const project = await saveProjectForUser(user.id, design, {
       projectId: body.projectId,
       title: body.title,
@@ -107,6 +113,33 @@ export async function POST(request: Request) {
       forceWrite: body.forceWrite,
       baseDesignUpdatedAt: body.baseDesignUpdatedAt,
     });
+
+    if (!existingProject) {
+      await recordAuditEvent({
+        actorUserId: user.id,
+        targetUserId: user.id,
+        eventType: auditEventTypes.projectCreated,
+        entityType: "project",
+        entityId: project.id,
+        metadata: {
+          title: project.title,
+          shapeCount: project.shapeCount,
+        },
+      });
+    } else if (body.forceWrite) {
+      await recordAuditEvent({
+        actorUserId: user.id,
+        targetUserId: user.id,
+        eventType: auditEventTypes.projectForceOverwritten,
+        entityType: "project",
+        entityId: project.id,
+        metadata: {
+          title: project.title,
+          previousDesignUpdatedAt: existingProject.designUpdatedAt,
+          nextDesignUpdatedAt: project.designUpdatedAt,
+        },
+      });
+    }
 
     return NextResponse.json({ ok: true, project });
   } catch (error) {

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { auditEventTypes } from "@/lib/audit-events";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { isTrustedRequest } from "@/lib/server/csrf";
@@ -34,6 +36,13 @@ export async function POST(request: Request) {
   try {
     const db = await getDatabase();
     await runProductMetricMaintenance(db);
+    await recordAuditEvent({
+      actorUserId: actor.id,
+      eventType: auditEventTypes.systemMetricsMaintenanceCompleted,
+      entityType: "metrics_maintenance",
+      entityId: null,
+      metadata: null,
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[TrackDraw] Failed to run product metric maintenance", {

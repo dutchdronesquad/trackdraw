@@ -1,144 +1,131 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { type SortingState, useTable } from "@tanstack/react-table";
+import { Copy, ExternalLink } from "lucide-react";
 import {
-  categoryFilterValues,
-  eventMatchesSearch,
-  getActorFilterLabel,
-  getActorFilterValue,
+  formatDateTime,
+  formatMetadataLabel,
+  formatMetadataValue,
+  getAuditActorLabel,
   getAuditColumns,
-  getEventCategory,
+  getAuditTargetLabel,
+  getEntityDisplay,
+  getEventCategoryLabel,
   getEventTitle,
-  type AuditEventCategory,
+  getSecondaryLabel,
   type DashboardAuditEvent,
   type Translate,
 } from "@/app/dashboard/audit/columns";
 import DataTable from "@/components/data-table/DataTable";
-import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
-import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { dataTableFeatures } from "@/components/data-table/tableFeatures";
-
-export type { AuditEventCategory };
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type AuditEventsTableProps = {
   events: DashboardAuditEvent[];
-  initialCategories?: AuditEventCategory[];
+  total: number;
+  actorCount: number;
+  targetCount: number;
+  page: number;
+  pageCount: number;
+  previousHref: string | null;
+  nextHref: string | null;
 };
+
+function CopyButton({ value, label }: { value: string; label: string }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="size-7"
+      aria-label={label}
+      onClick={() => {
+        void navigator.clipboard.writeText(value).catch(() => undefined);
+      }}
+    >
+      <Copy className="size-3.5" />
+    </Button>
+  );
+}
+
+function DetailValue({
+  label,
+  value,
+  copyLabel,
+}: {
+  label: string;
+  value: string | null;
+  copyLabel?: string;
+}) {
+  return (
+    <div className="grid gap-1 border-b py-3 last:border-b-0">
+      <dt className="text-muted-foreground text-xs font-medium">{label}</dt>
+      <dd className="flex min-w-0 items-center gap-1 text-sm">
+        <span className="min-w-0 break-all">{value ?? "—"}</span>
+        {value && copyLabel ? (
+          <CopyButton value={value} label={copyLabel} />
+        ) : null}
+      </dd>
+    </div>
+  );
+}
 
 export default function DashboardAuditEventsTable({
   events,
-  initialCategories = [],
+  total,
+  actorCount,
+  targetCount,
+  page,
+  pageCount,
+  previousHref,
+  nextHref,
 }: AuditEventsTableProps) {
   const t: Translate = useTranslations("dashboard.audit");
   const unknownUserLabel = t("fallback.unknownUser");
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedCategories, setSelectedCategories] =
-    useState<AuditEventCategory[]>(initialCategories);
-  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
-  const [selectedActors, setSelectedActors] = useState<string[]>([]);
+  const systemActorLabel = t("fallback.systemActor");
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdAt", desc: true },
   ]);
-
+  const [inspectEvent, setInspectEvent] = useState<DashboardAuditEvent | null>(
+    null
+  );
   const columns = useMemo(
-    () => getAuditColumns({ t, unknownUserLabel }),
-    [t, unknownUserLabel]
+    () => getAuditColumns({ t, unknownUserLabel, systemActorLabel }),
+    [t, unknownUserLabel, systemActorLabel]
   );
-  const columnFilters = useMemo(
-    () => [
-      ...(selectedCategories.length > 0
-        ? [{ id: "eventCategory", value: selectedCategories }]
-        : []),
-      ...(selectedEventTypes.length > 0
-        ? [{ id: "event", value: selectedEventTypes }]
-        : []),
-      ...(selectedActors.length > 0
-        ? [{ id: "actor", value: selectedActors }]
-        : []),
-    ],
-    [selectedActors, selectedCategories, selectedEventTypes]
-  );
-
   const table = useTable({
     features: dataTableFeatures,
     data: events,
     columns,
     state: {
-      globalFilter,
       sorting,
-      columnFilters,
       columnVisibility: { eventCategory: false },
     },
-    initialState: {
-      pagination: { pageIndex: 0, pageSize: 10 },
-    },
-    onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
-    globalFilterFn: (row, _columnId, filterValue: string) =>
-      eventMatchesSearch(
-        row.original,
-        filterValue.trim().toLowerCase(),
-        t,
-        unknownUserLabel
-      ),
   });
 
-  const categoryFacetRows =
-    table.getColumn("eventCategory")?.getFacetedRowModel().rows ?? [];
-  const eventTypeFacetRows =
-    table.getColumn("event")?.getFacetedRowModel().rows ?? [];
-  const actorFacetRows =
-    table.getColumn("actor")?.getFacetedRowModel().rows ?? [];
-  const filteredRows = table.getFilteredRowModel().rows;
-
-  const eventTypeFilters = Array.from(
-    new Set(events.map((event) => event.eventType))
-  )
-    .map((eventType) => ({
-      label: getEventTitle(eventType, t),
-      value: eventType,
-      count: eventTypeFacetRows.filter(
-        (row) => row.original.eventType === eventType
-      ).length,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-  const categoryFilterOptions = categoryFilterValues.map((value) => ({
-    value,
-    label: t(`categoryValues.${value}`),
-    count: categoryFacetRows.filter(
-      (row) => getEventCategory(row.original.eventType) === value
-    ).length,
-  }));
-  const actorFiltersByValue = new Map<
-    string,
-    { label: string; value: string; count: number }
-  >();
-  for (const row of actorFacetRows) {
-    const value = getActorFilterValue(row.original);
-    const existingFilter = actorFiltersByValue.get(value);
-    if (existingFilter) {
-      existingFilter.count += 1;
-      continue;
-    }
-
-    actorFiltersByValue.set(value, {
-      label: getActorFilterLabel(row.original, unknownUserLabel),
-      value,
-      count: 1,
-    });
-  }
-  const actorFilterOptions = Array.from(actorFiltersByValue.values()).sort(
-    (a, b) => a.label.localeCompare(b.label)
-  );
-
-  const uniqueActorCount = new Set(
-    filteredRows.map((row) => row.original.actorUserId).filter(Boolean)
-  ).size;
-  const uniqueTargetCount = new Set(
-    filteredRows.map((row) => row.original.targetUserId).filter(Boolean)
-  ).size;
+  const entityDisplay = inspectEvent ? getEntityDisplay(inspectEvent, t) : null;
+  const actorSecondary = inspectEvent
+    ? getSecondaryLabel(inspectEvent.actor)
+    : null;
+  const targetSecondary = inspectEvent
+    ? getSecondaryLabel(inspectEvent.target)
+    : null;
+  const entityHref =
+    inspectEvent?.entityType === "share" && inspectEvent.entityId
+      ? `/share/${encodeURIComponent(inspectEvent.entityId)}`
+      : null;
 
   return (
     <div className="space-y-4">
@@ -147,59 +134,200 @@ export default function DashboardAuditEventsTable({
           <p className="text-muted-foreground text-sm">
             {t("stats.visibleEvents")}
           </p>
-          <p className="mt-2 text-2xl font-semibold">{filteredRows.length}</p>
+          <p className="mt-2 text-2xl font-semibold">{total}</p>
           <p className="text-muted-foreground mt-1 text-xs">
             {t("stats.visibleEventsHelper")}
           </p>
         </div>
         <div className="bg-muted/50 rounded-xl p-5">
           <p className="text-muted-foreground text-sm">{t("stats.actors")}</p>
-          <p className="mt-2 text-2xl font-semibold">{uniqueActorCount}</p>
+          <p className="mt-2 text-2xl font-semibold">{actorCount}</p>
           <p className="text-muted-foreground mt-1 text-xs">
             {t("stats.actorsHelper")}
           </p>
         </div>
         <div className="bg-muted/50 rounded-xl p-5">
           <p className="text-muted-foreground text-sm">{t("stats.targets")}</p>
-          <p className="mt-2 text-2xl font-semibold">{uniqueTargetCount}</p>
+          <p className="mt-2 text-2xl font-semibold">{targetCount}</p>
           <p className="text-muted-foreground mt-1 text-xs">
             {t("stats.targetsHelper")}
           </p>
         </div>
       </div>
 
-      <DataTableToolbar
-        searchValue={globalFilter}
-        onSearchChange={setGlobalFilter}
-        searchPlaceholder={t("filters.searchPlaceholder")}
-      >
-        <DataTableFacetFilter
-          title={t("filters.category")}
-          selected={selectedCategories}
-          options={categoryFilterOptions}
-          onChange={setSelectedCategories}
-        />
-        <DataTableFacetFilter
-          title={t("filters.event")}
-          selected={selectedEventTypes}
-          options={eventTypeFilters}
-          onChange={setSelectedEventTypes}
-        />
-        <DataTableFacetFilter
-          title={t("filters.actor")}
-          selected={selectedActors}
-          options={actorFilterOptions}
-          onChange={setSelectedActors}
-        />
-      </DataTableToolbar>
-
       <DataTable
         table={table}
         columnsLength={table.getVisibleLeafColumns().length}
         emptyMessage={t("table.noEvents")}
         minWidthClassName="min-w-[980px]"
-        pagination={{}}
+        onRowClick={(row) => setInspectEvent(row.original)}
+        getRowAriaLabel={(row) =>
+          t("aria.inspect", { event: getEventTitle(row.original.eventType, t) })
+        }
       />
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          {t("pagination.page", { page, pageCount })}
+        </p>
+        <div className="flex gap-2">
+          {previousHref ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={previousHref} prefetch={false}>
+                {t("pagination.previous")}
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled>
+              {t("pagination.previous")}
+            </Button>
+          )}
+          {nextHref ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={nextHref} prefetch={false}>
+                {t("pagination.next")}
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled>
+              {t("pagination.next")}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Sheet
+        open={Boolean(inspectEvent)}
+        onOpenChange={(open) => {
+          if (!open) setInspectEvent(null);
+        }}
+      >
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+          {inspectEvent ? (
+            <>
+              <SheetHeader>
+                <div className="flex items-center gap-2 pr-8">
+                  <Badge variant="outline">
+                    {getEventCategoryLabel(inspectEvent.eventType, t)}
+                  </Badge>
+                </div>
+                <SheetTitle>
+                  {getEventTitle(inspectEvent.eventType, t)}
+                </SheetTitle>
+                <SheetDescription>
+                  {formatDateTime(inspectEvent.createdAt)}
+                </SheetDescription>
+              </SheetHeader>
+
+              <dl className="mt-6">
+                <DetailValue
+                  label={t("detail.eventId")}
+                  value={inspectEvent.id}
+                  copyLabel={t("aria.copy", { label: t("detail.eventId") })}
+                />
+                <DetailValue
+                  label={t("table.actor")}
+                  value={getAuditActorLabel(
+                    inspectEvent,
+                    unknownUserLabel,
+                    systemActorLabel
+                  )}
+                />
+                <DetailValue
+                  label={t("detail.actorId")}
+                  value={inspectEvent.actorUserId}
+                  copyLabel={t("aria.copy", { label: t("detail.actorId") })}
+                />
+                {actorSecondary ? (
+                  <DetailValue
+                    label={t("detail.actorContext")}
+                    value={actorSecondary}
+                  />
+                ) : null}
+                <DetailValue
+                  label={t("table.target")}
+                  value={getAuditTargetLabel(inspectEvent, unknownUserLabel)}
+                />
+                <DetailValue
+                  label={t("detail.targetId")}
+                  value={inspectEvent.targetUserId}
+                  copyLabel={t("aria.copy", { label: t("detail.targetId") })}
+                />
+                {targetSecondary ? (
+                  <DetailValue
+                    label={t("detail.targetContext")}
+                    value={targetSecondary}
+                  />
+                ) : null}
+                <DetailValue
+                  label={t("table.entity")}
+                  value={entityDisplay?.label ?? null}
+                />
+                <DetailValue
+                  label={t("detail.entityId")}
+                  value={inspectEvent.entityId}
+                  copyLabel={t("aria.copy", { label: t("detail.entityId") })}
+                />
+              </dl>
+
+              {entityHref ? (
+                <Button asChild variant="outline" size="sm" className="mt-4">
+                  <Link href={entityHref} target="_blank" prefetch={false}>
+                    {t("detail.openEntity")}
+                    <ExternalLink className="size-3.5" />
+                  </Link>
+                </Button>
+              ) : null}
+
+              {inspectEvent.actorUserId || inspectEvent.targetUserId ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {inspectEvent.actorUserId ? (
+                    <Button asChild variant="ghost" size="sm">
+                      <Link
+                        href={`/dashboard/audit?actor=${encodeURIComponent(inspectEvent.actorUserId)}&range=all`}
+                        prefetch={false}
+                      >
+                        {t("detail.viewActorHistory")}
+                      </Link>
+                    </Button>
+                  ) : null}
+                  {inspectEvent.targetUserId ? (
+                    <Button asChild variant="ghost" size="sm">
+                      <Link
+                        href={`/dashboard/audit?target=${encodeURIComponent(inspectEvent.targetUserId)}&range=all`}
+                        prefetch={false}
+                      >
+                        {t("detail.viewTargetHistory")}
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="mt-8">
+                <h3 className="text-sm font-semibold">{t("table.details")}</h3>
+                {Object.entries(inspectEvent.metadata ?? {}).length > 0 ? (
+                  <dl className="mt-2 rounded-lg border px-3">
+                    {Object.entries(inspectEvent.metadata ?? {}).map(
+                      ([key, value]) => (
+                        <DetailValue
+                          key={key}
+                          label={formatMetadataLabel(key)}
+                          value={formatMetadataValue(value)}
+                        />
+                      )
+                    )}
+                  </dl>
+                ) : (
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    {t("detail.noMetadata")}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

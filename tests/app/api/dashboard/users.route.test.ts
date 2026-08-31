@@ -231,6 +231,7 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).toHaveBeenCalledWith({
         actorUserId: adminActor.id,
         targetUserId: updatedUser.id,
+        targetLabel: updatedUser.email,
         eventType: "account.role.changed",
         entityType: "user",
         entityId: updatedUser.id,
@@ -342,6 +343,7 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).toHaveBeenCalledWith({
         actorUserId: adminActor.id,
         targetUserId: bannedUser.id,
+        targetLabel: bannedUser.email,
         eventType: "account.banned",
         entityType: "user",
         entityId: bannedUser.id,
@@ -386,6 +388,7 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).toHaveBeenCalledWith({
         actorUserId: adminActor.id,
         targetUserId: unbannedUser.id,
+        targetLabel: unbannedUser.email,
         eventType: "account.unbanned",
         entityType: "user",
         entityId: unbannedUser.id,
@@ -485,6 +488,7 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).toHaveBeenCalledWith({
         actorUserId: adminActor.id,
         targetUserId: null,
+        targetLabel: targetUser.email,
         eventType: "account.deleted",
         entityType: "user",
         entityId: "user-2",

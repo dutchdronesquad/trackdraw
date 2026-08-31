@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -114,12 +115,12 @@ export async function PATCH(
     if (previousState !== nextState) {
       const eventType =
         body.action === "hide"
-          ? "gallery.entry.hidden"
+          ? auditEventTypes.galleryEntryHidden
           : body.action === "restore"
-            ? "gallery.entry.restored"
+            ? auditEventTypes.galleryEntryRestored
             : body.action === "feature"
-              ? "gallery.entry.featured"
-              : "gallery.entry.unfeatured";
+              ? auditEventTypes.galleryEntryFeatured
+              : auditEventTypes.galleryEntryUnfeatured;
 
       await createAuditEvent({
         actorUserId: actor.id,
@@ -128,9 +129,9 @@ export async function PATCH(
         entityType: "gallery_entry",
         entityId: updated.id,
         metadata: {
-          shareToken,
           previousState,
           nextState,
+          initiatedBy: "operator",
         },
       });
     }
@@ -194,12 +195,12 @@ export async function DELETE(
     await createAuditEvent({
       actorUserId: actor.id,
       targetUserId: entry.ownerUserId,
-      eventType: "gallery.entry.deleted",
+      eventType: auditEventTypes.galleryEntryDeleted,
       entityType: "gallery_entry",
       entityId: entry.id,
       metadata: {
-        shareToken,
         previousState: entry.galleryState,
+        initiatedBy: "operator",
       },
     });
 

@@ -17,6 +17,9 @@ function createEvent(index: number): DashboardAuditEvent {
     entityId: null,
     metadata: null,
     createdAt: `2026-07-${String(index).padStart(2, "0")}T10:00:00.000Z`,
+    actorKind: "user",
+    actorLabel: null,
+    targetLabel: null,
     actor: {
       id: "admin-1",
       name: "Admin",
@@ -29,53 +32,73 @@ function createEvent(index: number): DashboardAuditEvent {
 describe("DashboardAuditEventsTable", () => {
   afterEach(cleanup);
 
-  it("paginates audit events after sorting", async () => {
+  it("renders server pagination and opens event details", async () => {
     const user = userEvent.setup();
-    const events = Array.from({ length: 12 }, (_, index) =>
-      createEvent(index + 1)
+    const events = [
+      {
+        ...createEvent(1),
+        metadata: { operation: "maintenance" },
+      },
+    ];
+
+    render(
+      <DashboardAuditEventsTable
+        events={events}
+        total={26}
+        actorCount={3}
+        targetCount={2}
+        page={1}
+        pageCount={2}
+        previousHref={null}
+        nextHref="/dashboard/audit?page=2"
+      />
     );
 
-    render(<DashboardAuditEventsTable events={events} />);
-
     expect(screen.getByText("Page 1 of 2")).toBeTruthy();
-    expect(screen.queryByText("System Event 2")).toBeNull();
-    expect(screen.getByText("12")).toBeTruthy();
+    expect(screen.getByText("26")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Next" }).getAttribute("href")
+    ).toBe("/dashboard/audit?page=2");
 
-    await user.click(screen.getByRole("button", { name: "Next page" }));
+    await user.click(
+      screen.getByRole("row", { name: "Inspect System Event 1" })
+    );
 
-    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
-    expect(screen.getByText("System Event 2")).toBeTruthy();
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(screen.getByText("Event ID")).toBeTruthy();
+    expect(screen.getAllByText("Operation").length).toBeGreaterThan(0);
+    expect(screen.getByText("maintenance")).toBeTruthy();
   });
 
-  it("counts actor facet options in the filtered row set", async () => {
+  it("shows the recorded label for an actor whose account no longer exists", async () => {
     const user = userEvent.setup();
-    const moderatorEvent = {
+    const deletedAccountEvent = {
       ...createEvent(3),
-      actorUserId: "moderator-1",
-      actor: {
-        id: "moderator-1",
-        name: "Moderator",
-        email: "moderator@trackdraw.local",
-      },
+      actorUserId: null,
+      actor: null,
+      actorLabel: "former@trackdraw.local",
     };
 
     render(
       <DashboardAuditEventsTable
-        events={[createEvent(1), createEvent(2), moderatorEvent]}
+        events={[deletedAccountEvent]}
+        total={1}
+        actorCount={0}
+        targetCount={0}
+        page={1}
+        pageCount={1}
+        previousHref={null}
+        nextHref={null}
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "Actor" }));
+    expect(screen.getByText("former@trackdraw.local")).toBeTruthy();
+    await user.click(
+      screen.getByRole("row", { name: "Inspect System Event 3" })
+    );
 
     expect(
-      screen.getByRole("button", {
-        name: "Admin (admin@trackdraw.local) 2",
-      })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", {
-        name: "Moderator (moderator@trackdraw.local) 1",
-      })
-    ).toBeTruthy();
+      screen.getAllByText("former@trackdraw.local").length
+    ).toBeGreaterThan(1);
   });
 });

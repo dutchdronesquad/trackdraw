@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auditEventTypes } from "@/lib/audit-events";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import {
@@ -40,6 +42,21 @@ export async function PUT(request: Request) {
     if (!input.enabled) {
       if (user) await deleteProductEventsForUser(user.id);
       if (input.sessionId) await deleteProductEventsForSession(input.sessionId);
+    }
+
+    if (user && user.productAnalyticsEnabled !== input.enabled) {
+      await recordAuditEvent({
+        actorUserId: user.id,
+        targetUserId: user.id,
+        eventType: auditEventTypes.privacyAnalyticsChanged,
+        entityType: "privacy_preference",
+        entityId: user.id,
+        metadata: {
+          previousEnabled: user.productAnalyticsEnabled,
+          nextEnabled: input.enabled,
+          storedEventsDeleted: !input.enabled,
+        },
+      });
     }
 
     return NextResponse.json({ ok: true, enabled: input.enabled });

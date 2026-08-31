@@ -20,7 +20,10 @@ vi.mock("@/lib/server/projects", () => ({
   getProjectForUser: vi.fn(),
 }));
 
+vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
+
 import { DELETE, GET } from "@/app/api/projects/[projectId]/route";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import {
@@ -91,12 +94,22 @@ describe("project API route", () => {
   });
 
   it("archives the project for the authenticated owner", async () => {
+    vi.mocked(getProjectForUser).mockResolvedValue(
+      createStoredProjectFixture({ id: "project-1" })
+    );
+    vi.mocked(archiveProjectForUser).mockResolvedValue(true);
     const response = await DELETE(projectRequest("DELETE"), projectContext());
 
     expect(response.status).toBe(200);
     expect(archiveProjectForUser).toHaveBeenCalledWith(
       "project-1",
       testUser.id
+    );
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "project.archived",
+        entityId: "project-1",
+      })
     );
     await expect(response.json()).resolves.toEqual({ ok: true });
   });

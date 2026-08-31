@@ -138,8 +138,8 @@ describe("dashboard shares API route", () => {
       targetUserId: storedShare.ownerUserId,
       eventType: "share.revoked",
       entityType: "share",
-      entityId: storedShare.id,
-      metadata: { token: "share-token" },
+      entityId: "share-token",
+      metadata: { initiatedBy: "operator" },
     });
   });
 
@@ -161,8 +161,8 @@ describe("dashboard shares API route", () => {
       targetUserId: revokedStoredShare.ownerUserId,
       eventType: "share.purged",
       entityType: "share",
-      entityId: revokedStoredShare.id,
-      metadata: { token: "share-token" },
+      entityId: "share-token",
+      metadata: { initiatedBy: "operator" },
     });
   });
 

@@ -123,9 +123,9 @@ describe("dashboard gallery API route", () => {
       entityType: "gallery_entry",
       entityId: entry.id,
       metadata: {
-        shareToken: "share-token",
         previousState: "listed",
         nextState: "featured",
+        initiatedBy: "operator",
       },
     });
   });
@@ -145,9 +145,9 @@ describe("dashboard gallery API route", () => {
       expect.objectContaining({
         eventType: "gallery.entry.hidden",
         metadata: {
-          shareToken: "share-token",
           previousState: "listed",
           nextState: "hidden",
+          initiatedBy: "operator",
         },
       })
     );
@@ -186,8 +186,8 @@ describe("dashboard gallery API route", () => {
       entityType: "gallery_entry",
       entityId: entry.id,
       metadata: {
-        shareToken: "share-token",
         previousState: "listed",
+        initiatedBy: "operator",
       },
     });
   });

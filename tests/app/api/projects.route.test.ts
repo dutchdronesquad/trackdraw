@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => {
   return {
     getCurrentUserFromHeaders: vi.fn(),
     isTrustedRequest: vi.fn(() => true),
+    getProjectForUser: vi.fn(),
     listProjectsForUser: vi.fn(),
     saveProjectForUser: vi.fn(),
     ProjectVersionConflictError: MockProjectVersionConflictError,
@@ -52,12 +53,16 @@ vi.mock("@/lib/server/csrf", () => ({
 }));
 
 vi.mock("@/lib/server/projects", () => ({
+  getProjectForUser: mocks.getProjectForUser,
   listProjectsForUser: mocks.listProjectsForUser,
   saveProjectForUser: mocks.saveProjectForUser,
   ProjectVersionConflictError: mocks.ProjectVersionConflictError,
 }));
 
+vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
+
 import { GET, POST } from "@/app/api/projects/route";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   ProjectVersionConflictError,
@@ -114,6 +119,7 @@ describe("projects API route", () => {
   it("passes the known account design version when saving", async () => {
     const design = createDefaultDesign();
     const project = createStoredProjectFixture({ design });
+    mocks.getProjectForUser.mockResolvedValue(project);
     vi.mocked(saveProjectForUser).mockResolvedValue(project);
 
     const response = await POST(
@@ -133,6 +139,60 @@ describe("projects API route", () => {
       forceWrite: undefined,
       baseDesignUpdatedAt: "2026-04-20T10:00:00.000Z",
     });
+    expect(recordAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("audits project creation and explicit conflict overwrites", async () => {
+    const design = createDefaultDesign();
+    const createdProject = createStoredProjectFixture({
+      id: "new-project",
+      design,
+    });
+    vi.mocked(saveProjectForUser).mockResolvedValue(createdProject);
+
+    await POST(postRequest({ title: "New project", design }));
+
+    expect(recordAuditEvent).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        eventType: "project.created",
+        entityId: "new-project",
+      })
+    );
+
+    vi.clearAllMocks();
+    const existingProject = createStoredProjectFixture({
+      id: "project-1",
+      designUpdatedAt: "2026-04-20T10:00:00.000Z",
+    });
+    const overwrittenProject = createStoredProjectFixture({
+      id: "project-1",
+      design,
+      designUpdatedAt: "2026-04-20T12:00:00.000Z",
+    });
+    mocks.getCurrentUserFromHeaders.mockResolvedValue(testUser);
+    mocks.isTrustedRequest.mockReturnValue(true);
+    mocks.getProjectForUser.mockResolvedValue(existingProject);
+    vi.mocked(saveProjectForUser).mockResolvedValue(overwrittenProject);
+
+    await POST(
+      postRequest({
+        projectId: "project-1",
+        design,
+        forceWrite: true,
+        baseDesignUpdatedAt: existingProject.designUpdatedAt,
+      })
+    );
+
+    expect(recordAuditEvent).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        eventType: "project.force_overwritten",
+        entityId: "project-1",
+        metadata: expect.objectContaining({
+          previousDesignUpdatedAt: existingProject.designUpdatedAt,
+          nextDesignUpdatedAt: overwrittenProject.designUpdatedAt,
+        }),
+      })
+    );
   });
 
   it("returns bad request for invalid project save payloads without logging an error", async () => {

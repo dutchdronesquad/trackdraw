@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account/roles";
+import {
+  auditEventTitleKeys,
+  getAuditEventCategory,
+  type AuditActorKind,
+  type AuditEventCategory,
+} from "@/lib/audit-events";
 import { create24HourDateTimeFormatter } from "@/lib/date-time";
 
 export type AuditEventActor = {
@@ -24,18 +30,14 @@ export type DashboardAuditEvent = {
   entityId: string | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
+  actorKind: AuditActorKind;
+  actorLabel: string | null;
+  targetLabel: string | null;
   actor: AuditEventActor;
   target: AuditEventActor;
 };
 
-export type AuditEventCategory = "Account" | "Gallery" | "Share" | "System";
-
-export const categoryFilterValues: AuditEventCategory[] = [
-  "Account",
-  "Gallery",
-  "Share",
-  "System",
-];
+export type { AuditEventCategory };
 export const unknownActorValue = "__unknown_actor__";
 
 export type Translate = (
@@ -88,6 +90,24 @@ export function getActorFilterLabel(
   return secondary && secondary !== label ? `${label} (${secondary})` : label;
 }
 
+export function getAuditActorLabel(
+  event: DashboardAuditEvent,
+  unknownUserLabel: string,
+  systemActorLabel = "System"
+) {
+  if (event.actor) return getUserLabel(event.actor, unknownUserLabel);
+  if (event.actorLabel?.trim()) return event.actorLabel;
+  return event.actorKind === "system" ? systemActorLabel : unknownUserLabel;
+}
+
+export function getAuditTargetLabel(
+  event: DashboardAuditEvent,
+  unknownUserLabel: string
+) {
+  if (event.target) return getUserLabel(event.target, unknownUserLabel);
+  return event.targetLabel?.trim() || unknownUserLabel;
+}
+
 export function getRoleChangeSummary(metadata: Record<string, unknown> | null) {
   const previousRole = parseAccountRole(metadata?.previousRole);
   const nextRole = parseAccountRole(metadata?.nextRole);
@@ -106,31 +126,14 @@ export function formatEventType(value: string) {
     .join(" ");
 }
 
-const EVENT_TITLE_KEYS: Record<string, string> = {
-  "account.role.changed": "accountRoleChanged",
-  "account.banned": "accountBanned",
-  "account.unbanned": "accountUnbanned",
-  "account.deleted": "accountDeleted",
-  "gallery.entry.featured": "galleryEntryFeatured",
-  "gallery.entry.unfeatured": "galleryEntryUnfeatured",
-  "gallery.entry.hidden": "galleryEntryHidden",
-  "gallery.entry.restored": "galleryEntryRestored",
-  "gallery.entry.deleted": "galleryEntryDeleted",
-  "share.revoked": "shareRevoked",
-  "share.purged": "sharePurged",
-};
-
 export function getEventTitle(eventType: string, t: Translate) {
-  const key = EVENT_TITLE_KEYS[eventType];
+  const key = auditEventTitleKeys[eventType];
   if (key) return t(`eventTitles.${key}`);
   return formatEventType(eventType);
 }
 
 export function getEventCategory(eventType: string): AuditEventCategory {
-  if (eventType.startsWith("account.")) return "Account";
-  if (eventType.startsWith("gallery.")) return "Gallery";
-  if (eventType.startsWith("share.")) return "Share";
-  return "System";
+  return getAuditEventCategory(eventType);
 }
 
 export function getEventCategoryLabel(eventType: string, t: Translate) {
@@ -192,6 +195,16 @@ export function getEntityTypeLabel(entityType: string, t: Translate) {
       return t("entityLabels.galleryEntry");
     case "share":
       return t("entityLabels.share");
+    case "api_key":
+      return t("entityLabels.apiKey");
+    case "passkey":
+      return t("entityLabels.passkey");
+    case "project":
+      return t("entityLabels.project");
+    case "privacy_preference":
+      return t("entityLabels.privacyPreference");
+    case "metrics_maintenance":
+      return t("entityLabels.metricsMaintenance");
     default:
       return formatMetadataLabel(entityType);
   }
@@ -205,8 +218,16 @@ export function shortenId(value: string) {
 export function getEntityDisplay(event: DashboardAuditEvent, t: Translate) {
   if (event.entityType === "user") {
     return {
-      label: t("entityLabels.accountRole"),
-      detail: getRoleChangeSummary(event.metadata).label,
+      label:
+        event.eventType === "account.role.changed"
+          ? t("entityLabels.accountRole")
+          : t("entityLabels.account"),
+      detail:
+        event.eventType === "account.role.changed"
+          ? getRoleChangeSummary(event.metadata).label
+          : event.entityId
+            ? shortenId(event.entityId)
+            : null,
     };
   }
 
@@ -258,8 +279,10 @@ export function eventMatchesSearch(
     getEventCategoryLabel(event.eventType, t),
     getEventDetailLabel(event, t),
     getUserLabel(event.actor, unknownUserLabel),
+    getAuditActorLabel(event, unknownUserLabel),
     getSecondaryLabel(event.actor),
     getUserLabel(event.target, unknownUserLabel),
+    getAuditTargetLabel(event, unknownUserLabel),
     getSecondaryLabel(event.target),
     event.entityType,
     event.entityId,
@@ -282,11 +305,13 @@ function compareText(a: string, b: string, aDate: string, bDate: string) {
 type GetAuditColumnsParams = {
   t: Translate;
   unknownUserLabel: string;
+  systemActorLabel: string;
 };
 
 export function getAuditColumns({
   t,
   unknownUserLabel,
+  systemActorLabel,
 }: GetAuditColumnsParams): ColumnDef<DataTableFeatures, DashboardAuditEvent>[] {
   const getSortAriaLabel = (label: string) =>
     t("aria.sort", { label: label.toLowerCase() });
@@ -320,7 +345,6 @@ export function getAuditColumns({
         ),
       cell: ({ row }) => {
         const event = row.original;
-        const metadataEntries = Object.entries(event.metadata ?? {});
 
         return (
           <div className="min-w-0">
@@ -335,35 +359,14 @@ export function getAuditColumns({
                 {getEventDetailLabel(event, t)}
               </span>
             </div>
-            {metadataEntries.length > 0 ? (
-              <details className="mt-2">
-                <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs">
-                  {t("table.details")}
-                </summary>
-                <dl className="mt-2 grid gap-1 text-xs">
-                  {metadataEntries.map(([key, value]) => (
-                    <div
-                      key={key}
-                      className="grid grid-cols-[112px_minmax(0,1fr)] gap-2"
-                    >
-                      <dt className="text-muted-foreground">
-                        {formatMetadataLabel(key)}
-                      </dt>
-                      <dd className="text-foreground min-w-0 truncate font-mono">
-                        {formatMetadataValue(value)}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </details>
-            ) : null}
           </div>
         );
       },
     },
     {
       id: "actor",
-      accessorFn: (row) => getUserLabel(row.actor, unknownUserLabel),
+      accessorFn: (row) =>
+        getAuditActorLabel(row, unknownUserLabel, systemActorLabel),
       filterFn: (row, _columnId, filterValue: string[]) =>
         filterValue.length === 0 ||
         filterValue.includes(getActorFilterValue(row.original)),
@@ -382,15 +385,19 @@ export function getAuditColumns({
       ),
       sortFn: (rowA, rowB) =>
         compareText(
-          getUserLabel(rowA.original.actor, unknownUserLabel),
-          getUserLabel(rowB.original.actor, unknownUserLabel),
+          getAuditActorLabel(rowA.original, unknownUserLabel, systemActorLabel),
+          getAuditActorLabel(rowB.original, unknownUserLabel, systemActorLabel),
           rowA.original.createdAt,
           rowB.original.createdAt
         ),
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">
-            {getUserLabel(row.original.actor, unknownUserLabel)}
+            {getAuditActorLabel(
+              row.original,
+              unknownUserLabel,
+              systemActorLabel
+            )}
           </p>
           {getSecondaryLabel(row.original.actor) ? (
             <p className="text-muted-foreground truncate text-xs">
@@ -402,7 +409,7 @@ export function getAuditColumns({
     },
     {
       id: "target",
-      accessorFn: (row) => getUserLabel(row.target, unknownUserLabel),
+      accessorFn: (row) => getAuditTargetLabel(row, unknownUserLabel),
       meta: { className: "w-[20%]" },
       header: ({ column }) => (
         <Button
@@ -418,15 +425,15 @@ export function getAuditColumns({
       ),
       sortFn: (rowA, rowB) =>
         compareText(
-          getUserLabel(rowA.original.target, unknownUserLabel),
-          getUserLabel(rowB.original.target, unknownUserLabel),
+          getAuditTargetLabel(rowA.original, unknownUserLabel),
+          getAuditTargetLabel(rowB.original, unknownUserLabel),
           rowA.original.createdAt,
           rowB.original.createdAt
         ),
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">
-            {getUserLabel(row.original.target, unknownUserLabel)}
+            {getAuditTargetLabel(row.original, unknownUserLabel)}
           </p>
           {getSecondaryLabel(row.original.target) ? (
             <p className="text-muted-foreground truncate text-xs">

@@ -22,7 +22,7 @@ vi.mock("@/lib/server/api-keys", () => ({
 }));
 
 vi.mock("@/lib/server/audit", () => ({
-  createAuditEvent: vi.fn(),
+  recordAuditEvent: vi.fn(),
 }));
 
 import { GET, POST } from "@/app/api/account/api-keys/route";
@@ -33,7 +33,7 @@ import {
   getApiKeyForSession,
   listApiKeysForSession,
 } from "@/lib/server/api-keys";
-import { createAuditEvent } from "@/lib/server/audit";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 
@@ -150,7 +150,7 @@ describe("account API key routes", () => {
       name: "Overlay",
       expiresInDays: 30,
     });
-    expect(createAuditEvent).toHaveBeenCalledWith({
+    expect(recordAuditEvent).toHaveBeenCalledWith({
       actorUserId: user.id,
       targetUserId: user.id,
       eventType: "api_key.created",
@@ -164,7 +164,7 @@ describe("account API key routes", () => {
         permissions: { tracks: ["read"] },
       },
     });
-    expect(createAuditEvent).not.toHaveBeenCalledWith(
+    expect(recordAuditEvent).not.toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({ key: "td_secret" }),
       })
@@ -182,13 +182,13 @@ describe("account API key routes", () => {
       error: "Invalid API key payload",
     });
     expect(createApiKeyForSession).not.toHaveBeenCalled();
-    expect(createAuditEvent).not.toHaveBeenCalled();
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 
   it("still returns the one-time secret when audit logging fails after creation", async () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
     vi.mocked(createApiKeyForSession).mockResolvedValue(apiKey as never);
-    vi.mocked(createAuditEvent).mockRejectedValue(new Error("audit failed"));
+    vi.mocked(recordAuditEvent).mockResolvedValue(false);
 
     const response = await POST(
       postRequest({ name: "Overlay", expiresInDays: 30 })
@@ -238,7 +238,7 @@ describe("account API key routes", () => {
       headers: request.headers,
       keyId: "key-1",
     });
-    expect(createAuditEvent).toHaveBeenCalledWith({
+    expect(recordAuditEvent).toHaveBeenCalledWith({
       actorUserId: user.id,
       targetUserId: user.id,
       eventType: "api_key.revoked",
@@ -261,6 +261,6 @@ describe("account API key routes", () => {
 
     expect(response.status).toBe(401);
     expect(deleteApiKeyForSession).not.toHaveBeenCalled();
-    expect(createAuditEvent).not.toHaveBeenCalled();
+    expect(recordAuditEvent).not.toHaveBeenCalled();
   });
 });

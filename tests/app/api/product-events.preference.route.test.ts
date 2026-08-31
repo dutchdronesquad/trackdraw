@@ -20,8 +20,10 @@ vi.mock("@/lib/server/product-events", () => ({
   deleteProductEventsForUser: mocks.deleteProductEventsForUser,
   setProductAnalyticsPreference: mocks.setProductAnalyticsPreference,
 }));
+vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
 
 import { GET, PUT } from "@/app/api/product-events/preference/route";
+import { recordAuditEvent } from "@/lib/server/audit";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -86,6 +88,18 @@ describe("product analytics preference", () => {
       false
     );
     expect(mocks.deleteProductEventsForUser).toHaveBeenCalledWith("user-1");
+    expect(recordAuditEvent).toHaveBeenCalledWith({
+      actorUserId: "user-1",
+      targetUserId: "user-1",
+      eventType: "privacy.analytics.changed",
+      entityType: "privacy_preference",
+      entityId: "user-1",
+      metadata: {
+        previousEnabled: true,
+        nextEnabled: false,
+        storedEventsDeleted: true,
+      },
+    });
   });
 
   it("rejects untrusted or unknown preference fields", async () => {
