@@ -440,7 +440,7 @@
         "rate": "Failure rate",
         "empty": "No failed publication or export attempts were recorded in the latest complete window.",
         "notStarted": "Waiting for the first complete publication and export failure window.",
-        "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labelled low volume. The attempt counts remain factual.",
+        "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labeled low volume. The attempt counts remain factual.",
         "operations": {
           "export": "Export",
           "gallery_publish": "Gallery publication"
