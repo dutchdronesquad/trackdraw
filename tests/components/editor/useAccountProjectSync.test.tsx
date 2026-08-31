@@ -1,8 +1,11 @@
 // @vitest-environment happy-dom
 
+import type { ComponentType, ReactNode } from "react";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
 import { toast } from "sonner";
+import * as en from "@lang/en-US";
 import { createDefaultDesign } from "@/lib/track/design";
 import {
   AccountProjectSyncConflictError,
@@ -30,7 +33,16 @@ vi.mock("sonner", () => ({
 
 type HookOptions = Parameters<typeof useAccountProjectSync>[0];
 
-function renderAccountProjectSync(overrides: Partial<HookOptions> = {}) {
+const intlWrapper = ({ children }: { children: ReactNode }) => (
+  <NextIntlClientProvider locale="en-US" messages={en}>
+    {children}
+  </NextIntlClientProvider>
+);
+
+function renderAccountProjectSync(
+  overrides: Partial<HookOptions> = {},
+  wrapper: ComponentType<{ children: ReactNode }> = intlWrapper
+) {
   const design = overrides.design ?? createDefaultDesign();
   const options: HookOptions = {
     authUserId: null,
@@ -50,7 +62,9 @@ function renderAccountProjectSync(overrides: Partial<HookOptions> = {}) {
     ...overrides,
   };
 
-  return renderHook(() => useAccountProjectSync(options));
+  return renderHook(() => useAccountProjectSync(options), {
+    wrapper,
+  });
 }
 
 describe("useAccountProjectSync", () => {
@@ -71,6 +85,33 @@ describe("useAccountProjectSync", () => {
     cleanup();
     vi.useRealTimers();
     vi.unstubAllGlobals();
+  });
+
+  it("reads header status copy from the active message catalog", () => {
+    const localizedWrapper = ({ children }: { children: ReactNode }) => (
+      <NextIntlClientProvider
+        locale="nl-NL"
+        messages={{
+          editor: {
+            accountProjectSync: {
+              status: { readOnlySharedView: "Gelokaliseerde deelweergave" },
+            },
+          },
+        }}
+      >
+        {children}
+      </NextIntlClientProvider>
+    );
+
+    const { result } = renderAccountProjectSync(
+      { readOnly: true },
+      localizedWrapper
+    );
+
+    expect(result.current.headerStatus).toEqual({
+      label: "Gelokaliseerde deelweergave",
+      tone: "default",
+    });
   });
 
   it("keeps a local project fallback when account sync fails", async () => {
@@ -462,7 +503,7 @@ describe("useAccountProjectSync", () => {
       const { result, rerender } = renderHook(
         (currentDesign: TrackDesign) =>
           useAccountProjectSync({ ...baseOptions, design: currentDesign }),
-        { initialProps: design }
+        { initialProps: design, wrapper: intlWrapper }
       );
 
       await act(async () => {
@@ -572,7 +613,7 @@ describe("useAccountProjectSync", () => {
       const { rerender } = renderHook(
         (initialized: boolean) =>
           useAccountProjectSync({ ...baseOptions, initialized }),
-        { initialProps: false }
+        { initialProps: false, wrapper: intlWrapper }
       );
 
       await act(async () => {
