@@ -354,7 +354,7 @@ async function refreshCreatorActivations(db: ProductMetricDatabase) {
       insert into product_metric_creator_activations (user_id, activated_at)
       select user_id, min(created_at)
       from product_events
-      where contract_version in ('1.0.0', '1.1.0')
+      where contract_version in ('1.0.0', '${CONTRACT_VERSION}')
         and event_type = 'editor.meaningful_edit_completed'
         and user_id is not null
         and created_at >= (
