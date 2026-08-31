@@ -48,14 +48,15 @@
     "notAvailable": "not available",
     "today": {
       "title": "Today",
+      "actions": "{count, plural, one {# item needs attention} other {# items need attention}}",
       "noActions": "No action needs attention",
       "unavailable": "Daily status is temporarily unavailable"
     },
     "headlines": {
       "title": "Product pulse",
-      "description": "Key product signals while a trustworthy comparison baseline develops.",
+      "description": "Four product outcomes from their latest complete reporting periods.",
       "viewAnalytics": "View analytics",
-      "collecting": "{count, plural, one {# metric is collecting a baseline} other {# metrics are collecting a baseline}}",
+      "collecting": "{count, plural, one {# metric is collecting comparison history} other {# metrics are collecting comparison history}}",
       "ready": "All product metrics have a comparison baseline.",
       "buildingTitle": "Product comparisons are building",
       "buildingDetail": "Headline values will appear after complete measurement periods are available. The analytical drilldowns remain available while history builds."
@@ -75,8 +76,8 @@
       },
       "openDrilldown": "Open analytical context for {metric}",
       "collecting": "Collecting",
-      "window": "{window} days",
-      "windowSince": "{window} days · Since {date}",
+      "window": "Latest {window}-day period",
+      "windowSince": "Latest {window}-day period · history since {date}",
       "rateCounts": "{numerator} of {denominator}",
       "previousPeriod": "Previous period",
       "previousCompact": "Previous {value}",
@@ -107,42 +108,37 @@
     "operations": {
       "title": "Needs attention",
       "description": "Actionable items that need review today.",
-      "allClear": "No operational action needed",
       "confirmedClear": "{count, plural, one {# confirmed check is clear} other {# confirmed checks are clear}}",
       "notMeasured": "{count, plural, one {# check is not measured yet} other {# checks are not measured yet}}",
       "unavailable": "Operational status unavailable",
       "unavailableDetail": "The platform overview remains available while measurement recovers.",
       "clearSummary": "{count, plural, one {# other check is clear} other {# other checks are clear}}",
-      "clearDetail": "Healthy checks stay compact so current work remains easy to spot.",
       "previews": {
         "label": "Gallery previews",
-        "today": "{count, plural, one {# gallery preview needs attention} other {# gallery previews need attention}}",
         "detail": "Published gallery entries without a stored preview image.",
         "action": "Review gallery entries"
       },
       "failures": {
         "label": "Publication and export attempts",
-        "today": "{count, plural, one {# failed publication or export attempt recorded} other {# failed publication or export attempts recorded}}",
-        "detail": "{export} failed export attempts · {publication} failed gallery publication attempts in the latest complete 7-day window. These are recorded attempts, not unresolved items.",
+        "detail": "A reliable failure-rate warning is active. The latest complete 7-day window contains {export} failed export attempts and {publication} failed gallery publication attempts.",
         "action": "Inspect failure breakdown",
         "exportLabel": "Export failure rate",
         "publicationLabel": "Gallery publication failure rate"
       },
       "apiKeys": {
         "label": "API keys to review",
-        "today": "{count, plural, one {# API key needs attention} other {# API keys need attention}}",
         "detail": "{unused} active keys unused after 30 days · {expired} enabled but expired.",
         "action": "Review API keys"
       },
       "pipeline": {
         "label": "Analytics pipeline gaps",
-        "today": "{count, plural, one {# analytics pipeline gap needs attention} other {# analytics pipeline gaps need attention}}",
         "detail": "{building} metric series are still building and are not treated as incidents.",
         "action": "Review measurement health"
       }
     }
   },
   "overview": {
+    "description": "What needs attention today, how product usage is moving, and the latest platform activity.",
     "updatedAt": "Updated {time}",
     "kpi": {
       "totalUsers": {
@@ -170,8 +166,8 @@
       "recentSignups": "Recent sign-ups",
       "gallery": "Gallery",
       "galleryDescription": "Latest published tracks and moderation state.",
-      "platformSnapshot": "Platform snapshot",
-      "platformSnapshotDescription": "High-level inventory across the platform.",
+      "platformSnapshot": "Platform totals",
+      "platformSnapshotDescription": "Current inventory for context; these totals do not show activity or trend.",
       "recentChanges": "Recent changes",
       "recentChangesDescription": "A unified feed of important events across the platform."
     },
@@ -244,14 +240,18 @@
         "subtitle": "Aggregate product health"
       },
       "quality": {
-        "healthy": "Healthy",
-        "building": "Building",
-        "low_volume": "Low volume",
-        "degraded": "Degraded",
-        "invalid": "Invalid",
-        "not_started": "Awaiting first complete period",
-        "buildingProgress": "Building — {elapsed}/{total}d",
-        "scheduleHint": "Metrics are aggregated nightly at 00:17 UTC. If this doesn't clear after the next run, check the pipeline."
+        "healthy": "Ready",
+        "building": "Collecting history",
+        "low_volume": "Limited sample",
+        "degraded": "Data issue",
+        "invalid": "Unavailable",
+        "not_started": "Not collecting yet",
+        "buildingProgress": "Collecting history · {elapsed}/{total}d",
+        "catchingUp": "Catching up",
+        "buildingHint": "This value uses the latest complete {window}-day reporting period. Comparisons appear after {total} complete days of continuous measurement; {elapsed} days are available.",
+        "buildingHintGeneric": "TrackDraw is collecting comparison history. {elapsed} of {total} complete days are available.",
+        "catchingUpHint": "Enough history exists, but aggregation has not reached the latest complete day yet.",
+        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:17 UTC."
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -262,6 +262,10 @@
         "notStarted": "Waiting for the first complete measurement period."
       },
       "windowDays": "{days}d",
+      "reportingPeriod": {
+        "completeDays": "Last {days} complete days",
+        "matureCohort": "Latest mature {days}-day cohort"
+      },
       "journey": {
         "label": "Product journey metrics",
         "acquisition": { "label": "Acquisition", "value": "Source mix" },
@@ -284,13 +288,14 @@
         "exportNote": "Completed exports in the last 30 days."
       },
       "evidence": {
-        "title": "Journey evidence",
+        "title": "Core product metrics",
+        "description": "Latest complete reporting periods. Data status shows whether enough continuous history exists for reliable comparisons.",
         "metric": "Metric",
-        "current": "Current",
-        "previous": "Previous",
+        "current": "Latest period",
+        "previous": "Previous period",
         "change": "Change",
-        "quality": "Quality",
-        "window": "Window"
+        "quality": "Data status",
+        "window": "Reporting period"
       },
       "metrics": {
         "MTR-001": {
@@ -429,9 +434,11 @@
         "empty": "Mature creator-activation cohorts will appear after the observation window is complete."
       },
       "operations": {
-        "title": "Publication and export attempts",
-        "description": "Failed attempts in the latest complete 7-day window. Repeated attempts are counted separately.",
+        "title": "Export and publishing reliability",
+        "description": "Failed terminal attempts in the latest complete 7-day reporting period. Repeated attempts are counted separately.",
         "failedAttempts": "failed attempts",
+        "failedShort": "{count} failed",
+        "mobileSummary": "{outcomes} outcomes · {rate} failure rate",
         "windowEnd": "Window ending {date}",
         "operation": "Operation",
         "category": "Category",
@@ -439,11 +446,12 @@
         "outcomes": "Terminal outcomes",
         "rate": "Failure rate",
         "recentTitle": "Recent failed attempts",
-        "recentDescription": "Exact local time and privacy-safe technical detail for attempts in this window. Earlier attempts can show only the category recorded by the previous event version.",
+        "recentSummary": "View recent failed attempts ({count})",
+        "recentDescription": "Newer export events include a detailed cause. Earlier exports and gallery publications retain their timestamp and category only.",
         "occurredAt": "Occurred at",
         "format": "Format",
         "cause": "Recorded cause",
-        "detailNotRecorded": "Detail not recorded",
+        "categoryOnly": "Category only",
         "empty": "No failed publication or export attempts were recorded in the latest complete window.",
         "notStarted": "Waiting for the first complete publication and export failure window.",
         "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labeled low volume. The attempt counts remain factual.",
@@ -607,9 +615,9 @@
       }
     },
     "comparison": {
-      "building": "30-day comparison is building",
-      "buildingProgress": "30-day comparison is building — {elapsed}/{total}d",
-      "lowVolume": "Comparison hidden for low volume",
+      "building": "Collecting a comparison period",
+      "buildingProgress": "Collecting comparison history · {elapsed}/{total}d",
+      "lowVolume": "Comparison unavailable: limited sample",
       "flat": "No change vs previous 30d",
       "changeUp": "Up {pct}% vs previous 30d",
       "changeDown": "Down {pct}% vs previous 30d"

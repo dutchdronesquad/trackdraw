@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -91,14 +91,6 @@ type MetricSnapshot = {
 type MetricsView =
   "overview" | "creators" | "audience" | "creation" | "distribution";
 
-const JOURNEY_STAGES = [
-  { key: "acquisition", id: "MTR-008", view: "audience" },
-  { key: "activation", id: "MTR-004", view: "creation" },
-  { key: "engagement", id: "MTR-001", view: "overview" },
-  { key: "sharing", id: "MTR-006", view: "distribution" },
-  { key: "retention", id: "MTR-005", view: "creators" },
-] as const;
-
 const EVIDENCE_METRICS = ["MTR-001", "MTR-004", "MTR-006", "MTR-005"] as const;
 
 const METRICS_VIEWS = [
@@ -112,6 +104,15 @@ const METRICS_VIEWS = [
   key: "overview" | "creators" | "audience" | "creation" | "distribution";
   icon: LucideIcon;
 }>;
+
+const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
+  overview: "overview",
+  creators: "creators",
+  audience: "audience",
+  creation: "creation",
+  distribution: "distribution",
+  operations: "distribution",
+};
 
 const DICTIONARY_METRICS = [
   "MTR-001",
@@ -214,16 +215,27 @@ function QualityLabel({
   quality,
   measuredSince,
   generatedAt,
+  windowDays,
 }: {
   quality: MetricsExplorerQuality;
   measuredSince?: string | null;
   generatedAt?: string;
+  windowDays?: number;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.quality");
   const progress =
     quality === "building" && measuredSince && generatedAt
       ? buildingProgressDays(measuredSince, generatedAt)
       : null;
+  const catchingUp = progress && progress.elapsed >= progress.total;
+  const labelText = catchingUp
+    ? t("catchingUp")
+    : progress
+      ? t("buildingProgress", {
+          elapsed: progress.elapsed,
+          total: progress.total,
+        })
+      : t(quality);
   const label = (
     <span
       className={cn(
@@ -232,25 +244,41 @@ function QualityLabel({
       )}
     >
       <Circle className="size-2 fill-current" aria-hidden="true" />
-      {progress
-        ? t("buildingProgress", {
-            elapsed: progress.elapsed,
-            total: progress.total,
-          })
-        : t(quality)}
+      {labelText}
     </span>
   );
 
   if (quality !== "not_started" && quality !== "building") return label;
 
+  const hint = catchingUp
+    ? t("catchingUpHint")
+    : progress
+      ? windowDays
+        ? t("buildingHint", {
+            elapsed: progress.elapsed,
+            total: progress.total,
+            window: windowDays,
+          })
+        : t("buildingHintGeneric", {
+            elapsed: progress.elapsed,
+            total: progress.total,
+          })
+      : t("notStartedHint");
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span>{label}</span>
+          <button
+            type="button"
+            className="cursor-help text-left"
+            aria-label={`${labelText}. ${hint}`}
+          >
+            {label}
+          </button>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={6}>
-          {t("scheduleHint")}
+          {hint}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -732,6 +760,27 @@ export default function MetricsWorkspace({
   const [growthRange, setGrowthRange] = useState<GrowthRange>("3m");
   const [growthCustomRange, setGrowthCustomRange] =
     useState<GrowthCustomRange | null>(null);
+
+  useEffect(() => {
+    const selectHashView = () => {
+      const hash = window.location.hash.slice(1);
+      const view = METRICS_HASH_VIEWS[hash];
+      if (view) {
+        setActiveView(view);
+      }
+      if (hash === "operations") {
+        window.requestAnimationFrame(() => {
+          document
+            .getElementById("operations")
+            ?.scrollIntoView({ block: "start" });
+        });
+      }
+    };
+
+    selectHashView();
+    window.addEventListener("hashchange", selectHashView);
+    return () => window.removeEventListener("hashchange", selectHashView);
+  }, []);
   const failureRows = useMemo(
     () => cockpitFailureRows(explorer.failures),
     [explorer.failures]
@@ -833,7 +882,7 @@ export default function MetricsWorkspace({
       ...entries,
       ...explorerEntries,
     ]);
-  }, [cockpit.headlines, explorer]);
+  }, [cockpit.generatedAt, cockpit.headlines, explorer]);
 
   return (
     <div className="space-y-4">
@@ -863,74 +912,6 @@ export default function MetricsWorkspace({
           </div>
         </header>
       ) : null}
-
-      <nav
-        aria-label={t("journey.label")}
-        className="snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
-      >
-        <ol className="grid min-w-[54rem] grid-cols-5 px-2 pt-2">
-          {JOURNEY_STAGES.map(({ key, id, view }, index) => {
-            const snapshot = snapshots.get(id)!;
-            const active = activeView === view;
-            return (
-              <li
-                key={id}
-                className="after:bg-border relative snap-start after:absolute after:top-2.5 after:left-8 after:h-px after:w-[calc(100%-2rem)] last:after:hidden"
-              >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => setActiveView(view)}
-                        className={cn(
-                          "focus-visible:ring-ring group relative z-10 flex min-h-24 w-full flex-col items-start gap-1 px-2 pb-3 text-left focus-visible:ring-2 focus-visible:outline-none",
-                          active
-                            ? "text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                        aria-current={active ? "step" : undefined}
-                      >
-                        <span
-                          className={cn(
-                            "bg-background mb-1 flex size-5 items-center justify-center rounded-full border text-[10px] font-semibold tabular-nums",
-                            active
-                              ? "border-sky-500 text-sky-500"
-                              : "border-muted-foreground/60"
-                          )}
-                          aria-hidden="true"
-                        >
-                          {index + 1}
-                        </span>
-                        <span className="text-xs font-medium">
-                          {t(`journey.${key}.label`)}
-                        </span>
-                        <QualityLabel
-                          quality={snapshot.quality}
-                          measuredSince={snapshot.measuredSince}
-                          generatedAt={snapshot.generatedAt}
-                        />
-                        <span className="mt-0.5 text-base font-semibold tabular-nums">
-                          {snapshot.valueKind === "mix" ||
-                          snapshot.value === null
-                            ? t(`journey.${key}.value`)
-                            : formatValue(snapshot, number, percent)}
-                        </span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-64 text-left">
-                      <p className="font-medium">{t(`metrics.${id}.name`)}</p>
-                      <p className="text-xs opacity-80">
-                        {t(`metrics.${id}.definition`)}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
 
       <Tabs
         value={activeView}
@@ -1003,12 +984,15 @@ export default function MetricsWorkspace({
 
           <section
             className="bg-card min-w-0 rounded-md border"
-            aria-labelledby="journey-evidence-title"
+            aria-labelledby="core-metrics-title"
           >
             <div className="border-b px-3 py-2.5">
-              <h2 id="journey-evidence-title" className="text-sm font-semibold">
+              <h2 id="core-metrics-title" className="text-sm font-semibold">
                 {t("evidence.title")}
               </h2>
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {t("evidence.description")}
+              </p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[38rem] text-sm">
@@ -1054,8 +1038,13 @@ export default function MetricsWorkspace({
                     const snapshot = snapshots.get(id)!;
                     return (
                       <tr key={id} className="border-b last:border-0">
-                        <td className="px-4 py-2 font-medium sm:pl-5">
-                          {t(`metrics.${id}.name`)}
+                        <td className="px-4 py-2 sm:pl-5">
+                          <span className="font-medium">
+                            {t(`metrics.${id}.name`)}
+                          </span>
+                          <span className="text-muted-foreground ml-2 text-xs">
+                            {id}
+                          </span>
                         </td>
                         <td className="px-3 py-2 text-right font-semibold tabular-nums">
                           {formatValue(snapshot, number, percent)}
@@ -1071,10 +1060,16 @@ export default function MetricsWorkspace({
                             quality={snapshot.quality}
                             measuredSince={snapshot.measuredSince}
                             generatedAt={snapshot.generatedAt}
+                            windowDays={snapshot.windowDays}
                           />
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums sm:pr-5">
-                          {t("windowDays", { days: snapshot.windowDays })}
+                          {t(
+                            id === "MTR-005"
+                              ? "reportingPeriod.matureCohort"
+                              : "reportingPeriod.completeDays",
+                            { days: snapshot.windowDays }
+                          )}
                         </td>
                       </tr>
                     );
@@ -1254,120 +1249,51 @@ export default function MetricsWorkspace({
               <EmbedReachTable usage={insights.usage} />
             </div>
           </section>
-        </TabsContent>
-      </Tabs>
 
-      <section
-        id="operations"
-        className="bg-card scroll-mt-20 rounded-xl border"
-        aria-labelledby="operations-title"
-      >
-        <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
-          <div>
-            <h2 id="operations-title" className="text-base font-semibold">
-              {t("operations.title")}
-            </h2>
-            <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
-              {t("operations.description")}
-            </p>
-          </div>
-          <QualityLabel
-            quality={explorer.failures.quality}
-            measuredSince={explorer.failures.measuredSince}
-            generatedAt={explorer.generatedAt}
-          />
-        </div>
-
-        {failureRows.length > 0 ? (
-          <>
-            <div className="flex flex-col gap-1 border-b px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
+          <section
+            id="operations"
+            className="bg-card scroll-mt-20 rounded-xl border"
+            aria-labelledby="operations-title"
+          >
+            <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
               <div>
-                <span className="text-3xl font-semibold tracking-tight tabular-nums">
-                  {number.format(failureCount)}
-                </span>
-                <span className="text-muted-foreground ml-2 text-sm">
-                  {t("operations.failedAttempts")}
-                </span>
-              </div>
-              {failureWindowEnd ? (
-                <p className="text-muted-foreground text-xs">
-                  {t("operations.windowEnd", {
-                    date: date.format(
-                      new Date(`${failureWindowEnd}T00:00:00.000Z`)
-                    ),
-                  })}
+                <h2 id="operations-title" className="text-base font-semibold">
+                  {t("operations.title")}
+                </h2>
+                <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
+                  {t("operations.description")}
                 </p>
-              ) : null}
+              </div>
+              <QualityLabel
+                quality={explorer.failures.quality}
+                measuredSince={explorer.failures.measuredSince}
+                generatedAt={explorer.generatedAt}
+                windowDays={explorer.failures.windowDays}
+              />
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[44rem] text-sm">
-                <thead>
-                  <tr className="text-muted-foreground border-b text-left text-xs">
-                    <th className="px-4 py-2 font-medium sm:pl-5" scope="col">
-                      {t("operations.operation")}
-                    </th>
-                    <th className="px-3 py-2 font-medium" scope="col">
-                      {t("operations.category")}
-                    </th>
-                    <th
-                      className="px-3 py-2 text-right font-medium"
-                      scope="col"
-                    >
-                      {t("operations.failed")}
-                    </th>
-                    <th
-                      className="px-3 py-2 text-right font-medium"
-                      scope="col"
-                    >
-                      {t("operations.outcomes")}
-                    </th>
-                    <th
-                      className="px-4 py-2 text-right font-medium sm:pr-5"
-                      scope="col"
-                    >
-                      {t("operations.rate")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {failureRows.map((row) => (
-                    <tr key={row.dimension} className="border-b last:border-0">
-                      <td className="px-4 py-3 font-medium sm:pl-5">
-                        {t(`operations.operations.${row.operation}`)}
-                      </td>
-                      <td className="px-3 py-3">
-                        {t(`operations.categories.${row.category}`)}
-                      </td>
-                      <td className="px-3 py-3 text-right font-semibold tabular-nums">
-                        {number.format(row.numerator)}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums">
-                        {row.denominator === null
-                          ? "—"
-                          : number.format(row.denominator)}
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums sm:pr-5">
-                        {row.value === null ? "—" : percent.format(row.value)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-muted-foreground border-t px-4 py-3 text-xs leading-relaxed sm:px-5">
-              {t("operations.lowVolumeNote")}
-            </p>
-            {explorer.recentFailures.length > 0 ? (
-              <div className="border-t">
-                <div className="px-4 py-4 sm:px-5">
-                  <h3 className="text-sm font-semibold">
-                    {t("operations.recentTitle")}
-                  </h3>
-                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                    {t("operations.recentDescription")}
-                  </p>
+
+            {failureRows.length > 0 ? (
+              <>
+                <div className="flex flex-col gap-1 border-b px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
+                  <div>
+                    <span className="text-2xl font-semibold tracking-tight tabular-nums">
+                      {number.format(failureCount)}
+                    </span>
+                    <span className="text-muted-foreground ml-2 text-sm">
+                      {t("operations.failedAttempts")}
+                    </span>
+                  </div>
+                  {failureWindowEnd ? (
+                    <p className="text-muted-foreground text-xs">
+                      {t("operations.windowEnd", {
+                        date: date.format(
+                          new Date(`${failureWindowEnd}T00:00:00.000Z`)
+                        ),
+                      })}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="overflow-x-auto border-t">
+                <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full min-w-[44rem] text-sm">
                     <thead>
                       <tr className="text-muted-foreground border-b text-left text-xs">
@@ -1375,64 +1301,222 @@ export default function MetricsWorkspace({
                           className="px-4 py-2 font-medium sm:pl-5"
                           scope="col"
                         >
-                          {t("operations.occurredAt")}
-                        </th>
-                        <th className="px-3 py-2 font-medium" scope="col">
                           {t("operations.operation")}
                         </th>
                         <th className="px-3 py-2 font-medium" scope="col">
-                          {t("operations.format")}
+                          {t("operations.category")}
                         </th>
                         <th
-                          className="px-4 py-2 font-medium sm:pr-5"
+                          className="px-3 py-2 text-right font-medium"
                           scope="col"
                         >
-                          {t("operations.cause")}
+                          {t("operations.failed")}
+                        </th>
+                        <th
+                          className="px-3 py-2 text-right font-medium"
+                          scope="col"
+                        >
+                          {t("operations.outcomes")}
+                        </th>
+                        <th
+                          className="px-4 py-2 text-right font-medium sm:pr-5"
+                          scope="col"
+                        >
+                          {t("operations.rate")}
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {explorer.recentFailures.map((failure, index) => (
+                      {failureRows.map((row) => (
                         <tr
-                          key={`${failure.occurredAt}:${failure.operation}:${index}`}
+                          key={row.dimension}
                           className="border-b last:border-0"
                         >
-                          <td className="px-4 py-3 tabular-nums sm:pl-5">
-                            <time dateTime={failure.occurredAt}>
-                              {dateTime.format(new Date(failure.occurredAt))}
-                            </time>
-                          </td>
-                          <td className="px-3 py-3 font-medium">
-                            {t(`operations.operations.${failure.operation}`)}
+                          <td className="px-4 py-3 font-medium sm:pl-5">
+                            {t(`operations.operations.${row.operation}`)}
                           </td>
                           <td className="px-3 py-3">
-                            {failure.exportFormat
-                              ? t(`operations.formats.${failure.exportFormat}`)
-                              : "—"}
+                            {t(`operations.categories.${row.category}`)}
                           </td>
-                          <td className="px-4 py-3 sm:pr-5">
-                            {failure.reason
-                              ? t(`operations.reasons.${failure.reason}`)
-                              : t("operations.detailNotRecorded")}
+                          <td className="px-3 py-3 text-right font-semibold tabular-nums">
+                            {number.format(row.numerator)}
+                          </td>
+                          <td className="px-3 py-3 text-right tabular-nums">
+                            {row.denominator === null
+                              ? "—"
+                              : number.format(row.denominator)}
+                          </td>
+                          <td className="px-4 py-3 text-right tabular-nums sm:pr-5">
+                            {row.value === null
+                              ? "—"
+                              : percent.format(row.value)}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-muted-foreground px-4 py-8 text-center text-sm sm:px-5">
-            {t(
-              explorer.failures.quality === "not_started"
-                ? "operations.notStarted"
-                : "operations.empty"
+                <ul className="divide-y sm:hidden">
+                  {failureRows.map((row) => (
+                    <li key={`${row.dimension}:mobile`} className="px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="font-medium">
+                          {t(`operations.operations.${row.operation}`)}
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t("operations.failedShort", {
+                            count: row.numerator,
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {t(`operations.categories.${row.category}`)} ·{" "}
+                        {t("operations.mobileSummary", {
+                          outcomes:
+                            row.denominator === null
+                              ? "—"
+                              : number.format(row.denominator),
+                          rate:
+                            row.value === null
+                              ? "—"
+                              : percent.format(row.value),
+                        })}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground border-t px-4 py-3 text-xs leading-relaxed sm:px-5">
+                  {t("operations.lowVolumeNote")}
+                </p>
+                {explorer.recentFailures.length > 0 ? (
+                  <details className="group border-t">
+                    <summary className="focus-visible:ring-ring cursor-pointer list-none px-4 py-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none sm:px-5">
+                      {t("operations.recentSummary", {
+                        count: explorer.recentFailures.length,
+                      })}
+                    </summary>
+                    <div className="border-t">
+                      <div className="px-4 py-3 sm:px-5">
+                        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                          {t("operations.recentDescription")}
+                        </p>
+                      </div>
+                      <div className="hidden overflow-x-auto border-t sm:block">
+                        <table className="w-full min-w-[48rem] text-sm">
+                          <thead>
+                            <tr className="text-muted-foreground border-b text-left text-xs">
+                              <th
+                                className="px-4 py-2 font-medium sm:pl-5"
+                                scope="col"
+                              >
+                                {t("operations.occurredAt")}
+                              </th>
+                              <th className="px-3 py-2 font-medium" scope="col">
+                                {t("operations.operation")}
+                              </th>
+                              <th className="px-3 py-2 font-medium" scope="col">
+                                {t("operations.format")}
+                              </th>
+                              <th className="px-3 py-2 font-medium" scope="col">
+                                {t("operations.category")}
+                              </th>
+                              <th
+                                className="px-4 py-2 font-medium sm:pr-5"
+                                scope="col"
+                              >
+                                {t("operations.cause")}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {explorer.recentFailures.map((failure, index) => (
+                              <tr
+                                key={`${failure.occurredAt}:${failure.operation}:${index}`}
+                                className="border-b last:border-0"
+                              >
+                                <td className="px-4 py-3 tabular-nums sm:pl-5">
+                                  <time dateTime={failure.occurredAt}>
+                                    {dateTime.format(
+                                      new Date(failure.occurredAt)
+                                    )}
+                                  </time>
+                                </td>
+                                <td className="px-3 py-3 font-medium">
+                                  {t(
+                                    `operations.operations.${failure.operation}`
+                                  )}
+                                </td>
+                                <td className="px-3 py-3">
+                                  {failure.exportFormat
+                                    ? t(
+                                        `operations.formats.${failure.exportFormat}`
+                                      )
+                                    : "—"}
+                                </td>
+                                <td className="px-3 py-3">
+                                  {t(
+                                    `operations.categories.${failure.category}`
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 sm:pr-5">
+                                  {failure.reason
+                                    ? t(`operations.reasons.${failure.reason}`)
+                                    : t("operations.categoryOnly")}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <ul className="divide-y border-t sm:hidden">
+                        {explorer.recentFailures.map((failure, index) => (
+                          <li
+                            key={`${failure.occurredAt}:${failure.operation}:mobile:${index}`}
+                            className="space-y-2 px-4 py-3"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="font-medium">
+                                {t(
+                                  `operations.operations.${failure.operation}`
+                                )}
+                              </span>
+                              <time
+                                className="text-muted-foreground text-xs tabular-nums"
+                                dateTime={failure.occurredAt}
+                              >
+                                {dateTime.format(new Date(failure.occurredAt))}
+                              </time>
+                            </div>
+                            <p className="text-sm">
+                              {t(`operations.categories.${failure.category}`)}
+                              {failure.exportFormat
+                                ? ` · ${t(`operations.formats.${failure.exportFormat}`)}`
+                                : ""}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {failure.reason
+                                ? t(`operations.reasons.${failure.reason}`)
+                                : t("operations.categoryOnly")}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </details>
+                ) : null}
+              </>
+            ) : (
+              <p className="text-muted-foreground px-4 py-8 text-center text-sm sm:px-5">
+                {t(
+                  explorer.failures.quality === "not_started"
+                    ? "operations.notStarted"
+                    : "operations.empty"
+                )}
+              </p>
             )}
-          </p>
-        )}
-      </section>
+          </section>
+        </TabsContent>
+      </Tabs>
 
       <details
         id="data-dictionary"

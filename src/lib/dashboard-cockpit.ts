@@ -22,7 +22,7 @@ export const COCKPIT_METRICS: readonly CockpitMetricDefinition[] = [
     minimumVolume: 30,
     valueKind: "count",
     unfavorableDirection: "down",
-    drilldown: "/dashboard/metrics#product-use",
+    drilldown: "/dashboard/metrics#creators",
   },
   {
     id: "MTR-004",
@@ -30,7 +30,7 @@ export const COCKPIT_METRICS: readonly CockpitMetricDefinition[] = [
     minimumVolume: 30,
     valueKind: "rate",
     unfavorableDirection: "down",
-    drilldown: "/dashboard/metrics#product-use",
+    drilldown: "/dashboard/metrics#creation",
   },
   {
     id: "MTR-005",
@@ -38,7 +38,7 @@ export const COCKPIT_METRICS: readonly CockpitMetricDefinition[] = [
     minimumVolume: 20,
     valueKind: "rate",
     unfavorableDirection: "down",
-    drilldown: "/dashboard/metrics#journey",
+    drilldown: "/dashboard/metrics#creators",
   },
   {
     id: "MTR-006",
@@ -46,7 +46,7 @@ export const COCKPIT_METRICS: readonly CockpitMetricDefinition[] = [
     minimumVolume: 30,
     valueKind: "count",
     unfavorableDirection: "down",
-    drilldown: "/dashboard/metrics#product-use",
+    drilldown: "/dashboard/metrics#distribution",
   },
 ] as const;
 
