@@ -42,6 +42,9 @@
     "embedTitle": "Track Embed",
     "embedDescription": "Embedded TrackDraw read-only track view."
   },
+  "embed": {
+    "privacy": "Privacy Policy"
+  },
   "embedUnavailable": {
     "temporaryTitle": "Embed unavailable",
     "temporaryDescription": "Embeds are available for published account shares. Open the share link or sign in to publish a durable embed.",

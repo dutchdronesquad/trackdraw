@@ -27,7 +27,7 @@ export default function EmbedViewer({
   shareToken: string;
   initialTab?: EditorView;
 }) {
-  const tLanding = useTranslations("landing");
+  const tEmbed = useTranslations("share.embed");
   const replaceDesign = useEditor((s) => s.replaceDesign);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function EmbedViewer({
         rel="noopener noreferrer"
         className="border-border/60 bg-background/80 text-muted-foreground hover:text-foreground absolute right-2 bottom-2 z-30 rounded-md border px-2 py-1 text-[10px] shadow-sm backdrop-blur-sm transition-colors"
       >
-        {tLanding("footer.privacy")}
+        {tEmbed("privacy")}
       </Link>
     </div>
   );

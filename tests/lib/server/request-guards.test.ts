@@ -51,13 +51,24 @@ describe("getEarlyWorkerResponse", () => {
     expect(response).toBeNull();
   });
 
-  it("does not block API POST requests", () => {
+  it("blocks server action POSTs to API paths before they reach Next", async () => {
     const response = getEarlyWorkerResponse(
       new Request("https://trackdraw.app/api/shares", {
         method: "POST",
         headers: {
           "next-action": "0000000000000000000000000000000000000",
         },
+      })
+    );
+
+    expect(response?.status).toBe(404);
+    expect(await response?.text()).toBe("Not found");
+  });
+
+  it("does not block regular API POST requests", () => {
+    const response = getEarlyWorkerResponse(
+      new Request("https://trackdraw.app/api/shares", {
+        method: "POST",
       })
     );
 
