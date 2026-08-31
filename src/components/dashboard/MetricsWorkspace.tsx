@@ -502,8 +502,8 @@ function DecisionMetric({
   const value = row?.value ?? null;
   const context = row
     ? t(`decisionMetrics.${metric.id}.context`, {
-        numerator: number.format(row.numerator),
-        denominator: number.format(row.denominator ?? row.sampleSize ?? 0),
+        numerator: row.numerator,
+        denominator: row.denominator ?? row.sampleSize ?? 0,
       })
     : t("empty.noData");
 

@@ -352,13 +352,13 @@
       },
       "decisionMetrics": {
         "MTR-002": {
-          "context": "{numerator} active creators from {denominator} editor actors."
+          "context": "{numerator, plural, one {# active creator} other {# active creators}} from {denominator, plural, one {# editor actor} other {# editor actors}}."
         },
         "MTR-003": {
-          "context": "{numerator} valuable sessions from {denominator} editor sessions."
+          "context": "{numerator, plural, one {# valuable session} other {# valuable sessions}} from {denominator, plural, one {# editor session} other {# editor sessions}}."
         },
         "MTR-007": {
-          "context": "{numerator} published sessions from {denominator} valuable sessions."
+          "context": "{numerator, plural, one {# published session} other {# published sessions}} from {denominator, plural, one {# valuable session} other {# valuable sessions}}."
         }
       },
       "sources": {

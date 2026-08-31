@@ -20,11 +20,19 @@ function row(
   denominator: number | null,
   overrides: Partial<ProductMetricDailyRow> = {}
 ): ProductMetricDailyRow {
+  const windowDays =
+    metricId === "MTR-005"
+      ? 30
+      : metricId === "MTR-007" ||
+          metricId === "MTR-008" ||
+          metricId === "MTR-009"
+        ? 28
+        : 7;
   return {
     metric_id: metricId,
     day_utc: day,
     dimension,
-    window_days: metricId === "MTR-005" ? 30 : metricId === "MTR-010" ? 7 : 28,
+    window_days: windowDays,
     numerator,
     denominator,
     sample_size: denominator,

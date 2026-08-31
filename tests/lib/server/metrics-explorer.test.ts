@@ -75,7 +75,9 @@ describe("metrics explorer failure attempts", () => {
 
     expect(result.failures.rows).toHaveLength(1);
     expect(
-      mocks.getProductMetricSeries.mock.calls.map((call) => call[1])
+      mocks.getProductMetricSeries.mock.calls
+        .map((call) => call[1])
+        .sort((left, right) => left.localeCompare(right))
     ).toEqual([
       "MTR-002",
       "MTR-003",
