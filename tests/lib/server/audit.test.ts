@@ -15,6 +15,7 @@ vi.mock("@/lib/server/db", () => ({
 
 import {
   createAuditEvent,
+  listAuditEventFacets,
   listAuditEvents,
   queryAuditEvents,
   sanitizeAuditMetadata,
@@ -201,6 +202,103 @@ describe("listAuditEvents", () => {
       actorCount: 4,
       targetCount: 3,
     });
+  });
+
+  it("filters non-user identities and treats LIKE wildcards literally", async () => {
+    firstMock.mockResolvedValue({
+      count: 0,
+      actor_count: 0,
+      target_count: 0,
+    });
+    allMock.mockResolvedValue({ results: [] });
+
+    await queryAuditEvents({
+      actor: "kind:system",
+      target: "target-label:Deleted user",
+      search: "100%_done",
+    });
+
+    const sql = prepareMock.mock.calls.map(([value]) => value).join("\n");
+    expect(sql).toContain("ae.actor_user_id is null and ae.actor_kind = ?");
+    expect(sql).toContain("ae.target_user_id is null and ae.target_label = ?");
+    expect(sql).toContain("like ? escape '\\'");
+    expect(bindMock.mock.calls[0]).toContain("system");
+    expect(bindMock.mock.calls[0]).toContain("Deleted user");
+    expect(bindMock.mock.calls[0]).toContain("%100\\%\\_done%");
+  });
+
+  it("builds contextual facets for people, system actors, and deleted accounts", async () => {
+    allMock
+      .mockResolvedValueOnce({
+        results: [
+          { event_type: "account.role.changed" },
+          { event_type: "gallery.entry.hidden" },
+        ],
+      })
+      .mockResolvedValueOnce({
+        results: [
+          {
+            user_id: "admin-1",
+            user_name: "Admin",
+            user_email: "admin@trackdraw.local",
+            kind: "user",
+            label: null,
+          },
+          {
+            user_id: null,
+            user_name: null,
+            user_email: null,
+            kind: "system",
+            label: "Maintenance job",
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        results: [
+          {
+            user_id: null,
+            user_name: null,
+            user_email: null,
+            kind: null,
+            label: "Deleted user",
+          },
+        ],
+      });
+
+    const facets = await listAuditEventFacets({
+      category: "Account",
+      from: "2026-08-01T00:00:00.000Z",
+    });
+
+    expect(facets).toEqual({
+      eventTypes: ["account.role.changed", "gallery.entry.hidden"],
+      actors: [
+        {
+          value: "user:admin-1",
+          kind: "user",
+          label: "Admin",
+          email: "admin@trackdraw.local",
+        },
+        {
+          value: "actor-label:system:Maintenance job",
+          kind: "system",
+          label: "Maintenance job",
+          email: null,
+        },
+      ],
+      targets: [
+        {
+          value: "target-label:Deleted user",
+          kind: "unavailable",
+          label: "Deleted user",
+          email: null,
+        },
+      ],
+    });
+    expect(bindMock).toHaveBeenCalledTimes(3);
+    expect(bindMock.mock.calls[0]).toEqual(["2026-08-01T00:00:00.000Z"]);
+    expect(bindMock.mock.calls[1]).toEqual(["2026-08-01T00:00:00.000Z"]);
+    expect(bindMock.mock.calls[2]).toEqual(["2026-08-01T00:00:00.000Z"]);
   });
 
   it("does not fail a completed mutation when audit storage is unavailable", async () => {
