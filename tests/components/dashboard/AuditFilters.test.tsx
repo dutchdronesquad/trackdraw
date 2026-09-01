@@ -141,4 +141,20 @@ describe("AuditFilters", () => {
     await user.click(screen.getByRole("option", { name: "Gallery" }));
     expect(pushMock).toHaveBeenCalledWith("/dashboard/audit?category=Gallery");
   });
+
+  it("keeps a newer selection when the search debounce finishes", async () => {
+    const user = userEvent.setup();
+    renderFilters();
+
+    await user.type(screen.getByRole("searchbox", { name: "Search" }), "role");
+    await user.click(screen.getByRole("combobox", { name: "Category" }));
+    await user.click(screen.getByRole("option", { name: "Gallery" }));
+
+    await vi.waitFor(() => {
+      expect(pushMock).toHaveBeenLastCalledWith(
+        "/dashboard/audit?q=role&category=Gallery"
+      );
+    });
+    expect(pushMock).not.toHaveBeenCalledWith("/dashboard/audit?q=role");
+  });
 });

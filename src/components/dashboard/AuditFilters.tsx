@@ -439,13 +439,22 @@ export default function AuditFilters({
     if (search === (values.search ?? "")) return;
 
     const timeout = window.setTimeout(() => {
-      navigate({ ...currentValues, search });
+      navigate({ search, range, category, event, actor, target, from, to });
     }, 400);
 
     return () => window.clearTimeout(timeout);
-    // Other filter changes navigate through their event handlers.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, values.search, navigate]);
+  }, [
+    search,
+    range,
+    category,
+    event,
+    actor,
+    target,
+    from,
+    to,
+    values.search,
+    navigate,
+  ]);
 
   function updateCategory(nextCategory: string) {
     setCategory(nextCategory);
