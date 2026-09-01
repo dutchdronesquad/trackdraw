@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Bell } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import AuditFilters from "@/components/dashboard/AuditFilters";
 import DashboardAuditEventsTable from "@/components/dashboard/tables/AuditEventsTable";
 import DashboardPageIntro from "@/components/dashboard/PageIntro";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   auditEventCategories,
   auditEventTitleKeys,
+  getAuditEventCategory,
   type AuditEventCategory,
 } from "@/lib/audit-events";
 import { listAuditEventFacets, queryAuditEvents } from "@/lib/server/audit";
@@ -30,6 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type AuditRange = "24h" | "7d" | "30d" | "90d" | "all" | "custom";
 
+const allFilterValue = "__all__";
+
 type AuditSearchParams = {
   q?: string | string[];
   category?: string | string[];
@@ -45,6 +46,21 @@ type AuditSearchParams = {
 
 function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function filterValue(value: string | undefined) {
+  const normalizedValue = value?.trim();
+  return normalizedValue && normalizedValue !== allFilterValue
+    ? normalizedValue
+    : undefined;
+}
+
+function identityFilterValue(value: string | undefined) {
+  const normalizedValue = filterValue(value);
+  if (!normalizedValue) return undefined;
+  return normalizedValue.includes(":")
+    ? normalizedValue
+    : `user:${normalizedValue}`;
 }
 
 function parseCategory(value: string | undefined) {
@@ -69,6 +85,13 @@ function parseRange(value: string | undefined): AuditRange {
 
 function dateBoundary(value: string | undefined, endOfDay: boolean) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  ) {
+    return undefined;
+  }
   return `${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}Z`;
 }
 
@@ -78,20 +101,26 @@ function rangeStart(range: AuditRange) {
   return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 }
 
-function userOptionLabel(
-  user: { name: string | null; email: string | null },
-  unknownUserLabel: string
-) {
-  const name = user.name?.trim();
-  const email = user.email?.trim();
-  if (name && email) return `${name} (${email})`;
-  return name || email || unknownUserLabel;
+function formatUnknownEventType(eventType: string) {
+  return eventType
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(" · ");
 }
 
 function pageHref(params: URLSearchParams, page: number) {
   const next = new URLSearchParams(params);
   next.set("page", String(page));
   return `/dashboard/audit?${next.toString()}`;
+}
+
+function clearFilterHref(params: URLSearchParams, keys: string[]) {
+  const next = new URLSearchParams(params);
+  keys.forEach((key) => next.delete(key));
+  if (next.get("range") === "30d") next.delete("range");
+  const query = next.toString();
+  return query ? `/dashboard/audit?${query}` : "/dashboard/audit";
 }
 
 export default async function DashboardAuditPage({
@@ -115,48 +144,134 @@ export default async function DashboardAuditPage({
       : legacyType === "gallery"
         ? "Gallery"
         : undefined);
-  const range = parseRange(firstValue(resolvedSearchParams.range));
-  const customFrom = firstValue(resolvedSearchParams.from);
-  const customTo = firstValue(resolvedSearchParams.to);
+  const requestedRange = parseRange(firstValue(resolvedSearchParams.range));
+  const requestedFrom = firstValue(resolvedSearchParams.from);
+  const requestedTo = firstValue(resolvedSearchParams.to);
+  const validCustomRange =
+    requestedRange === "custom" &&
+    Boolean(dateBoundary(requestedFrom, false)) &&
+    Boolean(dateBoundary(requestedTo, true)) &&
+    requestedFrom! <= requestedTo!;
+  const range =
+    requestedRange === "custom" && !validCustomRange ? "30d" : requestedRange;
+  const customFrom = range === "custom" ? requestedFrom : undefined;
+  const customTo = range === "custom" ? requestedTo : undefined;
   const requestedPage = Number.parseInt(
     firstValue(resolvedSearchParams.page) ?? "1",
     10
   );
-  const eventType = firstValue(resolvedSearchParams.event)?.trim();
-  const actorUserId = firstValue(resolvedSearchParams.actor)?.trim();
-  const targetUserId = firstValue(resolvedSearchParams.target)?.trim();
+  const eventType = filterValue(firstValue(resolvedSearchParams.event));
+  const actor = identityFilterValue(firstValue(resolvedSearchParams.actor));
+  const target = identityFilterValue(firstValue(resolvedSearchParams.target));
   const search = firstValue(resolvedSearchParams.q)?.trim();
+  const from =
+    range === "custom" ? dateBoundary(customFrom, false) : rangeStart(range);
+  const to = range === "custom" ? dateBoundary(customTo, true) : undefined;
   const [result, facets] = await Promise.all([
     queryAuditEvents({
       page: Number.isFinite(requestedPage) ? requestedPage : 1,
       pageSize: 25,
       category,
       eventTypes: eventType ? [eventType] : undefined,
-      actorUserId: actorUserId || undefined,
-      targetUserId: targetUserId || undefined,
+      actor,
+      target,
       search: search || undefined,
-      from:
-        range === "custom"
-          ? dateBoundary(customFrom, false)
-          : rangeStart(range),
-      to: range === "custom" ? dateBoundary(customTo, true) : undefined,
+      from,
+      to,
     }),
-    listAuditEventFacets(),
+    listAuditEventFacets({ category, from, to }),
   ]);
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
+  const locale = await getLocale();
   const currentParams = new URLSearchParams();
   if (search) currentParams.set("q", search);
   if (category) currentParams.set("category", category);
   if (eventType) currentParams.set("event", eventType);
-  if (actorUserId) currentParams.set("actor", actorUserId);
-  if (targetUserId) currentParams.set("target", targetUserId);
+  if (actor) currentParams.set("actor", actor);
+  if (target) currentParams.set("target", target);
   currentParams.set("range", range);
-  if (customFrom) currentParams.set("from", customFrom);
-  if (customTo) currentParams.set("to", customTo);
-  const selectClassName =
-    "border-input bg-background h-9 rounded-lg border px-3 text-sm shadow-none";
-
+  if (range === "custom" && customFrom && customTo) {
+    currentParams.set("from", customFrom);
+    currentParams.set("to", customTo);
+  }
+  const availableCategories = new Set(
+    facets.eventTypes.map(getAuditEventCategory)
+  );
+  const eventOptions = facets.eventTypes.map((value) => ({
+    value,
+    label: auditEventTitleKeys[value]
+      ? t(`audit.eventTitles.${auditEventTitleKeys[value]}`)
+      : formatUnknownEventType(value),
+    category: getAuditEventCategory(value),
+  }));
+  const actorOptions = facets.actors.map((identity) => ({
+    value: identity.value,
+    label:
+      identity.email && identity.email !== identity.label
+        ? `${identity.label} (${identity.email})`
+        : identity.label === "system"
+          ? t("audit.fallback.systemActor")
+          : identity.label,
+    group: t(`audit.filters.identityGroups.${identity.kind}`),
+  }));
+  const targetOptions = facets.targets.map((identity) => ({
+    value: identity.value,
+    label:
+      identity.email && identity.email !== identity.label
+        ? `${identity.label} (${identity.email})`
+        : identity.label,
+    group: t(`audit.filters.identityGroups.${identity.kind}`),
+  }));
+  const activeFilters = [
+    search
+      ? {
+          key: "search",
+          label: `${t("audit.filters.search")}: ${search}`,
+          href: clearFilterHref(currentParams, ["q"]),
+        }
+      : null,
+    range !== "30d"
+      ? {
+          key: "range",
+          label:
+            range === "custom" && customFrom && customTo
+              ? `${customFrom} – ${customTo}`
+              : t(`audit.rangeValues.${range}`),
+          href: clearFilterHref(currentParams, ["range", "from", "to"]),
+        }
+      : null,
+    category
+      ? {
+          key: "category",
+          label: t(`audit.categoryValues.${category}`),
+          href: clearFilterHref(currentParams, ["category", "event"]),
+        }
+      : null,
+    eventType
+      ? {
+          key: "event",
+          label:
+            eventOptions.find((option) => option.value === eventType)?.label ??
+            formatUnknownEventType(eventType),
+          href: clearFilterHref(currentParams, ["event"]),
+        }
+      : null,
+    actor
+      ? {
+          key: "actor",
+          label: `${t("audit.filters.actor")}: ${actorOptions.find((option) => option.value === actor)?.label ?? t("audit.filters.unavailableSelection")}`,
+          href: clearFilterHref(currentParams, ["actor"]),
+        }
+      : null,
+    target
+      ? {
+          key: "target",
+          label: `${t("audit.filters.target")}: ${targetOptions.find((option) => option.value === target)?.label ?? t("audit.filters.unavailableSelection")}`,
+          href: clearFilterHref(currentParams, ["target"]),
+        }
+      : null,
+  ].filter((filter): filter is NonNullable<typeof filter> => filter !== null);
   return (
     <>
       <DashboardSiteHeader
@@ -170,111 +285,90 @@ export default async function DashboardAuditPage({
           description={t("pages.auditIntro")}
           accent="bg-rose-500/10 text-rose-600 dark:text-rose-400"
         />
-        <form
-          action="/dashboard/audit"
-          method="get"
-          className="bg-muted/30 grid gap-3 rounded-xl p-4 lg:grid-cols-12"
-        >
-          <Input
-            type="search"
-            name="q"
-            defaultValue={search}
-            placeholder={t("audit.filters.searchPlaceholder")}
-            className="lg:col-span-4"
-          />
-          <select
-            name="range"
-            defaultValue={range}
-            aria-label={t("audit.filters.range")}
-            className={`${selectClassName} lg:col-span-2`}
-          >
-            {(["24h", "7d", "30d", "90d", "all", "custom"] as const).map(
-              (value) => (
-                <option key={value} value={value}>
-                  {t(`audit.rangeValues.${value}`)}
-                </option>
+        <AuditFilters
+          key={currentParams.toString()}
+          values={{
+            search,
+            range,
+            category: category ?? allFilterValue,
+            event: eventType ?? allFilterValue,
+            actor: actor ?? allFilterValue,
+            target: target ?? allFilterValue,
+            from: customFrom,
+            to: customTo,
+          }}
+          labels={{
+            title: t("audit.filters.title"),
+            search: t("audit.filters.search"),
+            searchPlaceholder: t("audit.filters.searchPlaceholder"),
+            range: t("audit.filters.range"),
+            category: t("audit.filters.category"),
+            event: t("audit.filters.event"),
+            actor: t("audit.filters.actor"),
+            target: t("audit.filters.target"),
+            dateRange: t("audit.filters.dateRange"),
+            chooseDates: t("audit.filters.chooseDates"),
+            clearDates: t("audit.filters.clearDates"),
+            applyDateRange: t("audit.filters.applyDateRange"),
+            clearAll: t("audit.filters.clearAll"),
+            moreFilters: t("audit.filters.moreFilters"),
+            filterDetails: t("audit.filters.filterDetails"),
+            searchOptions: t("audit.filters.searchOptions"),
+            noOptions: t("audit.filters.noOptions"),
+            removeFilter: t("audit.filters.removeFilter"),
+          }}
+          rangeOptions={(
+            ["24h", "7d", "30d", "90d", "all", "custom"] as const
+          ).map((value) => ({
+            value,
+            label: t(`audit.rangeValues.${value}`),
+          }))}
+          categoryOptions={[
+            {
+              value: allFilterValue,
+              label: t("audit.filters.allCategories"),
+            },
+            ...auditEventCategories
+              .filter(
+                (value) => availableCategories.has(value) || value === category
               )
-            )}
-          </select>
-          <select
-            name="category"
-            defaultValue={category ?? ""}
-            aria-label={t("audit.filters.category")}
-            className={`${selectClassName} lg:col-span-2`}
-          >
-            <option value="">{t("audit.filters.allCategories")}</option>
-            {auditEventCategories.map((value) => (
-              <option key={value} value={value}>
-                {t(`audit.categoryValues.${value}`)}
-              </option>
-            ))}
-          </select>
-          <select
-            name="event"
-            defaultValue={eventType ?? ""}
-            aria-label={t("audit.filters.event")}
-            className={`${selectClassName} lg:col-span-2`}
-          >
-            <option value="">{t("audit.filters.allEvents")}</option>
-            {facets.eventTypes.map((value) => (
-              <option key={value} value={value}>
-                {auditEventTitleKeys[value]
-                  ? t(`audit.eventTitles.${auditEventTitleKeys[value]}`)
-                  : value}
-              </option>
-            ))}
-          </select>
-          <select
-            name="actor"
-            defaultValue={actorUserId ?? ""}
-            aria-label={t("audit.filters.actor")}
-            className={`${selectClassName} lg:col-span-2`}
-          >
-            <option value="">{t("audit.filters.allActors")}</option>
-            {facets.actors.map((user) => (
-              <option key={user.id} value={user.id}>
-                {userOptionLabel(user, t("audit.fallback.unknownUser"))}
-              </option>
-            ))}
-          </select>
-          <select
-            name="target"
-            defaultValue={targetUserId ?? ""}
-            aria-label={t("audit.filters.target")}
-            className={`${selectClassName} lg:col-span-3`}
-          >
-            <option value="">{t("audit.filters.allTargets")}</option>
-            {facets.targets.map((user) => (
-              <option key={user.id} value={user.id}>
-                {userOptionLabel(user, t("audit.fallback.unknownUser"))}
-              </option>
-            ))}
-          </select>
-          <Input
-            type="date"
-            name="from"
-            defaultValue={customFrom}
-            aria-label={t("audit.filters.from")}
-            className="lg:col-span-2"
-          />
-          <Input
-            type="date"
-            name="to"
-            defaultValue={customTo}
-            aria-label={t("audit.filters.to")}
-            className="lg:col-span-2"
-          />
-          <div className="flex gap-2 lg:col-span-5 lg:justify-end">
-            <Button type="submit" size="sm">
-              {t("audit.filters.apply")}
-            </Button>
-            <Button asChild type="button" variant="outline" size="sm">
-              <Link href="/dashboard/audit" prefetch={false}>
-                {t("audit.filters.reset")}
-              </Link>
-            </Button>
-          </div>
-        </form>
+              .map((value) => ({
+                value,
+                label: t(`audit.categoryValues.${value}`),
+              })),
+          ]}
+          eventOptions={[
+            { value: allFilterValue, label: t("audit.filters.allEvents") },
+            ...eventOptions,
+          ]}
+          actorOptions={[
+            { value: allFilterValue, label: t("audit.filters.allActors") },
+            ...actorOptions,
+            ...(actor && !actorOptions.some((option) => option.value === actor)
+              ? [
+                  {
+                    value: actor,
+                    label: t("audit.filters.unavailableSelection"),
+                  },
+                ]
+              : []),
+          ]}
+          targetOptions={[
+            { value: allFilterValue, label: t("audit.filters.allTargets") },
+            ...targetOptions,
+            ...(target &&
+            !targetOptions.some((option) => option.value === target)
+              ? [
+                  {
+                    value: target,
+                    label: t("audit.filters.unavailableSelection"),
+                  },
+                ]
+              : []),
+          ]}
+          activeFilters={activeFilters}
+          locale={locale}
+        />
         <DashboardAuditEventsTable
           events={result.events}
           total={result.total}

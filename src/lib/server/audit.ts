@@ -62,6 +62,8 @@ export type ListAuditEventsOptions = {
   eventTypes?: string[];
   actorUserId?: string;
   targetUserId?: string;
+  actor?: string;
+  target?: string;
 };
 
 export type QueryAuditEventsOptions = ListAuditEventsOptions & {
@@ -83,17 +85,85 @@ export type AuditEventPage = {
   targetCount: number;
 };
 
-export type AuditEventFacetUser = {
-  id: string;
-  name: string | null;
+export type AuditEventIdentityFacet = {
+  value: string;
+  kind: "user" | "api_key" | "system" | "unavailable";
+  label: string;
   email: string | null;
 };
 
 export type AuditEventFacets = {
   eventTypes: string[];
-  actors: AuditEventFacetUser[];
-  targets: AuditEventFacetUser[];
+  actors: AuditEventIdentityFacet[];
+  targets: AuditEventIdentityFacet[];
 };
+
+type AuditEventFacetRow = {
+  user_id: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  kind: string | null;
+  label: string | null;
+};
+
+const identityPrefixes = {
+  user: "user:",
+  kind: "kind:",
+  actorLabel: "actor-label:",
+  targetLabel: "target-label:",
+} as const;
+
+function identityValue(prefix: string, value: string) {
+  return `${prefix}${value}`;
+}
+
+function addIdentityCondition(
+  where: string[],
+  bindings: Array<string | number>,
+  value: string,
+  scope: "actor" | "target"
+) {
+  if (value.startsWith(identityPrefixes.user)) {
+    where.push(`ae.${scope}_user_id = ?`);
+    bindings.push(value.slice(identityPrefixes.user.length));
+    return;
+  }
+
+  if (scope === "actor" && value.startsWith(identityPrefixes.kind)) {
+    where.push("ae.actor_user_id is null and ae.actor_kind = ?");
+    bindings.push(value.slice(identityPrefixes.kind.length));
+    return;
+  }
+
+  const labelPrefix =
+    scope === "actor"
+      ? identityPrefixes.actorLabel
+      : identityPrefixes.targetLabel;
+  if (value.startsWith(labelPrefix)) {
+    const labelValue = value.slice(labelPrefix.length);
+    if (scope === "actor") {
+      const separatorIndex = labelValue.indexOf(":");
+      if (separatorIndex > 0) {
+        where.push(
+          "ae.actor_user_id is null and ae.actor_kind = ? and ae.actor_label = ?"
+        );
+        bindings.push(
+          labelValue.slice(0, separatorIndex),
+          labelValue.slice(separatorIndex + 1)
+        );
+        return;
+      }
+    }
+    where.push(`ae.${scope}_user_id is null and ae.${scope}_label = ?`);
+    bindings.push(labelValue);
+    return;
+  }
+
+  // Keep pre-token audit URLs working: historically actor and target were raw
+  // user ids.
+  where.push(`ae.${scope}_user_id = ?`);
+  bindings.push(value);
+}
 
 function parseAuditMetadata(
   value: string | null
@@ -299,10 +369,14 @@ function buildAuditWhere(options: QueryAuditEventsOptions) {
   if (options.actorUserId) {
     where.push("ae.actor_user_id = ?");
     bindings.push(options.actorUserId);
+  } else if (options.actor) {
+    addIdentityCondition(where, bindings, options.actor, "actor");
   }
   if (options.targetUserId) {
     where.push("ae.target_user_id = ?");
     bindings.push(options.targetUserId);
+  } else if (options.target) {
+    addIdentityCondition(where, bindings, options.target, "target");
   }
   if (options.from) {
     where.push("ae.created_at >= ?");
@@ -316,18 +390,19 @@ function buildAuditWhere(options: QueryAuditEventsOptions) {
   const search = options.search?.trim().toLowerCase();
   if (search) {
     where.push(`(
-      lower(ae.event_type) like ? or
-      lower(ae.entity_type) like ? or
-      lower(coalesce(ae.entity_id, '')) like ? or
-      lower(coalesce(ae.metadata_json, '')) like ? or
-      lower(coalesce(ae.actor_label, '')) like ? or
-      lower(coalesce(ae.target_label, '')) like ? or
-      lower(coalesce(actor.name, '')) like ? or
-      lower(coalesce(actor.email, '')) like ? or
-      lower(coalesce(target.name, '')) like ? or
-      lower(coalesce(target.email, '')) like ?
+      lower(ae.event_type) like ? escape '\\' or
+      lower(ae.entity_type) like ? escape '\\' or
+      lower(coalesce(ae.entity_id, '')) like ? escape '\\' or
+      lower(coalesce(ae.metadata_json, '')) like ? escape '\\' or
+      lower(coalesce(ae.actor_label, '')) like ? escape '\\' or
+      lower(coalesce(ae.target_label, '')) like ? escape '\\' or
+      lower(coalesce(actor.name, '')) like ? escape '\\' or
+      lower(coalesce(actor.email, '')) like ? escape '\\' or
+      lower(coalesce(target.name, '')) like ? escape '\\' or
+      lower(coalesce(target.email, '')) like ? escape '\\'
     )`);
-    bindings.push(...Array.from({ length: 10 }, () => `%${search}%`));
+    const literalSearch = search.replace(/[\\%_]/g, "\\$&");
+    bindings.push(...Array.from({ length: 10 }, () => `%${literalSearch}%`));
   }
 
   return {
@@ -372,8 +447,15 @@ export async function queryAuditEvents(
       `
         select
           count(*) as count,
-          count(distinct ae.actor_user_id) as actor_count,
-          count(distinct ae.target_user_id) as target_count
+          count(distinct case
+            when ae.actor_user_id is not null then 'user:' || ae.actor_user_id
+            when ae.actor_kind is not null then
+              'actor:' || ae.actor_kind || ':' || coalesce(ae.actor_label, '')
+          end) as actor_count,
+          count(distinct case
+            when ae.target_user_id is not null then 'user:' || ae.target_user_id
+            when ae.target_label is not null then 'target:' || ae.target_label
+          end) as target_count
         from audit_events ae
         left join users actor on actor.id = ae.actor_user_id
         left join users target on target.id = ae.target_user_id
@@ -407,34 +489,122 @@ export async function queryAuditEvents(
   };
 }
 
-export async function listAuditEventFacets(): Promise<AuditEventFacets> {
+function facetLabel(row: AuditEventFacetRow) {
+  const name = row.user_name?.trim();
+  const email = row.user_email?.trim();
+  const label = row.label?.trim();
+  return name || email || label || "Unknown";
+}
+
+function mapActorFacet(row: AuditEventFacetRow): AuditEventIdentityFacet {
+  if (row.user_id) {
+    return {
+      value: identityValue(identityPrefixes.user, row.user_id),
+      kind: "user",
+      label: facetLabel(row),
+      email: row.user_email,
+    };
+  }
+
+  const kind =
+    row.kind === "api_key" || row.kind === "system" ? row.kind : "unavailable";
+  if (row.label?.trim()) {
+    return {
+      value: identityValue(identityPrefixes.actorLabel, `${kind}:${row.label}`),
+      kind,
+      label: row.label,
+      email: null,
+    };
+  }
+
+  return {
+    value: identityValue(identityPrefixes.kind, kind),
+    kind,
+    label: kind,
+    email: null,
+  };
+}
+
+function mapTargetFacet(row: AuditEventFacetRow): AuditEventIdentityFacet {
+  if (row.user_id) {
+    return {
+      value: identityValue(identityPrefixes.user, row.user_id),
+      kind: "user",
+      label: facetLabel(row),
+      email: row.user_email,
+    };
+  }
+
+  return {
+    value: identityValue(identityPrefixes.targetLabel, row.label ?? "Unknown"),
+    kind: "unavailable",
+    label: row.label?.trim() || "Unknown",
+    email: null,
+  };
+}
+
+function uniqueFacets(facets: AuditEventIdentityFacet[]) {
+  return Array.from(
+    new Map(facets.map((facet) => [facet.value, facet])).values()
+  );
+}
+
+export async function listAuditEventFacets(
+  options: Pick<QueryAuditEventsOptions, "category" | "from" | "to"> = {}
+): Promise<AuditEventFacets> {
   const db = await getDatabase();
+  const { bindings, whereClause } = buildAuditWhere(options);
+  const eventContext = buildAuditWhere({ from: options.from, to: options.to });
   const [eventTypesResult, actorsResult, targetsResult] = await Promise.all([
     db
       .prepare(
-        "select distinct event_type from audit_events order by event_type"
+        `select distinct ae.event_type
+         from audit_events ae
+         ${eventContext.whereClause}
+         order by ae.event_type`
       )
+      .bind(...eventContext.bindings)
       .all<{ event_type: string }>(),
     db
       .prepare(
-        `select distinct users.id, users.name, users.email
-         from audit_events join users on users.id = audit_events.actor_user_id
-         order by coalesce(users.name, users.email), users.id`
+        `select distinct
+           ae.actor_user_id as user_id,
+           actor.name as user_name,
+           actor.email as user_email,
+           ae.actor_kind as kind,
+           ae.actor_label as label
+         from audit_events ae
+         left join users actor on actor.id = ae.actor_user_id
+         left join users target on target.id = ae.target_user_id
+         ${whereClause}
+         order by coalesce(actor.name, actor.email, ae.actor_label, ae.actor_kind)`
       )
-      .all<AuditEventFacetUser>(),
+      .bind(...bindings)
+      .all<AuditEventFacetRow>(),
     db
       .prepare(
-        `select distinct users.id, users.name, users.email
-         from audit_events join users on users.id = audit_events.target_user_id
-         order by coalesce(users.name, users.email), users.id`
+        `select distinct
+           ae.target_user_id as user_id,
+           target.name as user_name,
+           target.email as user_email,
+           null as kind,
+           ae.target_label as label
+         from audit_events ae
+         left join users actor on actor.id = ae.actor_user_id
+         left join users target on target.id = ae.target_user_id
+         ${whereClause}
+           ${whereClause ? "and" : "where"}
+           (ae.target_user_id is not null or ae.target_label is not null)
+         order by coalesce(target.name, target.email, ae.target_label)`
       )
-      .all<AuditEventFacetUser>(),
+      .bind(...bindings)
+      .all<AuditEventFacetRow>(),
   ]);
 
   return {
     eventTypes: eventTypesResult.results.map((row) => row.event_type),
-    actors: actorsResult.results,
-    targets: targetsResult.results,
+    actors: uniqueFacets(actorsResult.results.map(mapActorFacet)),
+    targets: uniqueFacets(targetsResult.results.map(mapTargetFacet)),
   };
 }
 
