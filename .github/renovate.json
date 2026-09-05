@@ -42,8 +42,8 @@
       "automerge": true
     },
     {
-      "groupName": "npm non-major dependencies",
-      "groupSlug": "npm-non-major",
+      "groupName": "npm dependencies",
+      "groupSlug": "npm-dependencies",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
