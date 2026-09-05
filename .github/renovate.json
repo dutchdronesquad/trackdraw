@@ -25,6 +25,11 @@
       "matchPackageNames": ["better-auth", "@better-auth/{/,}**"]
     },
     {
+      "groupName": "Vitest",
+      "groupSlug": "vitest",
+      "matchPackageNames": ["vitest", "@vitest/{/,}**"]
+    },
+    {
       "matchManagers": ["github-actions"],
       "addLabels": ["github_actions"],
       "rangeStrategy": "pin",
