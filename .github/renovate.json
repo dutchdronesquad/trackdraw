@@ -30,6 +30,10 @@
       "matchPackageNames": ["vitest", "@vitest/{/,}**"]
     },
     {
+      "matchPackageNames": ["vitest", "@vitest/{/,}**"],
+      "allowedVersions": "<5"
+    },
+    {
       "matchManagers": ["github-actions"],
       "addLabels": ["github_actions"],
       "rangeStrategy": "pin",
