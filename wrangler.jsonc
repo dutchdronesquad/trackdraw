@@ -9,7 +9,7 @@
   "observability": {
     "enabled": true,
     "logs": {
-      "invocation_logs": false,
+      "invocation_logs": true,
     },
   },
   "workers_dev": false,
@@ -48,7 +48,7 @@
       "observability": {
         "enabled": true,
         "logs": {
-          "invocation_logs": false,
+          "invocation_logs": true,
         },
       },
       "r2_buckets": [
