@@ -19,7 +19,7 @@ Recommended decision:
 - defer unauthenticated public REST reads until a clear consumer needs them
 - defer write APIs until read integrations are proven
 
-For the product evaluation and rationale, see [docs/research/trackdraw-rest-api.md](../research/trackdraw-rest-api.md).
+For the product evaluation and rationale, see [docs/research/implemented/trackdraw-rest-api.md](../research/implemented/trackdraw-rest-api.md).
 
 ## Approval Recommendation
 

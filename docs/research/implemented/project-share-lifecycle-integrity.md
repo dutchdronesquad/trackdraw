@@ -9,7 +9,7 @@ Status: decided — Fix 1 and Fix 2 Option B approved for implementation. Option
 This document proposes fixes for two related gaps between projects and shares, found while investigating why a new account showed `0 projects` / `1 share`:
 
 1. Archiving a project does not revoke its shares, so a share can keep working after its project is gone.
-2. A signed-in user can publish a share for a design that was never saved as an account project, so `shares.project_id` and `shares.owner_user_id` can diverge from `projects` entirely. This second gap is not a bug against current code, but it does contradict the account model already agreed in [accounts-project-sync.md](accounts-project-sync.md) ("Published shares should attach to a project") and reflects the still-open question in [ROADMAP.md](../roadmap/ROADMAP.md) item 1.
+2. A signed-in user can publish a share for a design that was never saved as an account project, so `shares.project_id` and `shares.owner_user_id` can diverge from `projects` entirely. This second gap is not a bug against current code, but it does contradict the account model already agreed in [accounts-project-sync.md](accounts-project-sync.md) ("Published shares should attach to a project") and reflects the still-open question in [ROADMAP.md](../../roadmap/ROADMAP.md) item 1.
 
 Both are proposed as independent slices — fix 1 can ship on its own regardless of what happens with fix 2.
 

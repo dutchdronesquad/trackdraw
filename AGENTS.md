@@ -52,7 +52,7 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 - Direct target-catalog edits are allowed only in a production emergency or an explicitly requested one-time reconciliation. Reconcile such changes back into Crowdin immediately instead of creating a second source of truth.
 - If a working tree already contains agent-generated target translations, do not silently keep, discard, or regenerate them. Flag them for reconciliation through the same Crowdin import-and-review flow and keep subsequent feature work English-only.
 - A new English key does not require target-key parity, but every translatable namespace file must still exist for every supported target locale.
-- Run `npm run i18n:check` and `npm run i18n:scan-hardcoded` when changing product copy. See `CONTRIBUTING.md` and `docs/research/crowdin-pilot.md` for the synchronization and review workflow.
+- Run `npm run i18n:check` and `npm run i18n:scan-hardcoded` when changing product copy. See `CONTRIBUTING.md` and `docs/research/in-progress/crowdin-pilot.md` for the synchronization and review workflow.
 
 ## Ownership Map
 

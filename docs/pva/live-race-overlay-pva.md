@@ -17,7 +17,7 @@ Recommended decision:
 - require explicit timing-role mapping such as start/finish and split anchors before live RotorHazard integration
 - treat the remaining TrackDraw work as contract hardening, not a new product surface
 
-For the full product evaluation and rationale, see [docs/research/live-race-overlay-evaluation.md](../research/live-race-overlay-evaluation.md).
+For the full product evaluation and rationale, see [docs/research/in-progress/live-race-overlay-evaluation.md](../research/in-progress/live-race-overlay-evaluation.md).
 
 ## Approval Recommendation
 
@@ -200,7 +200,7 @@ Timing metadata and typing:
   Owns the first timing marker model on gates through normalized `shape.meta.timing`.
 - [src/lib/track/design.ts](../../src/lib/track/design.ts)
   Normalizes timing metadata during design normalization.
-- [src/components/inspector/views/single.tsx](../../src/components/inspector/views/single.tsx)
+- [src/components/inspector/views/single-shape.tsx](../../src/components/inspector/views/single-shape.tsx)
   Exposes start/finish and split assignment for timing-capable gates.
 
 Primary route behavior:

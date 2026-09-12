@@ -60,7 +60,7 @@ TrackDraw now has the first account foundation in place through sign-in, profile
 
 Supporting product-shape document:
 
-- `docs/research/accounts-project-sync.md`
+- `docs/research/implemented/accounts-project-sync.md`
 
 Why now:
 
@@ -301,7 +301,7 @@ TrackDraw should move from generic element defaults toward a clearer equipment m
 
 Supporting research document:
 
-- `docs/research/track-element-catalog.md`
+- `docs/research/implemented/track-element-catalog.md`
 
 Why:
 
@@ -336,7 +336,7 @@ Next catalog slices:
 
 #### Generated Flightpath Assistance
 
-TrackDraw should research generated flightpaths as route-authoring assistance, separate from the element catalog and separate from 3D preview rendering. Research document: `docs/research/generated-flightpath-assistance.md`.
+TrackDraw should research generated flightpaths as route-authoring assistance, separate from the element catalog and separate from 3D preview rendering. Research document: `docs/research/in-progress/generated-flightpath-assistance.md`.
 
 Why:
 
@@ -410,7 +410,7 @@ Deliberate scope decisions:
 
 - Local-first preset storage for logged-out users was deferred; the first version is account-backed only, keeping the implementation simple and the data model unambiguous
 - Local-to-account migration was skipped for the same reason — there is no local preset state to migrate
-- Presets remain a private account library; community publishing is outside the current product direction. Earlier exploration remains documented in `docs/research/presets-store.md`.
+- Presets remain a private account library; community publishing is outside the current product direction. Earlier exploration remains documented in `docs/research/planned/presets-store.md`.
 
 Supporting design doc:
 
@@ -454,6 +454,16 @@ Open questions:
 - Should route sections/groups be explicitly authored in the editor, derived from route patterns/naming, or both?
 - Should the public API call drawn editor objects `shapes` for continuity, or expose them as `objects` while keeping `shapes` as internal/editor terminology?
 - What minimal fields does RaceLink need for track elements, gate groups, and lighting zones before a vendor-specific adapter would be justified?
+
+#### Event Track Viewers: FPVScores And RotorHazard (`Research`)
+
+Develop a shared read-only viewer and portable course snapshot, with FPVScores as the first integration and RotorHazard as the offline/LAN consumer. [Research and delivery choices](../research/planned/event-track-viewer-integrations.md).
+
+- FPVScores installs the npm viewer; its backend stores an organizer's API key, lists owned projects, and imports the selected course for an event.
+- Prefer host-stored snapshots with explicit preview/refresh, so visitor rendering does not require TrackDraw API access and source edits do not silently change the event course.
+- Ship a static build of the same viewer through a RotorHazard plugin, with locally installed assets and both local course-file import and API-based project selection/refresh; configuring a cloud connection remains optional for the organizer.
+- Prove renderer extraction, catalog fidelity, asset portability, and complete API project discovery before implementing the host adapters.
+- Keep both integrations open until verified on their actual event surfaces; RotorHazard requires both fully disconnected local installation/import and cloud selection/refresh followed by offline cold loads from a second LAN device.
 
 #### Share Lifecycle Follow-up
 
@@ -741,7 +751,7 @@ Included:
 - Pagination and configurable page sizes across dashboard users, gallery, shares, API keys, and audit tables
 - Clearer share-management filters and operator controls
 
-Supporting research: `docs/research/admin-metrics-analytics.md`.
+Supporting research: `docs/research/implemented/admin-metrics-analytics.md`.
 
 </details>
 
