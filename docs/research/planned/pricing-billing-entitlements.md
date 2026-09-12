@@ -153,13 +153,17 @@ Options:
   - Useful if the business/accounting/tax setup is ready.
   - More direct responsibility for merchant, tax, and operational details unless paired with additional services.
 
-Current preference:
+Current product and architecture decision:
 
-- **Use Stripe Billing.**
-- Stripe allows individual (non-business) accounts in the Netherlands. Income from subscriptions can be reported as "overige werkzaamheden" (box 1) in the annual Dutch income tax return. No KVK registration or VAT number is required at low revenue levels.
-- If revenue grows or a Dutch eenmanszaak is registered for other reasons, Stripe transfers cleanly to a business account. Under the Dutch KOR (Kleineondernemersregeling, threshold €20.000/year) a registered business is also VAT-exempt with no quarterly VAT filing obligation.
-- Stripe has superior developer tooling and documentation compared to Merchant of Record alternatives.
+- **Use Stripe Billing** as the selected provider for implementation planning.
+- Evaluate the integration against hosted checkout, billing portal support, webhook reliability, subscription lifecycle handling, and maintenance effort.
 - Keep the TrackDraw entitlement layer provider-neutral so switching provider later remains possible.
+
+Launch assumptions to validate:
+
+- Confirm provider onboarding eligibility and the intended business registration before enabling payments.
+- Validate the applicable tax, VAT, invoicing, refund, and accounting responsibilities for the intended customer markets with qualified advice and current official guidance.
+- Record the validated operational setup separately. Provider selection does not establish launch readiness, eligibility for a tax scheme, or exemptions from registration and filing obligations.
 
 ## Billing Flow
 
@@ -168,7 +172,7 @@ Preferred future flow:
 1. User opens Account or Plans page.
 2. User selects the paid plan.
 3. TrackDraw creates a hosted checkout session with the provider.
-4. Provider handles payment, tax, invoices, and confirmation.
+4. Provider handles payment and confirmation; invoice and tax configuration follow the validated operating setup.
 5. Provider sends webhook to TrackDraw.
 6. TrackDraw verifies webhook signature.
 7. TrackDraw stores subscription state.
@@ -224,7 +228,7 @@ Done state:
 - Plan naming and price are decided.
 - Tax/accounting responsibilities are understood before launch.
 
-**Current status: decided.** Stripe Billing is the chosen provider. A Dutch eenmanszaak will be registered before payment goes live. EU VAT will be handled via the OSS-regeling.
+**Current status: provider selected; launch validation remains open.** Stripe Billing is the chosen provider. The intended business registration and tax/accounting setup are planning assumptions to validate before payments go live; this provider decision does not complete the launch criteria above.
 
 ### Phase 4: Checkout And Webhooks
 
