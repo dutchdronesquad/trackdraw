@@ -19,7 +19,7 @@ Recommended direction:
 
 This avoids the main UX problem with uploaded images: a loose image has no reliable scale unless the user calibrates it.
 
-For the full product evaluation and UX rationale, see [docs/research/map-field-overlay-evaluation.md](../research/map-field-overlay-evaluation.md).
+For the full product evaluation and UX rationale, see [docs/research/implemented/map-field-overlay-evaluation.md](../research/implemented/map-field-overlay-evaluation.md).
 
 ## Approval Recommendation
 

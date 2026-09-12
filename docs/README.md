@@ -11,8 +11,8 @@ TrackDraw documentation is grouped into a few focused areas:
 - [deployment/](./deployment/)
   Runtime, Cloudflare, D1, and local development workflow.
 
-- [research/](./research/)
-  Exploratory documents for future platform and product directions.
+- [research/](./research/README.md)
+  Research grouped by implemented foundations, work in progress, and planned or parked directions.
 
 - [pva/](./pva/)
   Product vision and action documents for specific feature areas.

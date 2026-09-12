@@ -143,8 +143,8 @@ Only after that should TrackDraw consider ambiguity detection, curvature constra
 
 ## References
 
-- `docs/research/path-curve-ux.md`
-- `docs/research/maneuver-curve-optimization.md`
+- `docs/research/planned/path-curve-ux.md`
+- `docs/research/planned/maneuver-curve-optimization.md`
 - Centripetal Catmull-Rom splines: `https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline`
 - Dubins paths: `https://en.wikipedia.org/wiki/Dubins_path`
 - Ayala, Kirszenblat, Rubinstein, "A geometric approach to shortest bounded curvature paths": `https://arxiv.org/abs/1403.4899`

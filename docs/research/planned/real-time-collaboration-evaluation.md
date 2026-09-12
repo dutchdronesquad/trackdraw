@@ -182,7 +182,7 @@ That reduces one major source of ambiguity, but not the need for a real shared e
 
 TrackDraw cannot support credible real-time collaboration by only adding a live transport layer.
 
-The current editor is still centered on a single local Zustand store in [src/store/editor.ts](../../src/store/editor.ts), local autosave in [src/hooks/useEditorProjects.ts](../../src/hooks/useEditorProjects.ts), and whole-design serialization in [src/lib/track/design.ts](../../src/lib/track/design.ts). The project and share APIs also still work with complete design snapshots rather than live edit sessions.
+The current editor is still centered on a single local Zustand store in [src/store/editor.ts](../../../src/store/editor.ts), local autosave in [src/hooks/useEditorProjects.ts](../../../src/hooks/editor/useEditorProjects.ts), and whole-design serialization in [src/lib/track/design.ts](../../../src/lib/track/design.ts). The project and share APIs also still work with complete design snapshots rather than live edit sessions.
 
 What improved is the internal boundary clarity:
 
@@ -264,8 +264,8 @@ This is a new product surface, not just a background implementation detail.
 
 The current backend routes are snapshot-oriented:
 
-- [src/app/api/projects/route.ts](../../src/app/api/projects/route.ts)
-- [src/app/api/shares/route.ts](../../src/app/api/shares/route.ts)
+- [src/app/api/projects/route.ts](../../../src/app/api/projects/route.ts)
+- [src/app/api/shares/route.ts](../../../src/app/api/shares/route.ts)
 
 Collaboration would need an additional coordination layer for:
 

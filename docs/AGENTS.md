@@ -31,19 +31,13 @@ A research document may cover:
 - prior-art review
 - shipped product direction notes
 
-Current research documents:
+Use [the research index](research/README.md) when locating a topic or checking its delivery status. Research is grouped by implementation status:
 
-- `trackdraw-rest-api.md` — product and technical direction for a versioned account-backed REST API
-- `real-time-collaboration-evaluation.md` — collaboration architecture evaluation
-- `real-time-collaboration-product-shape.md` — host-review product model and go/no-go criteria
-- `ar-mode-evaluation.md` — AR mode technical feasibility
-- `ar-mode-product-shape.md` — AR product model and go/no-go criteria
-- `live-race-overlay-evaluation.md` — race overlay product model and technical analysis
-- `rotorhazard-event-viewer-integration.md` — long-term RotorHazard-hosted offline-capable TrackDraw event viewer direction
-- `presets-store.md` — community preset store publication, browse, and save-to-private-copy direction
-- `generated-flightpath-assistance.md` — obstacle-order-based generated Race Line assistance direction
-- `map-field-overlay-evaluation.md` — field overlay product model and UX analysis
-- `accounts-project-sync.md` — shipped product direction for accounts and project sync
+- `implemented/`: the documented foundation is built; retain rationale and maintained contracts here.
+- `in-progress/`: a foundation exists, but the documented delivery or evaluation still has open work.
+- `planned/`: proposals, parked directions, and reverted experiments awaiting a new implementation decision.
+
+When moving a document between statuses, verify its scope against code and the active roadmap or PVA, update its index entry, and repair incoming and relative links. Record remaining scope explicitly; a shipped first slice does not complete every future idea in the document.
 
 ### `deployment/`
 

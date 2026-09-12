@@ -26,8 +26,11 @@ The next TrackDraw priority is generated flightpath validation first, completion
 
 ## Follow-up
 
+- [ ] Event track viewers: FPVScores and RotorHazard (`Research`)
+      Develop a shared npm/static viewer with host-stored course snapshots. FPVScores connects server-side with an API key and attaches a selected project to an event; RotorHazard must support both fully local file import and cloud project selection/refresh, storing complete courses locally for offline display through either route. Prove extraction, rendering fidelity, and asset portability before host acceptance. Research document: `docs/research/planned/event-track-viewer-integrations.md`.
+
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
-      Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
+      Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/in-progress/generated-flightpath-assistance.md`.
 
 - [x] Faster editor actions and safe project variants (`No account required`, `Account-backed`)
       Reduce repeated navigation and precision work without adding more permanent header controls. Keep each improvement independently shippable and reuse existing editor and project actions rather than introducing parallel state or workflows.
@@ -54,7 +57,7 @@ The next TrackDraw priority is generated flightpath validation first, completion
         Let operators label, close, or link private reports to a public GitHub issue without automatically publishing user text. Keep screenshots and diagnostic attachments out until upload, privacy, retention, and deletion rules are defined.
 
 - [ ] Translation management workflow (`Research`)
-      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management.md`.
+      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/in-progress/translation-management.md`.
   - [ ] Hosted versus self-hosted decision
         Run a bounded Crowdin Free pilot first; retain self-hosted Weblate as the fallback. Decide only after validating quota, permissions, repository sync, contributor review, licensing, and ongoing operational cost.
   - [ ] Crowdin Free pilot
@@ -68,7 +71,7 @@ The next TrackDraw priority is generated flightpath validation first, completion
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
   - [ ] 3D maneuver curve optimization (`Research`)
-        Powerloops, split-S maneuvers, and similar moves are inherently 3D: a powerloop is a full vertical circle back through a gate, a split-S is a downward half-loop with a direction reversal. The current CatmullRom route renders these as flat horizontal curves, which is physically wrong. The goal is geometry-driven optimization with no manual annotation — the user just draws waypoints that describe the spatial intent (a tight loop near a gate, a 180° arc with elevation change), and the optimizer automatically detects the pattern and generates the correct 3D curve. The 2D canvas shows a recognizable indicator for the detected maneuver section; the 3D preview renders the actual vertical loop or half-loop. Research document: `docs/research/maneuver-curve-optimization.md`.
+        Powerloops, split-S maneuvers, and similar moves are inherently 3D: a powerloop is a full vertical circle back through a gate, a split-S is a downward half-loop with a direction reversal. The current CatmullRom route renders these as flat horizontal curves, which is physically wrong. The goal is geometry-driven optimization with no manual annotation — the user just draws waypoints that describe the spatial intent (a tight loop near a gate, a 180° arc with elevation change), and the optimizer automatically detects the pattern and generates the correct 3D curve. The 2D canvas shows a recognizable indicator for the detected maneuver section; the 3D preview renders the actual vertical loop or half-loop. Research document: `docs/research/planned/maneuver-curve-optimization.md`.
   - [ ] True 3D curve replacement for detected maneuvers
         Replace detected maneuver sections with physically plausible vertical loop or half-loop curve geometry and blend cleanly into surrounding route segments. Keep this open until the 3D preview renders the corrected maneuver shape rather than only detecting and reviewing it.
 
@@ -142,7 +145,7 @@ The next TrackDraw priority is generated flightpath validation first, completion
       Pre-rendered the landing page, anonymous Studio shell, privacy page, and terms page while preserving saved browser theme and language preferences. Dynamic gallery, share/embed, account, authentication, and API surfaces remain uncached.
 
 - [x] Product metrics and dashboard operations (`Account-backed`)
-      Added a separate, retention-limited product-event layer without IP addresses or device fingerprinting, deeper range/trend/retention metrics, paginated dashboard data tables, and clearer share-management controls. Research document: `docs/research/admin-metrics-analytics.md`.
+      Added a separate, retention-limited product-event layer without IP addresses or device fingerprinting, deeper range/trend/retention metrics, paginated dashboard data tables, and clearer share-management controls. Research document: `docs/research/implemented/admin-metrics-analytics.md`.
 
 </details>
 
