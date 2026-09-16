@@ -455,9 +455,9 @@ Open questions:
 - Should the public API call drawn editor objects `shapes` for continuity, or expose them as `objects` while keeping `shapes` as internal/editor terminology?
 - What minimal fields does RaceLink need for track elements, gate groups, and lighting zones before a vendor-specific adapter would be justified?
 
-#### Event Track Viewers: FPVScores And RotorHazard (`Research`)
+#### Track Viewer Package (`Research`)
 
-Develop a shared read-only viewer and portable course snapshot, with FPVScores as the first integration and RotorHazard as the offline/LAN consumer. [Research and delivery choices](../research/planned/event-track-viewer-integrations.md).
+Develop a shared read-only viewer and portable course snapshot, better than a plain iframe, with DDS's own website as the first consumer and FPVScores/RotorHazard as reference host examples (FPVScores hosted, RotorHazard offline/LAN), not a closed list. Draft PVA: [Track Viewer Package PVA](../pva/track-viewer-package-pva.md). [Research and delivery choices](../research/in-progress/track-viewer-package.md).
 
 - FPVScores installs the npm viewer; its backend stores an organizer's API key, lists owned projects, and imports the selected course for an event.
 - Prefer host-stored snapshots with explicit preview/refresh, so visitor rendering does not require TrackDraw API access and source edits do not silently change the event course.

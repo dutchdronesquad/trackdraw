@@ -18,6 +18,7 @@ Current PVAs:
 - `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
 - `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
 - `3d-transform-controls-pva.md` — focused 3D move/rotate gizmo and orbit-control stabilization
+- `track-viewer-package-pva.md` — extracted `@trackdraw/viewer` npm/static package and portable course snapshot, with DDS's own website as the first consumer
 
 ### `research/`
 
