@@ -4,7 +4,10 @@ import {
   RENDERER_CAPABILITIES,
   RENDERER_VERSION,
 } from "@trackdraw/viewer/snapshot/version";
-import { VIEWER_SNAPSHOT_SCHEMA, type RequiredViewer } from "@trackdraw/viewer/snapshot/types";
+import {
+  VIEWER_SNAPSHOT_SCHEMA,
+  type RequiredViewer,
+} from "@trackdraw/viewer/snapshot/types";
 
 const installed = {
   rendererVersion: RENDERER_VERSION,
@@ -33,7 +36,10 @@ describe("isViewerCompatible", () => {
 
   it("is incompatible when a required capability is missing", () => {
     expect(
-      isViewerCompatible(required({ capabilities: ["shape:nonexistent"] }), installed)
+      isViewerCompatible(
+        required({ capabilities: ["shape:nonexistent"] }),
+        installed
+      )
     ).toBe(false);
   });
 

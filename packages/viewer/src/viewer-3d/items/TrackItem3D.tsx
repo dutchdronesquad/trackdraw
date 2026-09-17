@@ -270,7 +270,11 @@ function Shape3D({
     case "barrier":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Barrier3D assetResolver={assetResolver} shape={shape} selected={isSelected} />
+          <Barrier3D
+            assetResolver={assetResolver}
+            shape={shape}
+            selected={isSelected}
+          />
           {/* Invisible hit plane so clicks anywhere on the barrier face register,
               even between the thin wires of net/fence variants */}
           <mesh

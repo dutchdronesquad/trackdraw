@@ -53,7 +53,9 @@ describe("toViewerDesignSnapshot", () => {
     const viewerShape = snapshot.design.shapes[0];
 
     expect(viewerShape.meta).toBeDefined();
-    expect(viewerShape.meta?.catalog?.elementId).toBe(TRACKDRAW_GATE_ELEMENT_ID);
+    expect(viewerShape.meta?.catalog?.elementId).toBe(
+      TRACKDRAW_GATE_ELEMENT_ID
+    );
     expect(Object.keys(viewerShape.meta ?? {})).toEqual(["catalog"]);
   });
 

@@ -7,7 +7,10 @@ import {
 } from "@/lib/track/elements/catalog";
 import type { Shape } from "@/lib/types";
 
-function draftToShape(id: string, draft: ReturnType<typeof createCatalogShapeDraft>): Shape {
+function draftToShape(
+  id: string,
+  draft: ReturnType<typeof createCatalogShapeDraft>
+): Shape {
   return { ...draft, id } as Shape;
 }
 

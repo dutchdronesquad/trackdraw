@@ -15,7 +15,9 @@ export function getViewerDesignShapes(design: TrackDesign): Shape[] {
   return getDesignShapes(design);
 }
 
-export function getViewerPrimaryPolylineId(shapes: readonly Shape[]): string | null {
+export function getViewerPrimaryPolylineId(
+  shapes: readonly Shape[]
+): string | null {
   const primary = shapes.find((shape) => shape.kind === "polyline");
   return primary?.id ?? null;
 }

@@ -5,5 +5,5 @@
     "de": "de-DE",
     "zh-CN": "zh-CN"
   },
-  "englishOnlyNamespaces": ["dashboard", "legal"]
+  "englishOnlyNamespaces": ["dashboard", "devTools", "legal"]
 }

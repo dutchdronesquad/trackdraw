@@ -14,13 +14,13 @@ Scope cut from Phase 1 (recorded, not silent): flythrough is not extracted — `
 
 For `buildMultiOrgDesign()` (one TrackDraw-owned gate, one MultiGP-owned gate, a MultiGP hurdle, a cone, a label, and an elevation-varying polyline route):
 
-| Request | Trigger | Notes |
-| --- | --- | --- |
-| Next.js JS chunk for `viewer-3d/TrackViewer3D` | First 3D tab visit, or an 800ms idle timer after mount | Same on-demand pattern as the editor's `EditorShell`; confirmed via `React.lazy` + `Suspense`, no `next/dynamic` dependency |
-| `standard-gate-5x5` MultiGP textures (left/right/top panel) | `useTexture()` inside the package's `Gate3D.tsx`, only when that shape is in the design | Scoped by `getDesignTexturePaths(shapes)`, not the whole catalog |
-| `5x10-hurdle-multigp.webp` | `useTexture()` inside `Barrier3D.tsx` | Same design-scoped path |
-| `trackdraw-logo-mono-{lightbg,darkbg}.svg` | `FieldWatermark`'s `<img>` preload, on 3D mount | Routed through `assetResolver` like every other texture path — this was **not** covered by the original `getTrackElementCatalogTexturePaths()` inventory, found during extraction |
-| **Nothing else** | — | No font fetch, no analytics/telemetry beacon, no `next-intl` locale JSON, no editor-store hydration call, no TrackDraw API call of any kind |
+| Request                                                     | Trigger                                                                                 | Notes                                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js JS chunk for `viewer-3d/TrackViewer3D`              | First 3D tab visit, or an 800ms idle timer after mount                                  | Same on-demand pattern as the editor's `EditorShell`; confirmed via `React.lazy` + `Suspense`, no `next/dynamic` dependency                                                       |
+| `standard-gate-5x5` MultiGP textures (left/right/top panel) | `useTexture()` inside the package's `Gate3D.tsx`, only when that shape is in the design | Scoped by `getDesignTexturePaths(shapes)`, not the whole catalog                                                                                                                  |
+| `5x10-hurdle-multigp.webp`                                  | `useTexture()` inside `Barrier3D.tsx`                                                   | Same design-scoped path                                                                                                                                                           |
+| `trackdraw-logo-mono-{lightbg,darkbg}.svg`                  | `FieldWatermark`'s `<img>` preload, on 3D mount                                         | Routed through `assetResolver` like every other texture path — this was **not** covered by the original `getTrackElementCatalogTexturePaths()` inventory, found during extraction |
+| **Nothing else**                                            | —                                                                                       | No font fetch, no analytics/telemetry beacon, no `next-intl` locale JSON, no editor-store hydration call, no TrackDraw API call of any kind                                       |
 
 Confirmed the design-scoped fix works: a `TrackDraw`-only design (no MultiGP shapes) produces **zero** texture requests until a MultiGP or TrackDraw-branded-texture shape is actually present — verified in `packages/viewer/tests/assets/texture-paths.test.ts`, which regression-guards that `getDesignTexturePaths` returns exactly the entries a design uses, not the full 24-entry catalog the editor's `getTrackElementCatalogTexturePaths()` still (correctly, for its own eager-warm use case) walks in full.
 
@@ -31,7 +31,7 @@ curl .../assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp      
 curl .../dev/viewer-spike/assets-prefix-demo/assets/.../5x10-hurdle-multigp.webp  → 200, 28334 bytes (identical)
 ```
 
-**Deliberately shared, not isolated:** drei's `useTexture` cache is a module-level `Map` keyed by the *resolved* URL string. Two `TrackViewer` instances on one page rendering the same catalog obstacle share one decoded texture instead of double-fetching — correct behavior (it's an asset cache keyed by URL, not by design/editor state), but worth recording explicitly rather than leaving ambiguous. No other module-level mutable state was found in the extracted render path with one exception: `src/components/canvas/preview3d/texture-debug.ts`'s dev-only texture-orientation override store, reused as-is (unmodified, pure, in-memory) because it never receives writes outside a dev-only debug UI that the extracted package does not include — inert for this package's purposes.
+**Deliberately shared, not isolated:** drei's `useTexture` cache is a module-level `Map` keyed by the _resolved_ URL string. Two `TrackViewer` instances on one page rendering the same catalog obstacle share one decoded texture instead of double-fetching — correct behavior (it's an asset cache keyed by URL, not by design/editor state), but worth recording explicitly rather than leaving ambiguous. No other module-level mutable state was found in the extracted render path with one exception: `src/components/canvas/preview3d/texture-debug.ts`'s dev-only texture-orientation override store, reused as-is (unmodified, pure, in-memory) because it never receives writes outside a dev-only debug UI that the extracted package does not include — inert for this package's purposes.
 
 ## Multi-instance isolation
 

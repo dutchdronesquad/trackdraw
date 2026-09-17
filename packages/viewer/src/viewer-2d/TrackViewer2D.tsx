@@ -66,8 +66,9 @@ const TrackViewer2D = memo(
     },
     ref
   ) {
-    const tCanvas = mergeViewerLabels({ canvasOverlay: labelOverrides })
-      .canvasOverlay;
+    const tCanvas = mergeViewerLabels({
+      canvasOverlay: labelOverrides,
+    }).canvasOverlay;
     const designShapes = useMemo(() => getViewerDesignShapes(design), [design]);
     const [zmin, zmax] = useMemo(
       () => getViewerPolylineZRange(design),

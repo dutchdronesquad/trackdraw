@@ -70,7 +70,7 @@ export function TrackViewer({
             type="button"
             onClick={() => showView("2d")}
             aria-pressed={view === "2d"}
-            className="rounded-md border border-border/60 bg-card/85 px-2 py-1 text-xs font-medium backdrop-blur"
+            className="border-border/60 bg-card/85 rounded-md border px-2 py-1 text-xs font-medium backdrop-blur"
           >
             2D
           </button>
@@ -78,14 +78,17 @@ export function TrackViewer({
             type="button"
             onClick={() => showView("3d")}
             aria-pressed={view === "3d"}
-            className="rounded-md border border-border/60 bg-card/85 px-2 py-1 text-xs font-medium backdrop-blur"
+            className="border-border/60 bg-card/85 rounded-md border px-2 py-1 text-xs font-medium backdrop-blur"
           >
             3D
           </button>
         </div>
       ) : null}
 
-      <div style={{ visibility: view === "2d" ? "visible" : "hidden" }} className="absolute inset-0">
+      <div
+        style={{ visibility: view === "2d" ? "visible" : "hidden" }}
+        className="absolute inset-0"
+      >
         <TrackViewer2D
           design={design}
           unitSystem={unitSystem}
