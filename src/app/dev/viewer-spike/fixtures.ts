@@ -6,6 +6,7 @@ import {
   TRACKDRAW_CONE_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LABEL_ELEMENT_ID,
+  TRACKDRAW_TOWER_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
@@ -104,7 +105,7 @@ export function buildSecondDesign(): TrackDesign {
 
   const tower = shapeWithId(
     "spike-b-tower",
-    createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+    createCatalogShapeDraft(TRACKDRAW_TOWER_ELEMENT_ID, {
       x: 6,
       y: 6,
       rotation: 0,

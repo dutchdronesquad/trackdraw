@@ -2,10 +2,7 @@ import { nanoid } from "nanoid";
 import { getDesignShapes } from "@/lib/track/design";
 import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
 import type { Shape, TrackDesign } from "@/lib/types";
-import {
-  CURRENT_REQUIRED_VIEWER,
-  RENDERER_CAPABILITIES,
-} from "@trackdraw/viewer/snapshot/version";
+import { CURRENT_REQUIRED_VIEWER } from "@trackdraw/viewer/snapshot/version";
 import {
   VIEWER_SNAPSHOT_SCHEMA,
   type RequiredViewer,
@@ -45,9 +42,12 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
   return {
     schema: VIEWER_SNAPSHOT_SCHEMA,
     minRendererVersion: CURRENT_REQUIRED_VIEWER.minRendererVersion,
-    capabilities: RENDERER_CAPABILITIES.filter((capability) =>
-      used.has(capability)
-    ),
+    // Report every capability the design's shapes actually use, not just the
+    // ones the current renderer happens to recognize - intersecting with
+    // RENDERER_CAPABILITIES here would silently drop the requirement for any
+    // shape kind/catalog org isViewerCompatible() doesn't yet know about,
+    // letting an incompatible snapshot report as compatible.
+    capabilities: Array.from(used).sort(),
   };
 }
 
