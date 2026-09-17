@@ -2,13 +2,28 @@
 
 **Original research:** September 17, 2026
 
-**Status:** Direction agreed (extract MultiGP textures into a dedicated hosted asset repository, served from Cloudflare R2). Not started; no repository, hosting, or code changes exist yet. Third-party contribution is an explicitly future-only extension, not committed.
+**Status:** Direction agreed (extract MultiGP textures into a dedicated hosted asset repository named `obstacles`, served from Cloudflare R2). Not started; no repository, hosting, or code changes exist yet. The [Legal Basis](#legal-basis) below is not yet resolved — reaching out to MultiGP for explicit permission, and getting qualified legal review, should happen before or alongside the repository move, not be treated as covered by it. Third-party contribution is an explicitly future-only extension, not committed.
 
 ## Why This Exists
 
 While deciding the [Track Viewer Package](../in-progress/track-viewer-package.md) [PVA](../../pva/track-viewer-package-pva.md)'s Phase 0 asset inventory, MultiGP-branded catalog textures (`organization: "MultiGP"` entries in [`src/lib/track/elements/catalog.ts`](../../../src/lib/track/elements/catalog.ts), files under `public/assets/models/textures/multigp-obstacles/`) turned out to need different handling than TrackDraw's own generic catalog geometry: they cannot ship inside the permissively licensed (`Apache-2.0`) `@trackdraw/viewer` package, because [`docs/assets/multigp-obstacle-asset-workflow.md`](../../assets/multigp-obstacle-asset-workflow.md) documents TrackDraw's own in-app use of that artwork, not a redistribution license for a package any third party can install and redistribute further.
 
 That gap is broader than the viewer package: these textures already live inside the `AGPL-3.0-only` main repository today, without their own explicit rights boundary. Moving them to a dedicated, separately licensed asset repository fixes that for the existing app too, not only for the new viewer package.
+
+## Legal Basis
+
+Do not treat the "for identification purposes only" disclaimer (the Home Assistant `brands` pattern) as settling this. It answers only one of two separate legal questions, and the current assets fail the one it doesn't answer.
+
+- **Trademark (the name "MultiGP" itself): reasonably solid.** Referring to "MultiGP Standard Gate 5x5" to describe a compatible layout is squarely within nominative fair use (US) and equivalent doctrines elsewhere: using a mark only as far as needed to identify a compatible product, without implying endorsement. This is the part a disclaimer like Home Assistant's genuinely covers, and it is the part TrackDraw already relies on informally today.
+- **Copyright (the obstacle artwork itself): not solid, and a disclaimer does not fix it.** `assets/multigp/multigp-obstacles.glb` and the extracted/optimized textures under `public/assets/models/textures/multigp-obstacles/` are taken directly from MultiGP's own official SketchUp/obstacle guide — their copyrighted 3D models and imagery, not TrackDraw's own creative work. Confirmed while writing this: every current MultiGP texture is an extraction from that source with no independent creative work added, except the corner-flag back texture, which is a mirrored copy of the front — a trivial derivative transformation, not a new independently created work. "Rebuild it ourselves from public dimensions instead of extracting MultiGP's file" is not an accurate description of what exists today, and would only become true if someone produced genuinely new artwork without referencing MultiGP's GLB/textures at all (new photography, a from-scratch model built only from published measurements) — not by editing what's already extracted.
+
+What actually reduces risk, in order of how much it helps:
+
+1. **Ask MultiGP for explicit permission to host and redistribute these specific assets.** This is the only option that resolves the copyright question directly rather than managing around it, and it is realistic: race organizations generally benefit from accurate third-party tools reproducing their official specs, so a straightforward request has a reasonable chance of a straightforward yes (or an official asset kit, which would also remove the "we extracted it from a GLB" provenance question entirely).
+2. **Independently created artwork, only if permission is refused.** Real cost — new reference material, new modeling/texturing work — not a quick fix to the current files, and only worth doing if (1) fails.
+3. **Repository separation, disclaimer, and clear rights boundary (this document's "Recommended Direction" below).** Worth doing regardless of (1) and (2) as good governance — it is how TrackDraw already operates informally, and it matches established practice (Home Assistant and similar projects). It does not by itself grant redistribution rights, and moving these assets into their own clearly labeled public repository makes the practice more visible, not less, which is a reason to pursue (1) before or alongside this move rather than treat this document as having resolved the question.
+
+This is not a substitute for actual legal advice. Get a qualified IP lawyer's review before treating this as settled — certainly before the repository is public, and definitely before any third-party-contribution extension (see below) is considered.
 
 ## Naming Note
 
