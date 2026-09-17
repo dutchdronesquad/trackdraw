@@ -40,7 +40,9 @@ const assetManifestEntrySchema = z.object({
   path: z.string(),
   contentType: z.string(),
   sizeBytes: z.number().int().nonnegative(),
-  sha256: z.string().length(64),
+  sha256: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/, "must be a lowercase hex sha256 digest"),
   attribution: z.string().optional(),
 });
 
@@ -56,11 +58,11 @@ export const viewerDesignSnapshotSchema = z.object({
     version: z.literal(2),
     title: z.string(),
     field: z.object({
-      width: z.number(),
-      height: z.number(),
+      width: z.number().nonnegative(),
+      height: z.number().nonnegative(),
       origin: z.enum(["tl", "bl"]),
-      gridStep: z.number(),
-      ppm: z.number(),
+      gridStep: z.number().nonnegative(),
+      ppm: z.number().nonnegative(),
     }),
     shapes: z.array(viewerShapeSchema),
     updatedAt: z.string(),

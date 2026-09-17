@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   getAssetManifestEntry,
   getDesignAssetManifest,
 } from "@trackdraw/viewer/assets/manifest";
+import * as texturePaths from "@trackdraw/viewer/assets/texture-paths";
 import {
   createCatalogShapeDraft,
   MULTIGP_HURDLE_ELEMENT_ID,
@@ -63,5 +64,17 @@ describe("getDesignAssetManifest", () => {
     const manifest = getDesignAssetManifest([hurdle]);
     expect(manifest).toHaveLength(1);
     expect(manifest[0].path).toBe(HURDLE_TEXTURE_PATH);
+  });
+
+  it("throws when a design references a texture path missing from the manifest", () => {
+    const spy = vi
+      .spyOn(texturePaths, "getDesignTexturePaths")
+      .mockReturnValue(["/assets/does/not/exist.webp"]);
+
+    expect(() => getDesignAssetManifest([])).toThrow(
+      /missing an entry for "\/assets\/does\/not\/exist\.webp"/
+    );
+
+    spy.mockRestore();
   });
 });

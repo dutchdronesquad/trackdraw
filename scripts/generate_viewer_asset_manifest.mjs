@@ -46,7 +46,11 @@ function toRootRelativePath(file) {
 function buildManifest() {
   const manifest = {};
 
-  for (const file of walk(TEXTURE_ROOT)) {
+  // readdirSync's traversal order isn't guaranteed across platforms/runs -
+  // sort so the committed JSON's key order (and thus its diffs) stays stable.
+  const files = walk(TEXTURE_ROOT).sort();
+
+  for (const file of files) {
     const ext = path.extname(file).toLowerCase();
     const contentType = CONTENT_TYPES[ext];
     if (!contentType) continue;

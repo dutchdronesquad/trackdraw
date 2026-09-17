@@ -69,6 +69,31 @@ describe("validateViewerDesignSnapshot", () => {
     );
   });
 
+  it("rejects an asset entry with a non-hex or uppercase sha256", () => {
+    const snapshot = validSnapshot();
+    snapshot.assets = [
+      {
+        path: "/assets/models/textures/multigp-obstacles/x.webp",
+        contentType: "image/webp",
+        sizeBytes: 100,
+        sha256: "A".repeat(64),
+      },
+    ];
+
+    expect(() => validateViewerDesignSnapshot(snapshot)).toThrow(
+      ViewerSnapshotValidationError
+    );
+  });
+
+  it("rejects negative field dimensions", () => {
+    const snapshot = validSnapshot();
+    snapshot.design.field.width = -1;
+
+    expect(() => validateViewerDesignSnapshot(snapshot)).toThrow(
+      ViewerSnapshotValidationError
+    );
+  });
+
   it("throws a too_large error when the serialized snapshot exceeds the byte cap", () => {
     const snapshot = validSnapshot();
     snapshot.design.title = "x".repeat(MAX_VIEWER_SNAPSHOT_BYTES + 1);
