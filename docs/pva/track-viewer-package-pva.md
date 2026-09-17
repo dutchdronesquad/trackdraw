@@ -1,8 +1,8 @@
 # Track Viewer Package PVA
 
-Date: September 17, 2026
+Date: September 16, 2026
 
-Status: Proposed; approved scope covers Phases 0–3 (through the DDS website attachment) and the RotorHazard local-import half of Phase 5. FPVScores (Phase 4) and RotorHazard's cloud adapter (the other half of Phase 5) proceed once the package exists; they are not build blockers today.
+Status: Approved for Phases 0–3 (through the DDS website attachment) and the RotorHazard local-import half of Phase 5. FPVScores (Phase 4) and RotorHazard's cloud adapter (the other half of Phase 5) proceed once the package exists; they are not build blockers today.
 
 ## Decision Summary
 

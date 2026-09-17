@@ -2,9 +2,9 @@
 
 **Original research:** June 15, 2026
 
-**Revised:** September 17, 2026
+**Revised:** September 16, 2026
 
-**Status:** Active research and architecture recommendation; no standalone viewer package or host integration implemented, not yet in PVA. [Remaining Decisions](#remaining-decisions) separates what this research already settles (the `@trackdraw/viewer` license: Apache-2.0; RotorHazard plugin ownership: TrackDraw for now), what still needs an owner call before Slice 0 (RotorHazard supported-version policy), what Slice 1 resolves by execution, and what is simply sequenced after FPVScores builds against the shipped npm package rather than blocked on a decision. Nothing in this list blocks starting Slices 0–3 (through the DDS website attachment) or the RotorHazard local-import route.
+**Status:** Active research and architecture recommendation; no standalone viewer package or host integration implemented yet. The [Track Viewer Package PVA](../../pva/track-viewer-package-pva.md) now covers Phases 0–3 (through the DDS website attachment) and the RotorHazard local-import route. [Remaining Decisions](#remaining-decisions) separates what this research already settles (the `@trackdraw/viewer` license: Apache-2.0; RotorHazard plugin ownership: TrackDraw for now), what still needs an owner call before Slice 0 (RotorHazard supported-version policy), what Slice 1 resolves by execution, and what is simply sequenced after FPVScores builds against the shipped npm package rather than blocked on a decision.
 
 ## Recommended Direction
 
