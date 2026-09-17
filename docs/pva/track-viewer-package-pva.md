@@ -38,7 +38,7 @@ Do not treat this PVA as approving:
 
 ## Delivery Checklist
 
-- [ ] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
+- [x] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
 - [ ] Phase 1: prove viewer extraction and snapshot fidelity
 - [ ] Phase 2: package and API foundation
 - [ ] Phase 3: DDS website attachment (first real consumer)
@@ -84,7 +84,7 @@ No-go or keep parked if:
 
 ### New Surfaces
 
-- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. Package layout (in-repo package vs. separate publish target) is a Phase 1 decision, not fixed here.
+- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. [`packages/viewer/`](../../packages/viewer/) is a Phase 0 scaffold (license/NOTICE only, no `package.json` or source yet) — whether the package stays in this repo or moves to a separate publish target remains a Phase 1 decision.
 - `trackdraw.viewer-snapshot.v1`: versioned envelope (`schema`, `snapshot_id`, `required_viewer`/capabilities, `design`, `assets`) built by a shared snapshot builder used by both the browser manual-export path and the authenticated API route.
 - Candidate route: `GET /api/v1/projects/[projectId]/viewer-snapshot`, reusing `tracks:read`. Name and shape are proposed, not frozen — confirm during Phase 2 and publish OpenAPI.
 - Manual export format: `.tdviewer.zip` (manifest, course data, non-bundled assets, optional poster) built by the same snapshot builder, with no cloud call required.
@@ -106,10 +106,17 @@ Work:
 
 Done state: the extracted package has its own license/NOTICE in place and a confirmed asset inventory before Phase 1 code is written.
 
+Asset inventory decision:
+
+- **Viewer-owned (ship with the package):** TrackDraw's own generic catalog geometry — gate, flag, cone, label, start/finish, ladder, dive-gate, tower, banner, fence, net (`organization: "TrackDraw"` in [`src/lib/track/elements/catalog.ts`](../../src/lib/track/elements/catalog.ts)). These are procedural/code-driven with no extracted third-party artwork.
+- **Source-restricted (never bundled into the redistributable npm/static package):** MultiGP-branded catalog textures — every entry with `organization: "MultiGP"`, texture paths under `public/assets/models/textures/multigp-obstacles/`. Per [`docs/assets/multigp-obstacle-asset-workflow.md`](../../docs/assets/multigp-obstacle-asset-workflow.md), "MultiGP names, obstacle artwork, and related branding belong to MultiGP" — that source documents TrackDraw's own in-app use, not a redistribution license for a permissively licensed package any third party can install and redistribute further. The existing `organization` field on each catalog entry already gives Phase 1 a ready-made, code-level signal for this split; no new tagging work is needed.
+- **How MultiGP visuals still render:** treat these textures as the "future course-specific assets" class already described in [Viewer Snapshot And Assets](../research/in-progress/track-viewer-package.md#viewer-snapshot-and-assets) — copied into a specific snapshot's asset set at export/API-fetch time when a design actually uses a MultiGP-catalog item, not installed with the versioned viewer package itself. This keeps the same rule RotorHazard's offline route already needs (a design's required assets travel with its snapshot/manual export, not as a separate network fetch) and avoids embedding MultiGP artwork in an openly redistributable package.
+- Follow-up for Phase 1/2: confirm this split holds once the extraction spike enumerates every asset request, and update [Viewer Snapshot And Assets](../research/in-progress/track-viewer-package.md#viewer-snapshot-and-assets) if it turns out not all catalog textures cleanly follow the `organization` field.
+
 Checklist:
 
-- [ ] Apache-2.0 `LICENSE`/`NOTICE`/header text drafted for the viewer package
-- [ ] Asset inventory decided and documented (viewer-owned vs. source-restricted)
+- [x] Apache-2.0 `LICENSE`/`NOTICE`/header text drafted for the viewer package ([`packages/viewer/LICENSE`](../../packages/viewer/LICENSE), [`packages/viewer/NOTICE.md`](../../packages/viewer/NOTICE.md))
+- [x] Asset inventory decided and documented (viewer-owned vs. source-restricted)
 
 ### Phase 1: Prove Viewer Extraction And Snapshot Fidelity
 

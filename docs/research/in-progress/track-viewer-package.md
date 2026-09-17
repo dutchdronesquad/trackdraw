@@ -169,10 +169,10 @@ Use `serializeDesignForShare` as an implementation starting point, then explicit
 
 For v1, exclude map references consistently with existing share serialization. Venue imagery, tile fetching, and user-uploaded assets need a separate portability and redistribution decision. Do not promise visual parity with an editor-only map layer.
 
-Separate two asset classes:
+Separate two asset classes — this is not purely hypothetical: TrackDraw's own catalog already contains both kinds, decided in the PVA's [Phase 0 asset inventory](../../pva/track-viewer-package-pva.md#phase-0-confirm-distribution-fit):
 
-- Viewer-owned catalog textures and other required static assets: installed with the versioned viewer, with a manifest/resolver that works at any host URL prefix.
-- Future course-specific assets: copied into the snapshot asset set when supported. Rendering must not depend on an expiring source URL or CDN after import.
+- Viewer-owned catalog textures and other required static assets: installed with the versioned viewer, with a manifest/resolver that works at any host URL prefix. This covers TrackDraw's own generic catalog geometry (`organization: "TrackDraw"` entries in `catalog.ts`), which is procedural/code-driven with no extracted third-party artwork.
+- Course-specific assets, copied into the snapshot asset set when supported, not bundled with the installed viewer. Rendering must not depend on an expiring source URL or CDN after import. This class already has a concrete present-day member, not just a future one: MultiGP-branded catalog textures (`organization: "MultiGP"` entries, paths under `multigp-obstacles/`) cannot ship inside the Apache-2.0 viewer package — see the [PVA](../../pva/track-viewer-package-pva.md#phase-0-confirm-distribution-fit) for why — so a design using a MultiGP catalog item must carry those textures in its own snapshot/manual export instead.
 
 The static viewer must load its own lazy chunks locally too. Copying `track.json` alone does not establish offline support. Avoid eager loading of every catalog texture when only a subset is used.
 
