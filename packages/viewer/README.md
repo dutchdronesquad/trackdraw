@@ -1,10 +1,12 @@
-# @trackdraw/viewer (scaffold)
+# @trackdraw/viewer
 
-Placeholder directory reserved for the extracted `@trackdraw/viewer` package. It exists ahead of the code so the Apache-2.0 license, `NOTICE`, and asset-inventory decision are in place before extraction starts. There is no build target, `package.json`, or source here yet.
+Extracted, framework-neutral 2D/3D track viewer. `src/` holds the Phase 1 extraction (issue [#859](https://github.com/dutchdronesquad/trackdraw/issues/859)): `TrackViewer` takes a plain `design` prop, has no dependency on the editor's Zustand store, `next-intl`, or `next/navigation`, and is consumed today via a dev-only TypeScript path alias (`@trackdraw/viewer`, see `tsconfig.json`/`vitest.config.ts`) rather than a real npm package — there is still no `package.json` or build target here.
 
-See [Track Viewer Package PVA](../../docs/pva/track-viewer-package-pva.md) for the phase plan:
+See [Track Viewer Package PVA](../../docs/pva/track-viewer-package-pva.md) for the phase plan and [the Phase 1 findings doc](../../docs/research/in-progress/track-viewer-extraction-spike-findings.md) for what the extraction proved:
 
-- Phase 1 proves extraction and finalizes the display-metadata allowlist.
-- Phase 2 adds the actual `package.json`, ESM/static builds, and the shared snapshot builder that will live in this directory.
+- Phase 1 (done except manual visual-parity review) proved extraction, finalized the display-metadata allowlist (`src/snapshot/`), and fixed the eager whole-catalog texture preload.
+- Phase 2 adds the actual `package.json`, ESM/static builds, and the shared snapshot builder.
 
-Package layout (in-repo package vs. a separate publish target) is still a Phase 1 decision; this directory is not a commitment to keep the package in this repository long-term.
+The package stays in this repository through Phase 1 and Phase 2 (see the PVA's "New Surfaces" section for why) — this is not a permanent commitment, but a split is not planned unless Phase 2's build pipeline makes one clearly worth it.
+
+A chrome-less host page exercising this package lives at `src/app/dev/viewer-spike/` in the main app.

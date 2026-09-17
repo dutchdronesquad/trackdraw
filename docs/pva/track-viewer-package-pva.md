@@ -39,7 +39,7 @@ Do not treat this PVA as approving:
 ## Delivery Checklist
 
 - [x] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
-- [ ] Phase 1: prove viewer extraction and snapshot fidelity
+- [x] Phase 1: prove viewer extraction and snapshot fidelity
 - [ ] Phase 2: package and API foundation
 - [ ] Phase 3: DDS website attachment (first real consumer)
 - [ ] Phase 4: FPVScores event attachment (sequenced after Phase 2/3; owned by FPVScores' own build)
@@ -84,7 +84,7 @@ No-go or keep parked if:
 
 ### New Surfaces
 
-- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. [`packages/viewer/`](../../packages/viewer/) is a Phase 0 scaffold (license/NOTICE only, no `package.json` or source yet) — whether the package stays in this repo or moves to a separate publish target remains a Phase 1 decision.
+- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. [`packages/viewer/`](../../packages/viewer/) held only the Phase 0 license/NOTICE scaffold; Phase 1 added its source under `packages/viewer/src/`, consumed today via a dev-only TypeScript path alias (no `package.json`/build tooling yet — that's Phase 2). **Repo-location decision:** stays in this repo through Phase 1 and Phase 2's build/publish work — the extraction boundary needed to be proven before deciding what a separate repo would even vendor; independent versioned releases don't require a separate repo (a scoped `package.json` version, git tags, and a path-filtered CI publish step work fine from a monorepo). Revisit only if Phase 2's build pipeline makes a split clearly worth it.
 - `trackdraw.viewer-snapshot.v1`: versioned envelope (`schema`, `snapshot_id`, `required_viewer`/capabilities, `design`, `assets`) built by a shared snapshot builder used by both the browser manual-export path and the authenticated API route.
 - Candidate route: `GET /api/v1/projects/[projectId]/viewer-snapshot`, reusing `tracks:read`. Name and shape are proposed, not frozen — confirm during Phase 2 and publish OpenAPI.
 - Manual export format: `.tdviewer.zip` (manifest, course data, non-bundled assets, optional poster) built by the same snapshot builder, with no cloud call required.
@@ -111,7 +111,7 @@ Asset inventory decision:
 - **Viewer-owned (ship with the package):** TrackDraw's own generic catalog geometry — gate, flag, cone, label, start/finish, ladder, dive-gate, tower, banner, fence, net (`organization: "TrackDraw"` in [`src/lib/track/elements/catalog.ts`](../../src/lib/track/elements/catalog.ts)). These are procedural/code-driven with no extracted third-party artwork.
 - **Source-restricted (never bundled into the redistributable npm/static package):** MultiGP-branded catalog textures — every entry with `organization: "MultiGP"`, texture paths under `public/assets/models/textures/multigp-obstacles/`. Per [`docs/assets/multigp-obstacle-asset-workflow.md`](../../docs/assets/multigp-obstacle-asset-workflow.md), "MultiGP names, obstacle artwork, and related branding belong to MultiGP" — that source documents TrackDraw's own in-app use, not a redistribution license for a permissively licensed package any third party can install and redistribute further. The existing `organization` field on each catalog entry already gives Phase 1 a ready-made, code-level signal for this split; no new tagging work is needed.
 - **How MultiGP visuals still render:** treat these textures as the "future course-specific assets" class already described in [Viewer Snapshot And Assets](../research/in-progress/track-viewer-package.md#viewer-snapshot-and-assets) — copied into a specific snapshot's asset set at export/API-fetch time when a design actually uses a MultiGP-catalog item, not installed with the versioned viewer package itself. This keeps the same rule RotorHazard's offline route already needs (a design's required assets travel with its snapshot/manual export, not as a separate network fetch) and avoids embedding MultiGP artwork in an openly redistributable package.
-- Follow-up for Phase 1/2: confirm this split holds once the extraction spike enumerates every asset request, and update [Viewer Snapshot And Assets](../research/in-progress/track-viewer-package.md#viewer-snapshot-and-assets) if it turns out not all catalog textures cleanly follow the `organization` field.
+- Follow-up for Phase 1/2: confirm this split holds once the extraction spike enumerates every asset request, and update [Viewer Snapshot And Assets](../research/in-progress/track-viewer-package.md#viewer-snapshot-and-assets) if it turns out not all catalog textures cleanly follow the `organization` field. **Confirmed in Phase 1** — the `organization` split held for every catalog texture; the spike's full inventory found exactly one asset request outside `getTrackElementCatalogTexturePaths()`'s original scope, the TrackDraw brand watermark logo (`/assets/brand/trackdraw-logo-mono-*.svg`), which is TrackDraw-owned by definition and does not change the split. See the [findings doc](../research/in-progress/track-viewer-extraction-spike-findings.md#networkasset-request-inventory).
 - How the source-restricted textures get hosted, vendored, and (potentially, later) opened to other organizations is its own research track, not decided here: see [Catalog Asset Hosting](../research/planned/catalog-asset-hosting.md).
 
 Checklist:
@@ -135,10 +135,12 @@ Done state: plain host page renders a snapshot, 3D loads on demand, controls wor
 
 Checklist:
 
-- [ ] Isolated spike page built outside the Next.js app shell
-- [ ] 2D/3D visual parity confirmed against the existing viewer
-- [ ] Multi-instance isolation confirmed (no shared editor store)
-- [ ] Finalized display-metadata allowlist and `required_viewer` versioning rule recorded
+- [x] Isolated spike page built outside the Next.js app shell — `src/app/dev/viewer-spike/`, no `EditorShell`/`Header`/`MobilePanels`/auth; extracted viewer lives at [`packages/viewer/src/`](../../packages/viewer/src/)
+- [x] 2D/3D visual parity confirmed against the existing viewer — manually reviewed on PR [#868](https://github.com/dutchdronesquad/trackdraw/pull/868)'s Vercel preview (`/dev/viewer-spike`), confirmed matching
+- [x] Multi-instance isolation confirmed (no shared editor store) — confirmed by construction (no `useEditor`/store import anywhere in `packages/viewer/src/**`) and by the spike page's two concurrently-rendered instances; details in the [findings doc](../research/in-progress/track-viewer-extraction-spike-findings.md#multi-instance-isolation)
+- [x] Finalized display-metadata allowlist and `required_viewer` versioning rule recorded — implementation in [`packages/viewer/src/snapshot/`](../../packages/viewer/src/snapshot/) and [`src/lib/track/viewer-snapshot.ts`](../../src/lib/track/viewer-snapshot.ts); rule recorded in the [findings doc](../research/in-progress/track-viewer-extraction-spike-findings.md#allowlist-and-required_viewer-versioning--finalized)
+
+Full network/asset inventory and remaining findings: [track-viewer-extraction-spike-findings.md](../research/in-progress/track-viewer-extraction-spike-findings.md).
 
 ### Phase 2: Package And API Foundation
 

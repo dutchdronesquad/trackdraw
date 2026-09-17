@@ -1,0 +1,12 @@
+{
+  "viewerSpike": {
+    "title": "Viewer extraction spike",
+    "heading": "Track viewer extraction spike (issue #859)",
+    "intro": "This page renders the standalone @trackdraw/viewer package (packages/viewer/src) with no editor store, next-intl, or app chrome involved — only a design object is passed in as a prop. To manually compare against the existing editor viewer, open the same fixture designs in the editor via the JSON import flow (see fixtures.ts for the raw shapes).",
+    "simulateNoWebgl": "Simulate unsupported WebGL on instance A (should fall back to 2D only, 3D toggle hidden)",
+    "instanceAHeading": "Instance A — multi-org design, light theme, imperial units",
+    "instanceBHeading": "Instance B — distinct design, dark theme, metric units (isolation check: should never show instance A's shapes)",
+    "instanceCHeading": "Instance C — same design as A, served under a non-root asset prefix ({prefix})",
+    "instanceCDescription": "Textures for this instance resolve through a rewrite rule in next.config.ts that maps {prefix}/assets/:path* back to /assets/:path* — check the Network tab to confirm every texture request for the MultiGP obstacles actually goes out under this prefix instead of the root path."
+  }
+}
