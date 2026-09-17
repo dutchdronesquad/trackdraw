@@ -2,7 +2,7 @@
 
 **Original research:** September 17, 2026
 
-**Status:** Direction agreed (extract MultiGP textures into a dedicated hosted asset repository named `obstacles`, served from Cloudflare R2). Not started; no repository, hosting, or code changes exist yet. The [Legal Basis](#legal-basis) below is not yet resolved — reaching out to MultiGP for explicit permission, and getting qualified legal review, should happen before or alongside the repository move, not be treated as covered by it. Third-party contribution is an explicitly future-only extension, not committed.
+**Status:** Direction agreed (extract MultiGP textures into a dedicated hosted asset repository named `obstacles`, served from Cloudflare R2, operating on the good-faith basis in [Legal Basis](#legal-basis)). Not started; no repository, hosting, or code changes exist yet. Third-party contribution is an explicitly future-only extension, not committed.
 
 ## Why This Exists
 
@@ -12,29 +12,9 @@ That gap is broader than the viewer package: these textures already live inside 
 
 ## Legal Basis
 
-### Operating Principle
+TrackDraw claims no ownership or authorship over this artwork. It remains the property of whichever official organization it represents — MultiGP today, potentially others later (DRL, DCL, DDR, TDRF, and similar). These files are collected and loaded purely for **recognizability**, the same reason TrackDraw already tracks official dimensions as closely as possible — not as TrackDraw's own creative work.
 
-TrackDraw's actual intent, stated plainly so it is not lost in the legal caveats below: these assets exist purely for **recognizability** — the same reason TrackDraw already tracks official dimensions as closely as possible for MultiGP-style elements. TrackDraw claims no ownership or authorship over any of this artwork. It remains the property of whichever official organization it represents — MultiGP today, and potentially others in the future (DRL, DCL, DDR, TDRF, and similar). TrackDraw only collects and loads these files so a design reads as recognizably official inside the editor; nothing about the underlying ownership changes by doing that.
-
-That principle is real and matters — it is exactly the kind of good-faith, non-competing, compatibility-oriented use that courts and rightsholders generally look on favorably, and it is standard informal practice across hobbyist/community tooling that depicts real official equipment (sim-racing liveries, flight sims using real airline branding, and so on). But it answers a different question than the one that actually determines redistribution risk, so keep the two apart:
-
-- **Not claiming ownership** — true, and worth stating explicitly wherever these assets appear.
-- **Having the right to copy and redistribute someone else's copyrighted work** — a separate legal question that "we don't claim it's ours" does not resolve by itself. Disclaiming authorship prevents false attribution; it does not grant a reproduction right. This is true regardless of intent — the recognizability purpose lowers real-world enforcement risk, but does not create a legal permission that didn't otherwise exist.
-
-### Trademark Vs. Copyright
-
-Do not treat the "for identification purposes only" disclaimer (the Home Assistant `brands` pattern) as settling this. It answers only one of two separate legal questions, and the current assets fail the one it doesn't answer.
-
-- **Trademark (referencing "MultiGP," or any other organization's name): reasonably solid.** Referring to "MultiGP Standard Gate 5x5" to describe a compatible layout is squarely within nominative fair use (US) and equivalent doctrines elsewhere: using a mark only as far as needed to identify a compatible product, without implying endorsement. This is the part a disclaimer like Home Assistant's genuinely covers, and it is the part TrackDraw already relies on informally today. It applies the same way to any official organization's name, not only MultiGP's.
-- **Copyright (the obstacle artwork itself): not solid, and a disclaimer does not fix it.** `assets/multigp/multigp-obstacles.glb` and the extracted/optimized textures under `public/assets/models/textures/multigp-obstacles/` are taken directly from MultiGP's own official SketchUp/obstacle guide — their copyrighted 3D models and imagery, not TrackDraw's own creative work. Confirmed while writing this: every current MultiGP texture is an extraction from that source with no independent creative work added, except the corner-flag back texture, which is a mirrored copy of the front — a trivial derivative transformation, not a new independently created work. "Rebuild it ourselves from public dimensions instead of extracting MultiGP's file" is not an accurate description of what exists today, and would only become true if someone produced genuinely new artwork without referencing MultiGP's GLB/textures at all (new photography, a from-scratch model built only from published measurements) — not by editing what's already extracted. The same would apply to any future organization's assets obtained the same way (extracted from their own published files or renders).
-
-What actually reduces risk, in order of how much it helps:
-
-1. **Ask the organization (MultiGP first, and any other official body added later) for explicit permission to host and redistribute these specific assets.** This is the only option that resolves the copyright question directly rather than managing around it, and it is realistic: race organizations generally benefit from accurate third-party tools reproducing their official specs, so a straightforward request has a reasonable chance of a straightforward yes (or an official asset kit, which would also remove the "we extracted it from a GLB" provenance question entirely).
-2. **Independently created artwork, only if permission is refused.** Real cost — new reference material, new modeling/texturing work — not a quick fix to the current files, and only worth doing if (1) fails.
-3. **Repository separation, disclaimer, and clear rights boundary (this document's "Recommended Direction" below), stating the Operating Principle above explicitly.** Worth doing regardless of (1) and (2) as good governance — it is how TrackDraw already operates informally, and it matches established practice (Home Assistant and similar projects). It does not by itself grant redistribution rights, and moving these assets into their own clearly labeled public repository makes the practice more visible, not less, which is a reason to pursue (1) before or alongside this move rather than treat this document as having resolved the question.
-
-This is a real, common risk-tolerance decision small tools make in practice, not a settled legal question, and not a substitute for actual legal advice. Get a qualified IP lawyer's review before treating this as settled — certainly before the repository is public, and definitely before any third-party-contribution extension (see below) is considered.
+Good faith alone does not create a redistribution right, so treat this as a deliberate, common risk posture rather than a resolved legal question: lean on good faith and transparency rather than trying to argue the point away in this document. Moving these assets into their own repository — with the disclaimer above stated plainly, clear per-organization boundaries, and (per [Future Extensibility](#future-extensibility-not-committed)) tooling that makes it easy to add or remove an organization's assets cleanly — is itself how that transparency is delivered: the scope, intent, and ownership of everything in it are visible at a glance, and any organization asking about or objecting to its inclusion is a straightforward, isolated conversation rather than something buried inside the main app. Reach out to a specific organization if and when that becomes relevant, rather than resolving it pre-emptively here; a qualified legal review is worth getting before this repository is made public, but does not need to gate writing this document.
 
 ## Naming Note
 
