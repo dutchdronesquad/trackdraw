@@ -53,7 +53,8 @@ One naming note versus the research doc's proposed envelope: this implementation
 
 ## Verified
 
-- `npm run lint`, `tsc --noEmit`, and the full `vitest` suite (1067 tests, 200 files) pass with the extraction in place.
-- 19 new tests cover `detectWebglSupport`, `createAssetResolver`, `getDesignTexturePaths` (the core eager-preload regression guard), `toViewerDesignSnapshot`'s allowlist, and `isViewerCompatible`'s versioning rule.
+- `npm run lint`, `tsc --noEmit`, `npm run build`, and the full `vitest` suite (1069 tests, 200 files) pass with the extraction in place.
+- 21 new tests cover `detectWebglSupport`, `createAssetResolver`, `getDesignTexturePaths` (the core eager-preload regression guard), `toViewerDesignSnapshot`'s allowlist and `requiredViewer.capabilities` computation, and `isViewerCompatible`'s versioning rule.
 - The spike route compiles and serves `200` in dev, and the asset-prefix rewrite serves identical bytes under both the root and prefixed path.
-- **Not verified in this pass:** pixel-level 2D/3D visual parity against the existing editor viewer, and interactive desktop/mobile control behavior — no browser-automation tool was available in this session. Per the decision made before starting this spike, that comparison is a manual step: run `npm run dev`, open `/dev/viewer-spike` next to the editor with the same fixture shapes (see `src/app/dev/viewer-spike/fixtures.ts`), and confirm 2D/3D rendering, obstacle numbering, pan/zoom, and orbit controls match.
+- **2D/3D visual parity** against the existing editor viewer: manually reviewed via the PR's Vercel preview (`/dev/viewer-spike`) and confirmed matching — obstacle rendering, route elevation/rotation, and MultiGP textures all check out against the editor.
+- All CI checks pass on PR [#868](https://github.com/dutchdronesquad/trackdraw/pull/868), including a Copilot review round that caught and fixed two issues: `computeRequiredViewer` was intersecting used capabilities with the current renderer's own `RENDERER_CAPABILITIES` list (silently dropping the requirement for any shape kind/catalog org the check doesn't yet recognize — an incompatible snapshot could report as compatible), and `buildSecondDesign()`'s "tower" fixture used the wrong catalog element ID.

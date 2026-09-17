@@ -39,7 +39,7 @@ Do not treat this PVA as approving:
 ## Delivery Checklist
 
 - [x] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
-- [ ] Phase 1: prove viewer extraction and snapshot fidelity
+- [x] Phase 1: prove viewer extraction and snapshot fidelity
 - [ ] Phase 2: package and API foundation
 - [ ] Phase 3: DDS website attachment (first real consumer)
 - [ ] Phase 4: FPVScores event attachment (sequenced after Phase 2/3; owned by FPVScores' own build)
@@ -136,7 +136,7 @@ Done state: plain host page renders a snapshot, 3D loads on demand, controls wor
 Checklist:
 
 - [x] Isolated spike page built outside the Next.js app shell — `src/app/dev/viewer-spike/`, no `EditorShell`/`Header`/`MobilePanels`/auth; extracted viewer lives at [`packages/viewer/src/`](../../packages/viewer/src/)
-- [ ] 2D/3D visual parity confirmed against the existing viewer — not yet done: no browser-automation tool was available to the agent that built the spike; this is a manual step (see [findings](../research/in-progress/track-viewer-extraction-spike-findings.md#verified))
+- [x] 2D/3D visual parity confirmed against the existing viewer — manually reviewed on PR [#868](https://github.com/dutchdronesquad/trackdraw/pull/868)'s Vercel preview (`/dev/viewer-spike`), confirmed matching
 - [x] Multi-instance isolation confirmed (no shared editor store) — confirmed by construction (no `useEditor`/store import anywhere in `packages/viewer/src/**`) and by the spike page's two concurrently-rendered instances; details in the [findings doc](../research/in-progress/track-viewer-extraction-spike-findings.md#multi-instance-isolation)
 - [x] Finalized display-metadata allowlist and `required_viewer` versioning rule recorded — implementation in [`packages/viewer/src/snapshot/`](../../packages/viewer/src/snapshot/) and [`src/lib/track/viewer-snapshot.ts`](../../src/lib/track/viewer-snapshot.ts); rule recorded in the [findings doc](../research/in-progress/track-viewer-extraction-spike-findings.md#allowlist-and-required_viewer-versioning--finalized)
 
