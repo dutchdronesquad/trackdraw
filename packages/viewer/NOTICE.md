@@ -1,6 +1,8 @@
 # @trackdraw/viewer Notice
 
-This directory is the extraction target for `@trackdraw/viewer`, licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
+Copyright 2026 Dutch Drone Squad
+
+This directory is the extraction target for `@trackdraw/viewer`, licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full, unmodified license text — do not fill in or edit the Appendix placeholders in that file; this NOTICE and per-file headers carry the copyright attribution instead.
 
 This is a deliberate exception to the rest of the repository: TrackDraw's editor and server are licensed `AGPL-3.0-only` (see the [repository root NOTICE](../../NOTICE.md)). Only the extracted viewer package uses Apache-2.0, so hosts such as FPVScores can depend on it as a normal npm package without AGPL's copyleft obligations reaching their own codebase. Do not relicense any other part of the repository based on this file.
 
