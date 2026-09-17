@@ -2,6 +2,8 @@ import { nanoid } from "nanoid";
 import { getDesignShapes } from "@/lib/track/design";
 import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
 import type { Shape, TrackDesign } from "@/lib/types";
+import { getDesignAssetManifest } from "@trackdraw/viewer/assets/manifest";
+import { validateViewerDesignSnapshot } from "@trackdraw/viewer/snapshot/schema";
 import { CURRENT_REQUIRED_VIEWER } from "@trackdraw/viewer/snapshot/version";
 import {
   VIEWER_SNAPSHOT_SCHEMA,
@@ -65,16 +67,18 @@ export function toViewerDesignSnapshot(
   design: TrackDesign
 ): ViewerDesignSnapshot {
   const shapes = getDesignShapes(design);
-  return {
+  const snapshot = {
     schema: VIEWER_SNAPSHOT_SCHEMA,
     snapshotId: nanoid(),
     requiredViewer: computeRequiredViewer(shapes),
     design: {
-      version: 2,
+      version: 2 as const,
       title: design.title,
       field: design.field,
       shapes: shapes.map(toViewerShape),
       updatedAt: design.updatedAt,
     },
+    assets: getDesignAssetManifest(shapes),
   };
+  return validateViewerDesignSnapshot(snapshot);
 }

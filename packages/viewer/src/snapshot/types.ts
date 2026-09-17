@@ -61,6 +61,16 @@ export interface ViewerFieldSpec {
   ppm: number;
 }
 
+export interface ViewerAssetManifestEntry {
+  /** Root-relative asset path, e.g. "/assets/models/textures/multigp-obstacles/....webp". */
+  path: string;
+  contentType: string;
+  sizeBytes: number;
+  sha256: string;
+  /** Present for source-restricted assets (e.g. MultiGP-branded textures) per the Phase 0 asset-inventory decision. */
+  attribution?: string;
+}
+
 export interface ViewerDesignSnapshot {
   schema: typeof VIEWER_SNAPSHOT_SCHEMA;
   snapshotId: string;
@@ -72,4 +82,6 @@ export interface ViewerDesignSnapshot {
     shapes: ViewerShape[];
     updatedAt: string;
   };
+  /** Required assets (currently: catalog textures) the design's shapes reference, path-referenced not byte-embedded. */
+  assets: ViewerAssetManifestEntry[];
 }

@@ -40,7 +40,7 @@ Do not treat this PVA as approving:
 
 - [x] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
 - [x] Phase 1: prove viewer extraction and snapshot fidelity
-- [ ] Phase 2: package and API foundation
+- [x] Phase 2: package and API foundation
 - [ ] Phase 3: DDS website attachment (first real consumer)
 - [ ] Phase 4: FPVScores event attachment (sequenced after Phase 2/3; owned by FPVScores' own build)
 - [ ] Phase 5: RotorHazard local and cloud adapter
@@ -159,11 +159,11 @@ Done state: browser manual export and authenticated API output produce equivalen
 
 Checklist:
 
-- [ ] ESM + static builds published from one release pipeline
-- [ ] Shared snapshot builder used by both export and API paths
-- [ ] `viewer-snapshot` route implemented and schema-validated
-- [ ] Project-list pagination fixed
-- [ ] OpenAPI documentation published
+- [x] ESM + static builds published from one release pipeline — `npm run viewer:build` (`packages/viewer/`, `tsup`), producing `dist/*.js` (multi-entry ESM) and `dist/static/trackdraw-viewer.global.js` + `trackdraw-viewer.css` (self-contained IIFE + compiled Tailwind, for hosts with no bundler). Not published to any registry — deliberately out of scope, see the PVA's "New Surfaces" section. **Known gap:** no `.d.ts` type declarations ship yet — `tsup`'s `dts` option pulls in a `rollup-plugin-dts` pin incompatible with this repo's TypeScript 7; not a blocker today (nothing consumes `dist/`), tracked in `packages/viewer/tsup.config.ts` and `packages/viewer/README.md`.
+- [x] Shared snapshot builder used by both export and API paths — `toViewerDesignSnapshot()` (`src/lib/track/viewer-snapshot.ts`) is called directly by the editor's new "Viewer Snapshot" export action (`ExportDialog.tsx`) and indirectly by `toApiViewerSnapshotPackage()` (`src/lib/server/api-projects.ts`), which the API route calls.
+- [x] `viewer-snapshot` route implemented and schema-validated — `GET /api/v1/projects/[projectId]/viewer-snapshot`; snapshots are validated against `packages/viewer/src/snapshot/schema.ts`'s Zod schema plus a `MAX_VIEWER_SNAPSHOT_BYTES` serialized-size cap before ever leaving `toViewerDesignSnapshot()`.
+- [x] Project-list pagination fixed — `GET /api/v1/projects` now accepts an opaque `cursor` query param and returns a real `next_cursor` (previously always `null`); `listProjectSummariesForUser`'s SQL gained `id asc` as a stable secondary sort key.
+- [x] OpenAPI documentation published — new `ViewerSnapshotPackage` schema, path entry, and `Cursor` parameter in `src/lib/api/openapi.ts`, served at `/api/v1/openapi.json` and rendered at `/api/docs`.
 
 ### Phase 3: DDS Website Attachment (First Real Consumer)
 

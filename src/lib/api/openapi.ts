@@ -181,6 +181,35 @@ const overlayPackageExample = {
   updated_at: "2026-04-28T12:29:48.000Z",
 };
 
+const viewerSnapshotPackageExample = {
+  type: "viewer_snapshot",
+  schema: "trackdraw.viewer-snapshot.v1",
+  source: { type: "project", id: "project_123" },
+  title: "Club race layout",
+  updated_at: "2026-04-28T12:29:48.000Z",
+  snapshot_id: "snap_abc123",
+  required_viewer: {
+    schema: "trackdraw.viewer-snapshot.v1",
+    min_renderer_version: "0.1.0",
+    capabilities: ["shape:gate", "catalog:multigp"],
+  },
+  design: {
+    version: 2,
+    title: "Club race layout",
+    field: { width: 60, height: 40, origin: "tl", grid_step: 1, ppm: 20 },
+    shapes: [],
+    updated_at: "2026-04-28T12:29:48.000Z",
+  },
+  assets: [
+    {
+      path: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+      content_type: "image/webp",
+      size_bytes: 41213,
+      sha256: "39d71f74ce744e32ff4a57a70366e9d18f4aa5dc118378399597580726ddbb4",
+    },
+  ],
+};
+
 export const trackdrawOpenApiSchema = {
   openapi: "3.1.0",
   info: {
@@ -279,7 +308,10 @@ export const trackdrawOpenApiSchema = {
         description:
           "Lists active account-backed projects owned by the API key account. The endpoint does not include archived projects and does not expose projects owned by other accounts.",
         security: [{ bearerAuth: [] }],
-        parameters: [{ $ref: "#/components/parameters/Limit" }],
+        parameters: [
+          { $ref: "#/components/parameters/Limit" },
+          { $ref: "#/components/parameters/Cursor" },
+        ],
         responses: {
           "200": {
             description: "Cursor-paginated project summaries.",
@@ -388,6 +420,34 @@ export const trackdrawOpenApiSchema = {
         },
       },
     },
+    "/api/v1/projects/{projectId}/viewer-snapshot": {
+      get: {
+        tags: ["Projects"],
+        operationId: "getProjectViewerSnapshot",
+        summary: "Get viewer snapshot",
+        description:
+          "Returns a portable, allowlisted course snapshot for one account-owned project, for rendering with the @trackdraw/viewer package. Excludes author name, inventory, tags, description, map reference, and any shape metadata beyond catalog provenance.",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        responses: {
+          "200": {
+            description: "Viewer snapshot package for one project.",
+            content: jsonContent(
+              envelope({ $ref: "#/components/schemas/ViewerSnapshotPackage" }),
+              {
+                data: viewerSnapshotPackageExample,
+                meta: { api_version: "v1" },
+              }
+            ),
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+          "500": { $ref: "#/components/responses/InternalError" },
+        },
+      },
+    },
   },
   components: {
     parameters: {
@@ -407,6 +467,14 @@ export const trackdrawOpenApiSchema = {
           "Maximum number of records to return. The v1 default is 50 and the maximum is 100.",
         schema: { type: "integer", minimum: 1, maximum: 100, default: 50 },
         example: 50,
+      },
+      Cursor: {
+        name: "cursor",
+        in: "query",
+        required: false,
+        description:
+          "Opaque pagination cursor from a previous response's next_cursor. A 400 bad_request response means the cursor is stale or invalid - retry the request without a cursor parameter to start over.",
+        schema: { type: "string" },
       },
     },
     securitySchemes: {
@@ -867,6 +935,96 @@ export const trackdrawOpenApiSchema = {
             },
           },
           updated_at: { type: "string", format: "date-time" },
+        },
+      },
+      ViewerSnapshotPackage: {
+        type: "object",
+        description:
+          "Portable, allowlisted course snapshot for rendering with the @trackdraw/viewer package. Excludes author name, inventory, tags, description, map reference, and any shape metadata beyond catalog provenance.",
+        required: [
+          "type",
+          "schema",
+          "source",
+          "title",
+          "updated_at",
+          "snapshot_id",
+          "required_viewer",
+          "design",
+          "assets",
+        ],
+        properties: {
+          type: { type: "string", const: "viewer_snapshot" },
+          schema: { type: "string", const: "trackdraw.viewer-snapshot.v1" },
+          source: {
+            type: "object",
+            required: ["type", "id"],
+            properties: {
+              type: { type: "string", const: "project" },
+              id: { type: "string" },
+            },
+          },
+          title: { type: "string" },
+          updated_at: { type: "string", format: "date-time" },
+          snapshot_id: { type: "string" },
+          required_viewer: {
+            type: "object",
+            description:
+              "Compatibility requirement: the installed @trackdraw/viewer renderer must be >= min_renderer_version and support every listed capability.",
+            required: ["schema", "min_renderer_version", "capabilities"],
+            properties: {
+              schema: {
+                type: "string",
+                const: "trackdraw.viewer-snapshot.v1",
+              },
+              min_renderer_version: { type: "string" },
+              capabilities: {
+                type: "array",
+                items: { type: "string" },
+              },
+            },
+          },
+          design: {
+            type: "object",
+            required: ["version", "title", "field", "shapes", "updated_at"],
+            properties: {
+              version: { type: "integer", const: 2 },
+              title: { type: "string" },
+              field: {
+                type: "object",
+                required: ["width", "height", "origin", "grid_step", "ppm"],
+                properties: {
+                  width: { type: "number", minimum: 0 },
+                  height: { type: "number", minimum: 0 },
+                  origin: { type: "string", enum: ["tl", "bl"] },
+                  grid_step: { type: "number", minimum: 0 },
+                  ppm: { type: "number", minimum: 0 },
+                },
+              },
+              shapes: {
+                type: "array",
+                items: { type: "object", additionalProperties: true },
+                description:
+                  "Render-fidelity shape geometry. shape.meta is narrowed to catalog provenance only.",
+              },
+              updated_at: { type: "string", format: "date-time" },
+            },
+          },
+          assets: {
+            type: "array",
+            description:
+              "Required catalog textures referenced by path (not byte-embedded) - content type, size, and hash for integrity checks.",
+            items: {
+              type: "object",
+              required: ["path", "content_type", "size_bytes", "sha256"],
+              properties: {
+                path: { type: "string" },
+                content_type: { type: "string" },
+                size_bytes: { type: "integer", minimum: 0 },
+                sha256: { type: "string" },
+                attribution: { type: "string" },
+              },
+            },
+          },
         },
       },
     },

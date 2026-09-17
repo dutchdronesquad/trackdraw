@@ -58,6 +58,7 @@ export const productEventExportFormats = [
   "race_pack",
   "velocidrone",
   "render_3d",
+  "viewer_snapshot",
 ] as const;
 
 export const productEventAcquisitionSources = [
@@ -288,11 +289,14 @@ export function classifyProductExportFailure(
   if (/No 2D context/i.test(message)) {
     return { category: "rendering", reason: "canvas_unavailable" };
   }
+  if (/viewer snapshot (failed schema validation|exceeds the)/i.test(message)) {
+    return { category: "validation", reason: "invalid_design" };
+  }
 
   if (format === "webm") {
     return { category: "rendering", reason: "recording_failed" };
   }
-  if (format === "json") {
+  if (format === "json" || format === "viewer_snapshot") {
     return { category: "unknown", reason: "serialization_failed" };
   }
   if (format === "velocidrone") {

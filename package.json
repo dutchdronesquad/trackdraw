@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "license": "AGPL-3.0-only",
+  "workspaces": [
+    "packages/viewer"
+  ],
   "scripts": {
     "dev": "npm run i18n:sync-assets && next dev --turbopack",
     "build": "npm run i18n:sync-assets && next build",
@@ -27,6 +30,9 @@
     "assets:multigp:extract": "node scripts/extract_glb_textures.mjs",
     "assets:multigp:optimize": "node scripts/optimize_multigp_textures.mjs",
     "assets:multigp:refresh": "node scripts/extract_glb_textures.mjs && node scripts/optimize_multigp_textures.mjs",
+    "assets:viewer-manifest": "node scripts/generate_viewer_asset_manifest.mjs",
+    "viewer:build": "npm run build --workspace packages/viewer",
+    "viewer:typecheck": "npm run typecheck --workspace packages/viewer",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -83,6 +89,7 @@
   "devDependencies": {
     "@babel/parser": "^8.0.0",
     "@opennextjs/cloudflare": "^1.18.0",
+    "@tailwindcss/cli": "^4",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
