@@ -1352,40 +1352,47 @@ function resolveTrackElementCatalogEntry(
     : entryOrId;
 }
 
+export function collectEntryTexturePaths(
+  entry: TrackElementCatalogEntry,
+  paths: Set<string>
+): void {
+  const visual = entry.visual;
+  if (!visual) return;
+
+  if (
+    (visual.kind === "gate" ||
+      visual.kind === "ladder" ||
+      visual.kind === "tower") &&
+    visual.variant === "panel-frame"
+  ) {
+    paths.add(visual.textures.left);
+    paths.add(visual.textures.right);
+    if (visual.textures.top) paths.add(visual.textures.top);
+    return;
+  }
+
+  if (visual.kind === "flag") {
+    paths.add(visual.textures.front);
+    paths.add(visual.textures.back);
+    return;
+  }
+
+  if (visual.kind === "divegate") {
+    paths.add(visual.banner.sideTexture);
+    paths.add(visual.banner.topTexture);
+    return;
+  }
+
+  if (visual.kind === "barrier") {
+    paths.add(visual.panel.texture);
+  }
+}
+
 export function getTrackElementCatalogTexturePaths(): string[] {
   const paths = new Set<string>();
 
   for (const entry of trackElementCatalog) {
-    const visual = entry.visual;
-    if (!visual) continue;
-
-    if (
-      (visual.kind === "gate" ||
-        visual.kind === "ladder" ||
-        visual.kind === "tower") &&
-      visual.variant === "panel-frame"
-    ) {
-      paths.add(visual.textures.left);
-      paths.add(visual.textures.right);
-      if (visual.textures.top) paths.add(visual.textures.top);
-      continue;
-    }
-
-    if (visual.kind === "flag") {
-      paths.add(visual.textures.front);
-      paths.add(visual.textures.back);
-      continue;
-    }
-
-    if (visual.kind === "divegate") {
-      paths.add(visual.banner.sideTexture);
-      paths.add(visual.banner.topTexture);
-      continue;
-    }
-
-    if (visual.kind === "barrier") {
-      paths.add(visual.panel.texture);
-    }
+    collectEntryTexturePaths(entry, paths);
   }
 
   return Array.from(paths);

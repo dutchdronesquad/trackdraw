@@ -6,12 +6,16 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@lang": path.resolve(__dirname, "lang"),
+      "@trackdraw/viewer": path.resolve(__dirname, "packages/viewer/src"),
     },
   },
   test: {
     environment: "node",
     fileParallelism: true,
-    include: ["tests/**/*.test.{ts,tsx}"],
+    include: [
+      "tests/**/*.test.{ts,tsx}",
+      "packages/viewer/tests/**/*.test.{ts,tsx}",
+    ],
     setupFiles: ["tests/setup.ts"],
     pool: "forks",
     restoreMocks: true,

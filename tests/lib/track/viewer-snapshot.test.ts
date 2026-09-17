@@ -1,0 +1,100 @@
+import { describe, expect, it } from "vitest";
+import { createDefaultDesign } from "@/lib/track/design";
+import {
+  createCatalogShapeDraft,
+  TRACKDRAW_GATE_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
+import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
+import type { Shape, TrackDesign } from "@/lib/types";
+
+function withShapes(shapes: Shape[]): TrackDesign {
+  const design = createDefaultDesign();
+  return {
+    ...design,
+    title: "Test Track",
+    authorName: "Someone Private",
+    description: "internal notes",
+    tags: ["draft"],
+    shapeOrder: shapes.map((s) => s.id),
+    shapeById: Object.fromEntries(shapes.map((s) => [s.id, s])),
+  };
+}
+
+describe("toViewerDesignSnapshot", () => {
+  it("strips author, description, tags, and inventory from the snapshot", () => {
+    const design = withShapes([]);
+    const snapshot = toViewerDesignSnapshot(design);
+
+    expect(snapshot.design.title).toBe("Test Track");
+    expect(snapshot.design).not.toHaveProperty("authorName");
+    expect(snapshot.design).not.toHaveProperty("description");
+    expect(snapshot.design).not.toHaveProperty("tags");
+    expect(snapshot.design).not.toHaveProperty("inventory");
+    expect(snapshot.design).not.toHaveProperty("mapReference");
+    expect(snapshot.design).not.toHaveProperty("createdAt");
+    expect(snapshot.snapshotId).toBeTruthy();
+    expect(snapshot.snapshotId).not.toBe(design.id);
+  });
+
+  it("narrows shape.meta to only the catalog identity, dropping other keys", () => {
+    const draft = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+      x: 1,
+      y: 2,
+      includeCatalogMetadata: true,
+    });
+    const gate: Shape = {
+      ...draft,
+      id: "gate-1",
+      meta: { ...draft.meta, timing: { role: "start" } },
+    };
+    const design = withShapes([gate]);
+
+    const snapshot = toViewerDesignSnapshot(design);
+    const viewerShape = snapshot.design.shapes[0];
+
+    expect(viewerShape.meta).toBeDefined();
+    expect(viewerShape.meta?.catalog?.elementId).toBe(TRACKDRAW_GATE_ELEMENT_ID);
+    expect(Object.keys(viewerShape.meta ?? {})).toEqual(["catalog"]);
+  });
+
+  it("omits meta entirely for a shape with no catalog identity", () => {
+    const plainGate: Shape = {
+      id: "gate-2",
+      kind: "gate",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 3,
+      height: 2,
+    };
+    const design = withShapes([plainGate]);
+
+    const snapshot = toViewerDesignSnapshot(design);
+    expect(snapshot.design.shapes[0].meta).toBeUndefined();
+  });
+
+  it("round-trips field and shape geometry unchanged", () => {
+    const gate: Shape = {
+      id: "gate-3",
+      kind: "gate",
+      x: 5,
+      y: 7,
+      rotation: 90,
+      width: 3,
+      height: 2,
+    };
+    const design = withShapes([gate]);
+
+    const snapshot = toViewerDesignSnapshot(design);
+    expect(snapshot.design.field).toEqual(design.field);
+    expect(snapshot.design.shapes[0]).toMatchObject({
+      id: "gate-3",
+      kind: "gate",
+      x: 5,
+      y: 7,
+      rotation: 90,
+      width: 3,
+      height: 2,
+    });
+  });
+});
