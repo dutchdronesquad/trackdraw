@@ -40,7 +40,7 @@ Do not treat this PVA as approving:
 
 - [x] Phase 0: confirm distribution fit (license, asset inventory, RotorHazard version policy)
 - [x] Phase 1: prove viewer extraction and snapshot fidelity
-- [ ] Phase 2: package and API foundation
+- [x] Phase 2: package and API foundation
 - [ ] Phase 3: DDS website attachment (first real consumer)
 - [ ] Phase 4: FPVScores event attachment (sequenced after Phase 2/3; owned by FPVScores' own build)
 - [ ] Phase 5: RotorHazard local and cloud adapter
@@ -84,7 +84,7 @@ No-go or keep parked if:
 
 ### New Surfaces
 
-- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. [`packages/viewer/`](../../packages/viewer/) held only the Phase 0 license/NOTICE scaffold; Phase 1 added its source under `packages/viewer/src/`, consumed today via a dev-only TypeScript path alias (no `package.json`/build tooling yet — that's Phase 2). **Repo-location decision:** stays in this repo through Phase 1 and Phase 2's build/publish work — the extraction boundary needed to be proven before deciding what a separate repo would even vendor; independent versioned releases don't require a separate repo (a scoped `package.json` version, git tags, and a path-filtered CI publish step work fine from a monorepo). Revisit only if Phase 2's build pipeline makes a split clearly worth it.
+- `@trackdraw/viewer`: framework-neutral mount API (`createTrackDrawViewer`), ESM npm build plus a static browser build from one codebase/release. [`packages/viewer/`](../../packages/viewer/) held only the Phase 0 license/NOTICE scaffold; Phase 1 added its source under `packages/viewer/src/`, consumed today via a dev-only TypeScript path alias; Phase 2 (#860) added `package.json`/`tsup` build tooling, still consumed from source (no npm publish). **Repo-location decision (finalized):** the package moves to its own repository (`dutchdronesquad/track-viewer` — deliberately without "trackdraw" in the name, to read as a standalone, brand-neutral project rather than a TrackDraw-only tool; the npm package stays `@trackdraw/viewer`, the scope does not need to match the repo name), sequenced right after issue [#870](https://github.com/dutchdronesquad/trackdraw/issues/870) (vendoring `packages/viewer/src`'s remaining `@/...` imports into the app). This supersedes the earlier "stays in this repo, revisit later" framing from Phase 1/2. Reasoning: the AGPL/Apache-2.0 license boundary between this repo and the package is not currently structurally enforced — issue #870 exists precisely because the boundary already leaked (the package transitively pulls in AGPL-licensed app code via `@/...` imports). A separate repository makes that boundary a structural fact instead of a code-review discipline, which matters more than the monorepo convenience of colocated versioned releases (git tags/a scoped `package.json` version work fine either way). Splitting _before_ #870 lands is out of order — it would move a package that cannot build outside this repo today, not fix the actual coupling. Tracked as issue [#871](https://github.com/dutchdronesquad/trackdraw/issues/871).
 - `trackdraw.viewer-snapshot.v1`: versioned envelope (`schema`, `snapshot_id`, `required_viewer`/capabilities, `design`, `assets`) built by a shared snapshot builder used by both the browser manual-export path and the authenticated API route.
 - Candidate route: `GET /api/v1/projects/[projectId]/viewer-snapshot`, reusing `tracks:read`. Name and shape are proposed, not frozen — confirm during Phase 2 and publish OpenAPI.
 - Manual export format: `.tdviewer.zip` (manifest, course data, non-bundled assets, optional poster) built by the same snapshot builder, with no cloud call required.
@@ -159,11 +159,11 @@ Done state: browser manual export and authenticated API output produce equivalen
 
 Checklist:
 
-- [ ] ESM + static builds published from one release pipeline
-- [ ] Shared snapshot builder used by both export and API paths
-- [ ] `viewer-snapshot` route implemented and schema-validated
-- [ ] Project-list pagination fixed
-- [ ] OpenAPI documentation published
+- [x] ESM + static builds published from one release pipeline — `npm run viewer:build` (`packages/viewer/`, `tsup`), producing `dist/*.js` (multi-entry ESM) and `dist/static/trackdraw-viewer.global.js` + `trackdraw-viewer.css` (self-contained IIFE + compiled Tailwind, for hosts with no bundler). Not published to any registry — deliberately out of scope, see the PVA's "New Surfaces" section. **Known gap:** no `.d.ts` type declarations ship yet — `tsup`'s `dts` option pulls in a `rollup-plugin-dts` pin incompatible with this repo's TypeScript 7; not a blocker today (nothing consumes `dist/`), tracked in `packages/viewer/tsup.config.ts` and `packages/viewer/README.md`.
+- [x] Shared snapshot builder used by both export and API paths — `toViewerDesignSnapshot()` (`src/lib/track/viewer-snapshot.ts`) is called directly by the editor's new "Viewer Snapshot" export action (`ExportDialog.tsx`) and indirectly by `toApiViewerSnapshotPackage()` (`src/lib/server/api-projects.ts`), which the API route calls.
+- [x] `viewer-snapshot` route implemented and schema-validated — `GET /api/v1/projects/[projectId]/viewer-snapshot`; snapshots are validated against `packages/viewer/src/snapshot/schema.ts`'s Zod schema plus a `MAX_VIEWER_SNAPSHOT_BYTES` serialized-size cap before ever leaving `toViewerDesignSnapshot()`.
+- [x] Project-list pagination fixed — `GET /api/v1/projects` now accepts an opaque `cursor` query param and returns a real `next_cursor` (previously always `null`); `listProjectSummariesForUser`'s SQL gained `id asc` as a stable secondary sort key.
+- [x] OpenAPI documentation published — new `ViewerSnapshotPackage` schema, path entry, and `Cursor` parameter in `src/lib/api/openapi.ts`, served at `/api/v1/openapi.json` and rendered at `/api/docs`.
 
 ### Phase 3: DDS Website Attachment (First Real Consumer)
 

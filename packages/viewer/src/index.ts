@@ -1,6 +1,7 @@
 // Apache-2.0. Copyright Dutch Drone Squad. See packages/viewer/LICENSE and NOTICE.md.
 
 export { TrackViewer, type TrackViewerProps } from "./TrackViewer";
+export { createTrackDrawViewer, type TrackDrawViewerHandle } from "./mount";
 export type {
   BarrierVariant,
   FieldSpec,
@@ -24,6 +25,7 @@ export { getDesignTexturePaths } from "./assets/texture-paths";
 export {
   VIEWER_SNAPSHOT_SCHEMA,
   type RequiredViewer,
+  type ViewerAssetManifestEntry,
   type ViewerCatalogIdentity,
   type ViewerDesignSnapshot,
   type ViewerFieldSpec,
@@ -35,3 +37,14 @@ export {
   RENDERER_VERSION,
   isViewerCompatible,
 } from "./snapshot/version";
+export {
+  MAX_VIEWER_SNAPSHOT_BYTES,
+  ViewerSnapshotValidationError,
+  validateViewerDesignSnapshot,
+  viewerDesignSnapshotSchema,
+  type ViewerSnapshotValidationFailure,
+} from "./snapshot/schema";
+export {
+  getAssetManifestEntry,
+  getDesignAssetManifest,
+} from "./assets/manifest";

@@ -87,4 +87,64 @@ describe("OpenAPI schema", () => {
       issues: [],
     });
   });
+
+  it("documents the viewer snapshot package's required top-level fields", () => {
+    const viewerSnapshotPackage =
+      trackdrawOpenApiSchema.components.schemas.ViewerSnapshotPackage;
+
+    expect(viewerSnapshotPackage.required).toEqual([
+      "type",
+      "schema",
+      "source",
+      "title",
+      "updated_at",
+      "snapshot_id",
+      "required_viewer",
+      "design",
+      "assets",
+    ]);
+    expect(viewerSnapshotPackage.properties.schema.const).toBe(
+      "trackdraw.viewer-snapshot.v1"
+    );
+    expect(viewerSnapshotPackage.properties.required_viewer.required).toEqual([
+      "schema",
+      "min_renderer_version",
+      "capabilities",
+    ]);
+    expect(viewerSnapshotPackage.properties.assets.items.required).toEqual([
+      "path",
+      "content_type",
+      "size_bytes",
+      "sha256",
+    ]);
+  });
+
+  it("keeps the viewer snapshot response example aligned with its schema", () => {
+    const response = asRecord(
+      trackdrawOpenApiSchema.paths[
+        "/api/v1/projects/{projectId}/viewer-snapshot"
+      ].get.responses["200"]
+    );
+    const content = asRecord(response.content);
+    const json = asRecord(content["application/json"]);
+    const envelope = asRecord(json.example);
+    const example = asRecord(envelope.data);
+
+    expect(example.schema).toBe("trackdraw.viewer-snapshot.v1");
+    expect(Object.hasOwn(example, "assets")).toBe(true);
+    expect(Object.hasOwn(example, "snapshot_id")).toBe(true);
+    expect(Object.hasOwn(example, "required_viewer")).toBe(true);
+  });
+
+  it("documents the cursor query parameter on the project list route", () => {
+    const listParameters =
+      trackdrawOpenApiSchema.paths["/api/v1/projects"].get.parameters;
+
+    expect(listParameters).toContainEqual({
+      $ref: "#/components/parameters/Cursor",
+    });
+    expect(trackdrawOpenApiSchema.components.parameters.Cursor.in).toBe(
+      "query"
+    );
+  });
 });

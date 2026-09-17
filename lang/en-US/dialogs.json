@@ -313,6 +313,11 @@
         "descriptionFull": "Editable backup for reopening, sharing, or archiving in TrackDraw.",
         "descriptionShort": "Editable backup for reopening or archiving in TrackDraw."
       },
+      "viewerSnapshot": {
+        "label": "Viewer Snapshot",
+        "descriptionFull": "Portable JSON course snapshot for the @trackdraw/viewer package — RotorHazard, FPVScores, or any external viewer host.",
+        "descriptionShort": "Portable snapshot for external viewer integrations."
+      },
       "racePack": {
         "label": "Race Pack",
         "descriptionFull": "Race-day setup handoff with map, materials, sequence, and QR.",

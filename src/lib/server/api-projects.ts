@@ -12,6 +12,8 @@ import {
 } from "@/lib/track/overlay-prep";
 import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import { getDesignTimingMarkers } from "@/lib/track/timing";
+import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
+import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/viewer/snapshot/types";
 import type {
   StoredProject,
   StoredProjectSummary,
@@ -315,6 +317,39 @@ export function toApiTrackPackage(project: StoredProject) {
     })),
     updated_at: project.designUpdatedAt,
     shapes: shapes.map(toApiShape),
+  };
+}
+
+/**
+ * The API path's half of the "shared snapshot builder used by both manual
+ * export and the API route" requirement (issue #860): the browser export
+ * path calls toViewerDesignSnapshot(design) directly, this serializer calls
+ * the same function and snake-cases the result for the wire, following the
+ * same type/schema/source/title/updated_at envelope convention as
+ * toApiTrackPackage/toApiOverlayPackage above.
+ */
+export function toApiViewerSnapshotPackage(project: StoredProject) {
+  const snapshot = toViewerDesignSnapshot(project.design);
+
+  return {
+    type: "viewer_snapshot" as const,
+    schema: VIEWER_SNAPSHOT_SCHEMA,
+    source: {
+      type: "project" as const,
+      id: project.id,
+    },
+    title: project.title,
+    updated_at: project.designUpdatedAt,
+    snapshot_id: snapshot.snapshotId,
+    required_viewer: toSnakeCaseValue(snapshot.requiredViewer),
+    design: {
+      version: snapshot.design.version,
+      title: snapshot.design.title,
+      field: toSnakeCaseValue(snapshot.design.field),
+      shapes: snapshot.design.shapes.map(toSnakeCaseValue),
+      updated_at: snapshot.design.updatedAt,
+    },
+    assets: snapshot.assets.map(toSnakeCaseValue),
   };
 }
 

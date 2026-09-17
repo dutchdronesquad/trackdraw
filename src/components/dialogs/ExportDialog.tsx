@@ -8,6 +8,7 @@ import {
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
+import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
@@ -20,6 +21,7 @@ import {
   Download,
   FileText,
   FlaskConical,
+  Globe,
   ImageIcon,
   Loader2,
   Moon,
@@ -52,13 +54,21 @@ type Theme = FlythroughTheme;
 type ExportCategoryId =
   "visuals" | "raceDay" | "projectData" | "motion" | "simulatorLab";
 type ExportFormatId =
-  "png" | "svg" | "render3d" | "racePack" | "json" | "webm" | "velocidrone";
+  | "png"
+  | "svg"
+  | "render3d"
+  | "racePack"
+  | "json"
+  | "webm"
+  | "velocidrone"
+  | "viewerSnapshot";
 
 function getProductEventExportFormat(
   format: ExportFormatId
 ): ProductEventExportFormat {
   if (format === "render3d") return "render_3d";
   if (format === "racePack") return "race_pack";
+  if (format === "viewerSnapshot") return "viewer_snapshot";
   return format;
 }
 
@@ -715,6 +725,17 @@ export default function ExportDialog({
       busyId: "json",
     },
     {
+      id: "viewerSnapshot",
+      category: "projectData",
+      ext: "JSON",
+      fileExtension: "json",
+      label: t("export.formats.viewerSnapshot.label"),
+      color: "bg-sky-500/15 text-sky-400",
+      icon: <Globe className="size-4" />,
+      description: t("export.formats.viewerSnapshot.descriptionFull"),
+      busyId: "viewerSnapshot",
+    },
+    {
       id: "webm",
       category: "motion",
       ext: "WebM",
@@ -753,6 +774,8 @@ export default function ExportDialog({
       case "json":
       case "velocidrone":
         return [baseName, dateStamp].join("_");
+      case "viewerSnapshot":
+        return [baseName, "viewer_snapshot", dateStamp].join("_");
       case "webm":
         return [baseName, "flythrough", exportTheme, dateStamp].join("_");
     }
@@ -850,6 +873,15 @@ export default function ExportDialog({
           () => {
             const serialized = serializeDesign(design);
             downloadJsonFile(filenameFor(format), serialized);
+          },
+          { eventFormat: formatId }
+        );
+      case "viewerSnapshot":
+        return run(
+          "viewerSnapshot",
+          () => {
+            const snapshot = toViewerDesignSnapshot(design);
+            downloadJsonFile(filenameFor(format), snapshot);
           },
           { eventFormat: formatId }
         );

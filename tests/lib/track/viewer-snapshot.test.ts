@@ -134,4 +134,35 @@ describe("toViewerDesignSnapshot", () => {
 
     expect(snapshot.requiredViewer.capabilities).toContain("shape:future-kind");
   });
+
+  it("populates the assets manifest for a design using a textured catalog shape", () => {
+    const hurdle = createCatalogShapeDraft(MULTIGP_HURDLE_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    });
+    const design = withShapes([{ ...hurdle, id: "hurdle-1" }]);
+
+    const snapshot = toViewerDesignSnapshot(design);
+
+    expect(snapshot.assets).toHaveLength(1);
+    expect(snapshot.assets[0]).toMatchObject({
+      path: "/assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp",
+      contentType: "image/webp",
+    });
+    expect(snapshot.assets[0].sha256).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("returns an empty assets manifest for a design using only procedural shapes", () => {
+    const gate = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    });
+    const design = withShapes([{ ...gate, id: "gate-4" }]);
+
+    const snapshot = toViewerDesignSnapshot(design);
+
+    expect(snapshot.assets).toEqual([]);
+  });
 });

@@ -208,6 +208,20 @@ describe("project server helpers", () => {
     expect(result[0]).toMatchObject({ fieldWidth: null, fieldHeight: null });
   });
 
+  it("listProjectSummariesForUser orders by updated_at desc with id as a stable tiebreaker", async () => {
+    const allStmt = createD1AllStatement([]);
+    mocks.prepare.mockReturnValue(allStmt);
+
+    await listProjectSummariesForUser("user-1");
+
+    // Two rows with an identical updated_at must still come back in a
+    // deterministic order across repeated calls - required for the v1 API's
+    // cursor pagination (GET /api/v1/projects) to resume correctly.
+    expect(mocks.prepare).toHaveBeenCalledWith(
+      expect.stringContaining("order by updated_at desc, id asc")
+    );
+  });
+
   it("archiveProjectForUser runs an UPDATE query with the correct bindings", async () => {
     const runStmt = createD1Statement({ run: { meta: { changes: 1 } } });
     mocks.prepare.mockReturnValue(runStmt);

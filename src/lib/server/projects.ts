@@ -315,7 +315,7 @@ export async function listProjectSummariesForUser(
           updated_at
         from projects
         where owner_user_id = ? and archived_at is null
-        order by updated_at desc
+        order by updated_at desc, id asc
       `
     )
     .bind(ownerUserId)

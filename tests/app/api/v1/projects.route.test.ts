@@ -69,11 +69,16 @@ vi.mock("@/lib/server/api-projects", () => ({
     type: "overlay_track",
     source: { type: "project", id: project.id },
   })),
+  toApiViewerSnapshotPackage: vi.fn((project: StoredProject) => ({
+    type: "viewer_snapshot",
+    source: { type: "project", id: project.id },
+  })),
 }));
 
 import * as projectRoute from "@/app/api/v1/projects/[projectId]/route";
 import * as trackRoute from "@/app/api/v1/projects/[projectId]/track/route";
 import * as overlayRoute from "@/app/api/v1/projects/[projectId]/overlay/route";
+import * as viewerSnapshotRoute from "@/app/api/v1/projects/[projectId]/viewer-snapshot/route";
 import * as projectsRoute from "@/app/api/v1/projects/route";
 import * as openApiRoute from "@/app/api/v1/openapi.json/route";
 import { authenticateApiRequest } from "@/lib/server/api-v1";
@@ -87,7 +92,12 @@ import {
   toApiProjectSummary,
   toApiProjectSummaryLight,
   toApiTrackPackage,
+  toApiViewerSnapshotPackage,
 } from "@/lib/server/api-projects";
+
+function encodeCursor(id: string): string {
+  return Buffer.from(id, "utf8").toString("base64url");
+}
 
 const apiIdentity = {
   user: { id: "user-1", email: null, name: "Race Director" },
@@ -157,7 +167,7 @@ describe("v1 project API routes", () => {
     expect(listProjectSummariesForUser).not.toHaveBeenCalled();
   });
 
-  it("marks pagination when more projects exist than the requested limit", async () => {
+  it("marks pagination and returns a usable next_cursor when more projects exist than the requested limit", async () => {
     vi.mocked(listProjectSummariesForUser).mockResolvedValue([
       makeProjectSummary("project-1"),
       makeProjectSummary("project-2"),
@@ -175,9 +185,88 @@ describe("v1 project API routes", () => {
       ],
       pagination: {
         limit: 2,
-        next_cursor: null,
+        next_cursor: encodeCursor("project-2"),
         has_more: true,
       },
+    });
+  });
+
+  it("resumes from a cursor with no overlap or gap across pages", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
+      makeProjectSummary("project-1"),
+      makeProjectSummary("project-2"),
+      makeProjectSummary("project-3"),
+      makeProjectSummary("project-4"),
+      makeProjectSummary("project-5"),
+    ]);
+
+    const page1 = await projectsRoute.GET(
+      new Request("http://localhost/api/v1/projects?limit=2")
+    );
+    const page1Body = (await page1.json()) as {
+      data: { id: string }[];
+      pagination: { next_cursor: string | null; has_more: boolean };
+    };
+    expect(page1Body.data.map((p) => p.id)).toEqual(["project-1", "project-2"]);
+    expect(page1Body.pagination.has_more).toBe(true);
+
+    const page2 = await projectsRoute.GET(
+      new Request(
+        `http://localhost/api/v1/projects?limit=2&cursor=${page1Body.pagination.next_cursor}`
+      )
+    );
+    const page2Body = (await page2.json()) as {
+      data: { id: string }[];
+      pagination: { next_cursor: string | null; has_more: boolean };
+    };
+    expect(page2Body.data.map((p) => p.id)).toEqual(["project-3", "project-4"]);
+    expect(page2Body.pagination.has_more).toBe(true);
+
+    const page3 = await projectsRoute.GET(
+      new Request(
+        `http://localhost/api/v1/projects?limit=2&cursor=${page2Body.pagination.next_cursor}`
+      )
+    );
+    const page3Body = (await page3.json()) as {
+      data: { id: string }[];
+      pagination: { next_cursor: string | null; has_more: boolean };
+    };
+    expect(page3Body.data.map((p) => p.id)).toEqual(["project-5"]);
+    expect(page3Body.pagination.has_more).toBe(false);
+    expect(page3Body.pagination.next_cursor).toBeNull();
+  });
+
+  it("returns 400 for an empty cursor value", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
+      makeProjectSummary("project-1"),
+    ]);
+
+    const response = await projectsRoute.GET(
+      new Request("http://localhost/api/v1/projects?cursor=")
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "bad_request",
+      detail: "Invalid cursor parameter.",
+    });
+  });
+
+  it("returns 400 for a cursor whose project id is no longer in the list", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
+      makeProjectSummary("project-1"),
+    ]);
+
+    const response = await projectsRoute.GET(
+      new Request(
+        `http://localhost/api/v1/projects?cursor=${encodeCursor("project-stale")}`
+      )
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "bad_request",
+      detail: "Invalid or expired cursor.",
     });
   });
 
@@ -304,6 +393,71 @@ describe("v1 project API routes", () => {
         source: { type: "project", id: "project-1" },
       },
       meta: { api_version: "v1" },
+    });
+  });
+
+  it("returns viewer snapshot data only after loading a project for the API key owner", async () => {
+    const project = makeProject();
+    vi.mocked(getProjectForUser).mockResolvedValue(project);
+
+    const response = await viewerSnapshotRoute.GET(
+      new Request("http://localhost/api/v1/projects/project-1/viewer-snapshot"),
+      projectContext("project-1")
+    );
+
+    expect(authenticateApiRequest).toHaveBeenCalledWith(
+      expect.any(Request),
+      trackReadPermission
+    );
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(toApiViewerSnapshotPackage).toHaveBeenCalledWith(project);
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        type: "viewer_snapshot",
+        source: { type: "project", id: "project-1" },
+      },
+      meta: { api_version: "v1" },
+    });
+  });
+
+  it("rejects blank project ids before building a viewer snapshot", async () => {
+    const response = await viewerSnapshotRoute.GET(
+      new Request("http://localhost/api/v1/projects/%20/viewer-snapshot"),
+      projectContext(" ")
+    );
+
+    expect(response.status).toBe(400);
+    expect(getProjectForUser).not.toHaveBeenCalled();
+    expect(toApiViewerSnapshotPackage).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 for a viewer snapshot when the project is not owned by the key owner", async () => {
+    vi.mocked(getProjectForUser).mockResolvedValue(null);
+
+    const response = await viewerSnapshotRoute.GET(
+      new Request("http://localhost/api/v1/projects/project-2/viewer-snapshot"),
+      projectContext("project-2")
+    );
+
+    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1");
+    expect(response.status).toBe(404);
+  });
+
+  it("returns 500 when the viewer snapshot serializer throws", async () => {
+    const project = makeProject();
+    vi.mocked(getProjectForUser).mockResolvedValue(project);
+    vi.mocked(toApiViewerSnapshotPackage).mockImplementationOnce(() => {
+      throw new Error("Viewer snapshot failed schema validation.");
+    });
+
+    const response = await viewerSnapshotRoute.GET(
+      new Request("http://localhost/api/v1/projects/project-1/viewer-snapshot"),
+      projectContext("project-1")
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "internal_error",
     });
   });
 
