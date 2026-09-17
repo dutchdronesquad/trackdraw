@@ -12,7 +12,9 @@ That gap is broader than the viewer package: these textures already live inside 
 
 ## Naming Note
 
-Home Assistant's [`home-assistant/brands`](https://github.com/home-assistant/brands) repository is the closest prior art: a separate repo, one folder per integration domain, served from its own CDN (`brands.home-assistant.io`), with a blanket disclaimer that all names/trademarks belong to their respective owners and are used for identification only. Do not copy the name "brands" for TrackDraw's version — these are not logos or trademarks, they are official third-party obstacle textures and dimensions (construction/manufacturing references, not brand marks). Working name for this research: **catalog assets**. A concrete repository name (candidate: `trackdraw-catalog-assets`) is still open.
+Home Assistant's [`home-assistant/brands`](https://github.com/home-assistant/brands) repository is the closest prior art: a separate repo, one folder per integration domain, served from its own CDN (`brands.home-assistant.io`), with a blanket disclaimer that all names/trademarks belong to their respective owners and are used for identification only. Do not copy the name "brands" for TrackDraw's version — these are not logos or trademarks, they are official third-party obstacle textures and dimensions (construction/manufacturing references, not brand marks).
+
+Decided: **`obstacles`** (repository `dutchdronesquad/obstacles`), mirroring the short, one-word style of `home-assistant/brands` while matching existing naming already in this codebase (`multigp-obstacles/`, "MultiGP Obstacle Asset Workflow"). Rejected alternatives: `elements` (broader, would also cover non-obstacle catalog items such as flags/labels, but that breadth isn't needed today and reads more abstractly); `trackdraw-catalog-assets` (unambiguous but longer, and the `trackdraw-` prefix is redundant under the `dutchdronesquad` organization).
 
 ## Recommended Direction
 
@@ -24,7 +26,7 @@ Extract into a separate repository, structured per organization (starting with o
 
 ### Hosting: Cloudflare R2
 
-Decided over jsDelivr-from-GitHub: serve from a Cloudflare R2 bucket behind a custom domain (candidate: `catalog-assets.trackdraw.app`, exact name open). Reasons:
+Decided over jsDelivr-from-GitHub: serve from a Cloudflare R2 bucket behind a custom domain (candidate: `obstacles.trackdraw.app`, exact name open). Reasons:
 
 - TrackDraw already runs on Cloudflare (OpenNext, D1, R2 for gallery preview media per [AGENTS.md](../../../AGENTS.md#stack)) — no new vendor relationship, no new operational surface to learn.
 - Own domain instead of a third-party CDN URL; no dependency on jsDelivr's availability for a production feature.
