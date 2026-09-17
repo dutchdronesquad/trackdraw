@@ -26,8 +26,8 @@ The next TrackDraw priority is generated flightpath validation first, completion
 
 ## Follow-up
 
-- [ ] Event track viewers: FPVScores and RotorHazard (`Research`)
-      Develop a shared npm/static viewer with host-stored course snapshots. FPVScores connects server-side with an API key and attaches a selected project to an event; RotorHazard must support both fully local file import and cloud project selection/refresh, storing complete courses locally for offline display through either route. Prove extraction, rendering fidelity, and asset portability before host acceptance. Research document: `docs/research/planned/event-track-viewer-integrations.md`.
+- [ ] Track viewer package (`Research`)
+      Develop a shared npm/static viewer with host-stored course snapshots, better than a plain iframe. DDS's own website is the first consumer; FPVScores and RotorHazard are reference host examples, not a closed list — FPVScores connects server-side with an API key and attaches a selected project to an event, RotorHazard must support both fully local file import and cloud project selection/refresh, storing complete courses locally for offline display through either route. Prove extraction, rendering fidelity, and asset portability before host acceptance. Research document: `docs/research/in-progress/track-viewer-package.md`. PVA: `docs/pva/track-viewer-package-pva.md`.
 
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/in-progress/generated-flightpath-assistance.md`.
