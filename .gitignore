@@ -28,10 +28,6 @@ __pycache__/
 /build
 /public/locales/
 
-# @trackdraw/viewer package build output
-/packages/viewer/dist/
-/packages/viewer/node_modules/
-
 # misc
 .DS_Store
 *.pem
