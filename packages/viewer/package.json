@@ -61,7 +61,7 @@
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.185.0",
+    "@types/three": "^0.186.0",
     "three-stdlib": "^2.36.1",
     "tsup": "^8.0.0",
     "typescript": "^7.0.0"
