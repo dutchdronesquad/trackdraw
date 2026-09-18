@@ -96,7 +96,7 @@
     "@types/node": "^25.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.185.0",
+    "@types/three": "^0.186.0",
     "@vitest/coverage-v8": "^4.1.4",
     "happy-dom": "^20.8.9",
     "node-pg-migrate": "^9.0.0",
