@@ -4,13 +4,13 @@
 
 import { memo } from "react";
 import { Group } from "react-konva";
-import { m2px } from "@/lib/track/units";
-import { getShapeCanvasRenderRotationOffset } from "@/lib/track/items/registry";
+import { m2px } from "../lib/track/units";
+import { getShapeCanvasRenderRotationOffset } from "../lib/track/items/registry";
 import {
   renderLockedIndicator,
   renderShape2D,
-} from "@/components/canvas/renderers/shape2d";
-import { PolylineShape } from "@/components/canvas/viewer/PolylineShape";
+} from "../components/canvas/renderers/shape2d";
+import { PolylineShape } from "../components/canvas/viewer/PolylineShape";
 import type { Shape } from "../types";
 
 interface ViewerShapeNodeProps {

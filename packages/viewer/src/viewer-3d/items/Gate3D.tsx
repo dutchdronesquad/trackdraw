@@ -13,21 +13,24 @@ import {
   registerPanel,
   useOverrideVersion,
   withTextureOverrideVersion,
-} from "@/components/canvas/preview3d/texture-debug";
+} from "../../components/canvas/preview3d/texture-debug";
 import { Suspense, useEffect, useMemo, type Ref } from "react";
 import * as THREE from "three";
 import {
   getPanelFrameGateLayout,
   resolvePanelFrameTextureMapping,
-} from "@/lib/track/render3d-layout";
-import { getGateVisualSpec } from "@/lib/track/elements/visual";
-import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
+} from "../../lib/track/render3d-layout";
+import { getGateVisualSpec } from "../../lib/track/elements/visual";
+import {
+  getShapeTimingMarker,
+  getTimingMarkerColor,
+} from "../../lib/track/timing";
 import type {
   GatePanelTextureVisualSpec,
   PanelFrameGateVisualSpec,
-} from "@/lib/track/elements/catalog";
-import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
-import { cloneTextureForPanel } from "@/components/canvas/preview3d/items/texture-cache";
+} from "../../lib/track/elements/catalog";
+import { getTrackElementCatalogIdentity } from "../../lib/track/elements/catalog";
+import { cloneTextureForPanel } from "../../components/canvas/preview3d/items/texture-cache";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { GateShape } from "../../types";
 

@@ -9,7 +9,7 @@
 import * as THREE from "three";
 import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
-import { getBarrierVisualSpec } from "@/lib/track/elements/visual";
+import { getBarrierVisualSpec } from "../../lib/track/elements/visual";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { BarrierShape } from "../../types";
 

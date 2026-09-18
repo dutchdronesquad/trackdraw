@@ -4,10 +4,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,
-    "paths": {
-      "@/*": ["../../src/*"],
-      "@lang/*": ["../../lang/*"]
-    }
+    "paths": {}
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
