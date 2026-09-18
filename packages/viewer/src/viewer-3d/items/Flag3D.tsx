@@ -9,9 +9,9 @@
 import { useTexture } from "@react-three/drei";
 import { Suspense, useMemo, type Ref } from "react";
 import * as THREE from "three";
-import { getCornerFlagLayout } from "@/lib/track/render3d-layout";
-import { getFlagVisualSpec } from "@/lib/track/elements/visual";
-import type { CornerMarkerFlagVisualSpec } from "@/lib/track/elements/catalog";
+import { getCornerFlagLayout } from "../../lib/track/render3d-layout";
+import { getFlagVisualSpec } from "../../lib/track/elements/visual";
+import type { CornerMarkerFlagVisualSpec } from "../../lib/track/elements/catalog";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { FlagShape } from "../../types";
 

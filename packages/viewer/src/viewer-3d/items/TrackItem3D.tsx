@@ -18,26 +18,26 @@ import {
   getMultiGpLaunchGateTopY,
   getLadderRenderedHeight,
   resolveDiveGateElevation,
-} from "@/lib/track/render3d-layout";
+} from "../../lib/track/render3d-layout";
 import {
   getDiveGateVisualSpec,
   getGateVisualSpec,
   getLadderVisualSpec,
-} from "@/lib/track/elements/visual";
-import { POLYLINE_3D_HEIGHT_OFFSET } from "@/lib/track/constants";
-import { assertNever } from "@/lib/utils";
+} from "../../lib/track/elements/visual";
+import { POLYLINE_3D_HEIGHT_OFFSET } from "../../lib/track/constants";
+import { assertNever } from "../../lib/utils";
 import { Barrier3D, getBarrierTopY } from "./Barrier3D";
 import { Gate3D } from "./Gate3D";
 import { Ladder3D } from "./Ladder3D";
 import { Flag3D } from "./Flag3D";
 import { DiveGate3D } from "./DiveGate3D";
-import { Cone3D } from "@/components/canvas/preview3d/items/Cone3D";
-import { Label3D } from "@/components/canvas/preview3d/items/Label3D";
-import { StartFinish3D } from "@/components/canvas/preview3d/items/StartFinish3D";
+import { Cone3D } from "../../components/canvas/preview3d/items/Cone3D";
+import { Label3D } from "../../components/canvas/preview3d/items/Label3D";
+import { StartFinish3D } from "../../components/canvas/preview3d/items/StartFinish3D";
 import {
   RaceLine3D,
   getPolylineTubeRadius,
-} from "@/components/canvas/preview3d/items/RaceLine3D";
+} from "../../components/canvas/preview3d/items/RaceLine3D";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { Scene3DTheme } from "../../theme";
 import type {

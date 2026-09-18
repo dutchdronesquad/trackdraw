@@ -13,7 +13,7 @@ import {
   registerPanel,
   useOverrideVersion,
   withTextureOverrideVersion,
-} from "@/components/canvas/preview3d/texture-debug";
+} from "../../components/canvas/preview3d/texture-debug";
 import {
   Suspense,
   useCallback,
@@ -28,17 +28,17 @@ import { useFrame } from "@react-three/fiber";
 import {
   getPanelFrameLadderLayout,
   resolvePanelFrameTextureMapping,
-} from "@/lib/track/render3d-layout";
-import { getLadderVisualSpec } from "@/lib/track/elements/visual";
+} from "../../lib/track/render3d-layout";
+import { getLadderVisualSpec } from "../../lib/track/elements/visual";
 import type {
   GatePanelTextureVisualSpec,
   PanelFrameLadderVisualSpec,
-} from "@/lib/track/elements/catalog";
-import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
+} from "../../lib/track/elements/catalog";
+import { getTrackElementCatalogIdentity } from "../../lib/track/elements/catalog";
 import {
   assignGroupRef,
   cloneTextureForPanel,
-} from "@/components/canvas/preview3d/items/texture-cache";
+} from "../../components/canvas/preview3d/items/texture-cache";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { LadderShape } from "../../types";
 

@@ -4,7 +4,7 @@ import {
   collectEntryTexturePaths,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
-} from "@/lib/track/elements/catalog";
+} from "../lib/track/elements/catalog";
 import type { Shape } from "../types";
 
 /**

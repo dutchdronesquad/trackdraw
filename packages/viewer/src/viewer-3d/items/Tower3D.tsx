@@ -24,11 +24,11 @@ import {
   registerPanel,
   useOverrideVersion,
   withTextureOverrideVersion,
-} from "@/components/canvas/preview3d/texture-debug";
+} from "../../components/canvas/preview3d/texture-debug";
 import {
   getPanelFrameGateLayout,
   resolvePanelFrameTextureMapping,
-} from "@/lib/track/render3d-layout";
+} from "../../lib/track/render3d-layout";
 import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
@@ -36,8 +36,8 @@ import {
   type PanelFrameGateVisualSpec,
   type PanelFrameTowerVisualSpec,
   type TowerVisualSpec,
-} from "@/lib/track/elements/catalog";
-import { assignGroupRef } from "@/components/canvas/preview3d/items/texture-cache";
+} from "../../lib/track/elements/catalog";
+import { assignGroupRef } from "../../components/canvas/preview3d/items/texture-cache";
 import type { AssetResolver } from "../../assets/asset-url";
 import type { GateShape, TowerShape } from "../../types";
 

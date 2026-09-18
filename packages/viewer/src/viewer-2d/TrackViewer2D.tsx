@@ -19,18 +19,18 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/AppTooltip";
-import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
-import { StableFieldContent } from "@/components/canvas/renderers/field-layer";
-import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
-import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
+} from "../components/AppTooltip";
+import { CanvasRuler, RULER_SIZE } from "../components/canvas/CanvasRuler";
+import { StableFieldContent } from "../components/canvas/renderers/field-layer";
+import { getShapeLocalBounds } from "../components/canvas/renderers/shape-bounds";
+import { useTrackCanvasViewport } from "../components/canvas/useTrackCanvasViewport";
+import { useIsMobile } from "../hooks/use-mobile";
+import { getObstacleNumberMap } from "../lib/track/obstacleNumbering";
 import {
   formatCompactFieldSize,
   formatMeasurement,
   m2px,
-} from "@/lib/track/units";
+} from "../lib/track/units";
 import { mergeViewerLabels, type TrackViewerLabels } from "../i18n/labels";
 import type { MeasurementUnitSystem, TrackDesign } from "../types";
 import {

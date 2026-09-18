@@ -22,7 +22,7 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
-import { useIsTouchDevice } from "@/hooks/use-mobile";
+import { useIsTouchDevice } from "../hooks/use-mobile";
 import { createAssetResolver } from "../assets/asset-url";
 import {
   getViewerDesignShapes,

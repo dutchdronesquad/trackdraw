@@ -8,7 +8,7 @@ This is a deliberate exception to the rest of the repository: TrackDraw's editor
 
 ## Status
 
-This is a Phase 0 scaffold, not the extracted package. Extraction code, the framework-neutral mount API, and the npm/static builds land in later phases — see [Track Viewer Package PVA](../../docs/pva/track-viewer-package-pva.md).
+The package is extracted, built, and self-contained: `src/` has no remaining source-level dependency on the main application's `src/` tree (issue #870 vendored the last pure app-internal helpers this package needs — 2D/3D catalog rendering, geometry, and shape utilities — as copies inside `packages/viewer/src/lib/` and `packages/viewer/src/components/`, each carrying this same Apache-2.0 header). `npm run viewer:build` from the repo root produces the ESM and static builds. Not yet published to npm — see [Track Viewer Package PVA](../../docs/pva/track-viewer-package-pva.md) for the phase plan, including the planned move to its own repository (`dutchdronesquad/track-viewer`).
 
 ## Third-Party Assets
 
