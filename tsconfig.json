@@ -20,9 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@lang/*": ["./lang/*"],
-      "@trackdraw/viewer": ["./packages/viewer/src/index.ts"],
-      "@trackdraw/viewer/*": ["./packages/viewer/src/*"]
+      "@lang/*": ["./lang/*"]
     }
   },
   "include": [
