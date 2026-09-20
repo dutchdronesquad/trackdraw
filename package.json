@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "license": "AGPL-3.0-only",
-  "workspaces": [
-    "packages/viewer"
-  ],
   "scripts": {
     "dev": "npm run i18n:sync-assets && next dev --turbopack",
     "build": "npm run i18n:sync-assets && next build",
@@ -30,9 +27,6 @@
     "assets:multigp:extract": "node scripts/extract_glb_textures.mjs",
     "assets:multigp:optimize": "node scripts/optimize_multigp_textures.mjs",
     "assets:multigp:refresh": "node scripts/extract_glb_textures.mjs && node scripts/optimize_multigp_textures.mjs",
-    "assets:viewer-manifest": "node scripts/generate_viewer_asset_manifest.mjs",
-    "viewer:build": "npm run build --workspace packages/viewer",
-    "viewer:typecheck": "npm run typecheck --workspace packages/viewer",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -56,6 +50,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@tanstack/react-table": "^9.0.0",
+    "@trackdraw/viewer": "git+https://github.com/dutchdronesquad/track-viewer.git#a6249cb5547df1894f1211eb735948d9363a918a",
     "better-auth": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
