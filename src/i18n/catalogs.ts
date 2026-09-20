@@ -11,7 +11,6 @@ import { mergeMessagesWithFallback } from "@/lib/i18n/merge-messages";
 const catalogNamespaces = [
   "common",
   "dashboard",
-  "devTools",
   "dialogs",
   "editor",
   "exportPdf",
