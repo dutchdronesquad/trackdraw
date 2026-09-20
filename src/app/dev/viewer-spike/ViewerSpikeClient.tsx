@@ -1,9 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { TrackViewer } from "@trackdraw/viewer";
 import { buildMultiOrgDesign, buildSecondDesign } from "./fixtures";
+
+// @trackdraw/viewer pulls in three.js and Konva, both DOM/WebGL-dependent
+// and irrelevant to server rendering - loaded client-only (ssr: false) so
+// neither library ends up in the Cloudflare Worker's server bundle.
+const TrackViewer = dynamic(
+  () =>
+    import("@trackdraw/viewer").then((mod) => ({ default: mod.TrackViewer })),
+  { ssr: false }
+);
 
 const ASSET_PREFIX_BASE = "/dev/viewer-spike/assets-prefix-demo";
 
