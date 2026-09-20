@@ -50,7 +50,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@tanstack/react-table": "^9.0.0",
-    "@trackdraw/viewer": "github:dutchdronesquad/track-viewer#a6249cb5547df1894f1211eb735948d9363a918a",
+    "@trackdraw/viewer": "git+https://github.com/dutchdronesquad/track-viewer.git#a6249cb5547df1894f1211eb735948d9363a918a",
     "better-auth": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
