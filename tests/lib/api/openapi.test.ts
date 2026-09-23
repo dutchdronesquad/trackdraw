@@ -1,3 +1,5 @@
+import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
+import { getViewerSnapshotId } from "@trackdraw/viewer/snapshot/identity";
 import { describe, expect, it } from "vitest";
 import { trackdrawOpenApiSchema } from "@/lib/api/openapi";
 
@@ -130,6 +132,8 @@ describe("OpenAPI schema", () => {
     const envelope = asRecord(json.example);
     const example = asRecord(envelope.data);
 
+    const snapshot = viewerSnapshotFromApi(example);
+    expect(getViewerSnapshotId(snapshot)).toBe(snapshot.snapshotId);
     expect(example.schema).toBe("trackdraw.viewer-snapshot.v1");
     expect(Object.hasOwn(example, "assets")).toBe(true);
     expect(Object.hasOwn(example, "snapshot_id")).toBe(true);

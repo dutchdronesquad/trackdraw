@@ -224,3 +224,11 @@ Checklist:
 - [ ] Cloud connection/project selection/refresh validated
 - [ ] Shared attachment storage/preview/validation confirmed for both routes
 - [ ] Supported-version policy applied and documented in the plugin release
+
+## Foundation hardening — September 23, 2026
+
+The standalone viewer and TrackDraw export now share a renderable, per-shape validated snapshot contract. Unknown shape fields are stripped; unknown kinds, missing geometry, duplicate IDs and oversized inputs are rejected. Snapshot IDs are SHA-256 content identities, shared between manual export and API conversion. The existing REST snake_case envelope stays compatible; `viewerSnapshotFromApi(response.data)` converts it to the package's canonical camelCase snapshot and removes project provenance.
+
+Manual export now downloads `.tdviewer.zip`, containing `snapshot.json` and the required course texture bytes. Export fails if a texture cannot be retrieved or fails its size/hash check. The package's archive reader validates path safety, compatibility, completeness, sizes and hashes before making a replacement course available. Watermark artwork is embedded in the viewer; MultiGP catalog images remain course-specific archive assets. The editor and any required source assets must already be locally available when authoring/exporting without WAN access.
+
+Viewer CSS is scoped to its own container, including tooltip portals and per-instance themes. 3D starts on explicit use, pauses when hidden, and falls back to 2D without WebGL2 or after renderer failure. The package includes a standalone HTML archive example and integration tests for the API/manual export contract. These foundation checks do not complete DDS production attachment or either RotorHazard host acceptance route.

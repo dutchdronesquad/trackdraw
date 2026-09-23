@@ -277,3 +277,9 @@ Write for end users first:
 - Keep entries compact.
 - Group small related changes into one stronger theme.
 - Avoid dependency bumps, refactors, or internal cleanup unless there is a clear user-visible effect.
+
+## Viewer package integration
+
+The viewer lives in `dutchdronesquad/track-viewer` and is consumed through the exact Git commit in `package.json`/`package-lock.json`. Build and test a viewer change in that repository first; update both dependency files when adopting it here. Do not restore source aliases into the app.
+
+For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `tests/lib/track/viewer-archive.test.ts`. The latter checks real committed catalog bytes and verifies that manual export and the REST adapter produce the same validated, directly renderable course. Manual viewer export is `.tdviewer.zip`; ordinary editable project JSON remains separate. Hosts use `viewerSnapshotFromApi` for the existing API envelope, or `readViewerArchive` for local files, and stage complete verified assets before replacing an event attachment.

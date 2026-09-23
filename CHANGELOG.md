@@ -4,6 +4,12 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
+## Unreleased
+
+### Portable viewer exports
+
+Viewer exports now include the course and required textures in one offline package, with validation that rejects incomplete or damaged files.
+
 ## [1.16.2]
 
 ### More consistent translations
