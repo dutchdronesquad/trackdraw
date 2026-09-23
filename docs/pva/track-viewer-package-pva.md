@@ -170,7 +170,7 @@ Checklist:
 
 Start state: package and API foundation exist; no production usage yet.
 
-**Prerequisite:** `@trackdraw/viewer` must actually be published to npm first ([#876](https://github.com/dutchdronesquad/trackdraw/issues/876)) — the DDS website is a separate codebase and needs a real installable package, not trackdraw's interim git dependency (set up in #871). Discovered when starting Phase 3 planning; the `@trackdraw` npm scope doesn't exist yet.
+**Prerequisite:** `@trackdraw/viewer` must actually be published to npm first ([#876](https://github.com/dutchdronesquad/trackdraw/issues/876)) — the DDS website is a separate codebase and needs a real installable package, not TrackDraw's interim git dependency (set up in [#871](https://github.com/dutchdronesquad/trackdraw/issues/871)). Discovered when starting Phase 3 planning; the `@trackdraw` npm scope doesn't exist yet.
 
 Work:
 
