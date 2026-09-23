@@ -1,9 +1,12 @@
-import { nanoid } from "nanoid";
+import { getViewerSnapshotId } from "@trackdraw/viewer/snapshot/identity";
 import { getDesignShapes } from "@/lib/track/design";
 import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
 import type { Shape, TrackDesign } from "@/lib/types";
 import { getDesignAssetManifest } from "@trackdraw/viewer/assets/manifest";
-import { validateViewerDesignSnapshot } from "@trackdraw/viewer/snapshot/schema";
+import {
+  validateViewerDesignSnapshot,
+  viewerShapeSchema,
+} from "@trackdraw/viewer/snapshot/schema";
 import { CURRENT_REQUIRED_VIEWER } from "@trackdraw/viewer/snapshot/version";
 import {
   VIEWER_SNAPSHOT_SCHEMA,
@@ -21,10 +24,10 @@ import {
 function toViewerShape(shape: Shape): ViewerShape {
   const { meta, ...rest } = shape;
   const catalog = getTrackElementCatalogIdentity(meta);
-  return {
+  return viewerShapeSchema.parse({
     ...rest,
     ...(catalog ? { meta: { catalog } } : {}),
-  };
+  });
 }
 
 function shapeCapability(shape: Shape): `shape:${string}` {
@@ -57,7 +60,7 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
  * The design/display-metadata allowlist finalized in issue #859 (Phase 1).
  *
  * Explicitly excluded (never leaves this function): `id` (replaced by a
- * fresh `snapshotId`), `authorName`, `inventory`, `tags`, `description`,
+ * content-based `snapshotId`), `authorName`, `inventory`, `tags`, `description`,
  * `mapReference`, `createdAt`, the internal `shapeOrder`/`shapeById` maps
  * (flattened via `getDesignShapes`), and every `shape.meta` key except
  * `catalog`. See docs/pva/track-viewer-package-pva.md (Phase 1) for the
@@ -69,7 +72,7 @@ export function toViewerDesignSnapshot(
   const shapes = getDesignShapes(design);
   const snapshot = {
     schema: VIEWER_SNAPSHOT_SCHEMA,
-    snapshotId: nanoid(),
+    snapshotId: "pending",
     requiredViewer: computeRequiredViewer(shapes),
     design: {
       version: 2 as const,
@@ -80,5 +83,6 @@ export function toViewerDesignSnapshot(
     },
     assets: getDesignAssetManifest(shapes),
   };
-  return validateViewerDesignSnapshot(snapshot);
+  const validated = validateViewerDesignSnapshot(snapshot);
+  return { ...validated, snapshotId: getViewerSnapshotId(validated) };
 }

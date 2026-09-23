@@ -8,7 +8,6 @@ import {
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
-import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
@@ -727,8 +726,8 @@ export default function ExportDialog({
     {
       id: "viewerSnapshot",
       category: "projectData",
-      ext: "JSON",
-      fileExtension: "json",
+      ext: "ZIP",
+      fileExtension: "tdviewer.zip",
       label: t("export.formats.viewerSnapshot.label"),
       color: "bg-sky-500/15 text-sky-400",
       icon: <Globe className="size-4" />,
@@ -879,9 +878,10 @@ export default function ExportDialog({
       case "viewerSnapshot":
         return run(
           "viewerSnapshot",
-          () => {
-            const snapshot = toViewerDesignSnapshot(design);
-            downloadJsonFile(filenameFor(format), snapshot);
+          async () => {
+            const { exportViewerArchive } =
+              await import("@/lib/export/viewer-archive");
+            await exportViewerArchive(design, filenameFor(format));
           },
           { eventFormat: formatId }
         );

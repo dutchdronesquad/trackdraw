@@ -315,8 +315,8 @@
       },
       "viewerSnapshot": {
         "label": "Viewer Snapshot",
-        "descriptionFull": "Portable JSON course snapshot for the @trackdraw/viewer package — RotorHazard, FPVScores, or any external viewer host.",
-        "descriptionShort": "Portable snapshot for external viewer integrations."
+        "descriptionFull": "Course and required textures in one ZIP file for offline viewing with a compatible external viewer.",
+        "descriptionShort": "Course and textures for offline viewer integrations."
       },
       "racePack": {
         "label": "Race Pack",

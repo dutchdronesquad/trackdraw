@@ -115,7 +115,7 @@ describe("toViewerDesignSnapshot", () => {
     expect(snapshot.requiredViewer.capabilities).toContain("catalog:multigp");
   });
 
-  it("does not silently drop a capability the current renderer doesn't recognize", () => {
+  it("rejects shapes the current schema cannot safely export", () => {
     // Regression guard: computeRequiredViewer must report every capability a
     // design's shapes actually use, not just the subset the current
     // renderer's RENDERER_CAPABILITIES list happens to contain - otherwise a
@@ -130,9 +130,7 @@ describe("toViewerDesignSnapshot", () => {
     } as unknown as Shape;
     const design = withShapes([futureShape]);
 
-    const snapshot = toViewerDesignSnapshot(design);
-
-    expect(snapshot.requiredViewer.capabilities).toContain("shape:future-kind");
+    expect(() => toViewerDesignSnapshot(design)).toThrow();
   });
 
   it("populates the assets manifest for a design using a textured catalog shape", () => {
@@ -165,4 +163,28 @@ describe("toViewerDesignSnapshot", () => {
 
     expect(snapshot.assets).toEqual([]);
   });
+});
+
+it("gives identical public content the same identity without leaking unknown shape fields", () => {
+  const shape = {
+    id: "gate",
+    kind: "gate" as const,
+    x: 1,
+    y: 2,
+    rotation: 0,
+    width: 3,
+    height: 2,
+    internalNote: "private",
+  };
+  const design = withShapes([shape]);
+  const a = toViewerDesignSnapshot(design);
+  const b = toViewerDesignSnapshot({
+    ...design,
+    authorName: "Another private author",
+  });
+  expect(a.snapshotId).toMatch(/^sha256:[a-f0-9]{64}$/);
+  expect(a).toEqual(b);
+  expect(a.design.shapes[0]).not.toHaveProperty("internalNote");
+  design.shapeById.gate = { ...shape, x: 2 };
+  expect(toViewerDesignSnapshot(design).snapshotId).not.toBe(a.snapshotId);
 });

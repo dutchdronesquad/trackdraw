@@ -184,30 +184,105 @@ const overlayPackageExample = {
 const viewerSnapshotPackageExample = {
   type: "viewer_snapshot",
   schema: "trackdraw.viewer-snapshot.v1",
-  source: { type: "project", id: "project_123" },
-  title: "Club race layout",
-  updated_at: "2026-04-28T12:29:48.000Z",
-  snapshot_id: "snap_abc123",
+  snapshot_id:
+    "sha256:299f0cd7490dbec6f7b6e04707c1cc07fc834d99056f394a041befb3fc531059",
   required_viewer: {
     schema: "trackdraw.viewer-snapshot.v1",
     min_renderer_version: "0.1.0",
-    capabilities: ["shape:gate", "catalog:multigp"],
+    capabilities: [
+      "shape:gate",
+      "shape:barrier",
+      "shape:polyline",
+      "catalog:multigp",
+    ],
   },
   design: {
     version: 2,
     title: "Club race layout",
-    field: { width: 60, height: 40, origin: "tl", grid_step: 1, ppm: 20 },
-    shapes: [],
-    updated_at: "2026-04-28T12:29:48.000Z",
+    field: {
+      width: 60,
+      height: 40,
+      origin: "tl",
+      grid_step: 2,
+      ppm: 20,
+    },
+    shapes: [
+      {
+        id: "gate",
+        x: 15,
+        y: 12,
+        rotation: 20,
+        kind: "gate",
+        width: 3,
+        height: 2,
+      },
+      {
+        id: "hurdle",
+        x: 25,
+        y: 20,
+        rotation: 0,
+        meta: {
+          catalog: {
+            version: 1,
+            element_id: "multigp-hurdle",
+            assigned_kind: "barrier",
+            official: true,
+            snapshot: {
+              name: "MultiGP Hurdle",
+              organization: "MultiGP",
+              dimensions_label: "5x10",
+            },
+          },
+        },
+        kind: "barrier",
+        variant: "banner",
+        width: 3.048,
+        height: 1.524,
+      },
+      {
+        id: "path",
+        x: 0,
+        y: 0,
+        rotation: 0,
+        kind: "polyline",
+        points: [
+          {
+            x: 4,
+            y: 12,
+          },
+          {
+            x: 15,
+            y: 12,
+          },
+          {
+            x: 25,
+            y: 20,
+          },
+          {
+            x: 45,
+            y: 30,
+          },
+        ],
+        show_arrows: true,
+      },
+    ],
+    updated_at: "2026-09-23T00:00:00.000Z",
   },
   assets: [
     {
-      path: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+      path: "/assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp",
       content_type: "image/webp",
-      size_bytes: 41213,
-      sha256: "39d71f74ce744e32ff4a57a70366e9d18f4aa5dc118378399597580726ddbb4",
+      size_bytes: 28334,
+      sha256:
+        "39d71f74ce744e32ff4a57a70366e9d18f4aa5dc118378399597580726ddbb40",
     },
   ],
+  source: {
+    type: "project",
+    id: "project_123",
+  },
+  title: "Club race layout",
+  updated_at: "2026-09-23T00:00:00.000Z",
 };
 
 export const trackdrawOpenApiSchema = {
@@ -940,7 +1015,7 @@ export const trackdrawOpenApiSchema = {
       ViewerSnapshotPackage: {
         type: "object",
         description:
-          "Portable, allowlisted course snapshot for rendering with the @trackdraw/viewer package. Excludes author name, inventory, tags, description, map reference, and any shape metadata beyond catalog provenance.",
+          "Portable, allowlisted course snapshot for rendering with the @trackdraw/viewer package. Convert this API data envelope with viewerSnapshotFromApi before validation/rendering or createViewerArchive. Excludes author name, inventory, tags, description, map reference, and any shape metadata beyond catalog provenance.",
         required: [
           "type",
           "schema",
@@ -965,7 +1040,11 @@ export const trackdrawOpenApiSchema = {
           },
           title: { type: "string" },
           updated_at: { type: "string", format: "date-time" },
-          snapshot_id: { type: "string" },
+          snapshot_id: {
+            type: "string",
+            description:
+              "Deterministic SHA-256 identity of the canonical public snapshot content.",
+          },
           required_viewer: {
             type: "object",
             description:
