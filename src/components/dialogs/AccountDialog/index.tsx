@@ -17,6 +17,7 @@ import { AccountApiKeysView } from "./ApiKeysView";
 import { AccountDangerView } from "./DangerView";
 import { AccountProfileView } from "./ProfileView";
 import { AccountSecurityView } from "./SecurityView";
+import { studioDialogUrl } from "@/lib/editor/dialog-links";
 import { ProductAnalyticsControl } from "@/components/ProductAnalyticsControl";
 import type {
   AccountApiKey,
@@ -29,6 +30,8 @@ export default function AccountDialog({
   open,
   onOpenChange,
   initialView = "profile",
+  view: controlledView,
+  onViewChange,
 }: AccountDialogProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
@@ -36,7 +39,8 @@ export default function AccountDialog({
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
   const userId = user?.id ?? null;
-  const [view, setView] = useState<AccountDialogView>("profile");
+  const [localView, setView] = useState<AccountDialogView>(initialView);
+  const view = controlledView ?? localView;
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [emailEditOpen, setEmailEditOpen] = useState(false);
@@ -309,12 +313,11 @@ export default function AccountDialog({
     if (typeof window === "undefined") return;
 
     const callbackUrl = new URL(window.location.href);
-    callbackUrl.searchParams.set("account", "security");
 
     const loginUrl = new URL("/login", window.location.origin);
     loginUrl.searchParams.set(
       "callbackURL",
-      `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`
+      studioDialogUrl(callbackUrl.href, "account", "security")
     );
 
     window.location.href = loginUrl.toString();
@@ -643,7 +646,8 @@ export default function AccountDialog({
       navItems={navItems}
       activeItem={view}
       onItemChange={(id) => {
-        setView(id as AccountDialogView);
+        if (onViewChange) onViewChange(id as AccountDialogView);
+        else setView(id as AccountDialogView);
         setError(null);
       }}
       contentTitle={current.title}
