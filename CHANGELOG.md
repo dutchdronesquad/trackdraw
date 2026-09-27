@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## Unreleased
 
+### RaceGOW Gate
+
+The obstacle library now includes the official RaceGOW Gate for Tiny Whoop tracks: a 24 in x 24 in PVC gate, sized from the RaceGOW Basic Concept, with white PVC tubes, corner elbows, and cross feet in 2D and 3D. Its size stays adjustable because RaceGOW allows larger gates as long as every gate on the track matches.
+
 ### Portable viewer exports
 
 Viewer exports now include the course and required textures in one offline package, with validation that rejects incomplete or damaged files.

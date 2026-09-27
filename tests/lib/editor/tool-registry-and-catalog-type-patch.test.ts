@@ -23,6 +23,7 @@ import {
   MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+  RACEGOW_GATE_ELEMENT_ID,
   TRACKDRAW_BANNER_ELEMENT_ID,
   TRACKDRAW_FENCE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
@@ -323,6 +324,37 @@ describe("buildGateCatalogTypePatch", () => {
         catalog: expect.objectContaining({
           elementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
           official: true,
+        }),
+      },
+    });
+  });
+
+  it("applies the official RaceGOW size and identity when switching an existing gate", () => {
+    const multiGpGate = createCatalogShapeDraft(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      { x: 3, y: 4, rotation: 45, includeCatalogMetadata: true }
+    ) as GateShape & { id: string };
+    multiGpGate.id = "gate-racegow";
+
+    const patch = buildGateCatalogTypePatch(
+      multiGpGate,
+      RACEGOW_GATE_ELEMENT_ID
+    );
+
+    expect(patch).toMatchObject({
+      kind: "gate",
+      x: 3,
+      y: 4,
+      rotation: 45,
+      width: 0.6096,
+      height: 0.6096,
+      thick: 0.0213,
+      color: "#f1f5f9",
+      meta: {
+        catalog: expect.objectContaining({
+          elementId: RACEGOW_GATE_ELEMENT_ID,
+          official: true,
+          snapshot: expect.objectContaining({ organization: "RaceGOW" }),
         }),
       },
     });

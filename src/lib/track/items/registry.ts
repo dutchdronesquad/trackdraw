@@ -21,6 +21,7 @@ import {
   getMultiGpDiveGateArchLayout,
   getMultiGpLaunchGateLayout,
   getPanelFrameLadderLayout,
+  getPvcSetGate3DParts,
 } from "@/lib/track/render3d-layout";
 import type {
   DiveGateShape,
@@ -170,6 +171,9 @@ function getGateRouteElevation(shape: GateShape): number {
   const visual = getGateVisualSpec(shape);
   if (visual.variant === "frame-only") {
     return 0;
+  }
+  if (visual.variant === "pvc-set") {
+    return getPvcSetGate3DParts(shape, visual).openingMidY;
   }
 
   return Math.max(0.4, shape.height / 2);

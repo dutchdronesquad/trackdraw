@@ -9,6 +9,7 @@ import {
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateTopY,
   getLadderRenderedHeight,
+  getPvcSetGate3DParts,
   resolveDiveGateElevation,
 } from "@/lib/track/render3d-layout";
 import {
@@ -78,6 +79,9 @@ const shapeTopYDispatch: Record<ShapeKind, (shape: Shape) => number> = {
     const openingH = s.height ?? 2;
     if (gateVisual.variant === "panel-frame") {
       return openingH + gateVisual.panels.top.heightMeters;
+    }
+    if (gateVisual.variant === "pvc-set") {
+      return getPvcSetGate3DParts(s, gateVisual).topY;
     }
     return openingH;
   },

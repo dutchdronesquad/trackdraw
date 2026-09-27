@@ -22,6 +22,7 @@ import type {
 
 const DIVE_GATE_2D_BANNER_VISUAL_SCALE = 0.82;
 const TRACKDRAW_FRAME_2D_DEPTH_METERS = 0.2;
+const PVC_SET_2D_OUTLINE_COLOR = "#475569";
 
 export function getGate2DShape(shape: GateShape, ppm: number) {
   const visual = getGateVisualSpec(shape);
@@ -55,6 +56,34 @@ export function getGate2DShape(shape: GateShape, ppm: number) {
       radius: Math.min(12, depth / 2),
       variant: visual.variant,
       width,
+    };
+  }
+
+  if (visual.variant === "pvc-set") {
+    const depth = m2px(visual.frame.diameterMeters, ppm);
+    const tubeColor = shape.color ?? visual.frame.color;
+    return {
+      color: tubeColor,
+      depth,
+      fittings: {
+        color: visual.fittings.color,
+        footSpan: m2px(visual.fittings.centerToFaceMeters * 2, ppm),
+        sleeveDiameter: m2px(
+          visual.frame.diameterMeters * visual.fittings.sleeveRadiusFactor,
+          ppm
+        ),
+      },
+      frame: {
+        color: tubeColor,
+        diameter: depth,
+        placement: visual.frame.placement,
+      },
+      openingWidth,
+      // White PVC needs a thin dark outline to stay legible on the canvas.
+      outlineColor: PVC_SET_2D_OUTLINE_COLOR,
+      radius: Math.min(12, depth / 2),
+      variant: visual.variant,
+      width: openingWidth,
     };
   }
 

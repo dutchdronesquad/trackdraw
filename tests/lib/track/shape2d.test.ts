@@ -15,6 +15,7 @@ import {
   MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
   MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  RACEGOW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type { DiveGateShape, GateShape, TowerShape } from "@/lib/types";
 
@@ -146,6 +147,26 @@ describe("track 2d shape helpers", () => {
     expect(gate.panels.rightWidth).toBeCloseTo(feetToMeters(1) * ppm);
     expect(gate.panels.topColor).toBe("#202e5d");
     expect(gate.frame.placement).toBe("outer");
+  });
+
+  it("uses post-centre width and PVC fittings for the RaceGOW gate 2d metrics", () => {
+    const shape = createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }) as GateShape;
+    const gate = getGate2DShape(shape, ppm);
+
+    expect(gate.variant).toBe("pvc-set");
+    if (gate.variant !== "pvc-set") {
+      throw new Error("expected pvc-set gate metrics");
+    }
+    expect(gate.width).toBeCloseTo(0.6096 * ppm);
+    expect(gate.openingWidth).toBeCloseTo(0.6096 * ppm);
+    expect(gate.depth).toBeCloseTo(0.0213 * ppm);
+    expect(gate.color).toBe("#f1f5f9");
+    expect(gate.fittings.sleeveDiameter).toBeGreaterThan(gate.depth);
+    expect(gate.outlineColor).not.toBe(gate.color);
   });
 
   it("uses one top-down footprint for stacked tower gates", () => {
