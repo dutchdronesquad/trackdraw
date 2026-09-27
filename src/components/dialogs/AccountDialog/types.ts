@@ -2,6 +2,8 @@ export type AccountDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialView?: AccountDialogView;
+  view?: AccountDialogView;
+  onViewChange?: (view: AccountDialogView) => void;
   mobile?: boolean;
 };
 

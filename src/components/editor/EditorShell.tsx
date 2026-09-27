@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAccountProjectSync } from "./useAccountProjectSync";
+import { useStudioDialog } from "./StudioDialogsProvider";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
 import { useStarterExperience } from "./useStarterExperience";
@@ -204,7 +205,7 @@ export default function EditorShell({
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useStudioDialog("feedback");
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
   const [showObstacleNumbers, setShowObstacleNumbers] = useState(readOnly);

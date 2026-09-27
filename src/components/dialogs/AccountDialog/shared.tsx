@@ -1,6 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 
 export function AccountDialogError({ error }: { error: string | null }) {
@@ -26,6 +28,11 @@ export function AccountDialogLoading() {
 
 export function AccountDialogNotSignedIn() {
   const t = useTranslations("dialogs");
+  const tEditor = useTranslations("editor.accountMenu");
+  const callbackURL =
+    typeof window === "undefined"
+      ? "/studio"
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
   return (
     <div className="border-border/60 bg-background/70 rounded-2xl border p-5">
       <div className="flex items-start gap-3">
@@ -39,6 +46,16 @@ export function AccountDialogNotSignedIn() {
           <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
             {t("account.shared.signInBody")}
           </p>
+          <Link
+            href={`/login?${new URLSearchParams({ callbackURL })}`}
+            prefetch={false}
+            className={buttonVariants({
+              variant: "outline",
+              className: "mt-3",
+            })}
+          >
+            {tEditor("signIn")}
+          </Link>
         </div>
       </div>
     </div>

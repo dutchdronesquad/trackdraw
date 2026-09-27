@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { LayoutDashboard, LogIn, LogOut, UserRound } from "lucide-react";
 import AccountDialog from "@/components/dialogs/AccountDialog";
+import { useStudioDialog, useStudioDialogs } from "./StudioDialogsProvider";
 import UserAvatar from "@/components/UserAvatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -51,7 +52,8 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
   const t = useTranslations("editor");
   const { data, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useStudioDialog("account");
+  const studioDialogs = useStudioDialogs();
   const [signingOut, setSigningOut] = useState(false);
   const user = data?.user;
 
@@ -201,7 +203,9 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
           </Button>
         </div>
       </PopoverContent>
-      <AccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
+      {!studioDialogs && (
+        <AccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
+      )}
     </Popover>
   );
 }

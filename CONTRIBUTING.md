@@ -285,3 +285,7 @@ The viewer lives in `dutchdronesquad/track-viewer` and is consumed from npm as `
 Obstacle artwork and maintenance scripts live in [dutchdronesquad/obstacles](https://github.com/dutchdronesquad/obstacles). TrackDraw and the viewer load stable URLs from `https://obstacles.trackdraw.app/multigp/`; updates publish automatically from that repository's default branch without asset version bumps. Geometry, dimensions and catalog identities remain in TrackDraw.
 
 For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `tests/lib/track/viewer-archive.test.ts`. Online hosts consume the existing JSON API using `viewerSnapshotFromApi`. Manual `.tdviewer.zip` export downloads the current textures and records their actual hashes and sizes before embedding them. Opening the completed archive remains fully offline; creating an export with branded textures requires network access. Ordinary editable project JSON remains separate.
+
+## Studio integration links
+
+See [Studio dialog links](docs/studio-dialog-links.md) for supported dialog and account-section URLs, sign-in return behavior, and DDS rollout guidance.

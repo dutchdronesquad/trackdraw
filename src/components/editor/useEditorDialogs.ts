@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
+
+import { useStudioDialog } from "./StudioDialogsProvider";
 
 type UseEditorDialogsOptions = {
   isMobile: boolean;
@@ -11,14 +13,16 @@ export function useEditorDialogs({
   isMobile,
   setMobileToolsOpen,
 }: UseEditorDialogsOptions) {
-  const [shareOpen, setShareOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [newProjectOpen, setNewProjectOpen] = useState(false);
-  const [projectManagerOpen, setProjectManagerOpen] = useState(false);
-  const [presetPickerOpen, setPresetPickerOpen] = useState(false);
-  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useStudioDialog("share");
+  const [exportOpen, setExportOpen] = useStudioDialog("export");
+  const [importOpen, setImportOpen] = useStudioDialog("import");
+  const [shortcutsOpen, setShortcutsOpen] = useStudioDialog("shortcuts");
+  const [newProjectOpen, setNewProjectOpen] = useStudioDialog("new-project");
+  const [projectManagerOpen, setProjectManagerOpen] =
+    useStudioDialog("projects");
+  const [presetPickerOpen, setPresetPickerOpen] = useStudioDialog("presets");
+  const [commandPaletteOpen, setCommandPaletteOpen] =
+    useStudioDialog("commands");
   const mobileNewProjectTimerRef = useRef<number | null>(null);
 
   const openNewProjectDialog = useCallback(() => {
@@ -37,7 +41,7 @@ export function useEditorDialogs({
       setNewProjectOpen(true);
       mobileNewProjectTimerRef.current = null;
     }, 180);
-  }, [isMobile, setMobileToolsOpen]);
+  }, [isMobile, setMobileToolsOpen, setNewProjectOpen]);
 
   useEffect(() => {
     return () => {

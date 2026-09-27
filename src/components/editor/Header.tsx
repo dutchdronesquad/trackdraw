@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useStudioDialog, useStudioDialogs } from "./StudioDialogsProvider";
 import { useTranslations } from "next-intl";
 import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
 import {
@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
-import type { AccountDialogView } from "@/components/dialogs/AccountDialog/types";
 import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
 
 const MobileAppMenu = dynamic(
@@ -67,21 +66,6 @@ const LanguagePicker = dynamic(
 );
 
 const INSPECTOR_WIDTH = "21.25rem";
-
-function parseAccountDialogView(
-  value: string | null
-): AccountDialogView | null {
-  if (
-    value === "profile" ||
-    value === "security" ||
-    value === "apiKeys" ||
-    value === "danger"
-  ) {
-    return value;
-  }
-
-  return null;
-}
 
 interface HeaderProps {
   tab: "2d" | "3d";
@@ -135,34 +119,9 @@ export default function Header({
   const resolvedTitle = title ?? t("untitledTitle");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [showMobileAppMenu, setShowMobileAppMenu] = useState(false);
-  const [manualAccountOpen, setManualAccountOpen] = useState(false);
-  const [manualAccountInitialView, setManualAccountInitialView] =
-    useState<AccountDialogView>("profile");
-  const requestedAccountView = parseAccountDialogView(
-    searchParams.get("account")
-  );
-  const accountOpen = manualAccountOpen || requestedAccountView !== null;
-  const accountInitialView = requestedAccountView ?? manualAccountInitialView;
-
-  const handleAccountOpenChange = useCallback(
-    (open: boolean) => {
-      setManualAccountOpen(open);
-
-      if (!open && searchParams.has("account")) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("account");
-        const nextQuery = params.toString();
-        router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-          scroll: false,
-        });
-      }
-    },
-    [pathname, router, searchParams]
-  );
+  const [accountOpen, handleAccountOpenChange] = useStudioDialog("account");
+  const dialogNavigation = useStudioDialogs();
 
   const statusIcon =
     statusTone === "error" ? (
@@ -483,8 +442,7 @@ export default function Header({
                   }
                 }}
                 onOpenAccount={() => {
-                  setManualAccountInitialView("profile");
-                  setManualAccountOpen(true);
+                  handleAccountOpenChange(true);
                 }}
                 onOpenProjects={onOpenProjectManager}
                 onImport={onImport}
@@ -520,7 +478,8 @@ export default function Header({
       <AccountDialog
         open={accountOpen}
         onOpenChange={handleAccountOpenChange}
-        initialView={accountInitialView}
+        view={dialogNavigation?.accountView}
+        onViewChange={dialogNavigation?.setAccountView}
         mobile
       />
     </>

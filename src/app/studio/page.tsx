@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { parseEditorView } from "@/lib/editor/view";
 
 const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
@@ -16,9 +17,11 @@ function StudioContent() {
   const initialTab = parseEditorView(searchParams.get("view")) ?? "2d";
 
   return (
-    <main className="h-screen">
-      <EditorShell seedToken={seedToken} initialTab={initialTab} />
-    </main>
+    <StudioDialogsProvider>
+      <main className="h-screen">
+        <EditorShell seedToken={seedToken} initialTab={initialTab} />
+      </main>
+    </StudioDialogsProvider>
   );
 }
 
