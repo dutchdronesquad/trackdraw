@@ -7,7 +7,6 @@ import {
   ExportReliability,
 } from "@/components/dashboard/ProductAnalysis";
 
-import { MetricDetails } from "@/components/dashboard/MetricDetails";
 import { useEffect, useMemo, useState } from "react";
 import { usePeriodMetrics } from "@/components/dashboard/use-period-metrics";
 import {
@@ -582,7 +581,6 @@ function PeriodInsightState({
   children: React.ReactNode;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.period");
-  const locale = useLocale();
   if (!insights)
     return failed ? (
       <div role="alert">
@@ -599,11 +597,6 @@ function PeriodInsightState({
     source === "embeds"
       ? insights.usage.embedCoverage
       : insights.usage.coverage;
-  const date = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  });
-  const format = (value: string) => date.format(new Date(`${value}T00:00:00Z`));
   const unavailable =
     period?.days === 0 ||
     (source !== "content" &&
@@ -612,40 +605,7 @@ function PeriodInsightState({
         (period && period.to < (coverage.availableFrom ?? coverage.from))));
   if (unavailable)
     return <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
-  const partial = source !== "content" && coverage && !coverage.complete;
-  return (
-    <div>
-      {period ? (
-        <div className="mb-3">
-          <MetricDetails
-            summary={
-              period.days > 0
-                ? t("dates", {
-                    from: format(period.from),
-                    to: format(period.to),
-                  }) + (partial ? ` · ${t("partialLabel")}` : "")
-                : t("noCompleteDays")
-            }
-          >
-            {source === "content" ? <p>{t("contentScope")}</p> : null}
-            {source !== "content" && coverage?.comparisonReady ? (
-              <p>
-                {t("previousDates", {
-                  from: format(period.previousFrom),
-                  to: format(period.previousTo),
-                })}
-              </p>
-            ) : null}
-            {partial && coverage?.from ? (
-              <p>{t("partial", { date: format(coverage.from) })}</p>
-            ) : null}
-            <p>{t("completeDays")}</p>
-          </MetricDetails>
-        </div>
-      ) : null}
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }
 
 function LocalizationDemandTable({
@@ -1392,44 +1352,9 @@ export default function MetricsWorkspace({
             </div>
             {selectedLocalization ? (
               <>
-                <p className="text-muted-foreground mb-4 text-xs">
-                  {selectedLocalization.windowDays > 0
-                    ? t("localization.selectedPeriod", {
-                        from: date.format(
-                          new Date(
-                            `${selectedLocalization.period.from}T00:00:00Z`
-                          )
-                        ),
-                        to: date.format(
-                          new Date(
-                            `${selectedLocalization.period.to}T00:00:00Z`
-                          )
-                        ),
-                      })
-                    : t("localization.noCompleteDays")}
-                  {selectedLocalization.measuredSince
-                    ? ` ${t("localization.measuredSince", { date: date.format(new Date(`${selectedLocalization.measuredSince}T00:00:00Z`)) })}`
-                    : null}
-                </p>
                 {selectedLocalization.quality === "building" ? (
                   <p className="text-muted-foreground mb-4 text-xs">
                     {t("localization.partialCoverage")}
-                  </p>
-                ) : null}
-                {selectedLocalization.comparisonReady ? (
-                  <p className="text-muted-foreground mb-4 text-xs">
-                    {t("localization.comparisonPeriod", {
-                      from: date.format(
-                        new Date(
-                          `${selectedLocalization.previousPeriod.from}T00:00:00Z`
-                        )
-                      ),
-                      to: date.format(
-                        new Date(
-                          `${selectedLocalization.previousPeriod.to}T00:00:00Z`
-                        )
-                      ),
-                    })}
                   </p>
                 ) : null}
                 <LocalizationDemandTable metrics={selectedLocalization} />

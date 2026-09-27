@@ -552,9 +552,7 @@
         "fixedWindow": "Fixed reporting window",
         "loading": "Loading data for the selected period…",
         "failed": "Could not load data for the selected period.",
-        "retry": "Retry",
-        "completeDays": "Complete UTC days only; the current day is excluded.",
-        "partialLabel": "Partial history"
+        "retry": "Retry"
       },
       "analysis": {
         "weeklyTitle": "Weekly activity",

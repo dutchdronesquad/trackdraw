@@ -845,7 +845,12 @@ describe("metrics decision views", () => {
       servedLocales: [],
     });
     await user.click(screen.getByRole("button", { name: "Retry" }));
-    expect(await screen.findByText(/Compared with/)).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "No recorded creator sessions for this selection."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/Compared with/)).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
