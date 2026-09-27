@@ -1,5 +1,6 @@
 "use client";
 
+import { MetricDetails } from "@/components/dashboard/MetricDetails";
 import { useLocale, useTranslations } from "next-intl";
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import {
@@ -82,7 +83,7 @@ export function WeeklyActivity({
     return <p className="text-muted-foreground text-sm">{t("empty")}</p>;
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-xs">{t("weeksNote")}</p>
+      <MetricDetails>{t("weeksNote")}</MetricDetails>
       <ChartContainer config={config} className="h-64 w-full">
         <ComposedChart
           accessibilityLayer
@@ -191,7 +192,7 @@ export function JourneyDropoff({
   ];
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-xs">{t("journeyNote")}</p>
+      <MetricDetails>{t("journeyNote")}</MetricDetails>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[36rem] text-sm">
           <thead>
@@ -284,7 +285,7 @@ export function TimeToResult({
   const timing = analysis.timeToResult;
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-xs">{t("timingNote")}</p>
+      <MetricDetails>{t("timingNote")}</MetricDetails>
       <dl className="grid gap-4 sm:grid-cols-3">
         <div>
           <dt className="text-muted-foreground text-xs">{t("median")}</dt>
@@ -332,7 +333,9 @@ export function ExportReliability({
   );
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-xs">{t("exportNote")}</p>
+      {analysis.exportReliability.length > 0 ? (
+        <MetricDetails>{t("exportNote")}</MetricDetails>
+      ) : null}
       {analysis.exportReliability.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t("empty")}</p>
       ) : (

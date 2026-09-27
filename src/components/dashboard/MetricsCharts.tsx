@@ -1454,9 +1454,7 @@ function UsageBreakdownRows({
 }) {
   if (total === 0) {
     return (
-      <div className="text-muted-foreground flex min-h-40 items-center justify-center px-4 text-center text-sm">
-        {emptyLabel}
-      </div>
+      <div className="text-muted-foreground py-4 text-sm">{emptyLabel}</div>
     );
   }
 
@@ -1540,6 +1538,9 @@ export function ExportUsageBreakdown({
       right.count - left.count || left.key.localeCompare(right.key)
   );
 
+  if (usage.exports === 0)
+    return <p className="text-muted-foreground text-sm">{t("noData")}</p>;
+
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
       <div
@@ -1601,6 +1602,9 @@ export function ShareUsageBreakdown({
   const extras = usage.shareSurfaces
     .filter((row) => !knownSurfaceSet.has(row.surface))
     .map((row) => ({ key: row.surface, label: row.surface, count: row.count }));
+
+  if (usage.shareViews === 0)
+    return <p className="text-muted-foreground text-sm">{t("noData")}</p>;
 
   return (
     <div className="space-y-3">

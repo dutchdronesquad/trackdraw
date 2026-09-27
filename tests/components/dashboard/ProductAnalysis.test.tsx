@@ -62,9 +62,7 @@ describe("product analysis", () => {
     render(<TimeToResult analysis={analysis} />);
     expect(screen.getByText("3 min")).toBeTruthy();
     expect(screen.getByText("10 min")).toBeTruthy();
-    expect(
-      screen.getByText(/32 started sessions without an observed result/)
-    ).toBeTruthy();
+    expect(screen.getByText(/Without a result: 32 \(excluded\)/)).toBeTruthy();
     expect(screen.getByText("Limited sample (< 30)")).toBeTruthy();
   });
   it("keeps sub-minute results visible instead of rounding them to zero minutes", () => {

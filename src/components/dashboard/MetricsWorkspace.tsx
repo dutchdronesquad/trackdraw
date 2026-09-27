@@ -7,6 +7,7 @@ import {
   ExportReliability,
 } from "@/components/dashboard/ProductAnalysis";
 
+import { MetricDetails } from "@/components/dashboard/MetricDetails";
 import { useEffect, useMemo, useState } from "react";
 import { usePeriodMetrics } from "@/components/dashboard/use-period-metrics";
 import {
@@ -603,44 +604,46 @@ function PeriodInsightState({
     timeZone: "UTC",
   });
   const format = (value: string) => date.format(new Date(`${value}T00:00:00Z`));
+  const unavailable =
+    period?.days === 0 ||
+    (source !== "content" &&
+      coverage &&
+      (!coverage.from ||
+        (period && period.to < (coverage.availableFrom ?? coverage.from))));
+  if (unavailable)
+    return <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
+  const partial = source !== "content" && coverage && !coverage.complete;
   return (
     <div>
       {period ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {period.days > 0
-            ? t("dates", { from: format(period.from), to: format(period.to) })
-            : t("noCompleteDays")}
-        </p>
+        <div className="mb-3">
+          <MetricDetails
+            summary={
+              period.days > 0
+                ? t("dates", {
+                    from: format(period.from),
+                    to: format(period.to),
+                  }) + (partial ? ` · ${t("partialLabel")}` : "")
+                : t("noCompleteDays")
+            }
+          >
+            {source === "content" ? <p>{t("contentScope")}</p> : null}
+            {source !== "content" && coverage?.comparisonReady ? (
+              <p>
+                {t("previousDates", {
+                  from: format(period.previousFrom),
+                  to: format(period.previousTo),
+                })}
+              </p>
+            ) : null}
+            {partial && coverage?.from ? (
+              <p>{t("partial", { date: format(coverage.from) })}</p>
+            ) : null}
+            <p>{t("completeDays")}</p>
+          </MetricDetails>
+        </div>
       ) : null}
-      {source === "content" ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {t("contentScope")}
-        </p>
-      ) : coverage && !coverage.complete ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {coverage.from
-            ? t("partial", { date: format(coverage.from) })
-            : t("unavailable")}
-        </p>
-      ) : null}
-      {source !== "content" && coverage?.comparisonReady && period ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {t("previousDates", {
-            from: format(period.previousFrom),
-            to: format(period.previousTo),
-          })}
-        </p>
-      ) : null}
-      {period?.days === 0 ||
-      (source !== "content" &&
-        coverage &&
-        (!coverage.from ||
-          (period &&
-            period.to < (coverage.availableFrom ?? coverage.from)))) ? (
-        <p className="text-muted-foreground text-sm">{t("unavailable")}</p>
-      ) : (
-        children
-      )}
+      {children}
     </div>
   );
 }
@@ -1092,9 +1095,6 @@ export default function MetricsWorkspace({
                   setGrowthRange("custom");
                 }}
               />
-              <p className="text-muted-foreground text-xs">
-                {t("header.rangeScope")}
-              </p>
             </div>
           </div>
         </header>
@@ -1175,9 +1175,6 @@ export default function MetricsWorkspace({
                   />
                 ) : null}
               </PeriodInsightState>
-              <p className="text-muted-foreground mt-2 border-t pt-2 text-xs leading-relaxed">
-                {t("overview.exportNote")}
-              </p>
             </section>
           </div>
 
@@ -1344,7 +1341,7 @@ export default function MetricsWorkspace({
                   {t("retention.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("retention.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1365,7 +1362,7 @@ export default function MetricsWorkspace({
                   {t("acquisition.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("acquisition.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1523,7 +1520,7 @@ export default function MetricsWorkspace({
                     {t("adoption.title")}
                   </h2>
                   <p className="text-muted-foreground mt-1 text-sm">
-                    {t("adoption.description")} {t("period.fixedWindow")}
+                    {t("period.fixedWindow")}
                   </p>
                 </div>
                 <QualityLabel
@@ -1587,9 +1584,7 @@ export default function MetricsWorkspace({
               <h2 className="text-base font-semibold">
                 {t("overview.exportTitle")}
               </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("overview.exportNote")}
-              </p>
+
               <div className="mt-5">
                 <PeriodInsightState
                   insights={selectedInsights}
@@ -1627,7 +1622,7 @@ export default function MetricsWorkspace({
               {t("sharing.healthTitle")}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              {t("sharing.healthDescription")} {t("period.currentState")}
+              {t("period.currentState")}
             </p>
             <div className="mt-5">
               <SharingHealth
@@ -1668,7 +1663,7 @@ export default function MetricsWorkspace({
                   {t("operations.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
-                  {t("operations.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel

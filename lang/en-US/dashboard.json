@@ -237,8 +237,7 @@
     "explorer": {
       "header": {
         "title": "Product metrics",
-        "subtitle": "Aggregate product health",
-        "rangeScope": "Applies to growth, localization, editor usage, exports, sharing, and embed reach."
+        "subtitle": "Aggregate product health"
       },
       "quality": {
         "healthy": "Ready",
@@ -441,11 +440,11 @@
         "notStarted": "Localization demand measurement has not started.",
         "noData": "No recorded creator sessions for this selection.",
         "previousSelectedPeriod": "Previous period: {count}",
-        "selectedPeriod": "{from} – {to} (complete UTC days).",
+        "selectedPeriod": "{from} – {to} (UTC)",
         "comparisonPeriod": "Compared with {from} – {to}.",
         "measuredSince": "Measurement started {date}.",
         "noCompleteDays": "No complete UTC days in this selection.",
-        "partialCoverage": "Coverage is incomplete for this selection. Counts include only available data; missing history is not zero activity.",
+        "partialCoverage": "Partial history · available observations only.",
         "loading": "Loading localization demand…",
         "loadFailed": "Could not load localization demand for this period.",
         "retry": "Retry"
@@ -543,17 +542,19 @@
         }
       },
       "period": {
-        "dates": "{from} – {to} (complete UTC days).",
+        "dates": "{from} – {to} (UTC)",
         "previousDates": "Compared with {from} – {to}.",
-        "noCompleteDays": "No complete UTC days in this selection.",
-        "partial": "Incomplete history. Reliable coverage starts no earlier than {date}; counts show available observations only. Missing history is not zero activity.",
-        "unavailable": "No covered data is available for this selection.",
+        "noCompleteDays": "No complete UTC days selected.",
+        "partial": "Partial history · coverage from {date}.",
+        "unavailable": "No data available for this period.",
         "contentScope": "Creation dates of currently stored projects, signed-in shares, and presets. Deleted content is not included.",
-        "currentState": "Current state — independent of the date selection.",
-        "fixedWindow": "Uses its fixed reporting window, independent of the date selection.",
+        "currentState": "Current totals",
+        "fixedWindow": "Fixed reporting window",
         "loading": "Loading data for the selected period…",
         "failed": "Could not load data for the selected period.",
-        "retry": "Retry"
+        "retry": "Retry",
+        "completeDays": "Complete UTC days only; the current day is excluded.",
+        "partialLabel": "Partial history"
       },
       "analysis": {
         "weeklyTitle": "Weekly activity",
@@ -1013,7 +1014,7 @@
       "completedSessions": "Sessions with a result",
       "minutes": "{value} min",
       "seconds": "{value} sec",
-      "withoutResult": "{count} started sessions without an observed result are excluded from these times.",
+      "withoutResult": "Without a result: {count} (excluded)",
       "noResults": "No completed sessions to calculate a duration.",
       "exportNote": "Recorded terminal attempts: failures divided by successes plus failures for the same format. Format-level rates use version 1.1.0 events only, where both outcomes are tracked. Retries count as separate attempts. Earlier events remain separate because their failures have no format. Missing events and unfinished attempts are not measured.",
       "format": "Format",
@@ -1022,7 +1023,8 @@
       "failureRate": "Failure rate",
       "legacy": "Earlier events (all formats)",
       "unknownFormat": "Unknown format"
-    }
+    },
+    "aboutNumbers": "About these numbers"
   },
   "users": {
     "filters": {
