@@ -23,6 +23,10 @@ Do not move request-time auth, database, gallery, share, or embed reads into thi
 
 Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the four public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
 
+## Build dependencies
+
+Keep `esbuild` as an explicit development dependency: the OpenNext Cloudflare CLI imports it directly, so deployment must not rely on another tool hoisting it into the root dependency tree. The PR build checks `opennextjs-cloudflare build --help` after `npm ci` to catch missing adapter dependencies before merge; deployment still runs the complete OpenNext build.
+
 ## Database split
 
 TrackDraw uses Cloudflare D1 for persisted share storage.
