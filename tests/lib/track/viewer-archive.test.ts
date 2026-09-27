@@ -13,7 +13,7 @@ import {
 } from "@trackdraw/viewer/snapshot/archive";
 import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
 import { toApiViewerSnapshotPackage } from "@/lib/server/api-projects";
-import type { TrackViewerProps } from "@trackdraw/viewer";
+import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/viewer/snapshot/types";
 import type { StoredProject } from "@/lib/server/projects";
 
 vi.mock("server-only", () => ({}));
@@ -55,8 +55,8 @@ describe("viewer course export integration", () => {
     const archive = readViewerArchive(
       await buildViewerArchive(design, fetchAsset)
     );
-    const props: TrackViewerProps = { design: archive.snapshot.design };
-    expect(props.design.shapes).toHaveLength(2);
+    expect(archive.snapshot.schema).toBe(VIEWER_SNAPSHOT_SCHEMA);
+    expect(archive.snapshot.design.shapes).toHaveLength(2);
     expect(archive.snapshot.design).toEqual(
       toViewerDesignSnapshot(design).design
     );
