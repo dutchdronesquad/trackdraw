@@ -513,7 +513,8 @@
           "webm": "WebM",
           "race_pack": "Race Pack PDF",
           "velocidrone": "Velocidrone TRK",
-          "render_3d": "3D PNG"
+          "render_3d": "3D PNG",
+          "viewer_snapshot": "Viewer snapshot"
         },
         "reasons": {
           "asset_load_failed": "Export asset could not be loaded",
@@ -764,7 +765,8 @@
         "racePack": "Race Pack (PDF)",
         "json": "Project file (JSON)",
         "webm": "Cinematic FPV (WebM)",
-        "velocidrone": "Velocidrone track"
+        "velocidrone": "Velocidrone track",
+        "viewerSnapshot": "Viewer snapshot"
       }
     },
     "shareUsage": {

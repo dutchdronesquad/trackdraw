@@ -1511,6 +1511,7 @@ export function ExportUsageBreakdown({
     png: "png",
     svg: "svg",
     render_3d: "render3d",
+    viewer_snapshot: "viewerSnapshot",
     race_pack: "racePack",
     json: "json",
     webm: "webm",
