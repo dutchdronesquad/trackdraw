@@ -567,30 +567,61 @@ function DecisionMetric({
   );
 }
 
+function MetricsLoadError({
+  message,
+  retry,
+}: {
+  message: string;
+  retry: () => void;
+}) {
+  const t = useTranslations("dashboard.metrics.explorer.period");
+  return (
+    <div
+      role="alert"
+      className="bg-muted/50 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3"
+    >
+      <Info
+        className="text-muted-foreground size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <p className="min-w-0 flex-1 text-sm">{message}</p>
+      <Button variant="outline" size="sm" onClick={retry}>
+        <RefreshCw className="size-3.5" aria-hidden="true" />
+        {t("retry")}
+      </Button>
+    </div>
+  );
+}
+
 function PeriodInsightState({
   insights,
   failed,
-  retry,
   source,
   children,
 }: {
   insights: ProductInsights | undefined;
   failed?: boolean;
-  retry: () => void;
   source: "events" | "embeds" | "content";
   children: React.ReactNode;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.period");
   if (!insights)
     return failed ? (
-      <div role="alert">
-        <p>{t("failed")}</p>
-        <Button variant="outline" onClick={retry}>
-          {t("retry")}
-        </Button>
-      </div>
+      <p className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
+        <Info className="size-4" aria-hidden="true" />
+        {t("temporarilyUnavailable")}
+      </p>
     ) : (
-      <p role="status">{t("loading")}</p>
+      <p
+        role="status"
+        className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
+      >
+        <RefreshCw
+          className="size-4 motion-safe:animate-spin"
+          aria-hidden="true"
+        />
+        {t("loading")}
+      </p>
     );
   const period = insights.period;
   const coverage =
@@ -1085,6 +1116,14 @@ export default function MetricsWorkspace({
           </div>
         </div>
 
+        {periodInsights.failed &&
+        ["overview", "creation", "distribution"].includes(activeView) ? (
+          <MetricsLoadError
+            message={t("period.failed")}
+            retry={periodInsights.retry}
+          />
+        ) : null}
+
         <TabsContent value="overview" className="mt-3 space-y-3">
           <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(19rem,1fr)]">
             <section
@@ -1125,7 +1164,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="events"
               >
                 {selectedInsights ? (
@@ -1258,7 +1297,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1360,17 +1399,10 @@ export default function MetricsWorkspace({
                 <LocalizationDemandTable metrics={selectedLocalization} />
               </>
             ) : localizationFailed ? (
-              <div role="alert">
-                <p>{t("localization.loadFailed")}</p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    localization.retry();
-                  }}
-                >
-                  {t("localization.retry")}
-                </Button>
-              </div>
+              <MetricsLoadError
+                message={t("localization.loadFailed")}
+                retry={localization.retry}
+              />
             ) : (
               <p role="status">{t("localization.loading")}</p>
             )}
@@ -1388,7 +1420,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1406,7 +1438,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1429,7 +1461,7 @@ export default function MetricsWorkspace({
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1469,7 +1501,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="content"
               >
                 {selectedInsights ? (
@@ -1491,7 +1523,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1514,7 +1546,7 @@ export default function MetricsWorkspace({
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1532,7 +1564,7 @@ export default function MetricsWorkspace({
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1567,7 +1599,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="embeds"
               >
                 {selectedInsights ? (

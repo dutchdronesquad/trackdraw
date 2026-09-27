@@ -551,8 +551,9 @@
         "currentState": "Current totals",
         "fixedWindow": "Fixed reporting window",
         "loading": "Loading data for the selected period…",
-        "failed": "Could not load data for the selected period.",
-        "retry": "Retry"
+        "failed": "Some metrics could not be loaded.",
+        "retry": "Retry",
+        "temporarilyUnavailable": "Temporarily unavailable"
       },
       "analysis": {
         "weeklyTitle": "Weekly activity",
