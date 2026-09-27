@@ -1,5 +1,8 @@
 import "server-only";
 
+import type { ProductActivityAnalysis } from "@/lib/metrics-analysis";
+import { getProductActivityAnalysis } from "@/lib/server/metrics-analysis";
+
 import {
   addUtcDays,
   addUtcMonths,
@@ -23,6 +26,7 @@ import {
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
 import { getDatabase } from "@/lib/server/db";
+import { EMBED_REFERRER_RETENTION_DAYS } from "@/lib/server/embed-referrer-retention";
 import { EMBED_REFERRER_DISCLOSURE_THRESHOLD } from "@/lib/server/embed-referrers";
 
 export type {
@@ -90,31 +94,43 @@ export type ContentGrowthPoint = {
 };
 
 export type ProductUsageMetrics = {
-  totalEvents30d: number;
-  eventTypes30d: Array<{ eventType: string; count: number }>;
-  eventTypesPrevious30d: Array<{ eventType: string; count: number }>;
+  totalEvents: number;
+  eventTypes: Array<{ eventType: string; count: number }>;
+  eventTypesPrevious: Array<{ eventType: string; count: number }>;
   trackingStartedAt: string | null;
   trackingDays: number;
-  anonymousSessions30d: number;
-  accountSessions30d: number;
-  creatorFunnel30d: {
+  coverage?: {
+    availableFrom: string | null;
+    from: string | null;
+    complete: boolean;
+    comparisonReady: boolean;
+  };
+  embedCoverage?: {
+    availableFrom: string | null;
+    from: string | null;
+    complete: boolean;
+    comparisonReady: boolean;
+  };
+  anonymousSessions: number;
+  accountSessions: number;
+  creatorFunnel: {
     anonymous: { started: number; edited: number; valuable: number };
     account: { started: number; edited: number; valuable: number };
   };
-  accountCreatorSegments30d: {
+  accountCreatorSegments: {
     newCreators: number;
     returningCreators: number;
   };
-  shareViews30d: number;
-  exports30d: number;
-  preview3dOpens30d: number;
-  imports30d: number;
-  elementPlacements30d: number;
+  shareViews: number;
+  exports: number;
+  preview3dOpens: number;
+  imports: number;
+  elementPlacements: number;
   apiKeysUsed30d: number;
-  exportFormats30d: Array<{ format: string; count: number }>;
-  elementTypes30d: Array<{ kind: string; count: number }>;
-  shareSurfaces30d: Array<{ surface: string; count: number }>;
-  embedReferrers30d: Array<{
+  exportFormats: Array<{ format: string; count: number }>;
+  elementTypes: Array<{ kind: string; count: number }>;
+  shareSurfaces: Array<{ surface: string; count: number }>;
+  embedReferrers: Array<{
     shareToken: string;
     shareTitle: string;
     hostname: string;
@@ -122,13 +138,13 @@ export type ProductUsageMetrics = {
     previousViews: number;
     lastSeen: string;
   }>;
-  embedReferrerSummary30d: {
+  embedReferrerSummary: {
     hostnames: number;
     views: number;
     rows: number;
   };
-  importedShapes30d: number;
-  avgShapesPerImport30d: number;
+  importedShapes: number;
+  avgShapesPerImport: number;
 };
 
 export type RetentionCohort = {
@@ -139,6 +155,14 @@ export type RetentionCohort = {
 };
 
 export type ProductInsights = {
+  analysis?: ProductActivityAnalysis;
+  period?: {
+    from: string;
+    to: string;
+    days: number;
+    previousFrom: string;
+    previousTo: string;
+  };
   activation: ActivationMetrics;
   contentGrowth: ContentGrowthPoint[];
   usage: ProductUsageMetrics;
@@ -466,7 +490,33 @@ function eventCount(rows: ProductEventCountRow[], eventType: string) {
   return rows.find((row) => row.event_type === eventType)?.count ?? 0;
 }
 
-export async function getProductInsights(): Promise<ProductInsights> {
+export async function getProductInsights(
+  range?: GrowthCustomRange,
+  now = new Date()
+): Promise<ProductInsights> {
+  const today = startOfUtcDay(now);
+  const from = range ? parseUtcDateKey(range.from) : addUtcDays(today, -30);
+  const requestedTo = range ? parseUtcDateKey(range.to) : addUtcDays(today, -1);
+  if (!from || !requestedTo || from > requestedTo)
+    throw new Error("Invalid metrics date range");
+  const end = new Date(
+    Math.min(addUtcDays(requestedTo, 1).getTime(), today.getTime())
+  );
+  const days = Math.max(
+    0,
+    Math.round((end.getTime() - from.getTime()) / 86_400_000)
+  );
+  const previousFrom = addUtcDays(from, -days);
+  const startAt = from.toISOString();
+  const endAt = end.toISOString();
+  const previousAt = previousFrom.toISOString();
+  const startDay = formatUtcDateKey(from);
+  const endDay = formatUtcDateKey(end);
+  const previousDay = formatUtcDateKey(previousFrom);
+  const eventRetainedAt = addUtcDays(now, -180).toISOString();
+  const embedRetainedDay = formatUtcDateKey(
+    addUtcDays(today, -EMBED_REFERRER_RETENTION_DAYS)
+  );
   const db = await getDatabase();
   const [
     activationRow,
@@ -519,46 +569,50 @@ export async function getProductInsights(): Promise<ProductInsights> {
           from (
             select strftime('%Y-%m', created_at) as period, 1 as projects, 0 as shares, 0 as presets
             from projects
-            where created_at >= date('now', 'start of month', '-11 months')
+            where created_at >= ?1 and created_at < ?2
             union all
             select strftime('%Y-%m', created_at) as period, 0, 1, 0
             from shares
             where owner_user_id is not null
-              and created_at >= date('now', 'start of month', '-11 months')
+              and created_at >= ?1 and created_at < ?2
             union all
             select strftime('%Y-%m', created_at) as period, 0, 0, 1
             from layout_presets
-            where created_at >= date('now', 'start of month', '-11 months')
+            where created_at >= ?1 and created_at < ?2
           ) content
           group by period
           order by period
         `
       )
+      .bind(startAt, endAt)
       .all<ContentGrowthPoint>(),
     db
       .prepare(
         `
           select
             event_type,
-            sum(case when created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days') then 1 else 0 end) as count,
+            sum(case when created_at >= ?1 and created_at < ?2 then 1 else 0 end) as count,
             sum(case
-              when created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-60 days')
-                and created_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+              when created_at >= ?3 and created_at < ?2
+                and created_at < ?1
               then 1 else 0
             end) as previous_count
           from product_events
           where contract_version in ('1.0.0', '1.1.0')
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-60 days')
+            and created_at >= ?4
+            and created_at >= ?3 and created_at < ?2
           group by event_type
         `
       )
+      .bind(startAt, endAt, previousAt, eventRetainedAt)
       .all<ProductEventCountRow>(),
     db
       .prepare(
         `
           select
             min(created_at) as tracking_started_at,
-            cast(julianday('now') - julianday(min(created_at)) as integer) as tracking_days
+            cast(julianday('now') - julianday(min(created_at)) as integer) as tracking_days,
+            (select min(viewed_on) from embed_referrer_daily) as embed_started_at
           from product_events
           where contract_version in ('1.0.0', '1.1.0')
         `
@@ -566,6 +620,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
       .first<{
         tracking_started_at: string | null;
         tracking_days: number;
+        embed_started_at?: string | null;
       }>(),
     db
       .prepare(
@@ -576,11 +631,12 @@ export async function getProductInsights(): Promise<ProductInsights> {
           from product_events
           where event_type = 'export.completed'
             and contract_version in ('1.0.0', '1.1.0')
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
           group by format
           order by count desc, format
         `
       )
+      .bind(startAt, endAt, eventRetainedAt)
       .all<{ format: string; count: number }>(),
     db
       .prepare(
@@ -591,11 +647,12 @@ export async function getProductInsights(): Promise<ProductInsights> {
           from product_events
           where event_type = 'editor.element_placed'
             and contract_version in ('1.0.0', '1.1.0')
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
           group by kind
           order by count desc, kind
         `
       )
+      .bind(startAt, endAt, eventRetainedAt)
       .all<{ kind: string; count: number }>(),
     db
       .prepare(
@@ -606,11 +663,12 @@ export async function getProductInsights(): Promise<ProductInsights> {
           from product_events
           where event_type = 'share.viewed'
             and contract_version in ('1.0.0', '1.1.0')
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
           group by surface
           order by count desc, surface
         `
       )
+      .bind(startAt, endAt, eventRetainedAt)
       .all<{ surface: string; count: number }>(),
     db
       .prepare(
@@ -620,14 +678,14 @@ export async function getProductInsights(): Promise<ProductInsights> {
               r.share_token,
               coalesce(s.title, 'Untitled track') as share_title,
               r.referrer_hostname,
-              sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) as views,
-              sum(case when r.viewed_on between date('now', '-59 days') and date('now', '-30 days') then r.view_count else 0 end) as previous_views,
-              max(case when r.viewed_on >= date('now', '-29 days') then r.viewed_on end) as last_seen
+              sum(case when r.viewed_on >= ?1 and r.viewed_on < ?2 then r.view_count else 0 end) as views,
+              sum(case when r.viewed_on >= ?3 and r.viewed_on < ?1 then r.view_count else 0 end) as previous_views,
+              max(case when r.viewed_on >= ?1 and r.viewed_on < ?2 then r.viewed_on end) as last_seen
             from embed_referrer_daily r
             inner join shares s on s.token = r.share_token
-            where r.viewed_on >= date('now', '-59 days')
+            where r.viewed_on >= ?3 and r.viewed_on < ?2 and r.viewed_on >= ?4
             group by r.share_token, share_title, r.referrer_hostname
-            having sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) >= ${EMBED_REFERRER_DISCLOSURE_THRESHOLD}
+            having sum(case when r.viewed_on >= ?1 and r.viewed_on < ?2 then r.view_count else 0 end) >= ${EMBED_REFERRER_DISCLOSURE_THRESHOLD}
           )
           select
             thresholded.*,
@@ -639,6 +697,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
           limit 10
         `
       )
+      .bind(startDay, endDay, previousDay, embedRetainedDay)
       .all<{
         share_token: string;
         share_title: string;
@@ -659,9 +718,10 @@ export async function getProductInsights(): Promise<ProductInsights> {
           from product_events
           where event_type = 'project.imported'
             and contract_version in ('1.0.0', '1.1.0')
-            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
         `
       )
+      .bind(startAt, endAt, eventRetainedAt)
       .first<{ imported_shapes: number; avg_shapes: number }>(),
     db
       .prepare(
@@ -680,7 +740,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             from product_events
             where contract_version in ('1.0.0', '1.1.0')
               and session_id is not null
-              and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+              and created_at >= ?1 and created_at < ?2 and created_at >= ?3
             group by session_id
           )
           select
@@ -694,12 +754,12 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(case when started = 1 and signed_in = 1 and last_outcome_at > first_edit_at then 1 end) as account_valuable,
             count(distinct case
               when started = 1 and signed_in = 1
-                and activation.activated_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+                and activation.activated_at >= ?1 and activation.activated_at < ?2
               then session_journeys.user_id
             end) as new_creators,
             count(distinct case
               when started = 1 and signed_in = 1
-                and activation.activated_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
+                and activation.activated_at < ?1
               then session_journeys.user_id
             end) as returning_creators
           from session_journeys
@@ -707,6 +767,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             on activation.user_id = session_journeys.user_id
         `
       )
+      .bind(startAt, endAt, eventRetainedAt)
       .first<{
         anonymous_sessions: number;
         account_sessions: number;
@@ -770,10 +831,52 @@ export async function getProductInsights(): Promise<ProductInsights> {
       }>(),
   ]);
 
+  const analysis = await getProductActivityAnalysis(
+    db,
+    startAt,
+    endAt,
+    eventRetainedAt
+  );
   const eventRows = eventCountsResult.results;
-  const totalEvents30d = eventRows.reduce((sum, row) => sum + row.count, 0);
+  const totalEvents = eventRows.reduce((sum, row) => sum + row.count, 0);
 
+  const coverage = (
+    firstObserved: string | null | undefined,
+    retainedSince: string
+  ) => {
+    const observed = firstObserved
+      ? parseUtcDateKey(firstObserved.slice(0, 10))
+      : null;
+    const retainedDay = parseUtcDateKey(retainedSince.slice(0, 10))!;
+    const firstRetainedCompleteDay =
+      retainedSince.includes("T") && retainedSince.slice(11) !== "00:00:00.000Z"
+        ? formatUtcDateKey(addUtcDays(retainedDay, 1))
+        : formatUtcDateKey(retainedDay);
+    const since = observed
+      ? [formatUtcDateKey(addUtcDays(observed, 1)), firstRetainedCompleteDay]
+          .sort()
+          .at(-1)!
+      : null;
+    return {
+      availableFrom: observed
+        ? [formatUtcDateKey(observed), retainedSince.slice(0, 10)]
+            .sort()
+            .at(-1)!
+        : null,
+      from: since,
+      complete: days > 0 && since !== null && since <= startDay,
+      comparisonReady: days > 0 && since !== null && since <= previousDay,
+    };
+  };
   return {
+    analysis,
+    period: {
+      from: startDay,
+      to: formatUtcDateKey(addUtcDays(end, -1)),
+      days,
+      previousFrom: previousDay,
+      previousTo: formatUtcDateKey(addUtcDays(from, -1)),
+    },
     activation: {
       registered: activationRow?.registered ?? 0,
       createdProject: activationRow?.created_project ?? 0,
@@ -782,20 +885,22 @@ export async function getProductInsights(): Promise<ProductInsights> {
     },
     contentGrowth: contentGrowthResult.results,
     usage: {
-      totalEvents30d,
-      eventTypes30d: eventRows.map((row) => ({
+      coverage: coverage(trackingRow?.tracking_started_at, eventRetainedAt),
+      embedCoverage: coverage(trackingRow?.embed_started_at, embedRetainedDay),
+      totalEvents,
+      eventTypes: eventRows.map((row) => ({
         eventType: row.event_type,
         count: row.count,
       })),
-      eventTypesPrevious30d: eventRows.map((row) => ({
+      eventTypesPrevious: eventRows.map((row) => ({
         eventType: row.event_type,
         count: row.previous_count,
       })),
       trackingStartedAt: trackingRow?.tracking_started_at ?? null,
       trackingDays: trackingRow?.tracking_days ?? 0,
-      anonymousSessions30d: sessionRow?.anonymous_sessions ?? 0,
-      accountSessions30d: sessionRow?.account_sessions ?? 0,
-      creatorFunnel30d: {
+      anonymousSessions: sessionRow?.anonymous_sessions ?? 0,
+      accountSessions: sessionRow?.account_sessions ?? 0,
+      creatorFunnel: {
         anonymous: {
           started: sessionRow?.anonymous_started ?? 0,
           edited: sessionRow?.anonymous_edited ?? 0,
@@ -807,23 +912,23 @@ export async function getProductInsights(): Promise<ProductInsights> {
           valuable: sessionRow?.account_valuable ?? 0,
         },
       },
-      accountCreatorSegments30d: {
+      accountCreatorSegments: {
         newCreators: sessionRow?.new_creators ?? 0,
         returningCreators: sessionRow?.returning_creators ?? 0,
       },
-      shareViews30d: eventCount(eventRows, "share.viewed"),
-      exports30d: eventCount(eventRows, "export.completed"),
-      preview3dOpens30d: eventCount(eventRows, "editor.3d_opened"),
-      imports30d: eventCount(eventRows, "project.imported"),
-      elementPlacements30d: elementTypesResult.results.reduce(
+      shareViews: eventCount(eventRows, "share.viewed"),
+      exports: eventCount(eventRows, "export.completed"),
+      preview3dOpens: eventCount(eventRows, "editor.3d_opened"),
+      imports: eventCount(eventRows, "project.imported"),
+      elementPlacements: elementTypesResult.results.reduce(
         (sum, row) => sum + row.count,
         0
       ),
       apiKeysUsed30d: apiUsageRow?.keys_used ?? 0,
-      exportFormats30d: exportFormatsResult.results,
-      elementTypes30d: elementTypesResult.results,
-      shareSurfaces30d: shareSurfacesResult.results,
-      embedReferrers30d: embedReferrersResult.results.map((row) => ({
+      exportFormats: exportFormatsResult.results,
+      elementTypes: elementTypesResult.results,
+      shareSurfaces: shareSurfacesResult.results,
+      embedReferrers: embedReferrersResult.results.map((row) => ({
         shareToken: row.share_token,
         shareTitle: row.share_title,
         hostname: row.referrer_hostname,
@@ -831,13 +936,13 @@ export async function getProductInsights(): Promise<ProductInsights> {
         previousViews: row.previous_views,
         lastSeen: row.last_seen,
       })),
-      embedReferrerSummary30d: {
+      embedReferrerSummary: {
         hostnames: embedReferrersResult.results[0]?.detected_hostnames ?? 0,
         views: embedReferrersResult.results[0]?.detected_views ?? 0,
         rows: embedReferrersResult.results[0]?.detected_rows ?? 0,
       },
-      importedShapes30d: importStatsRow?.imported_shapes ?? 0,
-      avgShapesPerImport30d: importStatsRow?.avg_shapes ?? 0,
+      importedShapes: importStatsRow?.imported_shapes ?? 0,
+      avgShapesPerImport: importStatsRow?.avg_shapes ?? 0,
     },
     retention: retentionResult.results.map((row) => ({
       cohort: row.cohort,

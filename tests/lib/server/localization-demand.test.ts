@@ -1,3 +1,4 @@
+import { DatabaseSync } from "node:sqlite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { supportedLocales } from "@/lib/i18n/locales";
 import {
@@ -25,6 +26,51 @@ beforeEach(() => {
 });
 
 describe("localization demand aggregation", () => {
+  it("changes observed totals between three months and a year using the real aggregate query", async () => {
+    const db = new DatabaseSync(":memory:");
+    db.exec(`
+      create table localization_demand_daily(day_utc text, preferred_language text, served_locale text, country_code text, creator_sessions integer);
+      create table product_metric_measurement_state(metric_id text, contract_version text, measured_since text);
+      insert into product_metric_measurement_state values ('L10N-001', 'localization-demand-1.0.0', '2025-01-01');
+      insert into localization_demand_daily values
+        ('2026-01-10', 'fr', 'en', 'FR', 10),
+        ('2026-08-10', 'fr', 'en', 'FR', 6),
+        ('2026-08-16', 'fr', 'en', 'FR', 100);
+    `);
+    mocks.prepare.mockImplementation((query: string) => {
+      const statement = db.prepare(query);
+      let bindings: string[] = [];
+      const adapter = {
+        bind: (...args: string[]) => {
+          bindings = args;
+          return adapter;
+        },
+        all: async () => ({ results: statement.all(...bindings) }),
+        first: async () => statement.get(...bindings),
+      };
+      return adapter;
+    });
+    try {
+      const now = new Date("2026-08-16T12:00:00Z");
+      const short = await getLocalizationDemandMetrics(now, {
+        from: "2026-06-01",
+        to: "2026-08-16",
+      });
+      const long = await getLocalizationDemandMetrics(now, {
+        from: "2025-09-01",
+        to: "2026-08-16",
+      });
+      expect(short.totalCreatorSessions).toBe(6);
+      expect(long.totalCreatorSessions).toBe(16);
+      expect(short.languages[0]?.creatorSessions).toBe(6);
+      expect(long.languages[0]?.creatorSessions).toBe(16);
+      expect(short.comparisonReady).toBe(true);
+      expect(long.comparisonReady).toBe(false);
+    } finally {
+      db.close();
+    }
+  });
+
   it("increments an identifier-free UTC daily cell", async () => {
     const statement = createD1Statement({ run: {} });
     installD1Statements(mocks.prepare, [statement]);
@@ -49,6 +95,59 @@ describe("localization demand aggregation", () => {
       "2026-08-16T13:00:00.000Z",
       "2026-08-16T13:00:00.000Z"
     );
+  });
+
+  it("queries the selected complete days and an equally long preceding period", async () => {
+    const rows = createD1AllStatement([]);
+    const state = createD1Statement({
+      first: { measured_since: "2026-01-01" },
+    });
+    installD1Statements(mocks.prepare, [rows, state]);
+    const metrics = await getLocalizationDemandMetrics(
+      new Date("2026-08-16T12:00:00Z"),
+      { from: "2026-08-01", to: "2026-08-16" }
+    );
+    expect(rows.bind).toHaveBeenCalledWith(
+      "2026-08-01",
+      "2026-08-01",
+      "2026-07-17",
+      "2026-08-16"
+    );
+    expect(metrics).toMatchObject({
+      windowDays: 15,
+      period: { from: "2026-08-01", to: "2026-08-15" },
+      comparisonReady: true,
+    });
+  });
+
+  it("does not claim coverage for data older than retention", async () => {
+    const rows = createD1AllStatement([]);
+    const state = createD1Statement({
+      first: { measured_since: "2020-01-01" },
+    });
+    installD1Statements(mocks.prepare, [rows, state]);
+    const metrics = await getLocalizationDemandMetrics(
+      new Date("2026-08-16T12:00:00Z"),
+      { from: "2023-01-01", to: "2023-12-31" }
+    );
+    expect(metrics.quality).toBe("building");
+    expect(metrics.comparisonReady).toBe(false);
+  });
+
+  it("rejects invalid and reversed date ranges before querying", async () => {
+    await expect(
+      getLocalizationDemandMetrics(new Date("2026-08-16"), {
+        from: "2026-02-30",
+        to: "2026-03-01",
+      })
+    ).rejects.toThrow();
+    await expect(
+      getLocalizationDemandMetrics(new Date("2026-08-16"), {
+        from: "2026-03-02",
+        to: "2026-03-01",
+      })
+    ).rejects.toThrow();
+    expect(mocks.prepare).not.toHaveBeenCalled();
   });
 
   it("merges low-volume language and country cells before disclosure", async () => {

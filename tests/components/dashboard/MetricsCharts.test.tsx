@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -19,6 +20,11 @@ import {
   UsageTabs,
   UserGrowthCard,
 } from "@/components/dashboard/MetricsCharts";
+import {
+  loadLocalizationDemand,
+  loadProductInsights,
+} from "@/app/dashboard/metrics/actions";
+import type { LocalizationDemandMetrics } from "@/lib/server/localization-demand";
 import MetricsWorkspace from "@/components/dashboard/MetricsWorkspace";
 import type { MetricsExplorerData } from "@/lib/metrics-explorer";
 import type {
@@ -27,6 +33,11 @@ import type {
   ProductInsights,
 } from "@/lib/server/metrics";
 import type { DailyCockpitData } from "@/lib/server/dashboard-cockpit";
+
+vi.mock("@/app/dashboard/metrics/actions", () => ({
+  loadLocalizationDemand: vi.fn(),
+  loadProductInsights: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: () => {} }),
@@ -45,7 +56,7 @@ const growthData = {
 const growthByRange: GrowthByRange = {
   "3m": growthData,
   "6m": growthData,
-  "12m": growthData,
+  "12m": { ...growthData, from: "2025-07-01" },
   ytd: growthData,
   previousYear: growthData,
 };
@@ -93,34 +104,34 @@ describe("UserGrowthCard", () => {
 });
 
 const usage = {
-  totalEvents30d: 20,
-  eventTypes30d: [{ eventType: "editor.session_started", count: 10 }],
-  eventTypesPrevious30d: [],
+  totalEvents: 20,
+  eventTypes: [{ eventType: "editor.session_started", count: 10 }],
+  eventTypesPrevious: [],
   trackingStartedAt: "2026-07-01T00:00:00.000Z",
   trackingDays: 30,
-  anonymousSessions30d: 4,
-  accountSessions30d: 6,
-  creatorFunnel30d: {
+  anonymousSessions: 4,
+  accountSessions: 6,
+  creatorFunnel: {
     anonymous: { started: 4, edited: 3, valuable: 1 },
     account: { started: 6, edited: 5, valuable: 3 },
   },
-  accountCreatorSegments30d: {
+  accountCreatorSegments: {
     newCreators: 2,
     returningCreators: 3,
   },
-  shareViews30d: 12,
-  exports30d: 5,
-  preview3dOpens30d: 3,
-  imports30d: 1,
-  elementPlacements30d: 8,
+  shareViews: 12,
+  exports: 5,
+  preview3dOpens: 3,
+  imports: 1,
+  elementPlacements: 8,
   apiKeysUsed30d: 0,
-  exportFormats30d: [{ format: "png", count: 5 }],
-  elementTypes30d: [{ kind: "gate", count: 8 }],
-  shareSurfaces30d: [
+  exportFormats: [{ format: "png", count: 5 }],
+  elementTypes: [{ kind: "gate", count: 8 }],
+  shareSurfaces: [
     { surface: "share", count: 5 },
     { surface: "embed", count: 7 },
   ],
-  embedReferrers30d: [
+  embedReferrers: [
     {
       shareToken: "race-layout",
       shareTitle: "Race day layout",
@@ -130,13 +141,13 @@ const usage = {
       lastSeen: "2026-07-20",
     },
   ],
-  embedReferrerSummary30d: {
+  embedReferrerSummary: {
     hostnames: 2,
     views: 10,
     rows: 2,
   },
-  importedShapes30d: 4,
-  avgShapesPerImport30d: 4,
+  importedShapes: 4,
+  avgShapesPerImport: 4,
 } satisfies ProductInsights["usage"];
 
 describe("metrics decision views", () => {
@@ -179,8 +190,8 @@ describe("metrics decision views", () => {
       <ExportUsageBreakdown
         usage={{
           ...usage,
-          exports30d: 10,
-          exportFormats30d: [
+          exports: 10,
+          exportFormats: [
             { format: "png", count: 2 },
             { format: "json", count: 7 },
             { format: "custom", count: 1 },
@@ -439,8 +450,9 @@ describe("metrics decision views", () => {
           live: null,
           previous: null,
           comparisonReady: false,
-          quality: "building" as const,
-          measuredSince: "2026-08-01",
+          quality:
+            id === "MTR-006" ? ("low_volume" as const) : ("building" as const),
+          measuredSince: "2026-08-12",
         })),
       ],
     } satisfies DailyCockpitData;
@@ -612,6 +624,8 @@ describe("metrics decision views", () => {
         localizationDemand={{
           id: "L10N-001",
           windowDays: 28,
+          period: { from: "2026-06-11", to: "2026-07-08" },
+          previousPeriod: { from: "2026-05-14", to: "2026-06-10" },
           measuredSince: "2026-06-01",
           quality: "building",
           comparisonReady: false,
@@ -673,6 +687,9 @@ describe("metrics decision views", () => {
         name: "Range Last 3 months",
       })
     ).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { name: "Weekly activity" })
+    ).toBeTruthy();
     const evidence = screen.getByRole("region", {
       name: "Core product metrics",
     });
@@ -687,9 +704,10 @@ describe("metrics decision views", () => {
     );
     expect(
       within(evidence).getAllByLabelText(
-        /Collecting history.*This value uses the latest complete 7-day reporting period/
+        /Collecting history.*This value uses a fixed 7-day reporting period/
       )
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(within(evidence).getByText("10 of 30 observations")).toBeTruthy();
     expect(
       screen.queryByRole("button", { name: "Close metric details" })
     ).toBeNull();
@@ -736,6 +754,100 @@ describe("metrics decision views", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Previous 28d")).toBeNull();
 
+    vi.mocked(loadProductInsights).mockResolvedValue({
+      activation: {
+        registered: 0,
+        createdProject: 0,
+        createdShare: 0,
+        publishedToGallery: 0,
+      },
+      contentGrowth: [],
+      usage: { ...usage, exports: 777 },
+      retention: [],
+      period: {
+        from: "2025-07-01",
+        to: "2026-07-08",
+        days: 373,
+        previousFrom: "2024-06-23",
+        previousTo: "2025-06-30",
+      },
+    });
+    // The shared picker reloads localization, handles failure, and cannot display a stale response.
+    let resolveRange!: (value: LocalizationDemandMetrics) => void;
+    vi.mocked(loadLocalizationDemand).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRange = resolve;
+        })
+    );
+    const openRange = async (label: string) => {
+      const triggers = within(screen.getByRole("banner")).getAllByRole(
+        "button",
+        { name: `Range ${label}` }
+      );
+      await user.click(
+        triggers
+          .filter((button) => button.getAttribute("aria-haspopup") === "dialog")
+          .at(-1)!
+      );
+    };
+    await openRange("Last 3 months");
+    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    expect(loadLocalizationDemand).toHaveBeenLastCalledWith({
+      from: "2025-07-01",
+      to: "2026-07-09",
+    });
+    expect(loadProductInsights).toHaveBeenLastCalledWith({
+      from: "2025-07-01",
+      to: "2026-07-09",
+    });
+    expect(screen.getByRole("status").textContent).toContain(
+      "Loading localization"
+    );
+    await openRange("Last 12 months");
+    await user.click(screen.getByRole("button", { name: "Last 3 months" }));
+    await act(async () =>
+      resolveRange({
+        id: "L10N-001",
+        windowDays: 373,
+        period: { from: "2025-07-01", to: "2026-07-08" },
+        previousPeriod: { from: "2024-06-23", to: "2025-06-30" },
+        quality: "healthy",
+        measuredSince: "2024-01-01",
+        comparisonReady: true,
+        totalCreatorSessions: 999,
+        unsupportedCreatorSessions: null,
+        languages: [],
+        servedLocales: [],
+      })
+    );
+    expect(screen.queryByText("999")).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: "Preferred browser language" })
+    ).toBeTruthy();
+    vi.mocked(loadLocalizationDemand).mockRejectedValueOnce(
+      new Error("unavailable")
+    );
+    await openRange("Last 3 months");
+    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    vi.mocked(loadLocalizationDemand).mockResolvedValueOnce({
+      id: "L10N-001",
+      windowDays: 373,
+      period: { from: "2025-07-01", to: "2026-07-08" },
+      previousPeriod: { from: "2024-06-23", to: "2025-06-30" },
+      quality: "healthy",
+      measuredSince: "2024-01-01",
+      comparisonReady: true,
+      totalCreatorSessions: 999,
+      unsupportedCreatorSessions: null,
+      languages: [],
+      servedLocales: [],
+    });
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText(/Compared with/)).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+
     await user.click(screen.getByRole("tab", { name: "Creators" }));
     expect(screen.getByText("Creator retention")).toBeTruthy();
     expect(screen.getByText("Active creator rate")).toBeTruthy();
@@ -747,6 +859,12 @@ describe("metrics decision views", () => {
     await user.click(screen.getByRole("tab", { name: "Creation" }));
     expect(screen.getByText("Content growth")).toBeTruthy();
     expect(screen.getByText("Valuable sessions")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Where sessions stop" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Time to first result" })
+    ).toBeTruthy();
     expect(
       screen.getByText("12 valuable sessions from 30 editor sessions.")
     ).toBeTruthy();
@@ -762,6 +880,10 @@ describe("metrics decision views", () => {
 
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     expect(screen.getByText("Export usage")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Export reliability by format" })
+    ).toBeTruthy();
+    expect(screen.getByText("777")).toBeTruthy();
     expect(screen.getByText("Publication session rate")).toBeTruthy();
     expect(
       screen.getByText("7 published sessions from 12 valuable sessions.")

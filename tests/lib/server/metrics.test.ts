@@ -204,6 +204,8 @@ describe("dashboard metrics", () => {
           retained30d: 4,
         },
       ]),
+      createD1AllStatement([]),
+      createD1AllStatement([]),
     ]);
 
     const insights = await getProductInsights();
@@ -224,8 +226,8 @@ describe("dashboard metrics", () => {
     expect(sessionJourneySql).toContain("product_metric_creator_activations");
     expect(insights.contentGrowth).toHaveLength(2);
     expect(insights.usage).toMatchObject({
-      totalEvents30d: 33,
-      eventTypes30d: [
+      totalEvents: 33,
+      eventTypes: [
         { eventType: "editor.session_started", count: 12 },
         { eventType: "share.viewed", count: 7 },
         { eventType: "export.completed", count: 4 },
@@ -233,7 +235,7 @@ describe("dashboard metrics", () => {
         { eventType: "project.imported", count: 2 },
         { eventType: "editor.element_placed", count: 5 },
       ],
-      eventTypesPrevious30d: [
+      eventTypesPrevious: [
         { eventType: "editor.session_started", count: 10 },
         { eventType: "share.viewed", count: 5 },
         { eventType: "export.completed", count: 6 },
@@ -243,35 +245,35 @@ describe("dashboard metrics", () => {
       ],
       trackingStartedAt: "2026-05-01T00:00:00.000Z",
       trackingDays: 82,
-      anonymousSessions30d: 5,
-      accountSessions30d: 9,
-      creatorFunnel30d: {
+      anonymousSessions: 5,
+      accountSessions: 9,
+      creatorFunnel: {
         anonymous: { started: 5, edited: 3, valuable: 2 },
         account: { started: 9, edited: 7, valuable: 4 },
       },
-      accountCreatorSegments30d: {
+      accountCreatorSegments: {
         newCreators: 3,
         returningCreators: 4,
       },
-      shareViews30d: 7,
-      exports30d: 4,
-      preview3dOpens30d: 3,
-      imports30d: 2,
-      elementPlacements30d: 5,
+      shareViews: 7,
+      exports: 4,
+      preview3dOpens: 3,
+      imports: 2,
+      elementPlacements: 5,
       apiKeysUsed30d: 2,
-      exportFormats30d: [
+      exportFormats: [
         { format: "png", count: 3 },
         { format: "json", count: 1 },
       ],
-      elementTypes30d: [
+      elementTypes: [
         { kind: "gate", count: 4 },
         { kind: "flag", count: 1 },
       ],
-      shareSurfaces30d: [
+      shareSurfaces: [
         { surface: "share", count: 5 },
         { surface: "embed", count: 2 },
       ],
-      embedReferrers30d: [
+      embedReferrers: [
         {
           shareToken: "share-token",
           shareTitle: "Race day layout",
@@ -281,13 +283,13 @@ describe("dashboard metrics", () => {
           lastSeen: "2026-07-20",
         },
       ],
-      embedReferrerSummary30d: {
+      embedReferrerSummary: {
         hostnames: 3,
         views: 20,
         rows: 5,
       },
-      importedShapes30d: 24,
-      avgShapesPerImport30d: 12,
+      importedShapes: 24,
+      avgShapesPerImport: 12,
     });
     expect(insights.retention[0]).toEqual({
       cohort: "2026-05",
@@ -306,7 +308,7 @@ describe("dashboard metrics", () => {
       .filter((query) => query.includes("product_events"))
       .join("\n");
     expect(productEventQueries).toContain(
-      "strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
+      "created_at >= ?1 and created_at < ?2"
     );
     expect(productEventQueries).not.toMatch(/created_at\s*[<>]=?\s*datetime\(/);
     const embedReferrerQuery = String(mocks.prepare.mock.calls[7][0]);

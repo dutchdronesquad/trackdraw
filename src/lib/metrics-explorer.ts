@@ -1,3 +1,4 @@
+import { hasObservedMetricValue } from "@/lib/metric-comparison";
 import type {
   ProductMetricDailyRow,
   ProductMetricId,
@@ -193,24 +194,20 @@ function buildMetric(
     : [];
 
   const builtRows = latestRows.map<MetricsExplorerRow>((current) => {
-    const history = Array.from({ length: 8 }, (_, index) => {
-      const day = addUtcDays(
-        current.day_utc,
-        -(index + 1) * definition.windowDays
-      );
-      return (
-        completeRows.find(
-          (row) => row.day_utc === day && row.dimension === current.dimension
-        ) ?? null
-      );
-    });
+    const candidate =
+      completeRows.find(
+        (row) =>
+          row.day_utc === addUtcDays(current.day_utc, -definition.windowDays) &&
+          row.dimension === current.dimension
+      ) ?? null;
+    const previous = hasObservedMetricValue(candidate) ? candidate : null;
     const quality = rowQuality(current, definition.minimumVolume);
     const comparisonReady =
       quality === "healthy" &&
-      history.every(
-        (row) => rowQuality(row, definition.minimumVolume) === "healthy"
-      );
-    const previous = comparisonReady ? history[0] : null;
+      rowQuality(previous, definition.minimumVolume) === "healthy" &&
+      rowValue(current, definition.valueKind) !== null &&
+      previous !== null &&
+      rowValue(previous, definition.valueKind) !== null;
 
     return {
       dimension: current.dimension,

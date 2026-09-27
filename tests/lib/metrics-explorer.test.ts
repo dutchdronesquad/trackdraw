@@ -96,7 +96,7 @@ describe("metrics explorer", () => {
     });
   });
 
-  it("shows a comparison only after eight preceding healthy periods", () => {
+  it("compares adjacent healthy periods independently of older low-volume history", () => {
     const currentDay = "2026-08-14";
     const acquisition = [
       row("MTR-008", currentDay, "direct", 40, 100),
@@ -133,8 +133,8 @@ describe("metrics explorer", () => {
     );
 
     expect(lowVolumeHistory.acquisition.rows[0]).toMatchObject({
-      previousValue: null,
-      comparisonReady: false,
+      previousValue: 0.3,
+      comparisonReady: true,
     });
   });
 

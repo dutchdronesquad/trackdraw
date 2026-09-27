@@ -1,3 +1,4 @@
+import { hasObservedMetricValue } from "@/lib/metric-comparison";
 import type {
   ProductMetricDailyRow,
   ProductMetricId,
@@ -146,21 +147,22 @@ export function buildCockpitHeadlineMetrics(
         ? latestCompleteRow(rows, lastCompleteDay)
         : findRow(rows, lastCompleteDay);
     const live = definition.id === "MTR-005" ? null : findRow(rows, today);
-    const history = current
-      ? historicalPeriodRows(rows, current, definition.windowDays)
-      : [];
-    const healthyHistory = history.every(
-      (row) => effectiveQuality(row, definition.minimumVolume) === "healthy"
-    );
+    const candidate = current
+      ? findRow(rows, addUtcDays(current.day_utc, -definition.windowDays))
+      : null;
+    const previous = hasObservedMetricValue(candidate) ? candidate : null;
 
     return {
       ...definition,
       current,
       live,
-      previous: healthyHistory ? (history[0] ?? null) : null,
+      previous,
       comparisonReady:
         effectiveQuality(current, definition.minimumVolume) === "healthy" &&
-        healthyHistory,
+        effectiveQuality(previous, definition.minimumVolume) === "healthy" &&
+        (definition.valueKind === "count" ||
+          ((current?.denominator ?? 0) > 0 &&
+            (previous?.denominator ?? 0) > 0)),
       quality: effectiveQuality(current, definition.minimumVolume),
     };
   });
