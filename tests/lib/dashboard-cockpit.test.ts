@@ -64,6 +64,59 @@ describe("daily dashboard cockpit", () => {
     expect(metric.live?.numerator).toBe(5);
   });
 
+  it("shows the previous low-volume period without enabling a trend warning", () => {
+    const series = {
+      "MTR-006": [
+        metricRow("MTR-006", "2026-08-13", { numerator: 12, sample_size: 12 }),
+        metricRow("MTR-006", "2026-08-06", {
+          numerator: 8,
+          sample_size: 8,
+          quality_status: "low_volume",
+        }),
+      ],
+    };
+    const headlines = buildCockpitHeadlineMetrics(
+      series,
+      new Date("2026-08-14T12:00:00Z")
+    );
+    const metric = headlines.find((entry) => entry.id === "MTR-006")!;
+    expect(metric.previous?.numerator).toBe(8);
+    expect(metric.comparisonReady).toBe(false);
+    expect(selectReliableProductWarning(series, headlines)).toBeNull();
+  });
+
+  it("compares two healthy periods without requiring warning history", () => {
+    const series = {
+      "MTR-001": [
+        metricRow("MTR-001", "2026-08-13"),
+        metricRow("MTR-001", "2026-08-06"),
+      ],
+    };
+    const headlines = buildCockpitHeadlineMetrics(
+      series,
+      new Date("2026-08-14T12:00:00Z")
+    );
+    expect(headlines[0].comparisonReady).toBe(true);
+    expect(selectReliableProductWarning(series, headlines)).toBeNull();
+  });
+
+  it.each(["incomplete"] as const)(
+    "hides a %s previous period",
+    (completeness_state) => {
+      const metric = buildCockpitHeadlineMetrics(
+        {
+          "MTR-001": [
+            metricRow("MTR-001", "2026-08-13"),
+            metricRow("MTR-001", "2026-08-06", { completeness_state }),
+          ],
+        },
+        new Date("2026-08-14T12:00:00Z")
+      )[0];
+      expect(metric.previous).toBeNull();
+      expect(metric.comparisonReady).toBe(false);
+    }
+  );
+
   it("compares only after eight equally spaced healthy periods", () => {
     const currentDay = "2026-08-13";
     const rows = [

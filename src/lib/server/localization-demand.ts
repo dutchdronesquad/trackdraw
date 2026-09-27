@@ -1,3 +1,5 @@
+import { parseUtcDateKey, type GrowthCustomRange } from "@/lib/metrics-growth";
+import { LOCALIZATION_DEMAND_RETENTION_MONTHS } from "@/lib/server/localization-demand-retention";
 import { supportedLocales, type SupportedLocale } from "@/lib/i18n/locales";
 import type { LocalizationDemandLanguage } from "@/lib/localization-demand";
 import { getDatabase } from "@/lib/server/db";
@@ -16,7 +18,9 @@ type LocalizationDemandRow = {
 
 export type LocalizationDemandMetrics = {
   id: "L10N-001";
-  windowDays: 28;
+  windowDays: number;
+  period: GrowthCustomRange;
+  previousPeriod: GrowthCustomRange;
   measuredSince: string | null;
   quality: "not_started" | "building" | "low_volume" | "healthy";
   comparisonReady: boolean;
@@ -132,12 +136,36 @@ export async function recordLocalizationDemand(input: {
 }
 
 export async function getLocalizationDemandMetrics(
-  now = new Date()
+  now = new Date(),
+  range?: GrowthCustomRange
 ): Promise<LocalizationDemandMetrics> {
-  const db = await getDatabase();
   const today = utcDay(now);
-  const currentStart = addUtcDays(today, -WINDOW_DAYS);
-  const previousStart = addUtcDays(currentStart, -WINDOW_DAYS);
+  if (
+    range &&
+    (!parseUtcDateKey(range.from) ||
+      !parseUtcDateKey(range.to) ||
+      range.from > range.to)
+  ) {
+    throw new Error("Invalid localization date range");
+  }
+  const endExclusive = range
+    ? [addUtcDays(range.to, 1), today].sort()[0]!
+    : today;
+  // An entirely future selection is an empty, incomplete window.
+  const currentStart = range?.from ?? addUtcDays(today, -WINDOW_DAYS);
+  const windowDays = Math.max(
+    0,
+    Math.round(
+      (Date.parse(endExclusive) - Date.parse(currentStart)) / 86_400_000
+    )
+  );
+  const previousStart = addUtcDays(currentStart, -windowDays);
+  const retentionStart = new Date(`${today}T00:00:00Z`);
+  retentionStart.setUTCMonth(
+    retentionStart.getUTCMonth() - LOCALIZATION_DEMAND_RETENTION_MONTHS
+  );
+  const retainedSince = utcDay(retentionStart);
+  const db = await getDatabase();
   const [result, measurementState] = await Promise.all([
     db
       .prepare(
@@ -154,7 +182,7 @@ export async function getLocalizationDemandMetrics(
         group by preferred_language, served_locale, country_code
       `
       )
-      .bind(currentStart, currentStart, previousStart, today)
+      .bind(currentStart, currentStart, previousStart, endExclusive)
       .all<LocalizationDemandRow>(),
     db
       .prepare(
@@ -173,11 +201,16 @@ export async function getLocalizationDemandMetrics(
   );
   const measuredSince = measurementState?.measured_since ?? null;
   const comparisonReady =
-    measuredSince !== null && measuredSince <= previousStart;
+    windowDays > 0 &&
+    measuredSince !== null &&
+    measuredSince <= previousStart &&
+    retainedSince <= previousStart;
   const quality =
     measuredSince === null
       ? "not_started"
-      : measuredSince > currentStart
+      : windowDays === 0 ||
+          measuredSince > currentStart ||
+          retainedSince > currentStart
         ? "building"
         : totalCreatorSessions < MINIMUM_HEALTHY_VOLUME
           ? "low_volume"
@@ -252,7 +285,9 @@ export async function getLocalizationDemandMetrics(
 
   return {
     id: "L10N-001",
-    windowDays: WINDOW_DAYS,
+    windowDays,
+    period: { from: currentStart, to: addUtcDays(endExclusive, -1) },
+    previousPeriod: { from: previousStart, to: addUtcDays(currentStart, -1) },
     measuredSince,
     quality,
     comparisonReady,

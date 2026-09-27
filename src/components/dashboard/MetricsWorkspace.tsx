@@ -1,6 +1,18 @@
 "use client";
 
+import {
+  WeeklyActivity,
+  JourneyDropoff,
+  TimeToResult,
+  ExportReliability,
+} from "@/components/dashboard/ProductAnalysis";
+
 import { useEffect, useMemo, useState } from "react";
+import { usePeriodMetrics } from "@/components/dashboard/use-period-metrics";
+import {
+  loadLocalizationDemand,
+  loadProductInsights,
+} from "@/app/dashboard/metrics/actions";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -81,6 +93,9 @@ type MetricSnapshot = {
   numerator: number | null;
   denominator: number | null;
   previousValue: number | null;
+  sampleSize?: number | null;
+  minimumVolume?: number;
+  previousLimited?: boolean;
   comparisonReady: boolean;
   quality: MetricsExplorerQuality;
   windowDays: number;
@@ -189,15 +204,17 @@ function formatRowValue(row: MetricsExplorerRow, percent: Intl.NumberFormat) {
   return row.value === null ? "—" : percent.format(row.value);
 }
 
-const BUILDING_WINDOW_DAYS = 28;
-
-function buildingProgressDays(measuredSince: string, generatedAt: string) {
+function buildingProgressDays(
+  measuredSince: string,
+  generatedAt: string,
+  windowDays: number
+) {
   const elapsedMs =
     Date.parse(generatedAt) - Date.parse(`${measuredSince}T00:00:00.000Z`);
   const elapsed = Math.floor(elapsedMs / 86_400_000);
   return {
-    elapsed: Math.min(Math.max(elapsed, 0), BUILDING_WINDOW_DAYS),
-    total: BUILDING_WINDOW_DAYS,
+    elapsed: Math.min(Math.max(elapsed, 0), windowDays),
+    total: windowDays,
   };
 }
 
@@ -214,8 +231,8 @@ function QualityLabel({
 }) {
   const t = useTranslations("dashboard.metrics.explorer.quality");
   const progress =
-    quality === "building" && measuredSince && generatedAt
-      ? buildingProgressDays(measuredSince, generatedAt)
+    quality === "building" && measuredSince && generatedAt && windowDays
+      ? buildingProgressDays(measuredSince, generatedAt, windowDays)
       : null;
   const catchingUp = progress && progress.elapsed >= progress.total;
   const labelText = catchingUp
@@ -253,7 +270,7 @@ function QualityLabel({
             elapsed: progress.elapsed,
             total: progress.total,
           })
-      : t("notStartedHint");
+      : t(quality === "building" ? "incompleteHint" : "notStartedHint");
 
   return (
     <TooltipProvider>
@@ -550,6 +567,84 @@ function DecisionMetric({
   );
 }
 
+function PeriodInsightState({
+  insights,
+  failed,
+  retry,
+  source,
+  children,
+}: {
+  insights: ProductInsights | undefined;
+  failed?: boolean;
+  retry: () => void;
+  source: "events" | "embeds" | "content";
+  children: React.ReactNode;
+}) {
+  const t = useTranslations("dashboard.metrics.explorer.period");
+  const locale = useLocale();
+  if (!insights)
+    return failed ? (
+      <div role="alert">
+        <p>{t("failed")}</p>
+        <Button variant="outline" onClick={retry}>
+          {t("retry")}
+        </Button>
+      </div>
+    ) : (
+      <p role="status">{t("loading")}</p>
+    );
+  const period = insights.period;
+  const coverage =
+    source === "embeds"
+      ? insights.usage.embedCoverage
+      : insights.usage.coverage;
+  const date = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  });
+  const format = (value: string) => date.format(new Date(`${value}T00:00:00Z`));
+  return (
+    <div>
+      {period ? (
+        <p className="text-muted-foreground mb-3 text-xs">
+          {period.days > 0
+            ? t("dates", { from: format(period.from), to: format(period.to) })
+            : t("noCompleteDays")}
+        </p>
+      ) : null}
+      {source === "content" ? (
+        <p className="text-muted-foreground mb-3 text-xs">
+          {t("contentScope")}
+        </p>
+      ) : coverage && !coverage.complete ? (
+        <p className="text-muted-foreground mb-3 text-xs">
+          {coverage.from
+            ? t("partial", { date: format(coverage.from) })
+            : t("unavailable")}
+        </p>
+      ) : null}
+      {source !== "content" && coverage?.comparisonReady && period ? (
+        <p className="text-muted-foreground mb-3 text-xs">
+          {t("previousDates", {
+            from: format(period.previousFrom),
+            to: format(period.previousTo),
+          })}
+        </p>
+      ) : null}
+      {period?.days === 0 ||
+      (source !== "content" &&
+        coverage &&
+        (!coverage.from ||
+          (period &&
+            period.to < (coverage.availableFrom ?? coverage.from)))) ? (
+        <p className="text-muted-foreground text-sm">{t("unavailable")}</p>
+      ) : (
+        children
+      )}
+    </div>
+  );
+}
+
 function LocalizationDemandTable({
   metrics,
 }: {
@@ -665,7 +760,7 @@ function LocalizationDemandTable({
                 })}
                 {metrics.comparisonReady ? (
                   <p className="mt-1.5">
-                    {t("previousPeriod", {
+                    {t("previousSelectedPeriod", {
                       count: number.format(row.previousCreatorSessions),
                     })}
                   </p>
@@ -821,6 +916,26 @@ export default function MetricsWorkspace({
   const [growthCustomRange, setGrowthCustomRange] =
     useState<GrowthCustomRange | null>(null);
 
+  const selectedRange =
+    growthRange === "custom" && growthCustomRange
+      ? growthCustomRange
+      : growthByRange[growthRange === "custom" ? "3m" : growthRange];
+  const localization = usePeriodMetrics(
+    localizationDemand,
+    growthByRange["3m"],
+    selectedRange,
+    loadLocalizationDemand
+  );
+  const selectedLocalization = localization.data;
+  const localizationFailed = localization.failed;
+  const periodInsights = usePeriodMetrics(
+    insights,
+    growthByRange["3m"],
+    selectedRange,
+    loadProductInsights
+  );
+  const selectedInsights = periodInsights.data;
+
   useEffect(() => {
     const selectHashView = () => {
       const hash = window.location.hash.slice(1);
@@ -883,6 +998,13 @@ export default function MetricsWorkspace({
             : null,
           numerator: current?.numerator ?? null,
           denominator: current?.denominator ?? null,
+          sampleSize: current?.sample_size,
+          minimumVolume: metric.minimumVolume,
+          previousLimited:
+            previous !== null &&
+            (previous.quality_status === "low_volume" ||
+              (previous.sample_size ?? previous.denominator ?? 0) <
+                metric.minimumVolume),
           previousValue: previous
             ? metricValue(
                 previous.numerator,
@@ -959,16 +1081,21 @@ export default function MetricsWorkspace({
           </div>
           <div className="flex items-center gap-2">
             {canRunMaintenance ? <RunMetricMaintenanceButton /> : null}
-            <UserGrowthRangePicker
-              activeRange={growthRange}
-              customRange={growthCustomRange}
-              today={growthTimeline.today}
-              onPresetSelect={setGrowthRange}
-              onCustomApply={(value) => {
-                setGrowthCustomRange(value);
-                setGrowthRange("custom");
-              }}
-            />
+            <div className="flex flex-col items-end gap-1">
+              <UserGrowthRangePicker
+                activeRange={growthRange}
+                customRange={growthCustomRange}
+                today={growthTimeline.today}
+                onPresetSelect={setGrowthRange}
+                onCustomApply={(value) => {
+                  setGrowthCustomRange(value);
+                  setGrowthRange("custom");
+                }}
+              />
+              <p className="text-muted-foreground text-xs">
+                {t("header.rangeScope")}
+              </p>
+            </div>
           </div>
         </header>
       ) : null}
@@ -1035,7 +1162,19 @@ export default function MetricsWorkspace({
                   <p className="sr-only">{t("overview.exportNote")}</p>
                 </div>
               </div>
-              <ExportUsageBreakdown usage={insights.usage} compact />
+              <PeriodInsightState
+                insights={selectedInsights}
+                failed={periodInsights.failed}
+                retry={periodInsights.retry}
+                source="events"
+              >
+                {selectedInsights ? (
+                  <ExportUsageBreakdown
+                    usage={selectedInsights.usage}
+                    compact
+                  />
+                ) : null}
+              </PeriodInsightState>
               <p className="text-muted-foreground mt-2 border-t pt-2 text-xs leading-relaxed">
                 {t("overview.exportNote")}
               </p>
@@ -1111,6 +1250,11 @@ export default function MetricsWorkspace({
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums">
                           {formatPreviousValue(snapshot, number, percent)}
+                          {snapshot.previousLimited ? (
+                            <p className="text-muted-foreground text-xs">
+                              {t("quality.low_volume")}
+                            </p>
+                          ) : null}
                         </td>
                         <td className="px-3 py-2 text-right">
                           <MetricDelta snapshot={snapshot} percent={percent} />
@@ -1122,6 +1266,15 @@ export default function MetricsWorkspace({
                             generatedAt={snapshot.generatedAt}
                             windowDays={snapshot.windowDays}
                           />
+                          {snapshot.quality === "low_volume" &&
+                          snapshot.minimumVolume ? (
+                            <p className="text-muted-foreground mt-1 text-xs">
+                              {t("quality.sampleCount", {
+                                count: snapshot.sampleSize ?? 0,
+                                minimum: snapshot.minimumVolume,
+                              })}
+                            </p>
+                          ) : null}
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums sm:pr-5">
                           {t(
@@ -1137,6 +1290,27 @@ export default function MetricsWorkspace({
                 </tbody>
               </table>
             </div>
+          </section>
+          <section
+            className="bg-card rounded-xl border p-4 sm:p-5"
+            aria-label={t("analysis.weeklyTitle")}
+          >
+            <h2 className="mb-4 text-base font-semibold">
+              {t("analysis.weeklyTitle")}
+            </h2>
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              retry={periodInsights.retry}
+              source="events"
+            >
+              {selectedInsights?.analysis ? (
+                <WeeklyActivity
+                  analysis={selectedInsights.analysis}
+                  coverage={selectedInsights.usage.coverage}
+                />
+              ) : null}
+            </PeriodInsightState>
           </section>
         </TabsContent>
 
@@ -1170,7 +1344,7 @@ export default function MetricsWorkspace({
                   {t("retention.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("retention.description")}
+                  {t("retention.description")} {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1191,7 +1365,7 @@ export default function MetricsWorkspace({
                   {t("acquisition.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("acquisition.description")}
+                  {t("acquisition.description")} {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1215,13 +1389,110 @@ export default function MetricsWorkspace({
                   {t("localization.description")}
                 </p>
               </div>
-              <QualityLabel quality={localizationDemand.quality} />
+              {selectedLocalization ? (
+                <QualityLabel quality={selectedLocalization.quality} />
+              ) : null}
             </div>
-            <LocalizationDemandTable metrics={localizationDemand} />
+            {selectedLocalization ? (
+              <>
+                <p className="text-muted-foreground mb-4 text-xs">
+                  {selectedLocalization.windowDays > 0
+                    ? t("localization.selectedPeriod", {
+                        from: date.format(
+                          new Date(
+                            `${selectedLocalization.period.from}T00:00:00Z`
+                          )
+                        ),
+                        to: date.format(
+                          new Date(
+                            `${selectedLocalization.period.to}T00:00:00Z`
+                          )
+                        ),
+                      })
+                    : t("localization.noCompleteDays")}
+                  {selectedLocalization.measuredSince
+                    ? ` ${t("localization.measuredSince", { date: date.format(new Date(`${selectedLocalization.measuredSince}T00:00:00Z`)) })}`
+                    : null}
+                </p>
+                {selectedLocalization.quality === "building" ? (
+                  <p className="text-muted-foreground mb-4 text-xs">
+                    {t("localization.partialCoverage")}
+                  </p>
+                ) : null}
+                {selectedLocalization.comparisonReady ? (
+                  <p className="text-muted-foreground mb-4 text-xs">
+                    {t("localization.comparisonPeriod", {
+                      from: date.format(
+                        new Date(
+                          `${selectedLocalization.previousPeriod.from}T00:00:00Z`
+                        )
+                      ),
+                      to: date.format(
+                        new Date(
+                          `${selectedLocalization.previousPeriod.to}T00:00:00Z`
+                        )
+                      ),
+                    })}
+                  </p>
+                ) : null}
+                <LocalizationDemandTable metrics={selectedLocalization} />
+              </>
+            ) : localizationFailed ? (
+              <div role="alert">
+                <p>{t("localization.loadFailed")}</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    localization.retry();
+                  }}
+                >
+                  {t("localization.retry")}
+                </Button>
+              </div>
+            ) : (
+              <p role="status">{t("localization.loading")}</p>
+            )}
           </section>
         </TabsContent>
 
         <TabsContent value="creation" className="mt-4 space-y-4">
+          <section
+            className="bg-card rounded-xl border p-4 sm:p-5"
+            aria-label={t("analysis.journeyTitle")}
+          >
+            <h2 className="mb-4 text-base font-semibold">
+              {t("analysis.journeyTitle")}
+            </h2>
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              retry={periodInsights.retry}
+              source="events"
+            >
+              {selectedInsights?.analysis ? (
+                <JourneyDropoff analysis={selectedInsights.analysis} />
+              ) : null}
+            </PeriodInsightState>
+          </section>
+          <section
+            className="bg-card rounded-xl border p-4 sm:p-5"
+            aria-label={t("analysis.timingTitle")}
+          >
+            <h2 className="mb-4 text-base font-semibold">
+              {t("analysis.timingTitle")}
+            </h2>
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              retry={periodInsights.retry}
+              source="events"
+            >
+              {selectedInsights?.analysis ? (
+                <TimeToResult analysis={selectedInsights.analysis} />
+              ) : null}
+            </PeriodInsightState>
+          </section>
+
           <DecisionMetric
             metric={explorer.valuableSessions}
             generatedAt={explorer.generatedAt}
@@ -1233,7 +1504,16 @@ export default function MetricsWorkspace({
                 {t("editor.description")}
               </p>
               <div className="mt-5">
-                <EditorUsageBreakdown usage={insights.usage} />
+                <PeriodInsightState
+                  insights={selectedInsights}
+                  failed={periodInsights.failed}
+                  retry={periodInsights.retry}
+                  source="events"
+                >
+                  {selectedInsights ? (
+                    <EditorUsageBreakdown usage={selectedInsights.usage} />
+                  ) : null}
+                </PeriodInsightState>
               </div>
             </section>
             <section className="bg-card rounded-xl border p-4 sm:p-5">
@@ -1243,7 +1523,7 @@ export default function MetricsWorkspace({
                     {t("adoption.title")}
                   </h2>
                   <p className="text-muted-foreground mt-1 text-sm">
-                    {t("adoption.description")}
+                    {t("adoption.description")} {t("period.fixedWindow")}
                   </p>
                 </div>
                 <QualityLabel
@@ -1264,12 +1544,40 @@ export default function MetricsWorkspace({
               {t("content.description")}
             </p>
             <div className="mt-4">
-              <ContentGrowthChart data={insights.contentGrowth} />
+              <PeriodInsightState
+                insights={selectedInsights}
+                failed={periodInsights.failed}
+                retry={periodInsights.retry}
+                source="content"
+              >
+                {selectedInsights ? (
+                  <ContentGrowthChart data={selectedInsights.contentGrowth} />
+                ) : null}
+              </PeriodInsightState>
             </div>
           </section>
         </TabsContent>
 
         <TabsContent value="distribution" className="mt-4 space-y-4">
+          <section
+            className="bg-card rounded-xl border p-4 sm:p-5"
+            aria-label={t("analysis.exportTitle")}
+          >
+            <h2 className="mb-4 text-base font-semibold">
+              {t("analysis.exportTitle")}
+            </h2>
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              retry={periodInsights.retry}
+              source="events"
+            >
+              {selectedInsights?.analysis ? (
+                <ExportReliability analysis={selectedInsights.analysis} />
+              ) : null}
+            </PeriodInsightState>
+          </section>
+
           <DecisionMetric
             metric={explorer.publicationSessionRate}
             generatedAt={explorer.generatedAt}
@@ -1283,7 +1591,16 @@ export default function MetricsWorkspace({
                 {t("overview.exportNote")}
               </p>
               <div className="mt-5">
-                <ExportUsageBreakdown usage={insights.usage} />
+                <PeriodInsightState
+                  insights={selectedInsights}
+                  failed={periodInsights.failed}
+                  retry={periodInsights.retry}
+                  source="events"
+                >
+                  {selectedInsights ? (
+                    <ExportUsageBreakdown usage={selectedInsights.usage} />
+                  ) : null}
+                </PeriodInsightState>
               </div>
             </section>
             <section className="bg-card rounded-xl border p-4 sm:p-5">
@@ -1292,7 +1609,16 @@ export default function MetricsWorkspace({
                 {t("sharing.description")}
               </p>
               <div className="mt-5">
-                <ShareUsageBreakdown usage={insights.usage} />
+                <PeriodInsightState
+                  insights={selectedInsights}
+                  failed={periodInsights.failed}
+                  retry={periodInsights.retry}
+                  source="events"
+                >
+                  {selectedInsights ? (
+                    <ShareUsageBreakdown usage={selectedInsights.usage} />
+                  ) : null}
+                </PeriodInsightState>
               </div>
             </section>
           </div>
@@ -1301,7 +1627,7 @@ export default function MetricsWorkspace({
               {t("sharing.healthTitle")}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              {t("sharing.healthDescription")}
+              {t("sharing.healthDescription")} {t("period.currentState")}
             </p>
             <div className="mt-5">
               <SharingHealth
@@ -1318,7 +1644,16 @@ export default function MetricsWorkspace({
               {t("sharing.embedDescription")}
             </p>
             <div className="mt-5">
-              <EmbedReachTable usage={insights.usage} />
+              <PeriodInsightState
+                insights={selectedInsights}
+                failed={periodInsights.failed}
+                retry={periodInsights.retry}
+                source="embeds"
+              >
+                {selectedInsights ? (
+                  <EmbedReachTable usage={selectedInsights.usage} />
+                ) : null}
+              </PeriodInsightState>
             </div>
           </section>
 
@@ -1333,7 +1668,7 @@ export default function MetricsWorkspace({
                   {t("operations.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
-                  {t("operations.description")}
+                  {t("operations.description")} {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel

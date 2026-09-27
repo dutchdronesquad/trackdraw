@@ -39,22 +39,18 @@ export default async function DashboardMetricsPage() {
   }
 
   const now = new Date();
-  const [
-    metrics,
-    insights,
-    growthByRange,
-    growthTimeline,
-    cockpit,
-    explorer,
-    localizationDemand,
-  ] = await Promise.all([
-    getAdminMetrics(),
-    getProductInsights(),
-    getGrowthByRange(),
-    getGrowthTimeline(),
-    getDailyCockpit(now),
-    getMetricsExplorerData(now),
-    getLocalizationDemandMetrics(now),
+  const [metrics, growthByRange, growthTimeline, cockpit, explorer] =
+    await Promise.all([
+      getAdminMetrics(),
+      getGrowthByRange(),
+      getGrowthTimeline(),
+      getDailyCockpit(now),
+      getMetricsExplorerData(now),
+    ]);
+
+  const [localizationDemand, insights] = await Promise.all([
+    getLocalizationDemandMetrics(now, growthByRange["3m"]),
+    getProductInsights(growthByRange["3m"], now),
   ]);
 
   const t = await getTranslations("dashboard");

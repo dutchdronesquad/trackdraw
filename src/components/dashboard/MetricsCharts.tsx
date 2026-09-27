@@ -1353,7 +1353,7 @@ export function DistributionSummary({
 
 function eventCount(usage: ProductInsights["usage"], eventType: string) {
   return (
-    usage.eventTypes30d.find((row) => row.eventType === eventType)?.count ?? 0
+    usage.eventTypes.find((row) => row.eventType === eventType)?.count ?? 0
   );
 }
 
@@ -1362,13 +1362,13 @@ function previousEventCount(
   eventType: string
 ) {
   return (
-    usage.eventTypesPrevious30d.find((row) => row.eventType === eventType)
+    usage.eventTypesPrevious.find((row) => row.eventType === eventType)
       ?.count ?? 0
   );
 }
 
 function hasComparisonBaseline(usage: ProductInsights["usage"]) {
-  return usage.trackingDays >= 60;
+  return usage.coverage?.comparisonReady ?? usage.trackingDays >= 60;
 }
 
 export function MetricsFocusBanner({ metrics }: { metrics: AdminMetrics }) {
@@ -1420,10 +1420,7 @@ function UsageComparison({
   if (!hasComparisonBaseline(usage)) {
     return (
       <span className="text-muted-foreground text-xs">
-        {t("buildingProgress", {
-          elapsed: Math.min(usage.trackingDays, 60),
-          total: 60,
-        })}
+        {t("unavailablePeriod")}
       </span>
     );
   }
@@ -1525,7 +1522,7 @@ export function ExportUsageBreakdown({
     formatTranslationKeys
   ) as (keyof typeof formatTranslationKeys)[];
   const counts = new Map(
-    usage.exportFormats30d.map((row) => [row.format, row.count])
+    usage.exportFormats.map((row) => [row.format, row.count])
   );
   const rows = knownFormats
     .map((format) => ({
@@ -1535,7 +1532,7 @@ export function ExportUsageBreakdown({
     }))
     .filter((row) => row.count > 0);
   const knownFormatSet = new Set<string>(knownFormats);
-  const extras = usage.exportFormats30d
+  const extras = usage.exportFormats
     .filter((row) => !knownFormatSet.has(row.format))
     .map((row) => ({ key: row.format, label: row.format, count: row.count }));
   const sortedRows = [...rows, ...extras].sort(
@@ -1566,18 +1563,18 @@ export function ExportUsageBreakdown({
               compact ? "text-lg" : "text-xl"
             )}
           >
-            {usage.exports30d}
+            {usage.exports}
           </p>
           <UsageComparison
             usage={usage}
-            current={usage.exports30d}
+            current={usage.exports}
             eventType="export.completed"
           />
         </div>
       </div>
       <UsageBreakdownRows
         rows={sortedRows}
-        total={usage.exports30d}
+        total={usage.exports}
         emptyLabel={t("noData")}
         compact={compact}
       />
@@ -1592,7 +1589,7 @@ export function ShareUsageBreakdown({
 }) {
   const t = useTranslations("dashboard.metrics.shareUsage");
   const counts = new Map(
-    usage.shareSurfaces30d.map((row) => [row.surface, row.count])
+    usage.shareSurfaces.map((row) => [row.surface, row.count])
   );
   const knownSurfaces = ["share", "embed"] as const;
   const rows = knownSurfaces.map((surface) => ({
@@ -1601,7 +1598,7 @@ export function ShareUsageBreakdown({
     count: counts.get(surface) ?? 0,
   }));
   const knownSurfaceSet = new Set<string>(knownSurfaces);
-  const extras = usage.shareSurfaces30d
+  const extras = usage.shareSurfaces
     .filter((row) => !knownSurfaceSet.has(row.surface))
     .map((row) => ({ key: row.surface, label: row.surface, count: row.count }));
 
@@ -1610,19 +1607,17 @@ export function ShareUsageBreakdown({
       <div className="flex items-end justify-between gap-3 border-b pb-3">
         <span className="text-muted-foreground text-sm">{t("summary")}</span>
         <div className="text-right">
-          <p className="text-xl font-bold tabular-nums">
-            {usage.shareViews30d}
-          </p>
+          <p className="text-xl font-bold tabular-nums">{usage.shareViews}</p>
           <UsageComparison
             usage={usage}
-            current={usage.shareViews30d}
+            current={usage.shareViews}
             eventType="share.viewed"
           />
         </div>
       </div>
       <UsageBreakdownRows
         rows={[...rows, ...extras]}
-        total={usage.shareViews30d}
+        total={usage.shareViews}
         emptyLabel={t("noData")}
       />
     </div>
@@ -1636,9 +1631,9 @@ export function EmbedReachTable({
 }) {
   const t = useTranslations("dashboard.metrics.embedReach");
   const locale = useLocale();
-  const knownViews = usage.embedReferrerSummary30d.views;
+  const knownViews = usage.embedReferrerSummary.views;
 
-  if (usage.embedReferrers30d.length === 0) {
+  if (usage.embedReferrers.length === 0) {
     return (
       <div className="text-muted-foreground flex min-h-32 items-center justify-center px-4 text-center text-sm">
         {t("empty")}
@@ -1652,7 +1647,7 @@ export function EmbedReachTable({
         <div className="py-3 sm:pr-4">
           <dt className="text-muted-foreground text-sm">{t("knownSites")}</dt>
           <dd className="mt-1 text-xl font-semibold tabular-nums">
-            {usage.embedReferrerSummary30d.hostnames}
+            {usage.embedReferrerSummary.hostnames}
           </dd>
         </div>
         <div className="border-t py-3 sm:border-t-0 sm:pl-4">
@@ -1691,7 +1686,7 @@ export function EmbedReachTable({
             </tr>
           </thead>
           <tbody>
-            {usage.embedReferrers30d.map((referrer) => {
+            {usage.embedReferrers.map((referrer) => {
               const share =
                 knownViews > 0
                   ? Math.round((referrer.views / knownViews) * 100)
@@ -1725,13 +1720,15 @@ export function EmbedReachTable({
                     {share}%
                   </td>
                   <td className="py-3 pl-3 text-right tabular-nums">
-                    {change == null
-                      ? t("newTrend")
-                      : change === 0
-                        ? t("flatTrend")
-                        : t(change > 0 ? "upTrend" : "downTrend", {
-                            pct: Math.abs(change),
-                          })}
+                    {usage.embedCoverage && !usage.embedCoverage.comparisonReady
+                      ? t("unavailablePeriod")
+                      : change == null
+                        ? t("newTrend")
+                        : change === 0
+                          ? t("flatTrend")
+                          : t(change > 0 ? "upTrend" : "downTrend", {
+                              pct: Math.abs(change),
+                            })}
                   </td>
                   <td className="py-3 pl-3 text-right tabular-nums">
                     <time dateTime={referrer.lastSeen}>
@@ -1748,11 +1745,11 @@ export function EmbedReachTable({
           </tbody>
         </table>
       </div>
-      {usage.embedReferrerSummary30d.rows > usage.embedReferrers30d.length && (
+      {usage.embedReferrerSummary.rows > usage.embedReferrers.length && (
         <p className="text-muted-foreground text-sm leading-relaxed">
           {t("showingTop", {
-            shown: usage.embedReferrers30d.length,
-            total: usage.embedReferrerSummary30d.rows,
+            shown: usage.embedReferrers.length,
+            total: usage.embedReferrerSummary.rows,
           })}
         </p>
       )}
@@ -1854,11 +1851,11 @@ export function EditorUsageBreakdown({
   const editorStarts = eventCount(usage, "editor.session_started");
   const primaryStats = [
     ["sessions", editorStarts],
-    ["accountSessions", usage.accountSessions30d],
-    ["anonymousSessions", usage.anonymousSessions30d],
-    ["preview3d", usage.preview3dOpens30d],
-    ["imports", usage.imports30d],
-    ["placed", usage.elementPlacements30d],
+    ["accountSessions", usage.accountSessions],
+    ["anonymousSessions", usage.anonymousSessions],
+    ["preview3d", usage.preview3dOpens],
+    ["imports", usage.imports],
+    ["placed", usage.elementPlacements],
   ] as const;
 
   return (
@@ -1924,10 +1921,10 @@ export function EditorUsageBreakdown({
                     {t(`funnel.steps.${step}`)}
                   </th>
                   <td className="px-3 py-2.5 text-right tabular-nums">
-                    {usage.creatorFunnel30d.anonymous[step]}
+                    {usage.creatorFunnel.anonymous[step]}
                   </td>
                   <td className="py-2.5 pl-3 text-right tabular-nums">
-                    {usage.creatorFunnel30d.account[step]}
+                    {usage.creatorFunnel.account[step]}
                   </td>
                 </tr>
               ))}
@@ -1940,7 +1937,7 @@ export function EditorUsageBreakdown({
               {t("segments.newCreators")}
             </dt>
             <dd className="font-semibold tabular-nums sm:mt-1 sm:text-lg">
-              {usage.accountCreatorSegments30d.newCreators}
+              {usage.accountCreatorSegments.newCreators}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-3 sm:block">
@@ -1948,7 +1945,7 @@ export function EditorUsageBreakdown({
               {t("segments.returningCreators")}
             </dt>
             <dd className="font-semibold tabular-nums sm:mt-1 sm:text-lg">
-              {usage.accountCreatorSegments30d.returningCreators}
+              {usage.accountCreatorSegments.returningCreators}
             </dd>
           </div>
         </dl>
@@ -1973,21 +1970,21 @@ export function EditorUsageBreakdown({
         <div>
           <p className="text-muted-foreground text-sm">{t("importedShapes")}</p>
           <p className="mt-0.5 font-semibold tabular-nums">
-            {usage.importedShapes30d}
+            {usage.importedShapes}
           </p>
         </div>
         <div>
           <p className="text-muted-foreground text-sm">{t("avgImport")}</p>
           <p className="mt-0.5 font-semibold tabular-nums">
-            {usage.avgShapesPerImport30d}
+            {usage.avgShapesPerImport}
           </p>
         </div>
       </div>
-      {usage.elementTypes30d.length > 0 ? (
+      {usage.elementTypes.length > 0 ? (
         <div className="space-y-2">
           <p className="text-muted-foreground text-sm">{t("topTypes")}</p>
           <div className="flex flex-wrap gap-2">
-            {usage.elementTypes30d.slice(0, 8).map((row) => (
+            {usage.elementTypes.slice(0, 8).map((row) => (
               <span
                 key={row.kind}
                 className="bg-muted rounded-md px-2 py-1 text-xs"

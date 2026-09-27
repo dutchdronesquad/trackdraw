@@ -9,7 +9,7 @@
 | Metric ID   | `L10N-001`                               |
 | Owner       | Product                                  |
 | Purpose     | Prioritize supported interface languages |
-| Window      | Last 28 complete UTC days                |
+| Window      | Selected complete UTC days (dashboard range)                |
 | Retention   | At most 24 months                        |
 
 This contract is separate from the versioned product-event contract. It never adds geographic or language properties to `product_events` and must not be joined to product-event, account, project, share, audit, or security data.
@@ -33,11 +33,11 @@ The dashboard shows a language only after at least five creator sessions in the 
 A period is:
 
 - `not_started` when the measurement-start row is absent;
-- `building` until 28 complete UTC days have elapsed;
+- `building` when the selected period includes days before measurement started or outside the retained history, or has no complete UTC days;
 - `low_volume` below 30 creator sessions;
 - `healthy` after complete coverage and sufficient volume.
 
-Previous-period values are shown only after two complete 28-day windows. The metric counts browser sessions, not unique people. Browser language can differ from the language a person wants for TrackDraw, and country inference can be affected by VPNs, relays, corporate networks, or geolocation errors. Language demand therefore informs prioritization but does not automatically authorize or schedule a translation.
+The dashboard uses the same selected dates as user growth, excluding the current incomplete UTC day. The initial selection is three months. The server helper retains a 28-day default for callers without a range. Comparison uses the immediately preceding window with the same number of days and appears only when both windows are covered by measurement and the 24-month retention boundary. Partial history remains labelled and is never presented as zero activity. The dashboard displays the effective UTC dates and measurement start. Changing dates calls an authenticated server action requiring `admin.metrics.read`; stale responses cannot replace the current selection. The metric counts browser sessions, not unique people. Browser language can differ from the language a person wants for TrackDraw, and country inference can be affected by VPNs, relays, corporate networks, or geolocation errors. Language demand therefore informs prioritization but does not automatically authorize or schedule a translation.
 
 ## Choice and lifecycle
 

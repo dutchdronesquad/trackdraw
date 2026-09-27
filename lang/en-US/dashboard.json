@@ -237,7 +237,8 @@
     "explorer": {
       "header": {
         "title": "Product metrics",
-        "subtitle": "Aggregate product health"
+        "subtitle": "Aggregate product health",
+        "rangeScope": "Applies to growth, localization, editor usage, exports, sharing, and embed reach."
       },
       "quality": {
         "healthy": "Ready",
@@ -248,10 +249,12 @@
         "not_started": "Not collecting yet",
         "buildingProgress": "Collecting history · {elapsed}/{total}d",
         "catchingUp": "Catching up",
-        "buildingHint": "This value uses the latest complete {window}-day reporting period. Comparisons appear after {total} complete days of continuous measurement; {elapsed} days are available.",
-        "buildingHintGeneric": "TrackDraw is collecting comparison history. {elapsed} of {total} complete days are available.",
+        "buildingHint": "This value uses a fixed {window}-day reporting period. The first complete period is still being collected; {elapsed} days are available.",
+        "buildingHintGeneric": "The first complete measurement period is still being collected; {elapsed} days are available.",
         "catchingUpHint": "Enough history exists, but aggregation has not reached the latest complete day yet.",
-        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:17 UTC."
+        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:17 UTC.",
+        "sampleCount": "{count} of {minimum} observations",
+        "incompleteHint": "Coverage for this measurement is incomplete."
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -268,11 +271,26 @@
       },
       "journey": {
         "label": "Product journey metrics",
-        "acquisition": { "label": "Acquisition", "value": "Source mix" },
-        "activation": { "label": "Activation", "value": "Valuable sessions" },
-        "engagement": { "label": "Engagement", "value": "Active creators" },
-        "sharing": { "label": "Sharing", "value": "Published sessions" },
-        "retention": { "label": "Retention", "value": "30-day return" }
+        "acquisition": {
+          "label": "Acquisition",
+          "value": "Source mix"
+        },
+        "activation": {
+          "label": "Activation",
+          "value": "Valuable sessions"
+        },
+        "engagement": {
+          "label": "Engagement",
+          "value": "Active creators"
+        },
+        "sharing": {
+          "label": "Sharing",
+          "value": "Published sessions"
+        },
+        "retention": {
+          "label": "Retention",
+          "value": "30-day return"
+        }
       },
       "views": {
         "label": "Metrics analysis views",
@@ -285,11 +303,11 @@
       },
       "overview": {
         "exportTitle": "Export usage",
-        "exportNote": "Completed exports in the last 30 days."
+        "exportNote": "Completed exports in the selected period."
       },
       "evidence": {
         "title": "Core product metrics",
-        "description": "Latest complete reporting periods. Data status shows whether enough continuous history exists for reliable comparisons.",
+        "description": "Latest complete fixed reporting periods, independent of the date selection. Previous values appear when available; changes require sufficient data in both periods.",
         "metric": "Metric",
         "current": "Latest period",
         "previous": "Previous period",
@@ -421,7 +439,16 @@
         "otherCountries": "Other low-volume countries",
         "unknownCountry": "Unknown country",
         "notStarted": "Localization demand measurement has not started.",
-        "noData": "No creator sessions in this complete period."
+        "noData": "No recorded creator sessions for this selection.",
+        "previousSelectedPeriod": "Previous period: {count}",
+        "selectedPeriod": "{from} – {to} (complete UTC days).",
+        "comparisonPeriod": "Compared with {from} – {to}.",
+        "measuredSince": "Measurement started {date}.",
+        "noCompleteDays": "No complete UTC days in this selection.",
+        "partialCoverage": "Coverage is incomplete for this selection. Counts include only available data; missing history is not zero activity.",
+        "loading": "Loading localization demand…",
+        "loadFailed": "Could not load localization demand for this period.",
+        "retry": "Retry"
       },
       "editor": {
         "title": "Editor usage",
@@ -514,6 +541,25 @@
           "unsupported": "Unsupported",
           "unknown": "Unknown"
         }
+      },
+      "period": {
+        "dates": "{from} – {to} (complete UTC days).",
+        "previousDates": "Compared with {from} – {to}.",
+        "noCompleteDays": "No complete UTC days in this selection.",
+        "partial": "Incomplete history. Reliable coverage starts no earlier than {date}; counts show available observations only. Missing history is not zero activity.",
+        "unavailable": "No covered data is available for this selection.",
+        "contentScope": "Creation dates of currently stored projects, signed-in shares, and presets. Deleted content is not included.",
+        "currentState": "Current state — independent of the date selection.",
+        "fixedWindow": "Uses its fixed reporting window, independent of the date selection.",
+        "loading": "Loading data for the selected period…",
+        "failed": "Could not load data for the selected period.",
+        "retry": "Retry"
+      },
+      "analysis": {
+        "weeklyTitle": "Weekly activity",
+        "journeyTitle": "Where sessions stop",
+        "timingTitle": "Time to first result",
+        "exportTitle": "Export reliability by format"
       }
     },
     "kpi": {
@@ -634,9 +680,10 @@
       "building": "Collecting a comparison period",
       "buildingProgress": "Collecting comparison history · {elapsed}/{total}d",
       "lowVolume": "Comparison unavailable: limited sample",
-      "flat": "No change vs previous 30d",
-      "changeUp": "Up {pct}% vs previous 30d",
-      "changeDown": "Down {pct}% vs previous 30d"
+      "flat": "No change vs previous period",
+      "changeUp": "Up {pct}% vs previous period",
+      "changeDown": "Down {pct}% vs previous period",
+      "unavailablePeriod": "Comparison unavailable: incomplete history"
     },
     "inventory": {
       "title": "Platform inventory",
@@ -707,9 +754,9 @@
     },
     "exportUsage": {
       "title": "Export usage",
-      "description": "Completed exports by format during the last 30 days.",
+      "description": "Completed exports by format during the selected period.",
       "summary": "Completed exports",
-      "noData": "No completed exports have been tracked in the last 30 days.",
+      "noData": "No completed exports have been tracked in the selected period.",
       "formats": {
         "png": "2D image (PNG)",
         "svg": "Vector map (SVG)",
@@ -722,15 +769,15 @@
     },
     "shareUsage": {
       "title": "Share viewing",
-      "description": "Tracked public viewing sessions by surface during the last 30 days.",
+      "description": "Tracked public viewing sessions by surface during the selected period.",
       "summary": "Viewing sessions",
-      "noData": "No public viewing sessions have been tracked in the last 30 days.",
+      "noData": "No public viewing sessions have been tracked in the selected period.",
       "surfaces": {
         "share": "Share page",
         "embed": "Embedded viewer"
       },
       "referrers": {
-        "title": "Detected embed sites · last 30 days",
+        "title": "Detected embed sites · selected period",
         "empty": "No website hostname has reached the privacy threshold yet."
       }
     },
@@ -747,7 +794,7 @@
     },
     "embedReach": {
       "title": "Embed reach",
-      "description": "Websites that generated enough embedded viewing activity to pass the privacy threshold during the last 30 days.",
+      "description": "Websites that generated enough embedded viewing activity to pass the privacy threshold during the selected period.",
       "knownSites": "Detected websites",
       "knownViews": "Views from detected websites",
       "tableLabel": "Detected embed websites",
@@ -755,7 +802,7 @@
       "track": "Track",
       "views": "Views",
       "share": "Share of detected views",
-      "trend": "vs previous 30 days",
+      "trend": "vs previous period",
       "lastSeen": "Last seen",
       "newTrend": "New",
       "flatTrend": "No change",
@@ -763,11 +810,12 @@
       "downTrend": "Down {pct}%",
       "empty": "No website hostname has reached the privacy threshold yet.",
       "showingTop": "Showing the top {shown} of {total} qualifying track and website combinations.",
-      "privacyNote": "Only hostnames meeting the disclosure threshold are shown. Full URLs, visitor identities, and individual browsing histories are not stored."
+      "privacyNote": "Only hostnames meeting the disclosure threshold are shown. Full URLs, visitor identities, and individual browsing histories are not stored.",
+      "unavailablePeriod": "Unavailable"
     },
     "editorUsage": {
       "title": "Editor behavior",
-      "description": "Editor sessions, feature use, and track content activity during the last 30 days.",
+      "description": "Editor sessions, feature use, and track content activity during the selected period.",
       "sessions": "Editor starts",
       "accountSessions": "Signed-in sessions",
       "anonymousSessions": "Anonymous sessions",
@@ -778,7 +826,7 @@
       "avgImport": "Avg. per import",
       "funnel": {
         "title": "Anonymous and signed-in creator funnels",
-        "description": "Aggregate sessions in the last 30 days. A valuable session completes a meaningful edit before an export, share, or publication outcome.",
+        "description": "Aggregate sessions in the selected period. A valuable session completes a meaningful edit before an export, share, or publication outcome.",
         "step": "Journey step",
         "anonymous": "Anonymous",
         "account": "Signed in",
@@ -794,7 +842,7 @@
         "note": "Creator segments are available for signed-in creators."
       },
       "topTypes": "Most placed element types",
-      "noData": "No element placements have been tracked in the last 30 days."
+      "noData": "No element placements have been tracked in the selected period."
     },
     "retention": {
       "title": "Creator retention cohorts",
@@ -933,6 +981,47 @@
       "observed": "Observed",
       "activeCreatorsSource": "Source: production activity across projects, shares, presets, events, and API use in the last 30 days.",
       "accountsSource": "Source: production projects, active shares, and layout presets."
+    },
+    "analysis": {
+      "starts": "Editor sessions",
+      "exports": "Completed exports",
+      "views": "Share and embed views",
+      "empty": "No recorded activity in this period.",
+      "weeksNote": "UTC weeks, Monday to Sunday. Edge weeks and incomplete history contain partial counts; they are not directly comparable to full weeks. Views and exports count recorded events, not unique people.",
+      "weeklyTable": "View weekly counts and coverage",
+      "week": "Period (UTC)",
+      "coverage": "Coverage",
+      "unavailable": "Unavailable",
+      "complete": "Complete week",
+      "partial": "Partial week / history",
+      "journeyNote": "Sessions are grouped by their start week. Each step must occur after the preceding step in the same session and before the selected period ends. Results are exports, share creation, or gallery publication. Missing next steps show observed non-progression, not its cause; recent sessions may still complete later.",
+      "step": "Step",
+      "continued": "Continued",
+      "notContinued": "No next step observed",
+      "dropoff": "Drop-off",
+      "startToEdit": "Editor opened → meaningful edit",
+      "editToResult": "Meaningful edit → result",
+      "of": "{count} of {total}",
+      "limited": "Limited sample (< 30)",
+      "weeklyJourney": "View progression by start week",
+      "edited": "Edited",
+      "result": "Result after editing",
+      "conversion": "Start → result",
+      "timingNote": "Elapsed time from the recorded editor start to its first subsequent export, share creation, or gallery publication in the same session. Only results observed before the selected period ends are included. This includes idle time and is not rendering speed; it does not require a preceding edit.",
+      "median": "Median time",
+      "p75": "75% completed within",
+      "completedSessions": "Sessions with a result",
+      "minutes": "{value} min",
+      "seconds": "{value} sec",
+      "withoutResult": "{count} started sessions without an observed result are excluded from these times.",
+      "noResults": "No completed sessions to calculate a duration.",
+      "exportNote": "Recorded terminal attempts: failures divided by successes plus failures for the same format. Format-level rates use version 1.1.0 events only, where both outcomes are tracked. Retries count as separate attempts. Earlier events remain separate because their failures have no format. Missing events and unfinished attempts are not measured.",
+      "format": "Format",
+      "successes": "Successful",
+      "failures": "Failed",
+      "failureRate": "Failure rate",
+      "legacy": "Earlier events (all formats)",
+      "unknownFormat": "Unknown format"
     }
   },
   "users": {
