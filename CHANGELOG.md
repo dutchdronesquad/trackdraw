@@ -4,7 +4,7 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
-## Unreleased
+## [1.17.0]
 
 ### RaceGOW Gate
 
@@ -12,7 +12,11 @@ The obstacle library now includes the official RaceGOW Gate for Tiny Whoop track
 
 ### Portable viewer exports
 
-Viewer exports now include the course and required textures in one offline package, with validation that rejects incomplete or damaged files.
+The new Viewer Snapshot export bundles the course and required textures into one ZIP file for offline viewing with a compatible external viewer. Package validation rejects incomplete or damaged files.
+
+### Direct links to Studio dialogs
+
+Links can now open Studio directly at Project Manager, Import, Export, Share, keyboard shortcuts, or a specific account settings section. Browser Back and Forward close and reopen dialogs, refreshing restores the open dialog, and signing in returns you to the requested account section.
 
 ## [1.16.2]
 

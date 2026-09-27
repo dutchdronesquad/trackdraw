@@ -60,6 +60,11 @@ TrackDraw is available in English, Dutch, German, and Simplified Chinese, with a
 
 TrackDraw is actively developed. See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for current priorities and progress.
 
+## Related repositories
+
+- [TrackDraw Viewer](https://github.com/dutchdronesquad/track-viewer) — the standalone 2D and 3D viewer for embedding TrackDraw tracks in other websites and applications, including offline viewing.
+- [TrackDraw obstacle assets](https://github.com/dutchdronesquad/obstacles) — the source models, artwork, and shared catalog textures used by TrackDraw and the viewer.
+
 ## Credits and sources
 
 MultiGP obstacle dimensions and visual references are based on the official [MultiGP Drone Race Course Obstacles](https://www.multigp.com/multigp-drone-race-course-obstacles/) guide. MultiGP names and artwork belong to MultiGP; TrackDraw is not affiliated with or endorsed by MultiGP.
