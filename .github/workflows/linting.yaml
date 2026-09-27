@@ -70,5 +70,7 @@ jobs:
           node-version: ${{ env.DEFAULT_NODE }}
       - name: 🏗 Install dependencies
         run: npm ci
+      - name: 🔎 Check Cloudflare build tooling
+        run: npx opennextjs-cloudflare build --help
       - name: 🚀 Run Next.js build
         run: npm run build
