@@ -237,8 +237,7 @@
     "explorer": {
       "header": {
         "title": "Product metrics",
-        "subtitle": "Aggregate product health",
-        "rangeScope": "Applies to growth, localization, editor usage, exports, sharing, and embed reach."
+        "subtitle": "Aggregate product health"
       },
       "quality": {
         "healthy": "Ready",
@@ -441,11 +440,11 @@
         "notStarted": "Localization demand measurement has not started.",
         "noData": "No recorded creator sessions for this selection.",
         "previousSelectedPeriod": "Previous period: {count}",
-        "selectedPeriod": "{from} – {to} (complete UTC days).",
+        "selectedPeriod": "{from} – {to} (UTC)",
         "comparisonPeriod": "Compared with {from} – {to}.",
         "measuredSince": "Measurement started {date}.",
         "noCompleteDays": "No complete UTC days in this selection.",
-        "partialCoverage": "Coverage is incomplete for this selection. Counts include only available data; missing history is not zero activity.",
+        "partialCoverage": "Partial history · available observations only.",
         "loading": "Loading localization demand…",
         "loadFailed": "Could not load localization demand for this period.",
         "retry": "Retry"
@@ -514,7 +513,8 @@
           "webm": "WebM",
           "race_pack": "Race Pack PDF",
           "velocidrone": "Velocidrone TRK",
-          "render_3d": "3D PNG"
+          "render_3d": "3D PNG",
+          "viewer_snapshot": "Viewer snapshot"
         },
         "reasons": {
           "asset_load_failed": "Export asset could not be loaded",
@@ -543,17 +543,18 @@
         }
       },
       "period": {
-        "dates": "{from} – {to} (complete UTC days).",
+        "dates": "{from} – {to} (UTC)",
         "previousDates": "Compared with {from} – {to}.",
-        "noCompleteDays": "No complete UTC days in this selection.",
-        "partial": "Incomplete history. Reliable coverage starts no earlier than {date}; counts show available observations only. Missing history is not zero activity.",
-        "unavailable": "No covered data is available for this selection.",
+        "noCompleteDays": "No complete UTC days selected.",
+        "partial": "Partial history · coverage from {date}.",
+        "unavailable": "No data available for this period.",
         "contentScope": "Creation dates of currently stored projects, signed-in shares, and presets. Deleted content is not included.",
-        "currentState": "Current state — independent of the date selection.",
-        "fixedWindow": "Uses its fixed reporting window, independent of the date selection.",
+        "currentState": "Current totals",
+        "fixedWindow": "Fixed reporting window",
         "loading": "Loading data for the selected period…",
-        "failed": "Could not load data for the selected period.",
-        "retry": "Retry"
+        "failed": "Some metrics could not be loaded.",
+        "retry": "Retry",
+        "temporarilyUnavailable": "Temporarily unavailable"
       },
       "analysis": {
         "weeklyTitle": "Weekly activity",
@@ -764,7 +765,8 @@
         "racePack": "Race Pack (PDF)",
         "json": "Project file (JSON)",
         "webm": "Cinematic FPV (WebM)",
-        "velocidrone": "Velocidrone track"
+        "velocidrone": "Velocidrone track",
+        "viewerSnapshot": "Viewer snapshot"
       }
     },
     "shareUsage": {
@@ -987,14 +989,12 @@
       "exports": "Completed exports",
       "views": "Share and embed views",
       "empty": "No recorded activity in this period.",
-      "weeksNote": "UTC weeks, Monday to Sunday. Edge weeks and incomplete history contain partial counts; they are not directly comparable to full weeks. Views and exports count recorded events, not unique people.",
       "weeklyTable": "View weekly counts and coverage",
       "week": "Period (UTC)",
       "coverage": "Coverage",
       "unavailable": "Unavailable",
       "complete": "Complete week",
       "partial": "Partial week / history",
-      "journeyNote": "Sessions are grouped by their start week. Each step must occur after the preceding step in the same session and before the selected period ends. Results are exports, share creation, or gallery publication. Missing next steps show observed non-progression, not its cause; recent sessions may still complete later.",
       "step": "Step",
       "continued": "Continued",
       "notContinued": "No next step observed",
@@ -1007,15 +1007,13 @@
       "edited": "Edited",
       "result": "Result after editing",
       "conversion": "Start → result",
-      "timingNote": "Elapsed time from the recorded editor start to its first subsequent export, share creation, or gallery publication in the same session. Only results observed before the selected period ends are included. This includes idle time and is not rendering speed; it does not require a preceding edit.",
       "median": "Median time",
       "p75": "75% completed within",
       "completedSessions": "Sessions with a result",
       "minutes": "{value} min",
       "seconds": "{value} sec",
-      "withoutResult": "{count} started sessions without an observed result are excluded from these times.",
+      "withoutResult": "Without a result: {count} (excluded)",
       "noResults": "No completed sessions to calculate a duration.",
-      "exportNote": "Recorded terminal attempts: failures divided by successes plus failures for the same format. Format-level rates use version 1.1.0 events only, where both outcomes are tracked. Retries count as separate attempts. Earlier events remain separate because their failures have no format. Missing events and unfinished attempts are not measured.",
       "format": "Format",
       "successes": "Successful",
       "failures": "Failed",

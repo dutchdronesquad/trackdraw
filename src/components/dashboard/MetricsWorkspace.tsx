@@ -567,82 +567,76 @@ function DecisionMetric({
   );
 }
 
+function MetricsLoadError({
+  message,
+  retry,
+}: {
+  message: string;
+  retry: () => void;
+}) {
+  const t = useTranslations("dashboard.metrics.explorer.period");
+  return (
+    <div
+      role="alert"
+      className="bg-muted/50 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3"
+    >
+      <Info
+        className="text-muted-foreground size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <p className="min-w-0 flex-1 text-sm">{message}</p>
+      <Button variant="outline" size="sm" onClick={retry}>
+        <RefreshCw className="size-3.5" aria-hidden="true" />
+        {t("retry")}
+      </Button>
+    </div>
+  );
+}
+
 function PeriodInsightState({
   insights,
   failed,
-  retry,
   source,
   children,
 }: {
   insights: ProductInsights | undefined;
   failed?: boolean;
-  retry: () => void;
   source: "events" | "embeds" | "content";
   children: React.ReactNode;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.period");
-  const locale = useLocale();
   if (!insights)
     return failed ? (
-      <div role="alert">
-        <p>{t("failed")}</p>
-        <Button variant="outline" onClick={retry}>
-          {t("retry")}
-        </Button>
-      </div>
+      <p className="text-muted-foreground flex min-h-24 w-full items-center justify-center gap-2 py-4 text-center text-sm">
+        <Info className="size-4 shrink-0" aria-hidden="true" />
+        {t("temporarilyUnavailable")}
+      </p>
     ) : (
-      <p role="status">{t("loading")}</p>
+      <p
+        role="status"
+        className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
+      >
+        <RefreshCw
+          className="size-4 motion-safe:animate-spin"
+          aria-hidden="true"
+        />
+        {t("loading")}
+      </p>
     );
   const period = insights.period;
   const coverage =
     source === "embeds"
       ? insights.usage.embedCoverage
       : insights.usage.coverage;
-  const date = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  });
-  const format = (value: string) => date.format(new Date(`${value}T00:00:00Z`));
-  return (
-    <div>
-      {period ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {period.days > 0
-            ? t("dates", { from: format(period.from), to: format(period.to) })
-            : t("noCompleteDays")}
-        </p>
-      ) : null}
-      {source === "content" ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {t("contentScope")}
-        </p>
-      ) : coverage && !coverage.complete ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {coverage.from
-            ? t("partial", { date: format(coverage.from) })
-            : t("unavailable")}
-        </p>
-      ) : null}
-      {source !== "content" && coverage?.comparisonReady && period ? (
-        <p className="text-muted-foreground mb-3 text-xs">
-          {t("previousDates", {
-            from: format(period.previousFrom),
-            to: format(period.previousTo),
-          })}
-        </p>
-      ) : null}
-      {period?.days === 0 ||
-      (source !== "content" &&
-        coverage &&
-        (!coverage.from ||
-          (period &&
-            period.to < (coverage.availableFrom ?? coverage.from)))) ? (
-        <p className="text-muted-foreground text-sm">{t("unavailable")}</p>
-      ) : (
-        children
-      )}
-    </div>
-  );
+  const unavailable =
+    period?.days === 0 ||
+    (source !== "content" &&
+      coverage &&
+      (!coverage.from ||
+        (period && period.to < (coverage.availableFrom ?? coverage.from))));
+  if (unavailable)
+    return <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
+  return <>{children}</>;
 }
 
 function LocalizationDemandTable({
@@ -1092,9 +1086,6 @@ export default function MetricsWorkspace({
                   setGrowthRange("custom");
                 }}
               />
-              <p className="text-muted-foreground text-xs">
-                {t("header.rangeScope")}
-              </p>
             </div>
           </div>
         </header>
@@ -1124,6 +1115,14 @@ export default function MetricsWorkspace({
             </TabsList>
           </div>
         </div>
+
+        {periodInsights.failed &&
+        ["overview", "creation", "distribution"].includes(activeView) ? (
+          <MetricsLoadError
+            message={t("period.failed")}
+            retry={periodInsights.retry}
+          />
+        ) : null}
 
         <TabsContent value="overview" className="mt-3 space-y-3">
           <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(19rem,1fr)]">
@@ -1165,7 +1164,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="events"
               >
                 {selectedInsights ? (
@@ -1175,9 +1174,6 @@ export default function MetricsWorkspace({
                   />
                 ) : null}
               </PeriodInsightState>
-              <p className="text-muted-foreground mt-2 border-t pt-2 text-xs leading-relaxed">
-                {t("overview.exportNote")}
-              </p>
             </section>
           </div>
 
@@ -1301,7 +1297,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1344,7 +1340,7 @@ export default function MetricsWorkspace({
                   {t("retention.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("retention.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1365,7 +1361,7 @@ export default function MetricsWorkspace({
                   {t("acquisition.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("acquisition.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel
@@ -1395,60 +1391,18 @@ export default function MetricsWorkspace({
             </div>
             {selectedLocalization ? (
               <>
-                <p className="text-muted-foreground mb-4 text-xs">
-                  {selectedLocalization.windowDays > 0
-                    ? t("localization.selectedPeriod", {
-                        from: date.format(
-                          new Date(
-                            `${selectedLocalization.period.from}T00:00:00Z`
-                          )
-                        ),
-                        to: date.format(
-                          new Date(
-                            `${selectedLocalization.period.to}T00:00:00Z`
-                          )
-                        ),
-                      })
-                    : t("localization.noCompleteDays")}
-                  {selectedLocalization.measuredSince
-                    ? ` ${t("localization.measuredSince", { date: date.format(new Date(`${selectedLocalization.measuredSince}T00:00:00Z`)) })}`
-                    : null}
-                </p>
                 {selectedLocalization.quality === "building" ? (
                   <p className="text-muted-foreground mb-4 text-xs">
                     {t("localization.partialCoverage")}
                   </p>
                 ) : null}
-                {selectedLocalization.comparisonReady ? (
-                  <p className="text-muted-foreground mb-4 text-xs">
-                    {t("localization.comparisonPeriod", {
-                      from: date.format(
-                        new Date(
-                          `${selectedLocalization.previousPeriod.from}T00:00:00Z`
-                        )
-                      ),
-                      to: date.format(
-                        new Date(
-                          `${selectedLocalization.previousPeriod.to}T00:00:00Z`
-                        )
-                      ),
-                    })}
-                  </p>
-                ) : null}
                 <LocalizationDemandTable metrics={selectedLocalization} />
               </>
             ) : localizationFailed ? (
-              <div role="alert">
-                <p>{t("localization.loadFailed")}</p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    localization.retry();
-                  }}
-                >
-                  {t("localization.retry")}
-                </Button>
-              </div>
+              <MetricsLoadError
+                message={t("localization.loadFailed")}
+                retry={localization.retry}
+              />
             ) : (
               <p role="status">{t("localization.loading")}</p>
             )}
@@ -1466,7 +1420,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1484,7 +1438,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1507,7 +1461,7 @@ export default function MetricsWorkspace({
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1523,7 +1477,7 @@ export default function MetricsWorkspace({
                     {t("adoption.title")}
                   </h2>
                   <p className="text-muted-foreground mt-1 text-sm">
-                    {t("adoption.description")} {t("period.fixedWindow")}
+                    {t("period.fixedWindow")}
                   </p>
                 </div>
                 <QualityLabel
@@ -1547,7 +1501,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="content"
               >
                 {selectedInsights ? (
@@ -1569,7 +1523,7 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-              retry={periodInsights.retry}
+
               source="events"
             >
               {selectedInsights?.analysis ? (
@@ -1587,14 +1541,12 @@ export default function MetricsWorkspace({
               <h2 className="text-base font-semibold">
                 {t("overview.exportTitle")}
               </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("overview.exportNote")}
-              </p>
+
               <div className="mt-5">
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1612,7 +1564,7 @@ export default function MetricsWorkspace({
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
-                  retry={periodInsights.retry}
+
                   source="events"
                 >
                   {selectedInsights ? (
@@ -1627,7 +1579,7 @@ export default function MetricsWorkspace({
               {t("sharing.healthTitle")}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              {t("sharing.healthDescription")} {t("period.currentState")}
+              {t("period.currentState")}
             </p>
             <div className="mt-5">
               <SharingHealth
@@ -1647,7 +1599,7 @@ export default function MetricsWorkspace({
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-                retry={periodInsights.retry}
+
                 source="embeds"
               >
                 {selectedInsights ? (
@@ -1668,7 +1620,7 @@ export default function MetricsWorkspace({
                   {t("operations.title")}
                 </h2>
                 <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
-                  {t("operations.description")} {t("period.fixedWindow")}
+                  {t("period.fixedWindow")}
                 </p>
               </div>
               <QualityLabel

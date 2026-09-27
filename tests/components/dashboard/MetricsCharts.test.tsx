@@ -845,7 +845,12 @@ describe("metrics decision views", () => {
       servedLocales: [],
     });
     await user.click(screen.getByRole("button", { name: "Retry" }));
-    expect(await screen.findByText(/Compared with/)).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "No recorded creator sessions for this selection."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/Compared with/)).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
@@ -890,6 +895,32 @@ describe("metrics decision views", () => {
     ).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
+    // One failed request affects several panels, but exposes only one retry action.
+    vi.mocked(loadLocalizationDemand).mockRejectedValue(
+      new Error("unavailable")
+    );
+    await openRange("Last 12 months");
+    await user.click(screen.getByRole("button", { name: "Last 3 months" }));
+    vi.mocked(loadProductInsights).mockRejectedValueOnce(
+      new Error("unavailable")
+    );
+    await openRange("Last 3 months");
+    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Retry" })).toHaveLength(1);
+    expect(screen.getAllByText("Temporarily unavailable")).toHaveLength(4);
+    expect(screen.queryByText("777")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: "Creators" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: "Distribution" }));
+    const callsBeforeRetry = vi.mocked(loadProductInsights).mock.calls.length;
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("777")).toBeTruthy();
+    expect(vi.mocked(loadProductInsights).mock.calls.length).toBe(
+      callsBeforeRetry + 1
+    );
+    expect(screen.queryByRole("alert")).toBeNull();
     const operations = document.querySelector("#operations");
     expect(operations).toBeTruthy();
     expect(
