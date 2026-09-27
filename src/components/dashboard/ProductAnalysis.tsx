@@ -1,6 +1,5 @@
 "use client";
 
-import { MetricDetails } from "@/components/dashboard/MetricDetails";
 import { useLocale, useTranslations } from "next-intl";
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import {
@@ -83,7 +82,6 @@ export function WeeklyActivity({
     return <p className="text-muted-foreground text-sm">{t("empty")}</p>;
   return (
     <div className="space-y-4">
-      <MetricDetails>{t("weeksNote")}</MetricDetails>
       <ChartContainer config={config} className="h-64 w-full">
         <ComposedChart
           accessibilityLayer
@@ -192,43 +190,64 @@ export function JourneyDropoff({
   ];
   return (
     <div className="space-y-4">
-      <MetricDetails>{t("journeyNote")}</MetricDetails>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[36rem] text-sm">
-          <thead>
-            <tr className="border-b text-left">
-              {["step", "continued", "notContinued", "dropoff"].map((key) => (
-                <th key={key} scope="col" className="px-3 py-2 first:pl-0">
-                  {t(key)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {stages.map((stage) => (
-              <tr className="border-b last:border-0" key={stage.key}>
-                <th scope="row" className="py-3 text-left font-medium">
-                  {t(stage.key)}
-                </th>
-                <td className="px-3 py-3">
+      <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-xs">
+        <span className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-sky-500" aria-hidden="true" />
+          {t("continued")}
+        </span>
+        <span className="flex items-center gap-2">
+          <span
+            className="size-2 rounded-full bg-amber-500"
+            aria-hidden="true"
+          />
+          {t("notContinued")}
+        </span>
+      </div>
+      <div className="space-y-5">
+        {stages.map((stage) => (
+          <figure key={stage.key} className="space-y-2">
+            <figcaption className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+              <span className="font-medium">{t(stage.key)}</span>
+              <span className="tabular-nums">
+                {t("dropoff")}: {rate(stage.from - stage.to, stage.from)}
+              </span>
+            </figcaption>
+            <div
+              className="bg-muted flex h-4 overflow-hidden rounded-sm"
+              aria-hidden="true"
+            >
+              <div
+                className="bg-sky-500"
+                style={{
+                  width: `${stage.from ? (stage.to / stage.from) * 100 : 0}%`,
+                }}
+              />
+              <div
+                className="bg-amber-500"
+                style={{
+                  width: `${stage.from ? ((stage.from - stage.to) / stage.from) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <div className="text-muted-foreground flex flex-wrap justify-between gap-2 text-xs tabular-nums">
+              <span>
+                {t("continued")}:{" "}
+                <span>
                   {t("of", {
                     count: number(stage.to),
                     total: number(stage.from),
                   })}
-                </td>
-                <td className="px-3 py-3">{number(stage.from - stage.to)}</td>
-                <td className="px-3 py-3">
-                  {rate(stage.from - stage.to, stage.from)}
-                  {stage.from > 0 && stage.from < 30 ? (
-                    <p className="text-muted-foreground text-xs">
-                      {t("limited")}
-                    </p>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </span>
+              </span>
+              <span>
+                {t("notContinued")}: {number(stage.from - stage.to)}
+              </span>
+              {stage.from > 0 && stage.from < 30 ? (
+                <span>{t("limited")}</span>
+              ) : null}
+            </div>
+          </figure>
+        ))}
       </div>
       <details className="border-t pt-3">
         <summary className="cursor-pointer text-sm">
@@ -285,7 +304,6 @@ export function TimeToResult({
   const timing = analysis.timeToResult;
   return (
     <div className="space-y-4">
-      <MetricDetails>{t("timingNote")}</MetricDetails>
       <dl className="grid gap-4 sm:grid-cols-3">
         <div>
           <dt className="text-muted-foreground text-xs">{t("median")}</dt>
@@ -331,59 +349,104 @@ export function ExportReliability({
   const formats = useTranslations(
     "dashboard.metrics.explorer.operations.formats"
   );
+  const comparable = analysis.exportReliability.filter(
+    (row) => row.failureRate !== null
+  );
+  const other = analysis.exportReliability.filter(
+    (row) => row.failureRate === null
+  );
+  const maximum = Math.max(
+    1,
+    ...comparable.map((row) => row.successes + row.failures)
+  );
+  const formatLabel = (
+    row: ProductActivityAnalysis["exportReliability"][number]
+  ) =>
+    row.legacy
+      ? t("legacy")
+      : formats.has(row.format)
+        ? formats(row.format)
+        : t("unknownFormat");
+  if (!analysis.exportReliability.length)
+    return <p className="text-muted-foreground text-sm">{t("empty")}</p>;
   return (
     <div className="space-y-4">
-      {analysis.exportReliability.length > 0 ? (
-        <MetricDetails>{t("exportNote")}</MetricDetails>
-      ) : null}
-      {analysis.exportReliability.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t("empty")}</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[35rem] text-sm">
-            <thead>
-              <tr className="border-b text-left">
-                {["format", "successes", "failures", "failureRate"].map(
-                  (key) => (
-                    <th scope="col" key={key} className="px-3 py-2 first:pl-0">
-                      {t(key)}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {analysis.exportReliability.map((row) => (
-                <tr
-                  key={`${row.legacy}:${row.format}`}
-                  className="border-b last:border-0"
-                >
-                  <th scope="row" className="py-3 text-left font-medium">
-                    {row.legacy
-                      ? t("legacy")
-                      : formats.has(row.format)
-                        ? formats(row.format)
-                        : t("unknownFormat")}
-                  </th>
-                  <td className="px-3 tabular-nums">{number(row.successes)}</td>
-                  <td className="px-3 tabular-nums">{number(row.failures)}</td>
-                  <td className="px-3 py-3 tabular-nums">
-                    {row.failureRate === null
-                      ? "—"
-                      : rate(row.failures, row.successes + row.failures)}
-                    {row.failureRate !== null &&
-                    row.successes + row.failures < 30 ? (
-                      <p className="text-muted-foreground text-xs">
-                        {t("limited")}
-                      </p>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-xs">
+        <span className="flex items-center gap-2">
+          <span
+            className="size-2 rounded-full bg-emerald-500"
+            aria-hidden="true"
+          />
+          {t("successes")}
+        </span>
+        <span className="flex items-center gap-2">
+          <span
+            className="size-2 rounded-full bg-rose-500"
+            aria-hidden="true"
+          />
+          {t("failures")}
+        </span>
+      </div>
+      <ul className="space-y-5">
+        {comparable.map((row) => (
+          <li key={row.format}>
+            <figure className="space-y-2">
+              <figcaption className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                <span className="font-medium">{formatLabel(row)}</span>
+                <span className="tabular-nums">
+                  {t("failureRate")}:{" "}
+                  <span>
+                    {rate(row.failures, row.successes + row.failures)}
+                  </span>
+                </span>
+              </figcaption>
+              <div
+                className="bg-muted flex h-4 overflow-hidden rounded-sm"
+                aria-hidden="true"
+              >
+                <div
+                  className="bg-emerald-500"
+                  style={{ width: `${(row.successes / maximum) * 100}%` }}
+                />
+                <div
+                  className="bg-rose-500"
+                  style={{ width: `${(row.failures / maximum) * 100}%` }}
+                />
+              </div>
+              <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-xs tabular-nums">
+                <span>
+                  {t("successes")}: {number(row.successes)}
+                </span>
+                <span>
+                  {t("failures")}: {number(row.failures)}
+                </span>
+                {row.successes + row.failures < 30 ? (
+                  <span>{t("limited")}</span>
+                ) : null}
+              </div>
+            </figure>
+          </li>
+        ))}
+        {other.map((row) => (
+          <li
+            key={`${row.legacy}:${row.format}`}
+            className="flex flex-wrap items-baseline justify-between gap-2 border-t pt-3 text-sm"
+          >
+            <span className="font-medium">{formatLabel(row)}</span>
+            <span className="text-muted-foreground text-xs">
+              {t("failureRate")}: <span>—</span>
+            </span>
+            <div className="text-muted-foreground flex w-full gap-5 text-xs tabular-nums">
+              <span>
+                {t("successes")}: <span>{number(row.successes)}</span>
+              </span>
+              <span>
+                {t("failures")}: <span>{number(row.failures)}</span>
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -987,14 +987,12 @@
       "exports": "Completed exports",
       "views": "Share and embed views",
       "empty": "No recorded activity in this period.",
-      "weeksNote": "UTC weeks, Monday to Sunday. Edge weeks and incomplete history contain partial counts; they are not directly comparable to full weeks. Views and exports count recorded events, not unique people.",
       "weeklyTable": "View weekly counts and coverage",
       "week": "Period (UTC)",
       "coverage": "Coverage",
       "unavailable": "Unavailable",
       "complete": "Complete week",
       "partial": "Partial week / history",
-      "journeyNote": "Sessions are grouped by their start week. Each step must occur after the preceding step in the same session and before the selected period ends. Results are exports, share creation, or gallery publication. Missing next steps show observed non-progression, not its cause; recent sessions may still complete later.",
       "step": "Step",
       "continued": "Continued",
       "notContinued": "No next step observed",
@@ -1007,7 +1005,6 @@
       "edited": "Edited",
       "result": "Result after editing",
       "conversion": "Start → result",
-      "timingNote": "Elapsed time from the recorded editor start to its first subsequent export, share creation, or gallery publication in the same session. Only results observed before the selected period ends are included. This includes idle time and is not rendering speed; it does not require a preceding edit.",
       "median": "Median time",
       "p75": "75% completed within",
       "completedSessions": "Sessions with a result",
@@ -1015,15 +1012,13 @@
       "seconds": "{value} sec",
       "withoutResult": "Without a result: {count} (excluded)",
       "noResults": "No completed sessions to calculate a duration.",
-      "exportNote": "Recorded terminal attempts: failures divided by successes plus failures for the same format. Format-level rates use version 1.1.0 events only, where both outcomes are tracked. Retries count as separate attempts. Earlier events remain separate because their failures have no format. Missing events and unfinished attempts are not measured.",
       "format": "Format",
       "successes": "Successful",
       "failures": "Failed",
       "failureRate": "Failure rate",
       "legacy": "Earlier events (all formats)",
       "unknownFormat": "Unknown format"
-    },
-    "aboutNumbers": "About these numbers"
+    }
   },
   "users": {
     "filters": {

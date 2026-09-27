@@ -52,8 +52,8 @@ describe("product analysis", () => {
     render(<JourneyDropoff analysis={analysis} />);
     expect(screen.getByText("20 of 40")).toBeTruthy();
     expect(screen.getByText("5 of 20")).toBeTruthy();
-    expect(screen.getByText("50%")).toBeTruthy();
-    expect(screen.getByText("75%")).toBeTruthy();
+    expect(screen.getByText("Drop-off: 50%")).toBeTruthy();
+    expect(screen.getByText("Drop-off: 75%")).toBeTruthy();
     expect(screen.getAllByText("Limited sample (< 30)")).toHaveLength(1);
     await userEvent.click(screen.getByText("View progression by start week"));
     expect(screen.getByText("12.5%")).toBeTruthy();
@@ -94,14 +94,41 @@ describe("product analysis", () => {
     expect(
       screen.getByText("No completed sessions to calculate a duration.")
     ).toBeTruthy();
-    expect(screen.getAllByText("—")).toHaveLength(4);
+    expect(screen.getAllByText("—")).toHaveLength(2);
+    expect(screen.getAllByText("Drop-off: —")).toHaveLength(2);
+  });
+  it("compares export volumes on one scale without charting legacy outcomes", () => {
+    render(
+      <ExportReliability
+        analysis={{
+          ...analysis,
+          exportReliability: [
+            ...analysis.exportReliability,
+            {
+              format: "svg",
+              legacy: false,
+              successes: 80,
+              failures: 0,
+              failureRate: 0,
+            },
+          ],
+        }}
+      />
+    );
+    const figures = screen.getAllByRole("figure");
+    expect(figures).toHaveLength(2);
+    const png = figures.find((figure) => within(figure).queryByText("PNG"))!;
+    const segments = png.querySelectorAll<HTMLElement>("[aria-hidden] > div");
+    expect(segments[0].style.width).toBe("38.75%");
+    expect(segments[1].style.width).toBe("11.25%");
+    expect(screen.queryByText("About these numbers")).toBeNull();
   });
   it("keeps legacy events out of format failure rates", () => {
     render(<ExportReliability analysis={analysis} />);
     expect(screen.getByText("22.5%")).toBeTruthy();
     const legacy = screen
       .getByText("Earlier events (all formats)")
-      .closest("tr")!;
+      .closest("li")!;
     expect(within(legacy).getByText("—")).toBeTruthy();
     expect(within(legacy).getByText("10")).toBeTruthy();
     expect(within(legacy).getByText("2")).toBeTruthy();
