@@ -92,10 +92,10 @@ describe("track element visual specs", () => {
         diameterMeters: 0.055,
       },
       textures: {
-        left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
+        left: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
         right:
-          "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
-        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+          "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
+        top: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
       },
     });
     expect(getGateVisualSpec(championshipGate)).toMatchObject({
@@ -105,10 +105,10 @@ describe("track element visual specs", () => {
         top: { heightMeters: feetToMeters(2), color: "#202e5d" },
       },
       textures: {
-        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        left: "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
         right:
-          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
-        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        top: "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
       },
     });
   });
@@ -149,19 +149,19 @@ describe("track element visual specs", () => {
     expect(getGateVisualSpec(standardStartFinish)).toMatchObject({
       panels: { top: { color: "#8A181B" } },
       textures: {
-        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-red-50-percent.webp",
+        top: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-red-50-percent.webp",
       },
     });
     expect(getGateVisualSpec(championshipStartFinish)).toMatchObject({
       panels: { top: { color: "#8A181B" } },
       textures: {
-        top: "/assets/models/textures/multigp-obstacles/large-top-red-multigp.webp",
+        top: "https://obstacles.trackdraw.app/multigp/large-top-red-multigp.webp",
       },
     });
     expect(getGateVisualSpec(standardGate)).toMatchObject({
       panels: { top: { color: "#202e5d" } },
       textures: {
-        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+        top: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
       },
     });
   });
@@ -209,10 +209,10 @@ describe("track element visual specs", () => {
         top: { heightMeters: feetToMeters(2), color: "#202e5d" },
       },
       textures: {
-        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        left: "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
         right:
-          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
-        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        top: "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
       },
       topPanelPlacement: "lower-sections",
     });

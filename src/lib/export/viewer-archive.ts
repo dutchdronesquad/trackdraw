@@ -1,18 +1,28 @@
-import { createViewerArchive } from "@trackdraw/viewer/snapshot/archive";
+import { createAssetResolver } from "@trackdraw/viewer/assets/asset-url";
+import { createViewerArchiveWithCurrentAssets } from "@trackdraw/viewer/snapshot/archive";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import type { TrackDesign } from "@/lib/types";
 
-/** Only fetch known catalog paths from this app; the package verifies size/hash. */
+/** Capture current hosted catalog textures so the exported course works offline. */
 export async function buildViewerArchive(
   design: TrackDesign,
   fetchAsset: typeof fetch = fetch
 ) {
-  return createViewerArchive(toViewerDesignSnapshot(design), async (asset) => {
-    const response = await fetchAsset(asset.path, { credentials: "omit" });
-    if (!response.ok)
-      throw new Error(`Could not load course texture: ${asset.path}`);
-    return new Uint8Array(await response.arrayBuffer());
-  });
+  return createViewerArchiveWithCurrentAssets(
+    toViewerDesignSnapshot(design),
+    async (asset) => {
+      const response = await fetchAsset(createAssetResolver()(asset.path), {
+        credentials: "omit",
+      });
+      if (
+        !response.ok ||
+        response.headers.get("content-type")?.split(";")[0] !==
+          asset.contentType
+      )
+        throw new Error(`Could not load course texture: ${asset.path}`);
+      return new Uint8Array(await response.arrayBuffer());
+    }
+  );
 }
 
 export async function exportViewerArchive(
