@@ -1,18 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "timezone": "Europe/Amsterdam",
-  "schedule": ["before 6am every weekday"],
-  "rebaseWhen": "behind-base-branch",
-  "dependencyDashboard": true,
+  "extends": ["github>dutchdronesquad/.github:renovate-base"],
   "vulnerabilityAlerts": {
     "enabled": true
   },
   "osvVulnerabilityAlerts": true,
-  "labels": ["dependencies"],
   "lockFileMaintenance": {
     "enabled": false
   },
-  "commitMessagePrefix": "⬆️",
   "packageRules": [
     {
       "groupName": "Radix UI",
@@ -31,15 +26,8 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "addLabels": ["github_actions"],
-      "rangeStrategy": "pin",
       "extractVersion": "^(?<version>v\\d+\\.\\d+\\.\\d+)$",
       "versioning": "regex:^v(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d+))?$"
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
     },
     {
       "groupName": "npm dependencies",
