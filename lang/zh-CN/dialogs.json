@@ -313,6 +313,11 @@
         "descriptionFull": "可编辑备份，方便在 TrackDraw 中再次打开、分享或归档。",
         "descriptionShort": "可编辑备份，方便在 TrackDraw 中再次打开或归档。"
       },
+      "viewerSnapshot": {
+        "label": "查看器快照",
+        "descriptionFull": "将赛道和所需纹理打包为一个 ZIP 文件，以便使用兼容的外部查看器离线查看。",
+        "descriptionShort": "用于离线查看器集成的赛道和纹理。"
+      },
       "racePack": {
         "label": "布场清单",
         "descriptionFull": "比赛日布场交接 PDF，包含地图、物料、顺序和二维码。",
