@@ -607,8 +607,8 @@ function PeriodInsightState({
   const t = useTranslations("dashboard.metrics.explorer.period");
   if (!insights)
     return failed ? (
-      <p className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
-        <Info className="size-4" aria-hidden="true" />
+      <p className="text-muted-foreground flex min-h-24 w-full items-center justify-center gap-2 py-4 text-center text-sm">
+        <Info className="size-4 shrink-0" aria-hidden="true" />
         {t("temporarilyUnavailable")}
       </p>
     ) : (
