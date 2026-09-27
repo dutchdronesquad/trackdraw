@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: 🏗 Set up Node.js ${{ env.DEFAULT_NODE }}
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.DEFAULT_NODE }}
           cache: npm
@@ -27,5 +27,5 @@ jobs:
       - name: 🚀 Run Vitest with coverage
         run: npm run test:coverage
       - name: 📊 Upload Vitest coverage report
-        uses: davelosert/vitest-coverage-report-action@v2.13.0
+        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2.13.0
         if: always()
