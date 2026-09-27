@@ -313,6 +313,11 @@
         "descriptionFull": "Bearbeitbares Backup zum Wiederöffnen, Teilen oder Archivieren in TrackDraw.",
         "descriptionShort": "Bearbeitbares Backup zum Wiederöffnen oder Archivieren in TrackDraw."
       },
+      "viewerSnapshot": {
+        "label": "Viewer-Snapshot",
+        "descriptionFull": "Track und benötigte Texturen in einer ZIP-Datei zur Offline-Anzeige mit einem kompatiblen externen Viewer.",
+        "descriptionShort": "Track und Texturen für Offline-Viewer-Integrationen."
+      },
       "racePack": {
         "label": "Race Pack",
         "descriptionFull": "Aufbau-Übergabe für den Renntag mit Karte, Material, Ablauf und QR.",

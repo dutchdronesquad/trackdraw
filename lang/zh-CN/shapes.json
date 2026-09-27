@@ -58,6 +58,10 @@
       "name": "MultiGP 锦标赛穿越门 7x6",
       "size": "7 英尺 × 6 英尺"
     },
+    "racegow-gate": {
+      "name": "RaceGOW 穿越门",
+      "size": "24 英寸 × 24 英寸"
+    },
     "trackdraw-generic-tower": {
       "name": "TrackDraw 日字门",
       "size": "2 × 2 米，抬高"

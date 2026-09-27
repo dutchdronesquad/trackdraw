@@ -313,6 +313,11 @@
         "descriptionFull": "Bewerkbare back-up voor heropening, delen of archivering in TrackDraw.",
         "descriptionShort": "Bewerkbare back-up voor heropening of archivering in TrackDraw."
       },
+      "viewerSnapshot": {
+        "label": "Viewer-snapshot",
+        "descriptionFull": "Track en benodigde texturen in één ZIP-bestand voor offline weergave met een compatibele externe viewer.",
+        "descriptionShort": "Track en texturen voor offline viewerintegraties."
+      },
       "racePack": {
         "label": "Race Pack",
         "descriptionFull": "Wedstrijdoverdracht met kaart, materialen, volgorde en QR.",
