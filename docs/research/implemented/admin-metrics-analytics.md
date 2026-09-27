@@ -214,7 +214,6 @@ The server increments one daily counter per published share and hostname. These 
 
 Do not merge historical Cloudflare HTTP Analytics into these counters automatically. Cloudflare may provide a short, plan-dependent window grouped by embed path and referrer hostname, but those sampled request totals are not equivalent to TrackDraw's browser-session-deduplicated counts. Any one-off historical reconstruction must remain visibly labelled as an estimate and separate from first-party aggregates.
 
-
 ## Dashboard period selection
 
 The shared date selector controls user growth, localization demand, editor usage, exports, share viewing, thresholded embed reach, and content growth. Usage sections display the effective complete UTC days; the current incomplete UTC day is excluded. Comparisons use the immediately preceding equally long period and stay unavailable when its history is incomplete. Raw-event breakdowns respect the 180-day retention boundary, while embed-hostname aggregates respect 90 days. Coverage begins conservatively after the earliest observed day, subject to retention; it does not prove that collection had no outages. A missing or out-of-coverage period must not be presented as measured zero activity. Available partial counts are explicitly labelled.
@@ -222,7 +221,6 @@ The shared date selector controls user growth, localization demand, editor usage
 Content growth counts creation dates of currently stored projects, signed-in shares, and presets; it is not an immutable creation ledger and excludes deleted records. Share/gallery health represents the current state. Core product metrics, acquisition, feature adoption, retention, and reliability keep their contract-defined fixed windows and are labelled independently of the selector. Fixed raw-event API-key usage remains a 30-day operational measurement, outside these selectable views.
 
 Changing the selection reloads the affected data through server actions requiring `admin.metrics.read`. Loading and retryable error states replace stale results, and responses for superseded selections cannot overwrite the displayed period. Measurement collection, retention policies, and public data access are unchanged.
-
 
 ## Selected-period product analysis
 

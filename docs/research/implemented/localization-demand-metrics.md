@@ -2,15 +2,15 @@
 
 ## Contract status
 
-| Field       | Value                                    |
-| ----------- | ---------------------------------------- |
-| Contract ID | `trackdraw-localization-demand`          |
-| Version     | `1.0.0`                                  |
-| Metric ID   | `L10N-001`                               |
-| Owner       | Product                                  |
-| Purpose     | Prioritize supported interface languages |
-| Window      | Selected complete UTC days (dashboard range)                |
-| Retention   | At most 24 months                        |
+| Field       | Value                                        |
+| ----------- | -------------------------------------------- |
+| Contract ID | `trackdraw-localization-demand`              |
+| Version     | `1.0.0`                                      |
+| Metric ID   | `L10N-001`                                   |
+| Owner       | Product                                      |
+| Purpose     | Prioritize supported interface languages     |
+| Window      | Selected complete UTC days (dashboard range) |
+| Retention   | At most 24 months                            |
 
 This contract is separate from the versioned product-event contract. It never adds geographic or language properties to `product_events` and must not be joined to product-event, account, project, share, audit, or security data.
 
