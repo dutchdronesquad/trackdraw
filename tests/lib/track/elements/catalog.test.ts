@@ -17,6 +17,7 @@ import {
   MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
   MULTIGP_TOWER_5X5_ELEMENT_ID,
   MULTIGP_TOWER_7X6_ELEMENT_ID,
+  RACEGOW_GATE_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
@@ -41,7 +42,62 @@ describe("track element catalog", () => {
       TRACKDRAW_GATE_ELEMENT_ID,
       MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
       MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+      RACEGOW_GATE_ELEMENT_ID,
     ]);
+  });
+
+  it("documents the official RaceGOW gate with its source and PVC visual", () => {
+    const entry = getTrackElementCatalogEntry(RACEGOW_GATE_ELEMENT_ID);
+
+    expect(entry).toMatchObject({
+      name: "RaceGOW Gate",
+      organization: "RaceGOW",
+      kind: "gate",
+      official: true,
+      editable: { color: true, dimensions: true },
+      dimensions: {
+        display: { unitSystem: "imperial", label: "24 in x 24 in" },
+      },
+      tags: expect.arrayContaining(["racegow", "whoop"]),
+      render3d: { modelHint: "pvc-set-gate" },
+      visual: {
+        kind: "gate",
+        variant: "pvc-set",
+        frame: { material: "pvc", diameterMeters: 0.0213 },
+      },
+      exportHints: { simulatorFriendly: false },
+    });
+    expect(entry?.dimensions.widthMeters).toBeCloseTo(0.6096);
+    expect(entry?.dimensions.heightMeters).toBeCloseTo(0.6096);
+    expect(entry?.sources).toEqual([
+      {
+        label: "RaceGOW Basic Concept",
+        url: "https://docs.google.com/document/d/1gVuj5Sy9m8SGn5isr9FQF6-FF4EzGyM9rJYqjwrTwJM/edit",
+      },
+      { label: "RaceGOW", url: "https://www.racegow.com/" },
+    ]);
+
+    const shape = createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+      x: 1,
+      y: 2,
+      includeCatalogMetadata: true,
+    });
+    expect(shape).toMatchObject({
+      kind: "gate",
+      width: 0.6096,
+      height: 0.6096,
+      thick: 0.0213,
+      color: "#f1f5f9",
+    });
+    expect(getTrackElementCatalogIdentity(shape.meta)).toMatchObject({
+      elementId: RACEGOW_GATE_ELEMENT_ID,
+      official: true,
+      snapshot: {
+        name: "RaceGOW Gate",
+        organization: "RaceGOW",
+        dimensionsLabel: "24 in x 24 in",
+      },
+    });
   });
 
   it("exposes ladder entries for placement controls", () => {

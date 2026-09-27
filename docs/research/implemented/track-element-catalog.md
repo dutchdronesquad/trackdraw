@@ -12,6 +12,7 @@ The catalog should start local and typed, not as a database. A database becomes 
 - [x] Show catalog identity, official size status, and fixed official dimensions for placed catalog-backed gates.
 - [x] Extend catalog-backed MultiGP entries to gates, ladders, and the 10 ft corner flag with texture-based 3D rendering.
 - [x] Add a barrier category with TrackDraw banner/fence/net entries and the official MultiGP Hurdle.
+- [x] Add the official RaceGOW Gate (24 in Tiny Whoop PVC gate) as a gate catalog entry with a PVC-style 2D and 3D representation.
 
 ## Reference Observations
 
@@ -24,6 +25,8 @@ External references to retain while designing this:
 - TrackForge public app: `https://trackforge.racing/`
 - MultiGP Standard 5 ft x 5 ft gate reference: `https://shop.multigp.com/product/standard-multigp-gate-5x5/`
 - MultiGP Global Qualifier diagram example with 5 ft x 5 ft gates: `https://www.multigp.com/wp-content/uploads/2022/03/2022-MultiGP-GQ-track-official-diagram-imperial.pdf`
+- RaceGOW Basic Concept (24 in minimum gate size centre to centre, all gates the same size): `https://docs.google.com/document/d/1gVuj5Sy9m8SGn5isr9FQF6-FF4EzGyM9rJYqjwrTwJM/edit`
+- RaceGOW: `https://www.racegow.com/`
 
 ## Phase 1: Local Element Catalog Foundation
 
@@ -97,6 +100,8 @@ Status:
 - Users can place barriers as a separate catalog-backed category, including TrackDraw banner, fence, and net entries plus the official MultiGP Hurdle.
 - Newly placed official elements remain normal TrackDraw shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
 - Official sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw generic elements instead of modifying official catalog items.
+- Users can place the official RaceGOW Gate through the same Gate placement flow. It is a normal `gate` entry sized 24 in x 24 in (post centre to post centre, foot axis to top bar axis) with a `pvc-set` visual: white PVC tubes, elbow fittings at the top corners, and a cross foot under each post in 3D and flythrough, and an outlined bar with post and foot marks in 2D and SVG. Timing markers fill the opening with a translucent panel instead of recolouring the tubes. RaceGOW does not publish a pipe size, so the visual uses 1/2 in schedule 40 PVC (21.3 mm) as a sensible default.
+- The RaceGOW Gate is the one official entry whose size and color stay editable: RaceGOW only sets a 24 in minimum and requires every gate on a track to share one size. The inspector keeps width and height at or above 24 in and hides the frame thickness field. Shared-tube lattice builds, build handles, parts counts, and set-box validation are deferred to later work.
 - Newly placed gates and ladders default with their front facing downward on the canvas so the default orientation matches the editor's front/back guide expectation.
 
 ## MultiGP Texture Asset Flow

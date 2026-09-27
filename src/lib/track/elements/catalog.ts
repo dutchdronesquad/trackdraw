@@ -41,6 +41,9 @@ export const MULTIGP_DIVE_GATE_7X6_ELEMENT_ID = "multigp-dive-gate-7x6";
 export const MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID = "multigp-launch-gate-7x6";
 export const MULTIGP_HURDLE_ELEMENT_ID = "multigp-hurdle";
 
+// RaceGOW elements
+export const RACEGOW_GATE_ELEMENT_ID = "racegow-gate";
+
 export type TrackElementCatalogId =
   // TrackDraw
   | typeof TRACKDRAW_GATE_ELEMENT_ID
@@ -67,7 +70,9 @@ export type TrackElementCatalogId =
   | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID
   | typeof MULTIGP_DIVE_GATE_7X6_ELEMENT_ID
   | typeof MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID
-  | typeof MULTIGP_HURDLE_ELEMENT_ID;
+  | typeof MULTIGP_HURDLE_ELEMENT_ID
+  // RaceGOW
+  | typeof RACEGOW_GATE_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
@@ -151,7 +156,23 @@ export interface PanelFrameGateVisualSpec {
   textures: GatePanelTextureVisualSpec;
 }
 
-export type GateVisualSpec = FrameOnlyGateVisualSpec | PanelFrameGateVisualSpec;
+export interface PvcSetGateFittingVisualSpec {
+  color: string;
+  /** Distance from a fitting's centre to the face of its socket. */
+  centerToFaceMeters: number;
+  /** Socket sleeve radius relative to the pipe radius. */
+  sleeveRadiusFactor: number;
+}
+
+export interface PvcSetGateVisualSpec {
+  kind: "gate";
+  variant: "pvc-set";
+  frame: GateFrameVisualSpec;
+  fittings: PvcSetGateFittingVisualSpec;
+}
+
+export type GateVisualSpec =
+  FrameOnlyGateVisualSpec | PanelFrameGateVisualSpec | PvcSetGateVisualSpec;
 
 export interface CornerMarkerFlagVisualSpec {
   kind: "flag";
@@ -417,6 +438,31 @@ const panelFrameChampionshipGateVisual = {
   },
 } satisfies GateVisualSpec;
 
+/** RaceGOW minimum gate size (24 in, centre to centre). */
+export const RACEGOW_GATE_SIZE_METERS = 0.6096;
+// RaceGOW publishes the gate size but not the pipe. 1/2 in schedule 40 PVC
+// (0.840 in = 21.3 mm outer diameter) is the common build and is used here as
+// a sensible default, not an official number. The fitting centre-to-face
+// distance matches typical 1/2 in slip fittings.
+const RACEGOW_PVC_DIAMETER_METERS = 0.0213;
+const RACEGOW_PVC_COLOR = "#f1f5f9";
+
+const pvcSetGateVisual = {
+  kind: "gate",
+  variant: "pvc-set",
+  frame: {
+    placement: "opening",
+    material: "pvc",
+    color: RACEGOW_PVC_COLOR,
+    diameterMeters: RACEGOW_PVC_DIAMETER_METERS,
+  },
+  fittings: {
+    color: "#dfe4ea",
+    centerToFaceMeters: 0.0286,
+    sleeveRadiusFactor: 1.55,
+  },
+} satisfies GateVisualSpec;
+
 const panelFrameTowerVisual = {
   kind: "tower",
   variant: "panel-frame",
@@ -519,6 +565,43 @@ export const trackElementCatalog = [
     render3d: { modelHint: "gate-frame" },
     visual: panelFrameChampionshipGateVisual,
     exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: RACEGOW_GATE_ELEMENT_ID,
+    name: "RaceGOW Gate",
+    organization: "RaceGOW",
+    kind: "gate",
+    official: true,
+    // RaceGOW sets a 24 in minimum and allows larger gates as long as every
+    // gate on the track is the same size, so the size stays editable.
+    editable: { color: true, dimensions: true },
+    dimensions: {
+      widthMeters: RACEGOW_GATE_SIZE_METERS,
+      heightMeters: RACEGOW_GATE_SIZE_METERS,
+      display: { unitSystem: "imperial", label: "24 in x 24 in" },
+    },
+    defaultShape: {
+      ...frameOnlyGateDefaults,
+      width: RACEGOW_GATE_SIZE_METERS,
+      height: RACEGOW_GATE_SIZE_METERS,
+      thick: RACEGOW_PVC_DIAMETER_METERS,
+      color: RACEGOW_PVC_COLOR,
+    },
+    tags: ["race", "practice", "racegow", "whoop"],
+    sources: [
+      {
+        label: "RaceGOW Basic Concept",
+        url: "https://docs.google.com/document/d/1gVuj5Sy9m8SGn5isr9FQF6-FF4EzGyM9rJYqjwrTwJM/edit",
+      },
+      {
+        label: "RaceGOW",
+        url: "https://www.racegow.com/",
+      },
+    ],
+    render2d: { icon: "gate" },
+    render3d: { modelHint: "pvc-set-gate" },
+    visual: pvcSetGateVisual,
+    exportHints: { simulatorFriendly: false },
   },
   {
     id: TRACKDRAW_TOWER_ELEMENT_ID,

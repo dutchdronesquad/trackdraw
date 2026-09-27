@@ -8,6 +8,7 @@ import { SingleInspectorView } from "@/components/inspector/views/single-shape";
 import {
   createCatalogShapeDraft,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  RACEGOW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type { GateShape, Shape, StartFinishShape } from "@/lib/types";
 
@@ -245,6 +246,25 @@ describe("SingleInspectorView race timing controls", () => {
     expect(screen.queryByText("Color")).toBeNull();
     expect(screen.queryByText(/^Width/)).toBeNull();
     expect(screen.queryByText(/^Height/)).toBeNull();
+    expect(screen.queryByText(/^Thickness/)).toBeNull();
+  });
+
+  it("keeps the RaceGOW gate size and color editable without a thickness field", () => {
+    const raceGowGate = {
+      ...createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }),
+      id: "gate-racegow",
+    } as GateShape;
+
+    renderSingleInspector(raceGowGate);
+
+    expect(screen.getByText("RaceGOW Gate")).toBeTruthy();
+    expect(screen.getByText("Color")).toBeTruthy();
+    expect(screen.getByText(/^Width/)).toBeTruthy();
+    expect(screen.getByText(/^Height/)).toBeTruthy();
     expect(screen.queryByText(/^Thickness/)).toBeNull();
   });
 

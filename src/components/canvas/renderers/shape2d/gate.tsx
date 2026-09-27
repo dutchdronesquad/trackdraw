@@ -1,6 +1,6 @@
 "use client";
 
-import { Rect } from "react-konva";
+import { Circle, Line, Rect } from "react-konva";
 import { getGate2DShape } from "@/lib/track/shape2d";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import { m2px } from "@/lib/track/units";
@@ -13,6 +13,86 @@ export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
   const { radius, width } = base;
   const barHeight = Math.max(base.depth, 7);
   const selectionPad = m2px(0.3, ppm);
+
+  if (base.variant === "pvc-set") {
+    const tube = Math.max(base.depth, 3);
+    const postRadius = Math.max(base.fittings.sleeveDiameter / 2, tube * 0.75);
+    const footSpan = Math.max(base.fittings.footSpan, tube * 3.2);
+    const strokeColor = marker ? color : base.outlineColor;
+    const strokeWidth = marker ? 2 : 1;
+
+    return (
+      <>
+        {selected && (
+          <Rect
+            width={width + selectionPad}
+            height={barHeight + selectionPad}
+            offsetX={(width + selectionPad) / 2}
+            offsetY={(barHeight + selectionPad) / 2}
+            stroke="#60a5fa"
+            strokeWidth={1}
+            opacity={0.85}
+            cornerRadius={2}
+            listening={false}
+          />
+        )}
+        {/* Keeps the same hit area as the other gates around the thin tube. */}
+        <Rect
+          width={width}
+          height={barHeight}
+          offsetX={width / 2}
+          offsetY={barHeight / 2}
+          fill="transparent"
+          strokeEnabled={false}
+        />
+        {[-width / 2, width / 2].map((x) => (
+          <Line
+            key={`foot-${x}`}
+            points={[
+              x - footSpan / 2,
+              0,
+              x + footSpan / 2,
+              0,
+              x,
+              0,
+              x,
+              -footSpan / 2,
+              x,
+              footSpan / 2,
+            ]}
+            stroke={base.outlineColor}
+            strokeWidth={Math.max(1, tube * 0.45)}
+            lineCap="round"
+            lineJoin="round"
+            opacity={0.9}
+            listening={false}
+          />
+        ))}
+        <Rect
+          width={width}
+          height={tube}
+          offsetX={width / 2}
+          offsetY={tube / 2}
+          fill={base.color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          cornerRadius={tube / 2}
+          listening={false}
+        />
+        {[-width / 2, width / 2].map((x) => (
+          <Circle
+            key={`post-${x}`}
+            x={x}
+            radius={postRadius}
+            fill={base.fittings.color}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            listening={false}
+          />
+        ))}
+      </>
+    );
+  }
 
   if (base.variant === "panel-frame") {
     const centerWidth = base.openingWidth;

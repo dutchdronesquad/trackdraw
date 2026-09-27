@@ -58,6 +58,10 @@
       "name": "MultiGP Championship Gate 7x6",
       "size": "7 ft x 6 ft"
     },
+    "racegow-gate": {
+      "name": "RaceGOW Gate",
+      "size": "24 in x 24 in"
+    },
     "trackdraw-generic-tower": {
       "name": "TrackDraw Tower",
       "size": "2 x 2 m, elevated"

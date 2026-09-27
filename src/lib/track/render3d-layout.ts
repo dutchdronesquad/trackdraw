@@ -5,6 +5,7 @@ import type {
   PanelFrameGateVisualSpec,
   PanelFrameLadderVisualSpec,
   PanelTexturePlacementSpec,
+  PvcSetGateVisualSpec,
   TextureOrientationSpec,
   TexturePanelEdge,
 } from "@/lib/track/elements/catalog";
@@ -302,6 +303,201 @@ export function getPanelFrameGateLayout(
     w,
   };
 }
+
+export type PvcSetGate3DAxis = "x" | "y" | "z";
+
+export interface PvcSetGate3DCylinder {
+  key: string;
+  center: Point3Tuple;
+  /** three.js axis the cylinder runs along. */
+  axis: PvcSetGate3DAxis;
+  length: number;
+  radius: number;
+  /** Vertical squash of a horizontal cylinder (1 = round). */
+  flatten: number;
+}
+
+export interface PvcSetGate3DHub {
+  key: string;
+  center: Point3Tuple;
+  radius: number;
+  flatten: number;
+}
+
+export interface PvcSetGate3DParts {
+  pipeRadius: number;
+  tubes: PvcSetGate3DCylinder[];
+  sleeves: PvcSetGate3DCylinder[];
+  hubs: PvcSetGate3DHub[];
+  opening: { center: Point3Tuple; width: number; height: number };
+  /** Height of the top bar axis above the ground. */
+  topY: number;
+  /** Middle of the opening, used as the route target. */
+  openingMidY: number;
+}
+
+/** Cross feet read as a chunkier, slightly flattened "+" fitting on the floor. */
+export const PVC_SET_FOOT_RADIUS_FACTOR = 1.7;
+export const PVC_SET_FOOT_FLATTEN = 0.8;
+const PVC_SET_HUB_RADIUS_FACTOR = 1.06;
+
+/**
+ * Renderer-neutral construction of a fixed PVC arch gate (two posts and a top
+ * bar), shared by the live 3D preview and the flythrough export. Tubes stop at
+ * the socket face of each fitting; fittings are a hub plus one socket sleeve
+ * per occupied direction. Each post stands on a cross foot whose centre rests
+ * one flattened radius above the ground, and the gate size is measured from
+ * that foot axis to the top bar axis, post centre to post centre.
+ */
+export function getPvcSetGate3DParts(
+  shape: Pick<GateShape, "width" | "height">,
+  visual: PvcSetGateVisualSpec
+): PvcSetGate3DParts {
+  const w = shape.width;
+  const h = shape.height;
+  const pipeRadius = visual.frame.diameterMeters / 2;
+  const sleeveRadius = pipeRadius * visual.fittings.sleeveRadiusFactor;
+  const footRadius = pipeRadius * PVC_SET_FOOT_RADIUS_FACTOR;
+  const reach = visual.fittings.centerToFaceMeters;
+  const footY = footRadius * PVC_SET_FOOT_FLATTEN;
+  const topY = footY + h;
+
+  const tubes: PvcSetGate3DCylinder[] = [];
+  const sleeves: PvcSetGate3DCylinder[] = [];
+  const hubs: PvcSetGate3DHub[] = [];
+
+  for (const side of [-1, 1] as const) {
+    const x = (side * w) / 2;
+    const name = side < 0 ? "left" : "right";
+
+    hubs.push({
+      key: `foot-hub-${name}`,
+      center: [x, footY, 0],
+      radius: footRadius * PVC_SET_HUB_RADIUS_FACTOR,
+      flatten: PVC_SET_FOOT_FLATTEN,
+    });
+    for (const [axis, sign] of [
+      ["x", 1],
+      ["x", -1],
+      ["z", 1],
+      ["z", -1],
+    ] as const) {
+      sleeves.push({
+        key: `foot-sleeve-${name}-${axis}${sign}`,
+        center:
+          axis === "x"
+            ? [x + (sign * reach) / 2, footY, 0]
+            : [x, footY, (sign * reach) / 2],
+        axis,
+        length: reach,
+        radius: footRadius,
+        flatten: PVC_SET_FOOT_FLATTEN,
+      });
+    }
+    sleeves.push({
+      key: `foot-sleeve-${name}-up`,
+      center: [x, footY + reach / 2, 0],
+      axis: "y",
+      length: reach,
+      radius: sleeveRadius,
+      flatten: 1,
+    });
+
+    hubs.push({
+      key: `elbow-hub-${name}`,
+      center: [x, topY, 0],
+      radius: sleeveRadius * PVC_SET_HUB_RADIUS_FACTOR,
+      flatten: 1,
+    });
+    sleeves.push({
+      key: `elbow-sleeve-${name}-down`,
+      center: [x, topY - reach / 2, 0],
+      axis: "y",
+      length: reach,
+      radius: sleeveRadius,
+      flatten: 1,
+    });
+    sleeves.push({
+      key: `elbow-sleeve-${name}-in`,
+      center: [x - (side * reach) / 2, topY, 0],
+      axis: "x",
+      length: reach,
+      radius: sleeveRadius,
+      flatten: 1,
+    });
+
+    const postLength = h - 2 * reach;
+    if (postLength > 0) {
+      tubes.push({
+        key: `post-${name}`,
+        center: [x, footY + h / 2, 0],
+        axis: "y",
+        length: postLength,
+        radius: pipeRadius,
+        flatten: 1,
+      });
+    }
+  }
+
+  const barLength = w - 2 * reach;
+  if (barLength > 0) {
+    tubes.push({
+      key: "top-bar",
+      center: [0, topY, 0],
+      axis: "x",
+      length: barLength,
+      radius: pipeRadius,
+      flatten: 1,
+    });
+  }
+
+  const openingTop = topY - pipeRadius;
+  const openingHeight = Math.max(0, openingTop - footY);
+  return {
+    pipeRadius,
+    tubes,
+    sleeves,
+    hubs,
+    opening: {
+      center: [0, footY + openingHeight / 2, 0],
+      width: Math.max(0, w - 2 * pipeRadius),
+      height: openingHeight,
+    },
+    topY,
+    openingMidY: footY + h / 2,
+  };
+}
+
+/**
+ * Rotation and scale that turn a unit cylinder (radius 1, height 1, along Y)
+ * into the given part. Flattening squashes the world-vertical extent.
+ */
+export function getPvcSetGateCylinderTransform(
+  cylinder: PvcSetGate3DCylinder
+): { rotation: Point3Tuple; scale: Point3Tuple } {
+  const { axis, length, radius, flatten } = cylinder;
+  switch (axis) {
+    case "x":
+      // Rotated about Z, the cylinder's local X points world up.
+      return {
+        rotation: [0, 0, Math.PI / 2],
+        scale: [radius * flatten, length, radius],
+      };
+    case "z":
+      // Rotated about X, the cylinder's local Z points world down.
+      return {
+        rotation: [Math.PI / 2, 0, 0],
+        scale: [radius, length, radius * flatten],
+      };
+    default:
+      return { rotation: [0, 0, 0], scale: [radius, length, radius] };
+  }
+}
+
+/** Matte PVC surface shared by the 3D preview and the flythrough export. */
+export const PVC_SET_ROUGHNESS = 0.45;
+export const PVC_SET_METALNESS = 0.05;
+export const PVC_SET_MARKER_OPACITY = 0.35;
 
 export function getPanelFrameLadderLayout(
   shape: LadderShape,

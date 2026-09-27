@@ -5,6 +5,7 @@ import {
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
+  RACEGOW_GATE_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import { getPanelFrameLadderLayout } from "@/lib/track/render3d-layout";
@@ -31,6 +32,31 @@ describe("track element visual specs", () => {
         material: "tube",
       },
     });
+  });
+
+  it("resolves the RaceGOW gate to the PVC set visual, also as start/finish", () => {
+    const shape = createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }) as GateShape;
+    const startFinish = {
+      ...shape,
+      meta: { ...shape.meta, timing: { role: "start_finish" } },
+    } as GateShape;
+    const expected = {
+      kind: "gate",
+      variant: "pvc-set",
+      frame: {
+        material: "pvc",
+        color: "#f1f5f9",
+        diameterMeters: 0.0213,
+      },
+      fittings: { centerToFaceMeters: 0.0286, sleeveRadiusFactor: 1.55 },
+    };
+
+    expect(getGateVisualSpec(shape)).toMatchObject(expected);
+    expect(getGateVisualSpec(startFinish)).toMatchObject(expected);
   });
 
   it("exposes catalog-backed MultiGP panel-frame dimensions", () => {

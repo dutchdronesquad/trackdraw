@@ -1,10 +1,19 @@
 import * as THREE from "three";
 import {
+  PVC_SET_MARKER_OPACITY,
+  PVC_SET_METALNESS,
+  PVC_SET_ROUGHNESS,
   getPanelFrameGateLayout,
+  getPvcSetGate3DParts,
+  getPvcSetGateCylinderTransform,
   resolvePanelFrameTextureMapping,
 } from "@/lib/track/render3d-layout";
 import { getGateVisualSpec } from "@/lib/track/elements/visual";
-import type { PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
+import type {
+  PanelFrameGateVisualSpec,
+  PvcSetGateVisualSpec,
+} from "@/lib/track/elements/catalog";
+import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import type { GateShape } from "@/lib/types";
 import {
   addBox,
@@ -152,6 +161,81 @@ async function createOfficialGateGroup(
   return group;
 }
 
+/** Fixed PVC arch gate with the same construction as the 3D preview. */
+function createPvcSetGateGroup(
+  shape: GateShape,
+  visual: PvcSetGateVisualSpec
+): THREE.Group {
+  const parts = getPvcSetGate3DParts(shape, visual);
+  const tubeMaterial = new THREE.MeshStandardMaterial({
+    color: shape.color ?? visual.frame.color,
+    roughness: PVC_SET_ROUGHNESS,
+    metalness: PVC_SET_METALNESS,
+  });
+  const fittingMaterial = new THREE.MeshStandardMaterial({
+    color: visual.fittings.color,
+    roughness: PVC_SET_ROUGHNESS + 0.05,
+    metalness: PVC_SET_METALNESS,
+  });
+  const cylinderGeometry = new THREE.CylinderGeometry(1, 1, 1, 16);
+  const sphereGeometry = new THREE.SphereGeometry(1, 16, 12);
+
+  const group = new THREE.Group();
+  group.position.set(shape.x, 0, shape.y);
+  group.rotation.y = getGateLadderYawRadians(shape.rotation);
+
+  const addCylinders = (
+    cylinders: typeof parts.tubes,
+    material: THREE.Material
+  ) => {
+    for (const cylinder of cylinders) {
+      const { rotation, scale } = getPvcSetGateCylinderTransform(cylinder);
+      const mesh = new THREE.Mesh(cylinderGeometry, material);
+      mesh.position.set(...cylinder.center);
+      mesh.rotation.set(...rotation);
+      mesh.scale.set(...scale);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    }
+  };
+  addCylinders(parts.tubes, tubeMaterial);
+  addCylinders(parts.sleeves, fittingMaterial);
+
+  for (const hub of parts.hubs) {
+    const mesh = new THREE.Mesh(sphereGeometry, fittingMaterial);
+    mesh.position.set(...hub.center);
+    mesh.scale.set(hub.radius, hub.radius * hub.flatten, hub.radius);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+
+  const marker = getShapeTimingMarker(shape);
+  if (marker) {
+    const markerColor = getTimingMarkerColor(marker);
+    const panel = new THREE.Mesh(
+      new THREE.PlaneGeometry(parts.opening.width, parts.opening.height),
+      new THREE.MeshStandardMaterial({
+        color: markerColor,
+        emissive: markerColor,
+        emissiveIntensity: 0.25,
+        transparent: true,
+        opacity: PVC_SET_MARKER_OPACITY,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        roughness: 0.6,
+        metalness: 0,
+      })
+    );
+    panel.position.set(...parts.opening.center);
+    panel.renderOrder = 2;
+    group.add(panel);
+  }
+
+  return group;
+}
+
 export async function addGateSceneShapes(
   shape: GateShape,
   scene: THREE.Scene
@@ -159,6 +243,10 @@ export async function addGateSceneShapes(
   const visual = getGateVisualSpec(shape);
   if (visual.variant === "panel-frame") {
     scene.add(await createOfficialGateGroup(shape, visual));
+    return;
+  }
+  if (visual.variant === "pvc-set") {
+    scene.add(createPvcSetGateGroup(shape, visual));
     return;
   }
 

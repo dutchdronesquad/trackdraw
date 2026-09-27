@@ -2,6 +2,12 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { designToSvg, exportSvg } from "@/lib/export/exportSvg";
+import { gateToSvg } from "@/lib/export/svg/gate";
+import {
+  createCatalogShapeDraft,
+  RACEGOW_GATE_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
+import type { GateShape } from "@/lib/types";
 import { normalizeDesign } from "@/lib/track/design";
 import { getObstacleNumberingReport } from "@/lib/track/obstacleNumbering";
 
@@ -245,6 +251,32 @@ describe("exportSvg", () => {
 
     expect(svg).toContain(`stroke="#f59e0b" stroke-width="3"`);
     expect(svg).not.toContain(`>SF</text>`);
+  });
+
+  it("renders the RaceGOW gate as an outlined PVC bar with posts and feet", () => {
+    const shape = {
+      ...createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+        x: 5,
+        y: 5,
+        includeCatalogMetadata: true,
+      }),
+      id: "racegow-1",
+    } as GateShape;
+
+    const svg = gateToSvg(shape, 50);
+
+    expect(svg).toContain(`fill="#f1f5f9" stroke="#475569"`);
+    expect(svg.match(/<circle /g)).toHaveLength(2);
+    expect(svg.match(/<path /g)).toHaveLength(2);
+
+    const startFinish = gateToSvg(
+      {
+        ...shape,
+        meta: { ...shape.meta, timing: { role: "start_finish" } },
+      } as GateShape,
+      50
+    );
+    expect(startFinish).toContain(`fill="#f1f5f9" stroke="#f59e0b"`);
   });
 
   it("downloads the rendered svg with the requested filename", () => {
