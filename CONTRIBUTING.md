@@ -280,6 +280,8 @@ Write for end users first:
 
 ## Viewer package integration
 
-The viewer lives in `dutchdronesquad/track-viewer` and is consumed through the exact Git commit in `package.json`/`package-lock.json`. Build and test a viewer change in that repository first; update both dependency files when adopting it here. Do not restore source aliases into the app.
+The viewer lives in `dutchdronesquad/track-viewer` and is consumed from npm as `@trackdraw/viewer`. Test and release changes in that repository before upgrading the dependency here. Do not restore source aliases into the app.
 
-For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `tests/lib/track/viewer-archive.test.ts`. The latter checks real committed catalog bytes and verifies that manual export and the REST adapter produce the same validated, directly renderable course. Manual viewer export is `.tdviewer.zip`; ordinary editable project JSON remains separate. Hosts use `viewerSnapshotFromApi` for the existing API envelope, or `readViewerArchive` for local files, and stage complete verified assets before replacing an event attachment.
+Obstacle artwork and maintenance scripts live in [dutchdronesquad/obstacles](https://github.com/dutchdronesquad/obstacles). TrackDraw and the viewer load stable URLs from `https://obstacles.trackdraw.app/multigp/`; updates publish automatically from that repository's default branch without asset version bumps. Geometry, dimensions and catalog identities remain in TrackDraw.
+
+For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `tests/lib/track/viewer-archive.test.ts`. Online hosts consume the existing JSON API using `viewerSnapshotFromApi`. Manual `.tdviewer.zip` export downloads the current textures and records their actual hashes and sizes before embedding them. Opening the completed archive remains fully offline; creating an export with branded textures requires network access. Ordinary editable project JSON remains separate.

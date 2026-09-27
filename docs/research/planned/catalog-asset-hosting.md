@@ -2,7 +2,7 @@
 
 **Original research:** September 17, 2026
 
-**Status:** Direction agreed (extract MultiGP textures into a dedicated hosted asset repository named `obstacles`, served from Cloudflare R2, operating on the good-faith basis in [Legal Basis](#legal-basis)). Not started; no repository, hosting, or code changes exist yet. Third-party contribution is an explicitly future-only extension, not committed.
+**Status:** Hosted assets and automatic publishing are live. TrackDraw and viewer integration use stable URLs without asset versions. Third-party contributions remain a future extension.
 
 ## Why This Exists
 
@@ -22,29 +22,18 @@ Home Assistant's [`home-assistant/brands`](https://github.com/home-assistant/bra
 
 Decided: **`obstacles`** (repository `dutchdronesquad/obstacles`), mirroring the short, one-word style of `home-assistant/brands` while matching existing naming already in this codebase (`multigp-obstacles/`, "MultiGP Obstacle Asset Workflow"). Rejected alternatives: `elements` (broader, would also cover non-obstacle catalog items such as flags/labels, but that breadth isn't needed today and reads more abstractly); `trackdraw-catalog-assets` (unambiguous but longer, and the `trackdraw-` prefix is redundant under the `dutchdronesquad` organization).
 
-## Recommended Direction
+## Implemented Direction
 
-Extract into a separate repository, structured per organization (starting with one: `multigp/`):
+Artwork, source models and maintenance scripts live in [dutchdronesquad/obstacles](https://github.com/dutchdronesquad/obstacles), organized per organization. Repository documentation explains attribution and rights separately from the MIT-licensed maintenance tools.
 
-- Migrate the existing MultiGP maintenance pipeline as a unit: `assets/multigp/multigp-obstacles.glb`, `scripts/extract_glb_textures.mjs`, `scripts/optimize_multigp_textures.mjs`, `docs/assets/multigp-obstacle-asset-workflow.md`, and the current runtime output in `public/assets/models/textures/multigp-obstacles/`. This is asset production/maintenance work for this specific third-party asset set, not TrackDraw application logic, so it belongs together in the new repository rather than split across both.
-- Carry over the same blanket disclaimer approach as Home Assistant: artwork/names belong to their respective owners, used for identification/compatibility purposes only, no endorsement implied, no rights claimed over the third-party content itself.
-- Tag releases so consumers pin an explicit version rather than tracking a moving branch.
+Cloudflare R2 serves stable URLs at `https://obstacles.trackdraw.app/multigp/<filename>.webp`. A push to the default branch publishes the assets automatically. There are no asset version tags, pinned copies or consumer bump steps. Responses use a five-minute cache lifetime and CORS for browser consumers.
 
-### Hosting: Cloudflare R2
+### Consumers
 
-Decided over jsDelivr-from-GitHub: serve from a Cloudflare R2 bucket behind a custom domain (candidate: `obstacles.trackdraw.app`, exact name open). Reasons:
-
-- TrackDraw already runs on Cloudflare (OpenNext, D1, R2 for gallery preview media per [AGENTS.md](../../../AGENTS.md#stack)) — no new vendor relationship, no new operational surface to learn.
-- Own domain instead of a third-party CDN URL; no dependency on jsDelivr's availability for a production feature.
-- R2 has no egress fees, and the total asset volume is trivial (668 KB across ~12 files today) — cost and scale are non-issues either way, so this is decided on control/consistency with the existing stack rather than price or capacity.
-
-### How Consumers Use It
-
-This does not change runtime behavior for the existing app, and does not make any offline consumer depend on a live network fetch:
-
-- **TrackDraw's own app (today's AGPL codebase):** vendor a pinned copy into `public/assets/models/textures/multigp-obstacles/` at asset-update time (a small sync step replacing the current in-repo extraction/optimization workflow as the day-to-day maintenance path). Runtime code (`catalog.ts`, `shared-scene.tsx`) is unchanged — it still loads local static files.
-- **`@trackdraw/viewer` (Apache-2.0, always-online hosts like FPVScores/DDS):** resolve these textures from the R2-served URL at render time by default, alongside the existing snapshot-first resolution (if a texture is already present in a course's own snapshot asset manifest, prefer that; otherwise fall back to the hosted catalog-asset URL). No MultiGP bytes ship inside the npm/static package itself.
-- **RotorHazard (fully offline):** unaffected by hosting choice. The browser-side manual export already needs these files available locally to build a `.tdviewer.zip`, exactly as decided in the [PVA's Phase 0 asset inventory](../../pva/track-viewer-package-pva.md#phase-0-confirm-distribution-fit) — it now sources them from the vendored copy described above instead of a repo-internal path, but the "bundle into the snapshot at export time" mechanism itself does not change.
+- **TrackDraw:** the catalog points at the hosted WebP URLs. Procedural geometry, dimensions, catalog identities and orientation remain app-owned. Artwork production is no longer duplicated in this repository.
+- **`@trackdraw/viewer`:** resolves catalog paths to the same host by default. Explicit asset resolvers still allow embedded or locally hosted textures. The npm package contains no obstacle artwork.
+- **Offline consumers:** a manual `.tdviewer.zip` export captures the current bytes, records their sizes and hashes, and embeds them. Exporting branded textures requires a connection; opening the completed archive does not. Existing archives retain their own textures even when hosted artwork changes.
+- **DDS:** stores the JSON viewer snapshot in private object storage and displays it with the npm viewer. The central API key stays on the server; browsers fetch textures directly from the asset host.
 
 ## Future Extensibility (Not Committed)
 
@@ -58,4 +47,4 @@ The per-organization folder structure and blanket disclaimer are deliberately ch
 ## Relationship To Other Documents
 
 - [Track Viewer Package research](../in-progress/track-viewer-package.md) and its [PVA](../../pva/track-viewer-package-pva.md) depend on the "MultiGP textures are source-restricted" decision made here holding; this document is where that decision's implementation is worked out in full, not restated there.
-- [`docs/assets/multigp-obstacle-asset-workflow.md`](../../assets/multigp-obstacle-asset-workflow.md) remains accurate today and should be migrated (not just referenced) into the new repository once it exists, then removed or replaced with a pointer from this repository.
+- [`docs/assets/multigp-obstacle-asset-workflow.md`](../../assets/multigp-obstacle-asset-workflow.md) now points to the maintained workflow in the obstacles repository.

@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import {
@@ -10,7 +9,7 @@ import { buildViewerArchive } from "@/lib/export/viewer-archive";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import {
   readViewerArchive,
-  createViewerArchive,
+  createViewerArchiveWithCurrentAssets,
 } from "@trackdraw/viewer/snapshot/archive";
 import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
 import { toApiViewerSnapshotPackage } from "@/lib/server/api-projects";
@@ -38,28 +37,36 @@ function designFixture() {
   };
 }
 
-const localAsset = async (path: string) =>
-  new Uint8Array(
-    await readFile(new URL(`../../../public${path}`, import.meta.url))
-  );
+// A minimal WebP fixture keeps export tests independent of third-party artwork.
+const texture = new Uint8Array(
+  Buffer.from(
+    "UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA",
+    "base64"
+  )
+);
 
 describe("viewer course export integration", () => {
   it("exports a complete offline course with the actual catalog texture bytes", async () => {
     const design = designFixture();
     const fetchAsset = vi.fn<typeof fetch>(
-      async (path) => new Response(await localAsset(String(path)))
+      async () =>
+        new Response(texture, { headers: { "content-type": "image/webp" } })
     );
     const archive = readViewerArchive(
       await buildViewerArchive(design, fetchAsset)
     );
     const props: TrackViewerProps = { design: archive.snapshot.design };
     expect(props.design.shapes).toHaveLength(2);
-    expect(archive.snapshot).toEqual(toViewerDesignSnapshot(design));
+    expect(archive.snapshot.design).toEqual(
+      toViewerDesignSnapshot(design).design
+    );
+    expect(archive.snapshot.snapshotId).not.toBe(
+      toViewerDesignSnapshot(design).snapshotId
+    );
     expect(archive.assets.size).toBe(1);
-    for (const [path, bytes] of archive.assets)
-      expect(bytes).toEqual(await localAsset(path));
+    for (const bytes of archive.assets.values()) expect(bytes).toEqual(texture);
     expect(fetchAsset).toHaveBeenCalledExactlyOnceWith(
-      "/assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp",
+      "https://obstacles.trackdraw.app/multigp/5x10-hurdle-multigp.webp",
       { credentials: "omit" }
     );
   });
@@ -84,12 +91,15 @@ describe("viewer course export integration", () => {
     );
     expect(apiSnapshot).toEqual(toViewerDesignSnapshot(design));
     expect(JSON.stringify(apiSnapshot)).not.toContain("private");
-    const bytes = await createViewerArchive(apiSnapshot, (asset) =>
-      localAsset(asset.path)
+    const bytes = await createViewerArchiveWithCurrentAssets(
+      apiSnapshot,
+      async () => texture
     );
-    expect(readViewerArchive(bytes).snapshot).toEqual(apiSnapshot);
+    expect(readViewerArchive(bytes).snapshot.design).toEqual(
+      apiSnapshot.design
+    );
   });
-  it("fails the whole export on missing or corrupt textures", async () => {
+  it("fails the whole export on missing textures or unexpected content types", async () => {
     const design = designFixture();
     await expect(
       buildViewerArchive(
@@ -102,6 +112,6 @@ describe("viewer course export integration", () => {
         design,
         vi.fn(async () => new Response("bad"))
       )
-    ).rejects.toThrow(/integrity/);
+    ).rejects.toThrow(/Could not load/);
   });
 });
