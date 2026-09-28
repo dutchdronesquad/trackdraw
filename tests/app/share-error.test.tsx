@@ -51,9 +51,7 @@ describe("ShareError", () => {
   it("renders the retired share guidance with rich steps and actions", async () => {
     render(await ShareError());
 
-    expect(
-      screen.getByText("This shared track link is no longer supported")
-    ).toBeTruthy();
+    expect(screen.getByText("This share link is outdated")).toBeTruthy();
     expect(screen.getByText("Studio").tagName).toBe("STRONG");
     expect(screen.getByText("JSON export").tagName).toBe("STRONG");
     expect(
