@@ -85,13 +85,29 @@ export function decodeDesignWithReason(
   return { ok: false, reason: "invalid" };
 }
 
-export function getShareTitle(design: TrackDesign) {
-  return design.title.trim() || "Untitled track";
+export type ShareTextFallbacks = {
+  untitledTitle: string;
+  formatDescription: (title: string) => string;
+};
+
+const DEFAULT_SHARE_TEXT_FALLBACKS: ShareTextFallbacks = {
+  untitledTitle: "Untitled track",
+  formatDescription: (title) => `Read-only TrackDraw plan for ${title}.`,
+};
+
+export function getShareTitle(
+  design: TrackDesign,
+  fallbacks: ShareTextFallbacks = DEFAULT_SHARE_TEXT_FALLBACKS
+) {
+  return design.title.trim() || fallbacks.untitledTitle;
 }
 
-export function getShareDescription(design: TrackDesign) {
+export function getShareDescription(
+  design: TrackDesign,
+  fallbacks: ShareTextFallbacks = DEFAULT_SHARE_TEXT_FALLBACKS
+) {
   const customDescription = design.description?.trim();
   if (customDescription) return customDescription;
 
-  return `Read-only TrackDraw plan for ${getShareTitle(design)}.`;
+  return fallbacks.formatDescription(getShareTitle(design, fallbacks));
 }

@@ -32,6 +32,10 @@
     "openView": "Open {view}",
     "makeEditableCopy": "Make editable copy"
   },
+  "fallback": {
+    "untitled": "Untitled track",
+    "readOnlyDescription": "Read-only TrackDraw plan for {title}."
+  },
   "metadata": {
     "title": "View Track",
     "description": "View this FPV race track designed with TrackDraw.",

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getShareDescription, getShareTitle } from "@/lib/share";
+import {
+  getShareDescription,
+  getShareTitle,
+  type ShareTextFallbacks,
+} from "@/lib/share";
 import {
   getGalleryEntryByShareToken,
   isPublicGalleryState,
@@ -53,6 +57,7 @@ export async function generateMetadata({
   params,
 }: ShareTokenLayoutProps): Promise<Metadata> {
   const t = await getTranslations("share.metadata");
+  const tFallback = await getTranslations("share.fallback");
   const { token } = await params;
   const resolvedShare = await resolveShareView(token);
 
@@ -96,12 +101,14 @@ export async function generateMetadata({
       : null;
   const isPublicGalleryShare = isPublicGalleryState(galleryEntry?.galleryState);
 
+  const shareTextFallbacks: ShareTextFallbacks = {
+    untitledTitle: tFallback("untitled"),
+    formatDescription: (title) => tFallback("readOnlyDescription", { title }),
+  };
   const title =
     isPublicGalleryShare && galleryEntry
       ? `${galleryEntry.galleryTitle} | FPV Drone Race Track`
-      : resolvedShare.source === "stored"
-        ? resolvedShare.title
-        : getShareTitle(design);
+      : getShareTitle(design, shareTextFallbacks);
   const description =
     isPublicGalleryShare && galleryEntry
       ? buildShareMetadataDescription({
@@ -110,9 +117,7 @@ export async function generateMetadata({
           fieldHeight: design.field.height,
           shapeCount: design.shapeOrder.length,
         })
-      : resolvedShare.source === "stored"
-        ? resolvedShare.description
-        : getShareDescription(design);
+      : getShareDescription(design, shareTextFallbacks);
   const encodedToken = encodeURIComponent(token);
   const socialImageUrl = isPublicGalleryShare
     ? resolveSocialImageUrl(galleryEntry?.galleryPreviewImage)
