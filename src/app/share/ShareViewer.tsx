@@ -12,12 +12,13 @@ import { parseEditorView, type EditorView } from "@/lib/editor/view";
 import { ArrowRight, Eye } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
 import { trackProductEvent } from "@/lib/product-events";
+import ShareViewerLoading from "./ShareViewerLoading";
 
 const EditorShell = dynamic(
   () => import("@/components/editor/viewer/EditorShell"),
   {
     ssr: false,
-    loading: () => <div className="h-dvh" />,
+    loading: () => <ShareViewerLoading />,
   }
 );
 
