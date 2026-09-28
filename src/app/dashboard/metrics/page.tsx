@@ -38,6 +38,7 @@ export default async function DashboardMetricsPage() {
     notFound();
   }
 
+  // oxlint-disable-next-line react/purity -- server component renders once per request
   const now = new Date();
   const [metrics, growthByRange, growthTimeline, cockpit, explorer] =
     await Promise.all([
