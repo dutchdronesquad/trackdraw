@@ -30,7 +30,8 @@
     "sharedByReadOnly": "Shared by {author}. Read-only, no edits are saved. Switch to {view} or make your own editable copy in Studio.",
     "readOnlyNoAuthor": "Read-only, no edits are saved. Switch to {view} or make your own editable copy in Studio.",
     "openView": "Open {view}",
-    "makeEditableCopy": "Make editable copy"
+    "makeEditableCopy": "Make editable copy",
+    "loading": "Loading shared track…"
   },
   "fallback": {
     "untitled": "Untitled track",

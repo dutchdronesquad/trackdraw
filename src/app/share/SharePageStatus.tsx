@@ -20,7 +20,7 @@ type SharePageStatusProps = {
   secondaryAction: SharePageStatusAction;
 };
 
-function TrackDrawLogo() {
+export function TrackDrawLogo() {
   return (
     <div className="inline-flex">
       <div className="relative h-8 w-34 dark:hidden">
