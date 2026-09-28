@@ -15,6 +15,7 @@ import { parseEditorView } from "@/lib/editor/view";
 import ShareViewer from "../ShareViewer";
 import ShareError from "../ShareError";
 import ShareExpired from "../ShareExpired";
+import ShareRevoked from "../ShareRevoked";
 
 type ShareTokenPageProps = {
   params: Promise<{
@@ -102,7 +103,7 @@ export default async function ShareTokenPage({
   }
 
   if (resolvedShare.status === "revoked") {
-    notFound();
+    return <ShareRevoked />;
   }
 
   if (resolvedShare.status === "retired") {
