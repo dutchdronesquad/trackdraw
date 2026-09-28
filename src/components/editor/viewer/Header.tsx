@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CircleHelp, Hash, Tag } from "lucide-react";
+import { CircleHelp, Hash, Share2, Tag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Tooltip,
@@ -21,6 +21,7 @@ interface HeaderProps {
   studioHref?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
+  onShare?: () => void;
   onFeedback: () => void;
 }
 
@@ -32,6 +33,7 @@ export default function Header({
   studioHref = "/studio",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
+  onShare,
   onFeedback,
 }: HeaderProps) {
   const t = useTranslations("editor");
@@ -147,6 +149,16 @@ export default function Header({
         {!embedMode ? (
           <>
             <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
+            {onShare ? (
+              <button
+                type="button"
+                onClick={onShare}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring hidden h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none lg:inline-flex"
+              >
+                <Share2 className="size-3.5" />
+                <span>{t("header.share")}</span>
+              </button>
+            ) : null}
             <Link
               href={studioHref}
               prefetch={false}

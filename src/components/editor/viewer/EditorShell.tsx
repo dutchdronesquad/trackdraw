@@ -164,6 +164,7 @@ export default function EditorShell({
             onToggleObstacleNumbers={() =>
               setShowObstacleNumbers((current) => !current)
             }
+            onShare={() => setShareOpen(true)}
             onFeedback={() => setFeedbackOpen(true)}
           />
 
