@@ -47,8 +47,8 @@ export default function ShareViewer({
       : tViewMode("canvas2dShort");
   const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}`;
   const shareTitle = getShareTitle(design, {
-    untitledTitle: tFallback("title"),
-    formatDescription: (title) => tFallback("description", { title }),
+    untitledTitle: tFallback("untitled"),
+    formatDescription: (title) => tFallback("readOnlyDescription", { title }),
   });
   const authorName = design.authorName?.trim();
   const introDescription = authorName

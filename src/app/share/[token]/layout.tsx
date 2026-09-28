@@ -102,8 +102,8 @@ export async function generateMetadata({
   const isPublicGalleryShare = isPublicGalleryState(galleryEntry?.galleryState);
 
   const shareTextFallbacks: ShareTextFallbacks = {
-    untitledTitle: tFallback("title"),
-    formatDescription: (title) => tFallback("description", { title }),
+    untitledTitle: tFallback("untitled"),
+    formatDescription: (title) => tFallback("readOnlyDescription", { title }),
   };
   const title =
     isPublicGalleryShare && galleryEntry
