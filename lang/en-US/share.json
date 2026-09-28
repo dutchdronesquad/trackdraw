@@ -18,6 +18,12 @@
     "step1": "Ask the sender to publish the track again, or send an account-published link for longer-lived read-only access.",
     "step2": "Ask for a JSON export if the layout needs a longer-lived handoff."
   },
+  "revoked": {
+    "heading": "This share link was revoked",
+    "description": "The owner of this track has revoked this share link, so it can no longer be opened. Ask them for a new link if you still need this layout.",
+    "step1": "Ask the owner to share the track again to get a new link.",
+    "step2": "Or ask them for a <strong>JSON export</strong>, which you can open in Studio with Import."
+  },
   "notFound": {
     "heading": "This shared track could not be opened",
     "description": "The share link may have been revoked by the owner, or it may be outdated, incomplete, or miscopied. Ask the sender to confirm the link is still active or publish a fresh link. If the track is very large, a JSON export is a more reliable alternative to a share link.",
@@ -42,6 +48,8 @@
     "description": "View this FPV race track designed with TrackDraw.",
     "expiredTitle": "Expired Track Share",
     "expiredDescription": "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+    "revokedTitle": "Revoked Track Share",
+    "revokedDescription": "The owner has revoked this TrackDraw share link. Ask them for a new link.",
     "retiredTitle": "Outdated Track Share",
     "retiredDescription": "This TrackDraw share link is outdated. Ask the sender to share the track again.",
     "embedTitle": "Track Embed",

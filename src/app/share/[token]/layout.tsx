@@ -72,6 +72,17 @@ export async function generateMetadata({
     };
   }
 
+  if (resolvedShare.status === "revoked") {
+    return {
+      title: t("revokedTitle"),
+      description: t("revokedDescription"),
+      robots: {
+        index: false,
+        follow: true,
+      },
+    };
+  }
+
   if (resolvedShare.status === "retired") {
     return {
       title: t("retiredTitle"),
