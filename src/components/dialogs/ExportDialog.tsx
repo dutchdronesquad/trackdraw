@@ -759,7 +759,7 @@ export default function ExportDialog({
     },
   ];
 
-  const dateStamp = formatDateStamp(new Date());
+  const [dateStamp] = useState(() => formatDateStamp(new Date()));
 
   const defaultFilenameStem = (formatId: ExportFormatId) => {
     switch (formatId) {

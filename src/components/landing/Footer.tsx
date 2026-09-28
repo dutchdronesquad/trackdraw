@@ -54,6 +54,8 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 import VersionTag from "@/components/VersionTag";
 
+const currentYear = new Date().getFullYear();
+
 export function Footer() {
   const t = useTranslations("landing");
   return (
@@ -246,7 +248,7 @@ export function Footer() {
         <div className="border-border text-muted-foreground flex flex-col items-center justify-between gap-3 border-t pt-6 text-sm sm:flex-row">
           <p>
             {t.rich("footer.copyright", {
-              year: new Date().getFullYear(),
+              year: currentYear,
               organization: (chunks) => (
                 <a
                   href="https://dutchdronesquad.nl"
