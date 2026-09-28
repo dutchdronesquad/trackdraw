@@ -33,6 +33,7 @@ export default function ShareViewer({
   initialTab?: EditorView;
 }) {
   const t = useTranslations("share.viewer");
+  const tFallback = useTranslations("share.fallback");
   const tViewMode = useTranslations("editor.viewModeSwitch");
   const replaceDesign = useEditor((s) => s.replaceDesign);
   const searchParams = useSearchParams();
@@ -45,7 +46,10 @@ export default function ShareViewer({
       ? tViewMode("preview3dShort")
       : tViewMode("canvas2dShort");
   const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}`;
-  const shareTitle = getShareTitle(design);
+  const shareTitle = getShareTitle(design, {
+    untitledTitle: tFallback("title"),
+    formatDescription: (title) => tFallback("description", { title }),
+  });
   const authorName = design.authorName?.trim();
   const introDescription = authorName
     ? t("sharedByReadOnly", { author: authorName, view: alternateViewLabel })

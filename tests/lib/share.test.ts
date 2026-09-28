@@ -116,6 +116,22 @@ describe("share helpers", () => {
     );
   });
 
+  it("uses provided localized fallbacks for untitled shares", () => {
+    const design = createDefaultDesign();
+    design.title = "";
+    design.description = "";
+    const fallbacks = {
+      untitledTitle: "Naamloze track",
+      formatDescription: (title: string) =>
+        `Alleen-lezen TrackDraw-plan voor ${title}.`,
+    };
+
+    expect(getShareTitle(design, fallbacks)).toBe("Naamloze track");
+    expect(getShareDescription(design, fallbacks)).toBe(
+      "Alleen-lezen TrackDraw-plan voor Naamloze track."
+    );
+  });
+
   it("treats default designs as share-safe and parses editor views", () => {
     const design = createDefaultDesign();
 
