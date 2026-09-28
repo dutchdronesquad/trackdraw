@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useEditor } from "@/store/editor";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
@@ -22,6 +22,36 @@ const EditorShell = dynamic(
   }
 );
 
+const INTRO_DISMISSED_STORAGE_PREFIX = "trackdraw.shareIntroDismissed:";
+
+function subscribeToStorage(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
+function readIntroDismissed(shareToken: string) {
+  try {
+    return (
+      window.localStorage.getItem(
+        `${INTRO_DISMISSED_STORAGE_PREFIX}${shareToken}`
+      ) === "1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function persistIntroDismissed(shareToken: string) {
+  try {
+    window.localStorage.setItem(
+      `${INTRO_DISMISSED_STORAGE_PREFIX}${shareToken}`,
+      "1"
+    );
+  } catch {
+    // Storage blocked; dismissal still applies for this visit.
+  }
+}
+
 export default function ShareViewer({
   design,
   shareToken,
@@ -39,7 +69,14 @@ export default function ShareViewer({
   const replaceDesign = useEditor((s) => s.replaceDesign);
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [introDismissed, setIntroDismissed] = useState(false);
+  const [dismissedThisVisit, setDismissedThisVisit] = useState(false);
+  // Server snapshot hides the intro so returning visitors never see it flash.
+  const storedIntroDismissed = useSyncExternalStore(
+    subscribeToStorage,
+    () => readIntroDismissed(shareToken),
+    () => true
+  );
+  const introDismissed = dismissedThisVisit || storedIntroDismissed;
   const currentView = parseEditorView(searchParams.get("view")) ?? initialTab;
   const alternateView = currentView === "3d" ? "2d" : "3d";
   const alternateViewLabel =
@@ -83,7 +120,10 @@ export default function ShareViewer({
             title={shareTitle}
             description={introDescription}
             dismissLabel={t("dismissIntro")}
-            onDismiss={() => setIntroDismissed(true)}
+            onDismiss={() => {
+              persistIntroDismissed(shareToken);
+              setDismissedThisVisit(true);
+            }}
             variant="subtle"
             action={
               <div className="flex flex-wrap items-center gap-2">
