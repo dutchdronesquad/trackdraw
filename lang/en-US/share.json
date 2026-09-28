@@ -4,12 +4,12 @@
   "whatToTry": "What To Try",
   "openStudio": "Open Studio",
   "error": {
-    "heading": "This shared track link is no longer supported",
-    "description": "TrackDraw now uses published share links instead of the older URL-embedded share format. This older link can no longer be opened directly.",
+    "heading": "This share link is outdated",
+    "description": "This link was made with an older version of TrackDraw and can no longer be opened.",
     "whatToDo": "What To Do",
-    "step1": "Ask the sender to publish a fresh share link from <strong>Studio</strong>.",
-    "step2": "If you still need an offline handoff, ask for a <strong>JSON export</strong> and open it in Studio with Import.",
-    "step3": "New published links use the canonical `/share/[token]` route and remain the supported way to share read-only layouts.",
+    "step1": "Ask the sender to share the track again from <strong>Studio</strong> to get a new link.",
+    "step2": "Or ask them for a <strong>JSON export</strong>, which you can open in Studio with Import.",
+    "step3": "Links shared from TrackDraw today will keep working.",
     "openStudioToImport": "Open Studio to Import"
   },
   "expired": {
@@ -41,8 +41,8 @@
     "description": "View this FPV race track designed with TrackDraw.",
     "expiredTitle": "Expired Track Share",
     "expiredDescription": "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
-    "retiredTitle": "Unsupported Track Share",
-    "retiredDescription": "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+    "retiredTitle": "Outdated Track Share",
+    "retiredDescription": "This TrackDraw share link is outdated. Ask the sender to share the track again.",
     "embedTitle": "Track Embed",
     "embedDescription": "Embedded TrackDraw read-only track view."
   },
