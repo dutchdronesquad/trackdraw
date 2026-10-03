@@ -410,11 +410,11 @@
         "gallery_publication": "Gallery publication"
       },
       "acquisition": {
-        "title": "Acquisition source mix",
+        "title": "Where do new sessions come from?",
         "description": "Where eligible sessions first reached TrackDraw."
       },
       "localization": {
-        "title": "Localization demand",
+        "title": "Which language should we translate next?",
         "description": "Language signals for translation decisions.",
         "creatorSessions": "Creator sessions",
         "unsupportedLanguageSessions": "Unsupported-language sessions",
@@ -464,27 +464,27 @@
         "retry": "Retry"
       },
       "editor": {
-        "title": "Editor usage",
+        "title": "Who uses the editor?",
         "description": "Editor activity split between anonymous and signed-in sessions."
       },
       "adoption": {
-        "title": "Feature adoption",
+        "title": "Which features do creators use?",
         "description": "Completed feature use among eligible creator sessions."
       },
       "content": {
-        "title": "Content growth",
+        "title": "How much content is being created?",
         "description": "Projects, shares, and presets over time."
       },
       "sharing": {
-        "title": "Share and embed sessions",
+        "title": "How are shared tracks viewed?",
         "description": "Public views split between share pages and embeds.",
         "healthTitle": "Sharing and gallery health",
         "healthDescription": "Current lifecycle and publication readiness for shared content.",
-        "embedTitle": "Thresholded embed reach",
+        "embedTitle": "Where are tracks embedded?",
         "embedDescription": "Qualifying views by website and track."
       },
       "retention": {
-        "title": "Creator retention",
+        "title": "Do activated creators come back?",
         "description": "30-day return among matured signed-in creator cohorts.",
         "cohort": "Activation cohort",
         "activated": "Activated",
@@ -571,10 +571,10 @@
         "temporarilyUnavailable": "Temporarily unavailable"
       },
       "analysis": {
-        "weeklyTitle": "Weekly activity",
-        "journeyTitle": "Where sessions stop",
-        "timingTitle": "Time to first result",
-        "exportTitle": "Export reliability by format"
+        "weeklyTitle": "How active is each week?",
+        "journeyTitle": "Where do sessions stop?",
+        "timingTitle": "How fast do creators get a first result?",
+        "exportTitle": "Do exports work in every format?"
       }
     },
     "kpi": {

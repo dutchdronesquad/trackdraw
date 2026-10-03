@@ -18,7 +18,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Circle,
-  Download,
   Info,
   Languages,
   LayoutDashboard,
@@ -44,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/AppTooltip";
+import MetricsSection from "@/components/dashboard/MetricsSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import type {
@@ -526,7 +526,7 @@ function DecisionMetric({
 
   return (
     <section
-      className="bg-card flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      className="bg-card flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
       aria-labelledby={`decision-metric-${metric.id}`}
     >
       <div className="min-w-0">
@@ -1127,7 +1127,7 @@ export default function MetricsWorkspace({
         <TabsContent value="overview" className="mt-3 space-y-3">
           <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(19rem,1fr)]">
             <section
-              className="bg-card min-w-0 rounded-md border p-3"
+              className="bg-card min-w-0 rounded-lg border p-4"
               aria-label={t("views.userGrowth")}
             >
               <UserGrowthCard
@@ -1145,22 +1145,11 @@ export default function MetricsWorkspace({
                 showRangePicker={!header}
               />
             </section>
-            <section
-              className="bg-card min-w-0 rounded-md border p-3"
-              aria-label={t("overview.exportTitle")}
+            <MetricsSection
+              title={t("overview.exportTitle")}
+              description={t("overview.exportNote")}
+              bodyClassName="p-3 sm:p-4"
             >
-              <div className="mb-2 flex items-start justify-between gap-3">
-                <Download
-                  className="text-muted-foreground mt-0.5 size-3.5"
-                  aria-hidden="true"
-                />
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-semibold">
-                    {t("overview.exportTitle")}
-                  </h2>
-                  <p className="sr-only">{t("overview.exportNote")}</p>
-                </div>
-              </div>
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
@@ -1174,21 +1163,14 @@ export default function MetricsWorkspace({
                   />
                 ) : null}
               </PeriodInsightState>
-            </section>
+            </MetricsSection>
           </div>
 
-          <section
-            className="bg-card min-w-0 rounded-md border"
-            aria-labelledby="core-metrics-title"
+          <MetricsSection
+            title={t("evidence.title")}
+            description={t("evidence.description")}
+            bodyClassName="p-0 sm:p-0"
           >
-            <div className="border-b px-3 py-2.5">
-              <h2 id="core-metrics-title" className="text-sm font-semibold">
-                {t("evidence.title")}
-              </h2>
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                {t("evidence.description")}
-              </p>
-            </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[38rem] text-sm">
                 <thead>
@@ -1286,14 +1268,8 @@ export default function MetricsWorkspace({
                 </tbody>
               </table>
             </div>
-          </section>
-          <section
-            className="bg-card rounded-xl border p-4 sm:p-5"
-            aria-label={t("analysis.weeklyTitle")}
-          >
-            <h2 className="mb-4 text-base font-semibold">
-              {t("analysis.weeklyTitle")}
-            </h2>
+          </MetricsSection>
+          <MetricsSection title={t("analysis.weeklyTitle")}>
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1307,7 +1283,7 @@ export default function MetricsWorkspace({
                 />
               ) : null}
             </PeriodInsightState>
-          </section>
+          </MetricsSection>
         </TabsContent>
 
         <TabsContent value="creators" className="mt-4 space-y-4">
@@ -1316,7 +1292,7 @@ export default function MetricsWorkspace({
             generatedAt={explorer.generatedAt}
           />
           <section
-            className="bg-card min-w-0 rounded-xl border p-4 sm:p-5"
+            className="bg-card min-w-0 rounded-lg border p-4 sm:p-5"
             aria-label={t("views.userGrowth")}
           >
             <UserGrowthCard
@@ -1333,62 +1309,47 @@ export default function MetricsWorkspace({
               showRangePicker={!header}
             />
           </section>
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("retention.title")}
-                </h2>
-                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("period.fixedWindow")}
-                </p>
-              </div>
+          <MetricsSection
+            title={t("retention.title")}
+            description={t("period.fixedWindow")}
+            status={
               <QualityLabel
                 quality={explorer.retention.quality}
                 measuredSince={explorer.retention.measuredSince}
                 generatedAt={explorer.generatedAt}
               />
-            </div>
+            }
+          >
             <RetentionTable metric={explorer.retention} />
-          </section>
+          </MetricsSection>
         </TabsContent>
 
         <TabsContent value="audience" className="mt-4 space-y-4">
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("acquisition.title")}
-                </h2>
-                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("period.fixedWindow")}
-                </p>
-              </div>
+          <MetricsSection
+            title={t("acquisition.title")}
+            description={t("period.fixedWindow")}
+            status={
               <QualityLabel
                 quality={explorer.acquisition.quality}
                 measuredSince={explorer.acquisition.measuredSince}
                 generatedAt={explorer.generatedAt}
               />
-            </div>
+            }
+          >
             <ExplorerBarRows
               metric={explorer.acquisition}
               namespace="sources"
             />
-          </section>
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <div className="mb-5 flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("localization.title")}
-                </h2>
-                <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
-                  {t("localization.description")}
-                </p>
-              </div>
-              {selectedLocalization ? (
+          </MetricsSection>
+          <MetricsSection
+            title={t("localization.title")}
+            description={t("localization.description")}
+            status={
+              selectedLocalization ? (
                 <QualityLabel quality={selectedLocalization.quality} />
-              ) : null}
-            </div>
+              ) : null
+            }
+          >
             {selectedLocalization ? (
               <>
                 {selectedLocalization.quality === "building" ? (
@@ -1406,17 +1367,11 @@ export default function MetricsWorkspace({
             ) : (
               <p role="status">{t("localization.loading")}</p>
             )}
-          </section>
+          </MetricsSection>
         </TabsContent>
 
         <TabsContent value="creation" className="mt-4 space-y-4">
-          <section
-            className="bg-card rounded-xl border p-4 sm:p-5"
-            aria-label={t("analysis.journeyTitle")}
-          >
-            <h2 className="mb-4 text-base font-semibold">
-              {t("analysis.journeyTitle")}
-            </h2>
+          <MetricsSection title={t("analysis.journeyTitle")}>
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1427,14 +1382,8 @@ export default function MetricsWorkspace({
                 <JourneyDropoff analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
-          </section>
-          <section
-            className="bg-card rounded-xl border p-4 sm:p-5"
-            aria-label={t("analysis.timingTitle")}
-          >
-            <h2 className="mb-4 text-base font-semibold">
-              {t("analysis.timingTitle")}
-            </h2>
+          </MetricsSection>
+          <MetricsSection title={t("analysis.timingTitle")}>
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1445,19 +1394,18 @@ export default function MetricsWorkspace({
                 <TimeToResult analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
-          </section>
+          </MetricsSection>
 
           <DecisionMetric
             metric={explorer.valuableSessions}
             generatedAt={explorer.generatedAt}
           />
           <div className="grid gap-4 lg:grid-cols-2">
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <h2 className="text-base font-semibold">{t("editor.title")}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("editor.description")}
-              </p>
-              <div className="mt-5">
+            <MetricsSection
+              title={t("editor.title")}
+              description={t("editor.description")}
+            >
+              <div>
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
@@ -1469,35 +1417,29 @@ export default function MetricsWorkspace({
                   ) : null}
                 </PeriodInsightState>
               </div>
-            </section>
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <div className="mb-5 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-semibold">
-                    {t("adoption.title")}
-                  </h2>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    {t("period.fixedWindow")}
-                  </p>
-                </div>
+            </MetricsSection>
+            <MetricsSection
+              title={t("adoption.title")}
+              description={t("period.fixedWindow")}
+              status={
                 <QualityLabel
                   quality={explorer.adoption.quality}
                   measuredSince={explorer.adoption.measuredSince}
                   generatedAt={explorer.generatedAt}
                 />
-              </div>
+              }
+            >
               <ExplorerBarRows
                 metric={explorer.adoption}
                 namespace="features"
               />
-            </section>
+            </MetricsSection>
           </div>
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <h2 className="text-base font-semibold">{t("content.title")}</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("content.description")}
-            </p>
-            <div className="mt-4">
+          <MetricsSection
+            title={t("content.title")}
+            description={t("content.description")}
+          >
+            <div>
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
@@ -1509,17 +1451,11 @@ export default function MetricsWorkspace({
                 ) : null}
               </PeriodInsightState>
             </div>
-          </section>
+          </MetricsSection>
         </TabsContent>
 
         <TabsContent value="distribution" className="mt-4 space-y-4">
-          <section
-            className="bg-card rounded-xl border p-4 sm:p-5"
-            aria-label={t("analysis.exportTitle")}
-          >
-            <h2 className="mb-4 text-base font-semibold">
-              {t("analysis.exportTitle")}
-            </h2>
+          <MetricsSection title={t("analysis.exportTitle")}>
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1530,19 +1466,15 @@ export default function MetricsWorkspace({
                 <ExportReliability analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
-          </section>
+          </MetricsSection>
 
           <DecisionMetric
             metric={explorer.publicationSessionRate}
             generatedAt={explorer.generatedAt}
           />
           <div className="grid gap-4 lg:grid-cols-2">
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <h2 className="text-base font-semibold">
-                {t("overview.exportTitle")}
-              </h2>
-
-              <div className="mt-5">
+            <MetricsSection title={t("overview.exportTitle")}>
+              <div>
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
@@ -1554,13 +1486,12 @@ export default function MetricsWorkspace({
                   ) : null}
                 </PeriodInsightState>
               </div>
-            </section>
-            <section className="bg-card rounded-xl border p-4 sm:p-5">
-              <h2 className="text-base font-semibold">{t("sharing.title")}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("sharing.description")}
-              </p>
-              <div className="mt-5">
+            </MetricsSection>
+            <MetricsSection
+              title={t("sharing.title")}
+              description={t("sharing.description")}
+            >
+              <div>
                 <PeriodInsightState
                   insights={selectedInsights}
                   failed={periodInsights.failed}
@@ -1572,30 +1503,24 @@ export default function MetricsWorkspace({
                   ) : null}
                 </PeriodInsightState>
               </div>
-            </section>
+            </MetricsSection>
           </div>
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <h2 className="text-base font-semibold">
-              {t("sharing.healthTitle")}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("period.currentState")}
-            </p>
-            <div className="mt-5">
+          <MetricsSection
+            title={t("sharing.healthTitle")}
+            description={t("period.currentState")}
+          >
+            <div>
               <SharingHealth
                 shares={metrics.shares}
                 gallery={metrics.gallery}
               />
             </div>
-          </section>
-          <section className="bg-card rounded-xl border p-4 sm:p-5">
-            <h2 className="text-base font-semibold">
-              {t("sharing.embedTitle")}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("sharing.embedDescription")}
-            </p>
-            <div className="mt-5">
+          </MetricsSection>
+          <MetricsSection
+            title={t("sharing.embedTitle")}
+            description={t("sharing.embedDescription")}
+          >
+            <div>
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
@@ -1607,11 +1532,11 @@ export default function MetricsWorkspace({
                 ) : null}
               </PeriodInsightState>
             </div>
-          </section>
+          </MetricsSection>
 
           <section
             id="operations"
-            className="bg-card scroll-mt-20 rounded-xl border"
+            className="bg-card scroll-mt-20 overflow-hidden rounded-lg border"
             aria-labelledby="operations-title"
           >
             <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">

@@ -930,7 +930,7 @@ export function UserGrowthCard({
   if (bare) return content;
 
   return (
-    <div className="bg-card min-w-0 rounded-xl border p-4 sm:p-5">
+    <div className="bg-card min-w-0 rounded-lg border p-4 sm:p-5">
       {content}
     </div>
   );
@@ -1111,7 +1111,7 @@ export function GrowthTabs({
   return (
     <Tabs
       defaultValue="users"
-      className="bg-card min-w-0 rounded-xl border p-4 sm:p-5"
+      className="bg-card min-w-0 rounded-lg border p-4 sm:p-5"
     >
       <TabsList aria-label={t("growthTabs.label")}>
         <TabsTrigger value="users">{t("growthTabs.users")}</TabsTrigger>
@@ -1378,7 +1378,7 @@ export function MetricsFocusBanner({ metrics }: { metrics: AdminMetrics }) {
   return (
     <section
       aria-labelledby="metrics-focus-title"
-      className="flex flex-col gap-3 rounded-xl border border-l-4 border-l-amber-500 bg-amber-500/8 p-4 sm:flex-row sm:items-center"
+      className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/8 p-4 sm:flex-row sm:items-center"
     >
       <Search
         className="size-5 shrink-0 text-amber-700 dark:text-amber-300"
@@ -1825,7 +1825,7 @@ export function UsageTabs({ usage }: { usage: ProductInsights["usage"] }) {
           key={tab.value}
           value={tab.value}
           id={`${tab.value}-usage`}
-          className="bg-card mt-3 rounded-xl border p-4 sm:p-5"
+          className="bg-card mt-3 rounded-lg border p-4 sm:p-5"
         >
           <div className="space-y-1">
             <h3 className="text-sm font-semibold">{tab.title}</h3>
@@ -2369,7 +2369,7 @@ export function PlanLimitSimulator({
   return (
     <div className="space-y-4">
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <section className="bg-card min-w-0 overflow-hidden rounded-xl border">
+        <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
           <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -2423,7 +2423,7 @@ export function PlanLimitSimulator({
           </div>
         </section>
 
-        <aside className="bg-card overflow-hidden rounded-xl border border-dashed border-sky-400/70">
+        <aside className="bg-card overflow-hidden rounded-lg border border-dashed border-sky-400/70">
           <div className="border-b p-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold">{t("scenarioTitle")}</h2>
@@ -2603,7 +2603,7 @@ export function PlanLimitSimulator({
         </aside>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-xl border border-dashed px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+      <section className="flex flex-col gap-3 rounded-lg border border-dashed px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-sm font-semibold">{t("commercialTitle")}</h2>
           <p className="text-muted-foreground mt-1 text-xs">

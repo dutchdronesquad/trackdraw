@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import ToneBadge from "@/components/dashboard/ToneBadge";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { PlanLimitSimulator } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -39,52 +40,42 @@ export default async function MetricsPlanningPage() {
         title={t("pages.metrics")}
       />
       <main className="flex w-full min-w-0 flex-1 flex-col gap-6 p-4 pt-0 pb-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {tMetrics("planningPage.title")}
-          </h1>
-          <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
-            {tMetrics("planningPage.description")}
-          </p>
-        </header>
-
-        <section
-          aria-label={tMetrics("planningPage.observedBaseline")}
-          className="grid border-y sm:grid-cols-2"
-        >
-          <div className="py-4 sm:pr-6">
-            <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-semibold tabular-nums">
-                {metrics.users.activeLastThirtyDays}
-              </p>
-              <p className="text-sm font-medium">
-                {tMetrics("planningPage.activeCreators")}
-              </p>
-              <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
-                {tMetrics("planningPage.observed")}
-              </span>
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {tMetrics("planningPage.activeCreatorsSource")}
+        <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {tMetrics("planningPage.title")}
+            </h1>
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              {tMetrics("planningPage.description")}
             </p>
           </div>
-          <div className="border-t py-4 sm:border-t-0 sm:border-l sm:pl-6">
-            <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-semibold tabular-nums">
-                {accountsWithContent}
-              </p>
-              <p className="text-sm font-medium">
-                {tMetrics("planningPage.accountsWithContent")}
-              </p>
-              <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+          <section
+            aria-label={tMetrics("planningPage.observedBaseline")}
+            className="flex flex-col gap-1 lg:items-end"
+          >
+            <dl className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+              <div className="flex items-baseline gap-1.5">
+                <dd className="text-foreground font-semibold tabular-nums">
+                  {metrics.users.activeLastThirtyDays}
+                </dd>
+                <dt>{tMetrics("planningPage.activeCreators")}</dt>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <dd className="text-foreground font-semibold tabular-nums">
+                  {accountsWithContent}
+                </dd>
+                <dt>{tMetrics("planningPage.accountsWithContent")}</dt>
+              </div>
+              <ToneBadge tone="amber">
                 {tMetrics("planningPage.observed")}
-              </span>
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
+              </ToneBadge>
+            </dl>
+            <p className="text-muted-foreground max-w-xl text-xs lg:text-right">
+              {tMetrics("planningPage.activeCreatorsSource")}{" "}
               {tMetrics("planningPage.accountsSource")}
             </p>
-          </div>
-        </section>
+          </section>
+        </header>
 
         <PlanLimitSimulator
           userDistribution={metrics.userDistribution}
