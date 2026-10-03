@@ -9,7 +9,6 @@ import { getSiteUrl } from "@/lib/seo";
 import {
   recordAccountEmailChanged,
   recordPasskeyMutation,
-  recordSelfAccountDeleted,
 } from "@/lib/server/auth-audit";
 import { getDatabase } from "@/lib/server/db";
 import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
@@ -170,7 +169,6 @@ export async function getAuth() {
           const { flushAccountDeletionMedia } =
             await import("@/lib/server/gallery-media");
           await flushAccountDeletionMedia();
-          await recordSelfAccountDeleted();
         },
       },
     },

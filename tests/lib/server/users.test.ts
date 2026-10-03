@@ -320,10 +320,22 @@ describe("unbanUser", () => {
 
 describe("deleteUserAccount", () => {
   it("uses the shared account lifecycle and flushes queued media", async () => {
-    await deleteUserAccount("user-4");
+    const audit = {
+      actorUserId: "admin",
+      metadata: {
+        role: "user",
+        projectCount: 1,
+        activeShareCount: 0,
+        galleryEntryCount: 0,
+        apiKeyCount: 0,
+      },
+    };
+    await deleteUserAccount("user-4", audit);
     expect(mocks.deleteAccountData).toHaveBeenCalledWith(
       { prepare: mocks.prepare },
-      "user-4"
+      "user-4",
+      undefined,
+      audit
     );
     expect(mocks.flushMedia).toHaveBeenCalledOnce();
   });

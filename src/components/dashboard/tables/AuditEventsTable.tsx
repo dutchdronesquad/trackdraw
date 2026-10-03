@@ -307,6 +307,18 @@ export default function DashboardAuditEventsTable({
                 </div>
               ) : null}
 
+              {inspectEvent.entityType === "account_lifecycle" &&
+              inspectEvent.entityId ? (
+                <Button asChild variant="ghost" size="sm" className="mt-3">
+                  <Link
+                    href={`/dashboard/audit?q=${encodeURIComponent(inspectEvent.entityId)}&range=all`}
+                    prefetch={false}
+                  >
+                    {t("detail.viewAccountLifecycle")}
+                  </Link>
+                </Button>
+              ) : null}
+
               <div className="mt-8">
                 <h3 className="text-sm font-semibold">{t("table.details")}</h3>
                 {Object.entries(inspectEvent.metadata ?? {}).length > 0 ? (

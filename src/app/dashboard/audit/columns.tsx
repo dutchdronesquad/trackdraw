@@ -190,6 +190,7 @@ export function getEventDetailLabel(
 export function getEntityTypeLabel(entityType: string, t: Translate) {
   switch (entityType) {
     case "user":
+    case "account_lifecycle":
       return t("entityLabels.account");
     case "gallery_entry":
       return t("entityLabels.galleryEntry");
@@ -216,7 +217,7 @@ export function shortenId(value: string) {
 }
 
 export function getEntityDisplay(event: DashboardAuditEvent, t: Translate) {
-  if (event.entityType === "user") {
+  if (event.entityType === "user" || event.entityType === "account_lifecycle") {
     return {
       label:
         event.eventType === "account.role.changed"

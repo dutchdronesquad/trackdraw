@@ -6,7 +6,20 @@ type Statement = {
   all<T>(): Promise<{ results: T[] }>;
   run<T = unknown>(): Promise<T>;
 };
-export type AccountDeletionDatabase = { prepare(query: string): Statement };
+export type AccountDeletionDatabase = {
+  prepare(query: string): Statement;
+  batch<T>(statements: Statement[]): Promise<{ results: T[] }[]>;
+};
+export type AdminAccountDeletionAudit = {
+  actorUserId: string;
+  metadata: {
+    role: string;
+    projectCount: number;
+    activeShareCount: number;
+    galleryEntryCount: number;
+    apiKeyCount: number;
+  };
+};
 export type AccountDeletionMediaBucket = {
   delete(key: string): Promise<unknown>;
 };
@@ -41,15 +54,16 @@ function retentionGuard(current: string) {
 export async function deleteUserAccount(
   db: AccountDeletionDatabase,
   userId: string,
-  retention?: RetentionPeriod
+  retention?: RetentionPeriod,
+  adminAudit?: AdminAccountDeletionAudit
 ) {
   const lifecycle = await db
     .prepare(
-      "SELECT count(*) AS count FROM sqlite_master WHERE type = 'trigger' AND name IN ('account_deleted_data', 'gallery_deleted_media')"
+      "SELECT count(*) AS count FROM sqlite_master WHERE type = 'trigger' AND name IN ('account_deleted_data', 'gallery_deleted_media', 'account_retention_notice_sent_audit')"
     )
     .first<{ count: number }>();
-  if (lifecycle?.count !== 2)
-    throw new Error("Account deletion requires migration 0023");
+  if (lifecycle?.count !== 3)
+    throw new Error("Account deletion requires migrations 0023 and 0024");
   const statement = retention
     ? db
         .prepare(
@@ -67,7 +81,47 @@ export async function deleteUserAccount(
           retention.now.toISOString()
         )
     : db.prepare("DELETE FROM users WHERE id = ? RETURNING id").bind(userId);
-  return (await statement.first<{ id: string }>()) !== null;
+  if (!retention && !adminAudit)
+    return (await statement.first<{ id: string }>()) !== null;
+
+  // Only committed deletions leave audit evidence. The final statement removes
+  // the provisional event if the eligibility guard preserves the account.
+  const auditId = crypto.randomUUID();
+  const actorUserId = adminAudit?.actorUserId ?? null;
+  const metadata = {
+    ...adminAudit?.metadata,
+    initiatedBy: retention ? "inactivity" : "admin",
+  };
+  const [, deletion] = await db.batch<{ id: string }>([
+    db
+      .prepare(
+        `INSERT INTO audit_events
+      (id, actor_user_id, target_user_id, event_type, entity_type, entity_id,
+        metadata_json, created_at, actor_kind, target_label)
+      SELECT ?, ?, u.id, 'account.deleted', 'account_lifecycle', u.lifecycle_audit_ref,
+        json_patch(?, json_object(
+          'firstNoticeSentAt', (SELECT sent_at FROM account_retention_notices WHERE user_id = u.id AND activity_at = u.last_active_at AND stage = 'first'),
+          'finalNoticeSentAt', (SELECT sent_at FROM account_retention_notices WHERE user_id = u.id AND activity_at = u.last_active_at AND stage = 'final')
+        )), ?, ?, 'Deleted account (' || u.lifecycle_audit_ref || ')'
+      FROM users u WHERE u.id = ?`
+      )
+      .bind(
+        auditId,
+        retention ? null : actorUserId,
+        JSON.stringify(metadata),
+        (retention?.now ?? new Date()).toISOString(),
+        retention ? "system" : "user",
+        userId
+      ),
+    statement,
+    db
+      .prepare(
+        `DELETE FROM audit_events WHERE id = ?
+      AND EXISTS (SELECT 1 FROM users WHERE id = ?)`
+      )
+      .bind(auditId, userId),
+  ]);
+  return deletion.results.length > 0;
 }
 
 export async function cleanupAccountDeletionMedia(

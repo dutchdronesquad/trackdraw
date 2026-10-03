@@ -7,6 +7,7 @@ import {
   ceilUtcDay,
 } from "@/lib/server/account-retention-timeline";
 import type { TransactionalMailer } from "@/lib/email/plunk-client";
+import { auditEventTypes } from "@/lib/audit-events";
 
 type Statement = {
   bind(...values: unknown[]): Statement;
@@ -14,7 +15,10 @@ type Statement = {
   all<T>(): Promise<{ results: T[] }>;
   run<T = unknown>(): Promise<T>;
 };
-type Database = { prepare(query: string): Statement };
+type Database = {
+  prepare(query: string): Statement;
+  batch<T>(statements: Statement[]): Promise<{ results: T[] }[]>;
+};
 type Candidate = {
   id: string;
   activity_at: string;
@@ -184,11 +188,17 @@ export async function sendAccountRetentionNotices(
         WHERE id = ? AND claim_token = ?
           AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_id AND u.last_active_at = activity_at AND ${SESSION_GUARD})
         RETURNING (SELECT email FROM users WHERE id = user_id) AS email,
+          (SELECT lifecycle_audit_ref FROM users WHERE id = user_id) AS audit_ref,
           (SELECT name FROM users WHERE id = user_id) AS name, attempted_at
       `
         )
         .bind(now().toISOString(), notice.id, claim, now().toISOString())
-        .first<{ email: string; name: string | null; attempted_at: string }>();
+        .first<{
+          email: string;
+          name: string | null;
+          attempted_at: string;
+          audit_ref: string;
+        }>();
       if (!recipient) continue;
       await mailer.send({
         to: { address: recipient.email, name: recipient.name },
@@ -201,15 +211,47 @@ export async function sendAccountRetentionNotices(
         emailType: "account-retention",
         idempotencyKey: `account-retention-${notice.id}`,
       });
-      await db
-        .prepare(
-          `
+      const sentAt = now().toISOString();
+      // A sign-in or deletion while Plunk is sending can remove notice state.
+      // Keep confirmed provider acceptance using the already captured reference.
+      await db.batch([
+        db
+          .prepare(
+            `
         UPDATE account_retention_notices SET sent_at = ?, claim_token = NULL, claim_until = NULL
         WHERE id = ? AND claim_token = ?
       `
-        )
-        .bind(now().toISOString(), notice.id, claim)
-        .run();
+          )
+          .bind(sentAt, notice.id, claim),
+        db
+          .prepare(
+            `INSERT INTO audit_events
+          (id, target_user_id, event_type, entity_type, entity_id, metadata_json, created_at, actor_kind, target_label)
+          VALUES (?, (SELECT id FROM users WHERE id = ? AND lifecycle_audit_ref = ?), ?, 'account_lifecycle', ?, ?, ?, 'system',
+            (CASE WHEN EXISTS (SELECT 1 FROM users WHERE id = ? AND lifecycle_audit_ref = ?) THEN 'Account (' ELSE 'Deleted account (' END) || ? || ')')
+          ON CONFLICT(id) DO NOTHING`
+          )
+          .bind(
+            `retention-sent-${notice.id}`,
+            candidate.id,
+            recipient.audit_ref,
+            notice.stage === "first"
+              ? auditEventTypes.accountRetentionFirstNoticeSent
+              : auditEventTypes.accountRetentionFinalNoticeSent,
+            recipient.audit_ref,
+            JSON.stringify({
+              stage: notice.stage,
+              noticeId: notice.id,
+              activityAt: candidate.activity_at,
+              removalAt: notice.removal_at,
+              status: "provider_accepted",
+            }),
+            sentAt,
+            candidate.id,
+            recipient.audit_ref,
+            recipient.audit_ref
+          ),
+      ]);
       health.sent += 1;
     } catch {
       // Provider/DB errors can include addresses or payloads. Only counts leave

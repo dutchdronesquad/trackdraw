@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+import { type DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -17,6 +16,8 @@ import {
   formatAccountInactivity,
 } from "@/lib/server/account-retention-timeline";
 
+import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
+
 let sqlite: DatabaseSync;
 let clock: Date;
 let afterClaim: (() => void) | undefined;
@@ -25,6 +26,7 @@ const send = vi.fn(async (_mail: PlunkMailOptions) => {});
 
 function adapter() {
   return {
+    batch: sqliteD1(sqlite).batch,
     prepare(query: string) {
       const statement = sqlite.prepare(query);
       let bindings: SQLInputValue[] = [];
@@ -38,7 +40,11 @@ function adapter() {
           if (query.includes("RETURNING id") && row) afterClaim?.();
           return (row as T) ?? null;
         },
-        all: async <T>() => ({ results: statement.all(...bindings) as T[] }),
+        all: async <T>() => {
+          if (failSentWrite && query.includes("SET sent_at"))
+            throw new Error("private email / database details");
+          return { results: statement.all(...bindings) as T[] };
+        },
         run: async <T>() => {
           if (failSentWrite && query.includes("SET sent_at"))
             throw new Error("private email / database details");
@@ -66,7 +72,18 @@ function activity(value: string | null) {
     .run(value);
 }
 function session(expiry: string | null, user = "pilot") {
-  sqlite.prepare("insert into sessions values (?, ?)").run(user, expiry);
+  sqlite
+    .prepare(
+      "insert into sessions (id, userId, token, expiresAt, createdAt, updatedAt) values (?, ?, ?, ?, ?, ?)"
+    )
+    .run(
+      crypto.randomUUID(),
+      user,
+      crypto.randomUUID(),
+      expiry,
+      clock.toISOString(),
+      clock.toISOString()
+    );
 }
 
 beforeEach(() => {
@@ -74,22 +91,14 @@ beforeEach(() => {
   afterClaim = undefined;
   failSentWrite = false;
   send.mockReset();
-  sqlite = new DatabaseSync(":memory:");
-  sqlite.exec(`
-    PRAGMA foreign_keys = ON;
-    create table users (id text primary key, email text, name text, last_active_at text, marketing_opt_in integer default 0);
-    create table sessions (userId text, expiresAt text);
-    insert into users (id, email, name, last_active_at) values ('pilot', 'pilot@example.test', 'Pilot', '2025-11-03T12:00:00.000Z');
-  `);
-  sqlite.exec(
-    readFileSync(
-      new URL(
-        "../../../migrations/0022_account_retention_notices.sql",
-        import.meta.url
-      ),
-      "utf8"
-    )
-  );
+  sqlite = createMigratedDatabase();
+  // Exercise unknown expiry conservatively, including imported legacy NULLs.
+  sqlite.exec(`DROP TABLE sessions;
+    CREATE TABLE sessions (id TEXT PRIMARY KEY, userId TEXT REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT UNIQUE, expiresAt TEXT, createdAt TEXT, updatedAt TEXT);
+    ALTER TABLE users ADD COLUMN marketing_opt_in INTEGER DEFAULT 0;`);
+  sqlite.exec(`insert into users (id, email, name, last_active_at, createdAt, updatedAt)
+    values ('pilot', 'pilot@example.test', 'Pilot', '2025-11-03T12:00:00.000Z', '2025-11-03', '2025-11-03');`);
 });
 afterEach(() => {
   sqlite.close();
@@ -151,6 +160,9 @@ describe("account retention notices", () => {
   );
   it("allows exactly expired sessions and ignores sessions of another account", async () => {
     session(clock.toISOString());
+    sqlite.exec(
+      "insert into users (id,email,name,createdAt,updatedAt) values ('other','other@example.test','Other','2026-10-03','2026-10-03')"
+    );
     session("2099-01-01", "other");
     await run();
     expect(send).toHaveBeenCalledOnce();
@@ -268,7 +280,7 @@ describe("account retention notices", () => {
   });
   it("keeps processing other accounts after a send fails", async () => {
     sqlite.exec(
-      "insert into users values ('second', 'second@example.test', 'Second', '2025-11-03T12:00:00.000Z', 0)"
+      "insert into users (id,email,name,last_active_at,createdAt,updatedAt) values ('second', 'second@example.test', 'Second', '2025-11-03T12:00:00.000Z', '2025-11-03', '2025-11-03')"
     );
     send.mockRejectedValueOnce(new Error("failure"));
     await expect(run()).rejects.toMatchObject({
@@ -304,7 +316,7 @@ describe("account retention notices", () => {
     for (let i = 0; i < 30; i++)
       sqlite
         .prepare(
-          "insert into users values (?, ?, 'Pilot', '2025-11-03T12:00:00.000Z', 0)"
+          "insert into users (id,email,name,last_active_at,createdAt,updatedAt) values (?, ?, 'Pilot', '2025-11-03T12:00:00.000Z', '2025-11-03', '2025-11-03')"
         )
         .run(`pilot-${i}`, `pilot-${i}@example.test`);
     await run();

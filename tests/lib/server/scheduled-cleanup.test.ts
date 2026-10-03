@@ -169,7 +169,9 @@ describe("scheduled cleanup", () => {
     const prepare = vi.fn(() => statement);
 
     const tasks = createScheduledCleanupTasks(
-      { prepare } as Parameters<typeof createScheduledCleanupTasks>[0],
+      { prepare, batch: vi.fn(async () => []) } as Parameters<
+        typeof createScheduledCleanupTasks
+      >[0],
       mailer
     );
 
@@ -266,6 +268,7 @@ describe("scheduled cleanup", () => {
     const productEventsTask = createScheduledCleanupTasks(
       {
         prepare,
+        batch: vi.fn(async () => []),
       } as Parameters<typeof createScheduledCleanupTasks>[0],
       mailer
     ).find((task) => task.name === "product_events");

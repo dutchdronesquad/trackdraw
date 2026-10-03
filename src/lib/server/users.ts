@@ -4,7 +4,10 @@ import { cache } from "react";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import type { AdminUser } from "@/lib/account/admin-users";
 import { getDatabase } from "@/lib/server/db";
-import { deleteUserAccount as deleteAccountData } from "@/lib/server/account-deletion";
+import {
+  deleteUserAccount as deleteAccountData,
+  type AdminAccountDeletionAudit,
+} from "@/lib/server/account-deletion";
 import { flushAccountDeletionMedia } from "@/lib/server/gallery-media";
 
 type UserRoleRow = {
@@ -258,9 +261,12 @@ export async function unbanUser(userId: string): Promise<AdminUser | null> {
   return row ? mapAdminUser(row) : null;
 }
 
-export async function deleteUserAccount(userId: string): Promise<void> {
+export async function deleteUserAccount(
+  userId: string,
+  audit: AdminAccountDeletionAudit
+): Promise<void> {
   const db = await getDatabase();
-  await deleteAccountData(db, userId);
+  await deleteAccountData(db, userId, undefined, audit);
   await flushAccountDeletionMedia();
 }
 

@@ -6,7 +6,6 @@ vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
 import {
   recordAccountEmailChanged,
   recordPasskeyMutation,
-  recordSelfAccountDeleted,
 } from "@/lib/server/auth-audit";
 import { recordAuditEvent } from "@/lib/server/audit";
 
@@ -69,8 +68,7 @@ describe("auth audit events", () => {
     );
   });
 
-  it("records self-deletion without retaining the deleted identity", async () => {
-    await recordSelfAccountDeleted();
+  it("records email changes", async () => {
     await recordAccountEmailChanged(
       {
         id: user.id,
@@ -81,17 +79,6 @@ describe("auth audit events", () => {
 
     expect(recordAuditEvent).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({
-        actorUserId: null,
-        actorLabel: "Deleted account",
-        eventType: "account.deleted",
-        metadata: {
-          initiatedBy: "self",
-        },
-      })
-    );
-    expect(recordAuditEvent).toHaveBeenNthCalledWith(
-      2,
       expect.objectContaining({
         eventType: "account.email.changed",
         metadata: {

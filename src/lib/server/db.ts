@@ -11,6 +11,7 @@ type D1PreparedStatement = {
 
 type D1Database = {
   prepare(query: string): D1PreparedStatement;
+  batch<T>(statements: D1PreparedStatement[]): Promise<{ results: T[] }[]>;
 };
 
 type CloudflareContextWithD1 = {

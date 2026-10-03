@@ -361,15 +361,8 @@ export async function DELETE(
 
     const stats = await getUserContextStats(userId);
 
-    await deleteUserAccount(userId);
-
-    await createAuditEvent({
+    await deleteUserAccount(userId, {
       actorUserId: actor.id,
-      targetUserId: null,
-      targetLabel: "Deleted account",
-      eventType: auditEventTypes.accountDeleted,
-      entityType: "user",
-      entityId: null,
       metadata: {
         role: existingUser.role,
         ...stats,

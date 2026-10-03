@@ -32,6 +32,46 @@ function createEvent(index: number): DashboardAuditEvent {
 describe("DashboardAuditEventsTable", () => {
   afterEach(cleanup);
 
+  it("opens the complete lifecycle history using its reference after account deletion", async () => {
+    const user = userEvent.setup();
+    const reference = "random-account-reference";
+    render(
+      <DashboardAuditEventsTable
+        events={[
+          {
+            ...createEvent(1),
+            eventType: "account.deleted",
+            entityType: "account_lifecycle",
+            entityId: reference,
+            actorUserId: null,
+            actorKind: "system",
+            actor: null,
+            targetLabel: `Deleted account (${reference})`,
+            metadata: { initiatedBy: "inactivity" },
+          },
+        ]}
+        total={1}
+        actorCount={1}
+        targetCount={1}
+        page={1}
+        pageCount={1}
+        previousHref={null}
+        nextHref={null}
+      />
+    );
+    await user.click(
+      screen.getByRole("row", { name: "Inspect Account deleted" })
+    );
+    expect(
+      screen
+        .getByRole("link", {
+          name: "View account warning and deletion history",
+        })
+        .getAttribute("href")
+    ).toBe(`/dashboard/audit?q=${reference}&range=all`);
+    expect(screen.getByText("inactivity")).toBeTruthy();
+  });
+
   it("renders server pagination and opens event details", async () => {
     const user = userEvent.setup();
     const events = [
