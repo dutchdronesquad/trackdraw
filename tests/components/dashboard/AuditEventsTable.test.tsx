@@ -51,8 +51,6 @@ describe("DashboardAuditEventsTable", () => {
           },
         ]}
         total={1}
-        actorCount={1}
-        targetCount={1}
         page={1}
         pageCount={1}
         previousHref={null}
@@ -60,7 +58,7 @@ describe("DashboardAuditEventsTable", () => {
       />
     );
     await user.click(
-      screen.getByRole("row", { name: "Inspect Account deleted" })
+      screen.getByRole("button", { name: "Inspect Account deleted" })
     );
     expect(
       screen
@@ -85,8 +83,6 @@ describe("DashboardAuditEventsTable", () => {
       <DashboardAuditEventsTable
         events={events}
         total={26}
-        actorCount={3}
-        targetCount={2}
         page={1}
         pageCount={2}
         previousHref={null}
@@ -95,13 +91,13 @@ describe("DashboardAuditEventsTable", () => {
     );
 
     expect(screen.getByText("Page 1 of 2")).toBeTruthy();
-    expect(screen.getByText("26")).toBeTruthy();
+    expect(screen.getByText(/26 events/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Next" }).getAttribute("href")
     ).toBe("/dashboard/audit?page=2");
 
     await user.click(
-      screen.getByRole("row", { name: "Inspect System Event 1" })
+      screen.getByRole("button", { name: "Inspect System Event 1" })
     );
 
     expect(screen.getByRole("dialog")).toBeTruthy();
@@ -123,8 +119,6 @@ describe("DashboardAuditEventsTable", () => {
       <DashboardAuditEventsTable
         events={[deletedAccountEvent]}
         total={1}
-        actorCount={0}
-        targetCount={0}
         page={1}
         pageCount={1}
         previousHref={null}
@@ -134,7 +128,7 @@ describe("DashboardAuditEventsTable", () => {
 
     expect(screen.getByText("former@trackdraw.local")).toBeTruthy();
     await user.click(
-      screen.getByRole("row", { name: "Inspect System Event 3" })
+      screen.getByRole("button", { name: "Inspect System Event 3" })
     );
 
     expect(
@@ -158,8 +152,6 @@ describe("DashboardAuditEventsTable", () => {
       <DashboardAuditEventsTable
         events={[createEvent(4)]}
         total={1}
-        actorCount={1}
-        targetCount={0}
         page={1}
         pageCount={1}
         previousHref={null}
@@ -168,7 +160,7 @@ describe("DashboardAuditEventsTable", () => {
     );
 
     await user.click(
-      screen.getByRole("row", { name: "Inspect System Event 4" })
+      screen.getByRole("button", { name: "Inspect System Event 4" })
     );
 
     const copyEventId = screen.getByRole("button", {
@@ -181,5 +173,37 @@ describe("DashboardAuditEventsTable", () => {
     } else {
       Reflect.deleteProperty(navigator, "clipboard");
     }
+  });
+
+  it("shows before and after values for recorded changes", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardAuditEventsTable
+        events={[
+          {
+            ...createEvent(5),
+            eventType: "account.role.changed",
+            metadata: {
+              previousRole: "user",
+              nextRole: "moderator",
+              reason: "promotion",
+            },
+          },
+        ]}
+        total={1}
+        page={1}
+        pageCount={1}
+        previousHref={null}
+        nextHref={null}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Inspect / }));
+
+    expect(screen.getByText("What changed")).toBeTruthy();
+    expect(screen.getByText("Role")).toBeTruthy();
+    expect(screen.getByText("user")).toBeTruthy();
+    expect(screen.getByText("moderator")).toBeTruthy();
+    expect(screen.getByText("promotion")).toBeTruthy();
   });
 });
