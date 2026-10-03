@@ -9,7 +9,7 @@
     "s1Body": "This Privacy Policy explains how Dutch Drone Squad handles your data when you use trackdraw.app and its hosted features. This policy is intended to be clear and practical, but it is not a substitute for legal advice.",
     "s2Title": "Information we process",
     "s2Intro": "TrackDraw processes the following categories of information:",
-    "s2Item1": "Account information — email address, display name, sign-in state, and authentication metadata.",
+    "s2Item1": "Account information — email address, display name, sign-in state, account activity, and authentication metadata.",
     "s2Item2": "Project and track data — layouts, obstacle configurations, project names, and timestamps.",
     "s2Item3": "Sharing and gallery data — share tokens, gallery titles, preview images, and visibility state.",
     "s2Item4": "API data — key metadata, expiry state, and identifiers needed to serve requests.",

@@ -12,6 +12,7 @@ import {
   recordSelfAccountDeleted,
 } from "@/lib/server/auth-audit";
 import { getDatabase } from "@/lib/server/db";
+import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
 
 async function loadAuthEmailModule() {
   return import("@/lib/server/auth-email");
@@ -107,6 +108,16 @@ export async function getAuth() {
     },
     user: {
       modelName: "users",
+      additionalFields: {
+        lastActiveAt: {
+          type: "date",
+          fieldName: "last_active_at",
+          required: false,
+          input: false,
+          returned: false,
+          defaultValue: () => new Date(),
+        },
+      },
       changeEmail: {
         enabled: true,
         sendChangeEmailConfirmation: async ({ user, newEmail, url, token }) => {
@@ -312,6 +323,20 @@ export async function getAuth() {
     ],
     hooks: {
       after: createAuthMiddleware(async (context) => {
+        const authenticatedSession =
+          context.context.newSession ?? context.context.session;
+        const now = new Date();
+        if (
+          authenticatedSession &&
+          authenticatedSession.session.expiresAt.getTime() > now.getTime()
+        ) {
+          await recordAuthenticatedAccountActivity(
+            database,
+            authenticatedSession.user,
+            now
+          );
+        }
+
         const returned = context.context.returned as
           | {
               user?: { id?: unknown };

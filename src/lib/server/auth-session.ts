@@ -3,6 +3,7 @@ import "server-only";
 import { getSessionCookie } from "better-auth/cookies";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import { getDatabase } from "@/lib/server/db";
+import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
 
 export type CurrentUser = {
   id: string;
@@ -22,6 +23,7 @@ type SessionUserRow = {
   expiresAt: string;
   bannedAt: string | null;
   productAnalyticsEnabled: number | null;
+  lastActiveAt: string | null;
 };
 
 function getAuthSecret() {
@@ -109,6 +111,7 @@ export async function getCurrentUserFromHeaders(
           u.role,
           u.banned_at as bannedAt,
           u.product_analytics_enabled as productAnalyticsEnabled,
+          u.last_active_at as lastActiveAt,
           s.expiresAt
         from sessions s
         inner join users u on u.id = s.userId
@@ -123,13 +126,17 @@ export async function getCurrentUserFromHeaders(
     return null;
   }
 
-  if (new Date(row.expiresAt).getTime() <= Date.now()) {
+  const now = new Date();
+  const expiresAt = new Date(row.expiresAt).getTime();
+  if (!Number.isFinite(expiresAt) || expiresAt <= now.getTime()) {
     return null;
   }
 
   if (row.bannedAt) {
     return null;
   }
+
+  await recordAuthenticatedAccountActivity(database, row, now);
 
   return {
     id: row.id,
