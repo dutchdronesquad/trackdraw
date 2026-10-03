@@ -5,10 +5,19 @@ import {
   type PlunkMailOptions,
 } from "@/lib/email/plunk-client";
 
+function getPlunkMailer() {
+  return createPlunkMailer({
+    PLUNK_API_KEY: process.env.PLUNK_API_KEY,
+    PLUNK_FROM_EMAIL: process.env.PLUNK_FROM_EMAIL,
+    PLUNK_FROM_NAME: process.env.PLUNK_FROM_NAME,
+    PLUNK_REPLY_TO_EMAIL: process.env.PLUNK_REPLY_TO_EMAIL,
+  });
+}
+
 export function isPlunkConfigured() {
-  return createPlunkMailer(process.env).isConfigured();
+  return getPlunkMailer().isConfigured();
 }
 
 export function sendPlunkMail(options: PlunkMailOptions) {
-  return createPlunkMailer(process.env).send(options);
+  return getPlunkMailer().send(options);
 }
