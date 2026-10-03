@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
+import { createPlunkMailer } from "@/lib/email/plunk-client";
 import { sendPlunkMail } from "@/lib/server/plunk";
 
 const fetchMock = vi.fn();
@@ -33,6 +34,23 @@ describe("Plunk transactional sender", () => {
     expect(body.headers["X-TrackDraw-Email-Type"]).toBe("account-retention");
     expect(request.signal).toBeInstanceOf(AbortSignal);
   });
+  it("uses explicit Worker bindings instead of the Next.js process environment", async () => {
+    const workerMailer = createPlunkMailer({
+      PLUNK_API_KEY: " worker-binding-key ",
+      PLUNK_FROM_EMAIL: " worker-sender@example.test ",
+      PLUNK_FROM_NAME: "Worker sender",
+    });
+    expect(workerMailer.isConfigured()).toBe(true);
+    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    await workerMailer.send(mail);
+    const request = fetchMock.mock.calls[0][1];
+    expect(request.headers.Authorization).toBe("Bearer worker-binding-key");
+    expect(JSON.parse(request.body)).toMatchObject({
+      from: "worker-sender@example.test",
+      name: "Worker sender",
+    });
+  });
+
   it("retains auth email behavior without an idempotency header", async () => {
     fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
     const { emailType: _type, idempotencyKey: _key, ...authMail } = mail;

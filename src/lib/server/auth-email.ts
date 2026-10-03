@@ -1,6 +1,6 @@
 import "server-only";
 
-import { buildEmailShell } from "@/lib/server/email-shell";
+import { buildEmailShell } from "@/lib/email/email-shell";
 
 export type AuthEmailContent = {
   subject: string;

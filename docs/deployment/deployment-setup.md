@@ -279,7 +279,7 @@ Migration `0021_account_activity.sql` adds `users.last_active_at`. Apply it befo
 
 Migration `0022_account_retention_notices.sql` adds durable first/final account notice records and an activity-update trigger that resets them atomically. Apply it before deploying the warning task. It does not delete accounts or cloud data.
 
-The custom Worker imports the mail modules directly. Wrangler aliases the Next.js `server-only` marker to Next's empty server implementation for this server runtime; Next.js continues to enforce the client/server boundary in the app build.
+Mail rendering and the Plunk client are shared runtime-independent modules. The custom Worker supplies mail configuration through its bindings; the Next.js adapter retains `server-only` and reads server environment variables. Worker bundling needs no alias for the Next.js marker.
 
 ### Account retention warnings
 

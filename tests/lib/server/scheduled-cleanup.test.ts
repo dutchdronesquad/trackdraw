@@ -9,6 +9,8 @@ import {
 
 vi.mock("server-only", () => ({}));
 
+const mailer = { isConfigured: () => false, send: vi.fn(async () => {}) };
+
 const scheduledContext = {
   cron: "17 0 * * *",
   scheduledTime: Date.UTC(2026, 6, 23, 0, 17),
@@ -166,9 +168,10 @@ describe("scheduled cleanup", () => {
     };
     const prepare = vi.fn(() => statement);
 
-    const tasks = createScheduledCleanupTasks({ prepare } as Parameters<
-      typeof createScheduledCleanupTasks
-    >[0]);
+    const tasks = createScheduledCleanupTasks(
+      { prepare } as Parameters<typeof createScheduledCleanupTasks>[0],
+      mailer
+    );
 
     expect(tasks.map((task) => task.name)).toEqual([
       "account_retention_notices",
@@ -259,11 +262,12 @@ describe("scheduled cleanup", () => {
       if (!statement) throw new Error("Raw retention should not run");
       return statement;
     });
-    const productEventsTask = createScheduledCleanupTasks({
-      prepare,
-    } as Parameters<typeof createScheduledCleanupTasks>[0]).find(
-      (task) => task.name === "product_events"
-    );
+    const productEventsTask = createScheduledCleanupTasks(
+      {
+        prepare,
+      } as Parameters<typeof createScheduledCleanupTasks>[0],
+      mailer
+    ).find((task) => task.name === "product_events");
 
     await expect(productEventsTask?.run()).rejects.toThrow(
       "complete UTC day(s) left to backfill"

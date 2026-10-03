@@ -1,3 +1,4 @@
+import type { TransactionalMailer } from "@/lib/email/plunk-client";
 import {
   sendAccountRetentionNotices,
   AccountRetentionNoticeError,
@@ -105,12 +106,13 @@ export class ScheduledCleanupError extends Error {
 }
 
 export function createScheduledCleanupTasks(
-  db: CleanupDatabase
+  db: CleanupDatabase,
+  mailer: TransactionalMailer
 ): ScheduledCleanupTask[] {
   return [
     {
       name: "account_retention_notices",
-      run: () => sendAccountRetentionNotices(db),
+      run: () => sendAccountRetentionNotices(db, { mailer }),
     },
     { name: "shares", run: () => cleanupExpiredShares(db) },
     { name: "api_keys", run: () => cleanupExpiredApiKeys(db) },

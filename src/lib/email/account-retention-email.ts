@@ -1,8 +1,6 @@
-import "server-only";
-
 import { getSiteUrl } from "@/lib/seo";
 import { formatAccountInactivity } from "@/lib/server/account-retention-timeline";
-import { buildEmailShell } from "@/lib/server/email-shell";
+import { buildEmailShell } from "@/lib/email/email-shell";
 
 export type AccountRetentionNoticeStage = "first" | "final";
 

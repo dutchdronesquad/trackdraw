@@ -1,9 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "main": "./custom-worker.ts",
-  "alias": {
-    "server-only": "./node_modules/next/dist/compiled/server-only/empty.js",
-  },
   "minify": true,
   "upload_source_maps": true,
   "name": "trackdraw",

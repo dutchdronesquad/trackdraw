@@ -4,7 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
-import { buildAccountRetentionEmail } from "@/lib/server/account-retention-email";
+import {
+  createPlunkMailer,
+  type PlunkMailOptions,
+} from "@/lib/email/plunk-client";
+import { buildAccountRetentionEmail } from "@/lib/email/account-retention-email";
 import { sendAccountRetentionNotices } from "@/lib/server/account-retention-notices";
 
 import {
@@ -16,11 +20,7 @@ let sqlite: DatabaseSync;
 let clock: Date;
 let afterClaim: (() => void) | undefined;
 let failSentWrite: boolean;
-const send = vi.fn(
-  async (
-    _mail: Parameters<typeof import("@/lib/server/plunk").sendPlunkMail>[0]
-  ) => {}
-);
+const send = vi.fn(async (_mail: PlunkMailOptions) => {});
 
 function adapter() {
   return {
@@ -49,7 +49,10 @@ function adapter() {
   };
 }
 function run() {
-  return sendAccountRetentionNotices(adapter(), { now: () => clock, send });
+  return sendAccountRetentionNotices(adapter(), {
+    now: () => clock,
+    mailer: { isConfigured: () => true, send },
+  });
 }
 function notices() {
   return sqlite
@@ -287,9 +290,11 @@ describe("account retention notices", () => {
     expect(notices()).toEqual([]);
   });
   it("requires a configured transactional sender before claiming any notice", async () => {
-    vi.stubEnv("PLUNK_API_KEY", "");
     await expect(
-      sendAccountRetentionNotices(adapter(), { now: () => clock })
+      sendAccountRetentionNotices(adapter(), {
+        now: () => clock,
+        mailer: createPlunkMailer({}),
+      })
     ).rejects.toThrow("require Plunk configuration");
     expect(notices()).toEqual([]);
   });

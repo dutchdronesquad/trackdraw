@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getAuthEmailPreviewContent } from "@/lib/server/auth-email";
-import { buildAccountRetentionEmail } from "@/lib/server/account-retention-email";
+import { buildAccountRetentionEmail } from "@/lib/email/account-retention-email";
 
 export const emailPreviewKeys = [
   "magic-link",

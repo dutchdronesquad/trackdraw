@@ -1,11 +1,9 @@
-import "server-only";
-
 import {
   buildAccountRetentionEmail,
   type AccountRetentionNoticeStage,
-} from "@/lib/server/account-retention-email";
+} from "@/lib/email/account-retention-email";
 import { addUtcCalendarMonths } from "@/lib/server/account-retention-timeline";
-import { isPlunkConfigured, sendPlunkMail } from "@/lib/server/plunk";
+import type { TransactionalMailer } from "@/lib/email/plunk-client";
 
 type Statement = {
   bind(...values: unknown[]): Statement;
@@ -57,11 +55,11 @@ export async function sendAccountRetentionNotices(
   db: Database,
   {
     now = () => new Date(),
-    send = sendPlunkMail,
+    mailer,
   }: {
     now?: () => Date;
-    send?: typeof sendPlunkMail;
-  } = {}
+    mailer: TransactionalMailer;
+  }
 ) {
   const startedAt = now();
   const current = startedAt.toISOString();
@@ -107,7 +105,7 @@ export async function sendAccountRetentionNotices(
     failed: 0,
     uncertain: 0,
   };
-  if (candidates.length && send === sendPlunkMail && !isPlunkConfigured()) {
+  if (candidates.length && !mailer.isConfigured()) {
     throw new Error("Account retention notices require Plunk configuration");
   }
   for (const candidate of candidates) {
@@ -187,7 +185,7 @@ export async function sendAccountRetentionNotices(
         .bind(now().toISOString(), notice.id, claim, now().toISOString())
         .first<{ email: string; name: string | null; attempted_at: string }>();
       if (!recipient) continue;
-      await send({
+      await mailer.send({
         to: { address: recipient.email, name: recipient.name },
         ...buildAccountRetentionEmail(
           notice.stage,

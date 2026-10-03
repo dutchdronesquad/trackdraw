@@ -1,5 +1,3 @@
-import "server-only";
-
 import { getSiteUrl } from "@/lib/seo";
 
 function escapeHtml(value: string) {
