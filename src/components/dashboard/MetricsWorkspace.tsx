@@ -43,6 +43,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/AppTooltip";
+import {
+  AcquisitionAside,
+  ContentAside,
+  EmbedAside,
+  ExportReliabilityAside,
+  ExportUsageAside,
+  GrowthAside,
+  JourneyAside,
+  LocalizationAside,
+  RetentionAside,
+  TimingAside,
+  WeeklyAside,
+} from "@/components/dashboard/MetricsAsides";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -1125,46 +1138,54 @@ export default function MetricsWorkspace({
         ) : null}
 
         <TabsContent value="overview" className="mt-3 space-y-3">
-          <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(19rem,1fr)]">
-            <section
-              className="bg-card min-w-0 rounded-lg border p-4"
-              aria-label={t("views.userGrowth")}
-            >
-              <UserGrowthCard
-                growthByRange={growthByRange}
+          <MetricsSection
+            title={t("questions.growth")}
+            description={t("questions.growthDescription")}
+            aside={
+              <GrowthAside
+                growthData={
+                  growthRange === "custom" ? null : growthByRange[growthRange]
+                }
                 growthTimeline={growthTimeline}
-                bare
-                compact
-                activeRange={growthRange}
-                activeCustomRange={growthCustomRange}
-                onPresetSelect={setGrowthRange}
-                onCustomApply={(value) => {
-                  setGrowthCustomRange(value);
-                  setGrowthRange("custom");
-                }}
-                showRangePicker={!header}
               />
-            </section>
-            <MetricsSection
-              title={t("overview.exportTitle")}
-              description={t("overview.exportNote")}
-              bodyClassName="p-3 sm:p-4"
-            >
-              <PeriodInsightState
-                insights={selectedInsights}
-                failed={periodInsights.failed}
+            }
+          >
+            <UserGrowthCard
+              growthByRange={growthByRange}
+              growthTimeline={growthTimeline}
+              bare
+              compact
+              hideHeading
+              activeRange={growthRange}
+              activeCustomRange={growthCustomRange}
+              onPresetSelect={setGrowthRange}
+              onCustomApply={(value) => {
+                setGrowthCustomRange(value);
+                setGrowthRange("custom");
+              }}
+              showRangePicker={!header}
+            />
+          </MetricsSection>
+          <MetricsSection
+            title={t("overview.exportTitle")}
+            description={t("overview.exportNote")}
+            aside={
+              selectedInsights ? (
+                <ExportUsageAside usage={selectedInsights.usage} />
+              ) : null
+            }
+          >
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
 
-                source="events"
-              >
-                {selectedInsights ? (
-                  <ExportUsageBreakdown
-                    usage={selectedInsights.usage}
-                    compact
-                  />
-                ) : null}
-              </PeriodInsightState>
-            </MetricsSection>
-          </div>
+              source="events"
+            >
+              {selectedInsights ? (
+                <ExportUsageBreakdown usage={selectedInsights.usage} compact />
+              ) : null}
+            </PeriodInsightState>
+          </MetricsSection>
 
           <MetricsSection
             title={t("evidence.title")}
@@ -1269,7 +1290,10 @@ export default function MetricsWorkspace({
               </table>
             </div>
           </MetricsSection>
-          <MetricsSection title={t("analysis.weeklyTitle")}>
+          <MetricsSection
+            title={t("analysis.weeklyTitle")}
+            aside={<WeeklyAside analysis={selectedInsights?.analysis} />}
+          >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1291,14 +1315,23 @@ export default function MetricsWorkspace({
             metric={explorer.activeCreatorRate}
             generatedAt={explorer.generatedAt}
           />
-          <section
-            className="bg-card min-w-0 rounded-lg border p-4 sm:p-5"
-            aria-label={t("views.userGrowth")}
+          <MetricsSection
+            title={t("questions.growth")}
+            description={t("questions.growthDescription")}
+            aside={
+              <GrowthAside
+                growthData={
+                  growthRange === "custom" ? null : growthByRange[growthRange]
+                }
+                growthTimeline={growthTimeline}
+              />
+            }
           >
             <UserGrowthCard
               growthByRange={growthByRange}
               growthTimeline={growthTimeline}
               bare
+              hideHeading
               activeRange={growthRange}
               activeCustomRange={growthCustomRange}
               onPresetSelect={setGrowthRange}
@@ -1308,7 +1341,7 @@ export default function MetricsWorkspace({
               }}
               showRangePicker={!header}
             />
-          </section>
+          </MetricsSection>
           <MetricsSection
             title={t("retention.title")}
             description={t("period.fixedWindow")}
@@ -1319,6 +1352,7 @@ export default function MetricsWorkspace({
                 generatedAt={explorer.generatedAt}
               />
             }
+            aside={<RetentionAside metric={explorer.retention} />}
           >
             <RetentionTable metric={explorer.retention} />
           </MetricsSection>
@@ -1335,6 +1369,7 @@ export default function MetricsWorkspace({
                 generatedAt={explorer.generatedAt}
               />
             }
+            aside={<AcquisitionAside metric={explorer.acquisition} />}
           >
             <ExplorerBarRows
               metric={explorer.acquisition}
@@ -1349,6 +1384,7 @@ export default function MetricsWorkspace({
                 <QualityLabel quality={selectedLocalization.quality} />
               ) : null
             }
+            aside={<LocalizationAside metrics={selectedLocalization} />}
           >
             {selectedLocalization ? (
               <>
@@ -1371,7 +1407,10 @@ export default function MetricsWorkspace({
         </TabsContent>
 
         <TabsContent value="creation" className="mt-4 space-y-4">
-          <MetricsSection title={t("analysis.journeyTitle")}>
+          <MetricsSection
+            title={t("analysis.journeyTitle")}
+            aside={<JourneyAside analysis={selectedInsights?.analysis} />}
+          >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1383,7 +1422,10 @@ export default function MetricsWorkspace({
               ) : null}
             </PeriodInsightState>
           </MetricsSection>
-          <MetricsSection title={t("analysis.timingTitle")}>
+          <MetricsSection
+            title={t("analysis.timingTitle")}
+            aside={<TimingAside analysis={selectedInsights?.analysis} />}
+          >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1438,6 +1480,9 @@ export default function MetricsWorkspace({
           <MetricsSection
             title={t("content.title")}
             description={t("content.description")}
+            aside={
+              <ContentAside points={selectedInsights?.contentGrowth ?? []} />
+            }
           >
             <div>
               <PeriodInsightState
@@ -1455,7 +1500,12 @@ export default function MetricsWorkspace({
         </TabsContent>
 
         <TabsContent value="distribution" className="mt-4 space-y-4">
-          <MetricsSection title={t("analysis.exportTitle")}>
+          <MetricsSection
+            title={t("analysis.exportTitle")}
+            aside={
+              <ExportReliabilityAside analysis={selectedInsights?.analysis} />
+            }
+          >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
@@ -1519,6 +1569,11 @@ export default function MetricsWorkspace({
           <MetricsSection
             title={t("sharing.embedTitle")}
             description={t("sharing.embedDescription")}
+            aside={
+              selectedInsights ? (
+                <EmbedAside usage={selectedInsights.usage} />
+              ) : null
+            }
           >
             <div>
               <PeriodInsightState

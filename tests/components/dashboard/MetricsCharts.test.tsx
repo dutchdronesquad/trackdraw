@@ -301,7 +301,7 @@ describe("metrics decision views", () => {
     ).toContain("h-11");
     fireEvent.change(projectLimit, { target: { value: "999" } });
     expect((projectLimit as HTMLInputElement).value).toBe("5");
-    expect(screen.getAllByText("21+")).toHaveLength(3);
+    expect(screen.getAllByText("21+")).toHaveLength(1);
     expect(screen.getByText("Free-plan impact")).toBeTruthy();
     expect(screen.getByText("Commercial signals")).toBeTruthy();
   });

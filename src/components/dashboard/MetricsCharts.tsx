@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useId, useMemo, useRef, useState } from "react";
+import ToneBadge from "@/components/dashboard/ToneBadge";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, CalendarIcon, Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
@@ -12,6 +13,7 @@ import {
   Cell,
   ComposedChart,
   Line,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts";
@@ -845,6 +847,7 @@ export function UserGrowthCard({
   onPresetSelect,
   onCustomApply,
   showRangePicker = true,
+  hideHeading = false,
 }: {
   growthByRange: GrowthByRange;
   growthTimeline: GrowthTimeline;
@@ -855,6 +858,7 @@ export function UserGrowthCard({
   onPresetSelect?: (range: GrowthPresetRange) => void;
   onCustomApply?: (range: GrowthCustomRange) => void;
   showRangePicker?: boolean;
+  hideHeading?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.userGrowth");
   const [internalRange, setInternalRange] = useState<GrowthRange>("3m");
@@ -892,8 +896,13 @@ export function UserGrowthCard({
 
   const content = (
     <>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 space-y-0.5">
+      <div
+        className={cn(
+          "flex items-start justify-between gap-3",
+          hideHeading && !showRangePicker && "hidden"
+        )}
+      >
+        <div className={cn("min-w-0 space-y-0.5", hideHeading && "sr-only")}>
           <h3 className="text-sm font-semibold">{t("title")}</h3>
           <p
             className={cn(
@@ -2108,21 +2117,19 @@ function buildHistogram(counts: number[]) {
   }));
 }
 
-function ResourceCard({
+function LimitControl({
   title,
-  counts,
   limit,
-  totalUsers,
   near,
   above,
+  totalUsers,
   onLimitChange,
 }: {
   title: string;
-  counts: number[];
   limit: number;
-  totalUsers: number;
   near: number;
   above: number;
+  totalUsers: number;
   onLimitChange: (v: number) => void;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
@@ -2131,102 +2138,45 @@ function ResourceCard({
   const numberId = `${inputId}-number`;
   const resultId = `${inputId}-result`;
   const descriptionId = `${inputId}-description`;
-  const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
-  const histogram = useMemo(
-    () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
-    [counts]
-  );
   const pct = totalUsers > 0 ? Math.round((above / totalUsers) * 100) : 0;
 
   return (
-    <fieldset className="grid min-w-0 gap-4 border-t p-4 first:border-t-0 md:grid-cols-[8rem_minmax(14rem,1fr)_8rem_8rem] md:items-center">
+    <fieldset className="space-y-2 border-t px-4 py-4 first:border-t-0">
       <legend className="sr-only">
         {t("fieldsetLegend", { resource: title })}
       </legend>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-          {t("observedDistribution")}
-        </p>
-        <span className="mt-2 inline-flex rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
-          {t("observed")}
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={numberId} className="text-sm font-medium">
+          {title}
+        </label>
+        <span
+          id={resultId}
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "text-xs tabular-nums",
+            above > 0
+              ? "font-medium text-rose-600 dark:text-rose-400"
+              : "text-muted-foreground"
+          )}
+        >
+          {t("aboveLimitCount", { count: above, pct })}
         </span>
       </div>
-
-      <div className="min-w-0">
-        <ChartContainer config={distConfig} className="h-32 w-full">
-          <BarChart
-            accessibilityLayer
-            data={histogram}
-            margin={{ left: 0, right: 0, top: 2, bottom: 18 }}
-            barCategoryGap="12%"
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 11 }}
-              tickMargin={4}
-              label={{
-                value: t("perUserAxis", { title }),
-                position: "insideBottom",
-                offset: -12,
-                style: { fontSize: 11, fill: "var(--muted-foreground)" },
-              }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 11 }}
-              allowDecimals={false}
-              width={28}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={({ active, payload, label }) => {
-                if (!active || !payload?.length) return null;
-                const count = Number(payload[0]?.value ?? 0);
-                const qualifier =
-                  label === `${HISTOGRAM_OVERFLOW_BUCKET}+`
-                    ? ""
-                    : t("withExactly");
-                return (
-                  <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
-                    <p className="text-foreground font-semibold tabular-nums">
-                      {t("usersCount", { count })}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {t("withCount", {
-                        qualifier,
-                        count: String(label ?? ""),
-                        resource: title.toLowerCase(),
-                      })}
-                    </p>
-                  </div>
-                );
-              }}
-            />
-            <Bar dataKey="users" radius={[3, 3, 0, 0]}>
-              {histogram.map((entry) => (
-                <Cell
-                  key={entry.bucket}
-                  fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
-                  fillOpacity={entry.bucket > limit ? 0.72 : 0.68}
-                  stroke={entry.bucket > limit ? "var(--foreground)" : "none"}
-                  strokeWidth={entry.bucket > limit ? 1.5 : 0}
-                  strokeDasharray={entry.bucket > limit ? "3 2" : undefined}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ChartContainer>
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor={numberId} className="text-muted-foreground text-xs">
-          {t("candidateLimit")}
+      <div className="flex items-center gap-3">
+        <label htmlFor={rangeId} className="sr-only">
+          {t("rangeLabel", { resource: title })}
         </label>
+        <input
+          id={rangeId}
+          type="range"
+          min={0}
+          max={CANDIDATE_LIMIT_MAX}
+          value={limit}
+          aria-describedby={`${resultId} ${descriptionId}`}
+          onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
+          className="accent-brand-primary h-11 min-w-0 flex-1 cursor-pointer md:h-9"
+        />
         <input
           id={numberId}
           type="number"
@@ -2241,52 +2191,120 @@ function ResourceCard({
               onLimitChange(n);
             }
           }}
-          className="h-11 w-full rounded-md border bg-transparent px-3 text-base tabular-nums md:h-9 md:px-2 md:text-sm"
-        />
-        <label htmlFor={rangeId} className="sr-only">
-          {t("rangeLabel", { resource: title })}
-        </label>
-        <input
-          id={rangeId}
-          type="range"
-          min={0}
-          max={CANDIDATE_LIMIT_MAX}
-          value={limit}
-          aria-describedby={`${resultId} ${descriptionId}`}
-          onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
-          className="accent-foreground h-11 w-full cursor-pointer md:h-9"
+          className="h-11 w-16 shrink-0 rounded-md border bg-transparent px-2 text-base tabular-nums md:h-9 md:text-sm"
         />
       </div>
-
-      <div>
-        <span
-          id={resultId}
-          role="status"
-          aria-live="polite"
-          className={`text-xl font-bold tabular-nums ${
-            above > 0
-              ? "text-rose-600 dark:text-rose-400"
-              : "text-muted-foreground"
-          }`}
-        >
-          {above}
-        </span>
-        <p className="text-muted-foreground text-xs">
-          {t("aboveLimit", { pct })}
-        </p>
-        <p className="mt-1 text-xs tabular-nums">{t("nearLimit", { near })}</p>
-      </div>
+      <p className="text-muted-foreground text-xs tabular-nums">
+        {t("nearLimit", { near })}
+      </p>
       <p id={descriptionId} className="sr-only">
         {t("limitExplanation", { limit })}
       </p>
-      <div className="md:col-span-4">
-        <DataTableDisclosure
-          label={t("viewData")}
-          columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
-          rows={histogram.map((entry) => [entry.label, entry.users])}
-        />
-      </div>
     </fieldset>
+  );
+}
+
+function ResourceHistogram({
+  title,
+  counts,
+  limit,
+}: {
+  title: string;
+  counts: number[];
+  limit: number;
+}) {
+  const t = useTranslations("dashboard.metrics.planLimit");
+  const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
+  const histogram = useMemo(
+    () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
+    [counts]
+  );
+
+  return (
+    <div className="space-y-3">
+      <ChartContainer config={distConfig} className="h-56 w-full">
+        <BarChart
+          accessibilityLayer
+          data={histogram}
+          margin={{ left: 0, right: 8, top: 16, bottom: 18 }}
+          barCategoryGap="14%"
+        >
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis
+            dataKey="label"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 11 }}
+            tickMargin={4}
+            label={{
+              value: t("perUserAxis", { title }),
+              position: "insideBottom",
+              offset: -12,
+              style: { fontSize: 11, fill: "var(--muted-foreground)" },
+            }}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 11 }}
+            allowDecimals={false}
+            width={28}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null;
+              const count = Number(payload[0]?.value ?? 0);
+              const qualifier =
+                label === `${HISTOGRAM_OVERFLOW_BUCKET}+`
+                  ? ""
+                  : t("withExactly");
+              return (
+                <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+                  <p className="text-foreground font-semibold tabular-nums">
+                    {t("usersCount", { count })}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {t("withCount", {
+                      qualifier,
+                      count: String(label ?? ""),
+                      resource: title.toLowerCase(),
+                    })}
+                  </p>
+                </div>
+              );
+            }}
+          />
+          {limit > 0 ? (
+            <ReferenceLine
+              x={String(limit)}
+              stroke="var(--foreground)"
+              strokeDasharray="4 3"
+              label={{
+                value: t("limitMarker", { limit }),
+                position: "top",
+                fontSize: 11,
+                fill: "var(--foreground)",
+              }}
+            />
+          ) : null}
+          <Bar dataKey="users" radius={[3, 3, 0, 0]}>
+            {histogram.map((entry) => (
+              <Cell
+                key={entry.bucket}
+                fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
+                fillOpacity={entry.bucket > limit ? 0.75 : 0.68}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
+      <DataTableDisclosure
+        label={t("viewData")}
+        columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
+        rows={histogram.map((entry) => [entry.label, entry.users])}
+      />
+    </div>
   );
 }
 
@@ -2300,6 +2318,9 @@ export function PlanLimitSimulator({
   const t = useTranslations("dashboard.metrics.planLimit");
   const locale = useLocale();
   const [limits, setLimits] = useState({ projects: 5, shares: 5, presets: 5 });
+  const [focusResource, setFocusResource] = useState<
+    "projects" | "shares" | "presets"
+  >("projects");
   const [monthlyCostInput, setMonthlyCostInput] = useState("");
   const [costSource, setCostSource] = useState("");
   const [pricingAssumptions, setPricingAssumptions] = useState({
@@ -2366,197 +2387,64 @@ export function PlanLimitSimulator({
     );
   }
 
+  const resources = [
+    {
+      key: "projects" as const,
+      title: t("projects"),
+      counts: projCounts,
+      limit: limits.projects,
+    },
+    {
+      key: "shares" as const,
+      title: t("shareLinks"),
+      counts: shareCounts,
+      limit: limits.shares,
+    },
+    {
+      key: "presets" as const,
+      title: t("presets"),
+      counts: presetCounts,
+      limit: limits.presets,
+    },
+  ];
+  const focused =
+    resources.find((resource) => resource.key === focusResource) ??
+    resources[0];
+
   return (
     <div className="space-y-4">
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
-          <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
+      <div className="grid items-start gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-4">
+          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
+            <div className="border-b px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
                 <h2 className="text-base font-semibold">{t("title")}</h2>
-                <span className="rounded-md border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
-                  {t("simulated")}
-                </span>
+                <ToneBadge tone="sky">{t("simulated")}</ToneBadge>
               </div>
               <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("simulationAssumption")}
+                {t("controlsDescription")}
               </p>
             </div>
-            <p className="text-muted-foreground shrink-0 text-xs">
-              {t("distributionSource")}
-            </p>
-          </div>
-          <ResourceCard
-            title={t("projects")}
-            counts={projCounts}
-            limit={limits.projects}
-            totalUsers={totalUsers}
-            near={impact.resources.projects.near}
-            above={impact.resources.projects.above}
-            onLimitChange={(v) =>
-              setLimits((prev) => ({ ...prev, projects: v }))
-            }
-          />
-          <ResourceCard
-            title={t("shareLinks")}
-            counts={shareCounts}
-            limit={limits.shares}
-            totalUsers={totalUsers}
-            near={impact.resources.shares.near}
-            above={impact.resources.shares.above}
-            onLimitChange={(v) => setLimits((prev) => ({ ...prev, shares: v }))}
-          />
-          <ResourceCard
-            title={t("presets")}
-            counts={presetCounts}
-            limit={limits.presets}
-            totalUsers={totalUsers}
-            near={impact.resources.presets.near}
-            above={impact.resources.presets.above}
-            onLimitChange={(v) =>
-              setLimits((prev) => ({ ...prev, presets: v }))
-            }
-          />
-          <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 border-t px-4 py-3 text-xs">
-            <span>{t("nearDefinition")}</span>
-            <span>{t("emptyExcluded", { count: impact.emptyAccounts })}</span>
-          </div>
-        </section>
-
-        <aside className="bg-card overflow-hidden rounded-lg border border-dashed border-sky-400/70">
-          <div className="border-b p-4">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold">{t("scenarioTitle")}</h2>
-              <span className="rounded-md border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
-                {t("simulated")}
-              </span>
-            </div>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("scenarioDescription")}
-            </p>
-          </div>
-
-          <div className="space-y-1 p-4">
-            <p className="text-sm font-semibold">{t("accountsNearOrAbove")}</p>
-            <p className="text-3xl font-bold tabular-nums">
-              {impact.nearOrAboveAny}
-            </p>
-            <p className="text-muted-foreground text-sm tabular-nums">
-              {t("nearOrAboveDetail", {
-                pct: impactPct,
-                near: impact.nearAny,
-                above: impact.aboveAny,
-              })}
-            </p>
-          </div>
-
-          <div className="space-y-3 border-t p-4">
-            <div>
-              <p className="text-sm font-semibold">{t("pricingTitle")}</p>
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                {t("pricingDescription")}
-              </p>
-            </div>
-            <label className="block space-y-1 text-xs">
-              <span className="text-muted-foreground">
-                {t("monthlyInfrastructureCost")}
-              </span>
-              <span className="relative block">
-                <span className="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2">
-                  €
-                </span>
-                <input
-                  type="number"
-                  aria-label={t("monthlyInfrastructureCost")}
-                  min={0}
-                  step="0.01"
-                  value={monthlyCostInput}
-                  onChange={(event) => setMonthlyCostInput(event.target.value)}
-                  className="h-11 w-full rounded-md border bg-transparent pr-3 pl-7 text-base tabular-nums sm:h-9 sm:pr-2 sm:pl-6 sm:text-sm"
-                />
-              </span>
-            </label>
-            <p className="text-muted-foreground -mt-1 text-xs tabular-nums">
-              {costPerCreator !== null
-                ? t("costPerActiveCreatorContext", {
-                    cost: formatCurrency(costPerCreator),
-                  })
-                : t("enterMonthlyCost")}
-            </p>
-            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-              {(["paidAdoption", "costBuffer"] as const).map((key) => (
-                <label key={key} className="space-y-1 text-xs">
-                  <span className="text-muted-foreground">{t(key)}</span>
-                  <span className="relative block">
-                    <input
-                      type="number"
-                      aria-label={t(key)}
-                      min={key === "paidAdoption" ? 0.1 : 0}
-                      max={100}
-                      step="0.5"
-                      value={pricingAssumptions[key]}
-                      onChange={(event) =>
-                        setPricingAssumptions((previous) => ({
-                          ...previous,
-                          [key]: event.target.value,
-                        }))
-                      }
-                      className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
-                    />
-                    <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
-                      %
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
-            <div className="bg-muted/45 rounded-lg p-3">
-              <p className="text-muted-foreground text-xs">{t("priceFloor")}</p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums">
-                {costCoverageEstimate
-                  ? formatCurrency(
-                      costCoverageEstimate.costCoveringPricePerPaidCreator
-                    )
-                  : t("notAvailable")}
-              </p>
-              <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-                {costCoverageEstimate
-                  ? t("pricingContext", {
-                      paid: new Intl.NumberFormat(locale, {
-                        maximumFractionDigits: 1,
-                      }).format(costCoverageEstimate.expectedPaidCreators),
-                      breakEven: formatCurrency(
-                        costCoverageEstimate.breakEvenPerPaidCreator
-                      ),
-                    })
-                  : t("enterMonthlyCost")}
-              </p>
-              <p className="text-muted-foreground mt-1 text-[0.65rem]">
-                {t("perMonthExTax")}
-              </p>
-            </div>
-            <label className="block space-y-1 text-xs">
-              <span className="text-muted-foreground">{t("costSource")}</span>
-              <input
-                type="text"
-                aria-label={t("costSource")}
-                value={costSource}
-                onChange={(event) => setCostSource(event.target.value)}
-                placeholder={t("costSourcePlaceholder")}
-                className="h-11 w-full rounded-md border bg-transparent px-3 text-base sm:h-9 sm:px-2 sm:text-sm"
+            {resources.map((resource) => (
+              <LimitControl
+                key={resource.key}
+                title={resource.title}
+                limit={resource.limit}
+                totalUsers={totalUsers}
+                near={impact.resources[resource.key].near}
+                above={impact.resources[resource.key].above}
+                onLimitChange={(v) =>
+                  setLimits((prev) => ({ ...prev, [resource.key]: v }))
+                }
               />
-            </label>
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              {costSource.trim()
-                ? t("derivedCostSource", { source: costSource.trim() })
-                : t("missingCostSource")}
-            </p>
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              {t("pricingAssumption")}
-            </p>
-          </div>
+            ))}
+            <div className="text-muted-foreground space-y-1 border-t px-4 py-3 text-xs">
+              <p>{t("nearDefinition")}</p>
+              <p>{t("emptyExcluded", { count: impact.emptyAccounts })}</p>
+            </div>
+          </section>
 
-          <details className="group border-t p-4">
+          <details className="bg-card group rounded-lg border p-4">
             <summary className="cursor-pointer text-sm font-semibold">
               {t("behaviorAdvanced")}
             </summary>
@@ -2600,7 +2488,212 @@ export function PlanLimitSimulator({
               </p>
             </div>
           </details>
-        </aside>
+        </div>
+
+        <div className="min-w-0 space-y-4">
+          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
+            <div className="flex flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t("scenarioTitle")}
+                </h2>
+                <p className="text-muted-foreground mt-0.5 text-sm">
+                  {t("scenarioDescription")}
+                </p>
+              </div>
+              <ToneBadge tone="sky">{t("simulated")}</ToneBadge>
+            </div>
+            <dl className="grid grid-cols-1 border-b sm:grid-cols-3">
+              <div className="border-b px-4 py-3 sm:border-r sm:border-b-0">
+                <dd
+                  className={cn(
+                    "text-2xl font-semibold tabular-nums",
+                    impact.aboveAny > 0 && "text-rose-600 dark:text-rose-400"
+                  )}
+                >
+                  {impact.aboveAny}
+                </dd>
+                <dt className="text-muted-foreground text-xs">
+                  {t("accountsAbove")}
+                </dt>
+              </div>
+              <div className="border-b px-4 py-3 sm:border-r sm:border-b-0">
+                <dd
+                  className={cn(
+                    "text-2xl font-semibold tabular-nums",
+                    impact.nearAny > 0 && "text-amber-700 dark:text-amber-300"
+                  )}
+                >
+                  {impact.nearAny}
+                </dd>
+                <dt className="text-muted-foreground text-xs">
+                  {t("accountsNear")}
+                </dt>
+              </div>
+              <div className="px-4 py-3">
+                <dd className="text-2xl font-semibold tabular-nums">
+                  {impactPct}%
+                </dd>
+                <dt className="text-muted-foreground text-xs">
+                  {t("accountsAffectedShare")}
+                </dt>
+              </div>
+            </dl>
+            <div className="space-y-3 p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-muted-foreground text-xs tabular-nums">
+                  {t("nearOrAboveDetail", {
+                    pct: impactPct,
+                    near: impact.nearAny,
+                    above: impact.aboveAny,
+                  })}
+                </p>
+                <div
+                  role="group"
+                  aria-label={t("distributionFor")}
+                  className="bg-muted inline-flex h-9 items-center gap-0.5 self-start rounded-lg p-1"
+                >
+                  {resources.map((resource) => (
+                    <button
+                      key={resource.key}
+                      type="button"
+                      aria-pressed={focused.key === resource.key}
+                      onClick={() => setFocusResource(resource.key)}
+                      className={cn(
+                        "text-muted-foreground h-7 cursor-pointer rounded-md px-3 text-xs font-medium transition-colors",
+                        focused.key === resource.key &&
+                          "bg-background text-foreground shadow-sm"
+                      )}
+                    >
+                      {resource.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <ResourceHistogram
+                key={focused.key}
+                title={focused.title}
+                counts={focused.counts}
+                limit={focused.limit}
+              />
+              <p className="text-muted-foreground text-xs">
+                {t("distributionSource")}
+              </p>
+            </div>
+          </section>
+
+          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
+            <div className="space-y-3 p-4">
+              <div>
+                <p className="text-sm font-semibold">{t("pricingTitle")}</p>
+                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                  {t("pricingDescription")}
+                </p>
+              </div>
+              <label className="block space-y-1 text-xs">
+                <span className="text-muted-foreground">
+                  {t("monthlyInfrastructureCost")}
+                </span>
+                <span className="relative block">
+                  <span className="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2">
+                    €
+                  </span>
+                  <input
+                    type="number"
+                    aria-label={t("monthlyInfrastructureCost")}
+                    min={0}
+                    step="0.01"
+                    value={monthlyCostInput}
+                    onChange={(event) =>
+                      setMonthlyCostInput(event.target.value)
+                    }
+                    className="h-11 w-full rounded-md border bg-transparent pr-3 pl-7 text-base tabular-nums sm:h-9 sm:pr-2 sm:pl-6 sm:text-sm"
+                  />
+                </span>
+              </label>
+              <p className="text-muted-foreground -mt-1 text-xs tabular-nums">
+                {costPerCreator !== null
+                  ? t("costPerActiveCreatorContext", {
+                      cost: formatCurrency(costPerCreator),
+                    })
+                  : t("enterMonthlyCost")}
+              </p>
+              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+                {(["paidAdoption", "costBuffer"] as const).map((key) => (
+                  <label key={key} className="space-y-1 text-xs">
+                    <span className="text-muted-foreground">{t(key)}</span>
+                    <span className="relative block">
+                      <input
+                        type="number"
+                        aria-label={t(key)}
+                        min={key === "paidAdoption" ? 0.1 : 0}
+                        max={100}
+                        step="0.5"
+                        value={pricingAssumptions[key]}
+                        onChange={(event) =>
+                          setPricingAssumptions((previous) => ({
+                            ...previous,
+                            [key]: event.target.value,
+                          }))
+                        }
+                        className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
+                      />
+                      <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
+                        %
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <div className="bg-muted/45 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs">
+                  {t("priceFloor")}
+                </p>
+                <p className="mt-0.5 text-2xl font-bold tabular-nums">
+                  {costCoverageEstimate
+                    ? formatCurrency(
+                        costCoverageEstimate.costCoveringPricePerPaidCreator
+                      )
+                    : t("notAvailable")}
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs tabular-nums">
+                  {costCoverageEstimate
+                    ? t("pricingContext", {
+                        paid: new Intl.NumberFormat(locale, {
+                          maximumFractionDigits: 1,
+                        }).format(costCoverageEstimate.expectedPaidCreators),
+                        breakEven: formatCurrency(
+                          costCoverageEstimate.breakEvenPerPaidCreator
+                        ),
+                      })
+                    : t("enterMonthlyCost")}
+                </p>
+                <p className="text-muted-foreground mt-1 text-[0.65rem]">
+                  {t("perMonthExTax")}
+                </p>
+              </div>
+              <label className="block space-y-1 text-xs">
+                <span className="text-muted-foreground">{t("costSource")}</span>
+                <input
+                  type="text"
+                  aria-label={t("costSource")}
+                  value={costSource}
+                  onChange={(event) => setCostSource(event.target.value)}
+                  placeholder={t("costSourcePlaceholder")}
+                  className="h-11 w-full rounded-md border bg-transparent px-3 text-base sm:h-9 sm:px-2 sm:text-sm"
+                />
+              </label>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                {costSource.trim()
+                  ? t("derivedCostSource", { source: costSource.trim() })
+                  : t("missingCostSource")}
+              </p>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                {t("pricingAssumption")}
+              </p>
+            </div>
+          </section>
+        </div>
       </div>
 
       <section className="flex flex-col gap-3 rounded-lg border border-dashed px-4 py-3 lg:flex-row lg:items-center lg:justify-between">

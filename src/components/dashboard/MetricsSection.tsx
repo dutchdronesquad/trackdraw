@@ -6,6 +6,7 @@ export default function MetricsSection({
   title,
   description,
   status,
+  aside,
   children,
   className,
   bodyClassName,
@@ -14,6 +15,7 @@ export default function MetricsSection({
   title: ReactNode;
   description?: ReactNode;
   status?: ReactNode;
+  aside?: ReactNode;
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
@@ -41,7 +43,60 @@ export default function MetricsSection({
         </div>
         {status ? <div className="shrink-0">{status}</div> : null}
       </div>
-      <div className={cn("p-4 sm:p-5", bodyClassName)}>{children}</div>
+      <div className={aside ? "flex flex-wrap" : undefined}>
+        <div
+          className={cn(
+            "min-w-0 p-4 sm:p-5",
+            aside ? "flex-[3_1_30rem]" : undefined,
+            bodyClassName
+          )}
+        >
+          {children}
+        </div>
+        {aside}
+      </div>
     </section>
+  );
+}
+
+export type MetricsAsideChange = {
+  text: string;
+  tone: "positive" | "negative" | "neutral";
+};
+
+export function MetricsAside({
+  value,
+  label,
+  change,
+  note,
+}: {
+  value: string;
+  label: string;
+  change?: MetricsAsideChange | null;
+  note?: ReactNode;
+}) {
+  return (
+    <aside className="flex min-w-0 flex-[1_1_15rem] flex-col gap-2 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
+      <div>
+        <p className="text-2xl leading-tight font-semibold tabular-nums">
+          {value}
+        </p>
+        <p className="text-muted-foreground text-sm">{label}</p>
+      </div>
+      {change ? (
+        <p
+          className={cn(
+            "text-xs font-medium tabular-nums",
+            change.tone === "positive" &&
+              "text-emerald-700 dark:text-emerald-300",
+            change.tone === "negative" && "text-rose-700 dark:text-rose-300",
+            change.tone === "neutral" && "text-muted-foreground"
+          )}
+        >
+          {change.text}
+        </p>
+      ) : null}
+      {note ? <p className="text-sm leading-relaxed">{note}</p> : null}
+    </aside>
   );
 }

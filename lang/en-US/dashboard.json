@@ -575,6 +575,68 @@
         "journeyTitle": "Where do sessions stop?",
         "timingTitle": "How fast do creators get a first result?",
         "exportTitle": "Do exports work in every format?"
+      },
+      "questions": {
+        "growth": "Is the creator base growing?",
+        "growthDescription": "Registered accounts over time and new sign-ups per period."
+      },
+      "asides": {
+        "change": {
+          "relative": "{change} vs {reference}",
+          "points": "{change} pts vs previous period"
+        },
+        "growth": {
+          "label": "registered accounts",
+          "added": "{count} new in this range",
+          "note": "Latest period: {latest} new accounts, compared with {previous} the period before."
+        },
+        "weekly": {
+          "label": "sessions started in the latest week",
+          "ref": "the week before",
+          "note": "{valuable} sessions reached a valuable result ({rate})."
+        },
+        "retention": {
+          "label": "return within 30 days, latest cohort",
+          "note": "{returned} of {activated} activated creators came back."
+        },
+        "acquisition": {
+          "label": "of eligible sessions came from {source}",
+          "note": "{count, plural, one {# source} other {# sources}} recorded in this period."
+        },
+        "localization": {
+          "label": "of creator sessions prefer an unsupported language",
+          "note": "{language} is the largest unsupported language with {sessions} sessions.",
+          "noCandidate": "No unsupported language has enough sessions to report."
+        },
+        "journey": {
+          "label": "of started sessions reach a valuable result",
+          "dropBeforeEdit": "The largest drop happens before the first edit: {rate} of sessions stop there.",
+          "dropBeforeResult": "The largest drop happens between editing and a result: {rate} of editing sessions stop there."
+        },
+        "timing": {
+          "label": "median time to a first result",
+          "seconds": "{value}s",
+          "minutes": "{value} min",
+          "note": "75% of creators get there within {p75}, based on {samples} sessions."
+        },
+        "content": {
+          "label": "projects created in the latest period",
+          "ref": "the period before",
+          "note": "Also created: {shares} shares and {presets} presets."
+        },
+        "exports": {
+          "label": "of export attempts failed",
+          "worst": "{format} has the highest failure rate at {rate}.",
+          "none": "No failed exports among {count} completed exports."
+        },
+        "exportUsage": {
+          "label": "completed exports",
+          "note": "{format} is the most used format ({share})."
+        },
+        "embeds": {
+          "label": "qualifying embed views",
+          "note": "Across {count} websites above the reporting threshold."
+        }
       }
     },
     "kpi": {
@@ -918,7 +980,7 @@
       "total": "Total"
     },
     "planLimit": {
-      "title": "Plan limit simulation",
+      "title": "Candidate free limits",
       "description": "Set a proposed free-plan limit for each resource. Highlighted, outlined bars show accounts above that limit; this simulation does not change any account.",
       "simulated": "Simulated",
       "observed": "Observed",
@@ -985,7 +1047,14 @@
       "conversion": "Conversion · unavailable",
       "upgrades": "Upgrades · unavailable",
       "downgrades": "Downgrades · unavailable",
-      "churn": "Churn · unavailable"
+      "churn": "Churn · unavailable",
+      "controlsDescription": "Drag a limit to see which existing accounts it would affect. Nothing changes for any account.",
+      "aboveLimitCount": "{count, plural, one {# account above} other {# accounts above}} · {pct}%",
+      "limitMarker": "Limit {limit}",
+      "accountsAbove": "accounts above a limit",
+      "accountsNear": "accounts near a limit",
+      "accountsAffectedShare": "of accounts with content affected",
+      "distributionFor": "Show distribution for"
     },
     "planningPage": {
       "metadataTitle": "Plans and limits",
