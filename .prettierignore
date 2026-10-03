@@ -2,6 +2,7 @@
 out
 build
 node_modules
+.omc/
 next-env.d.ts
 public
 src/components/ui

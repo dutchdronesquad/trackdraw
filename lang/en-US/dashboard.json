@@ -1520,7 +1520,7 @@
     },
     "retention": {
       "title": "Automatic cleanup is active",
-      "description": "A background job runs daily at 00:17 UTC. It permanently deletes shares revoked for more than 30 days and temporary shares expired for more than 30 days."
+      "description": "A background job runs daily at 00:17 UTC. It permanently deletes shares revoked for more than 7 days and temporary shares expired for more than 7 days."
     },
     "lifecycle": {
       "revokedOn": "Revoked {date}",
@@ -1541,7 +1541,7 @@
     },
     "purgeDialog": {
       "title": "Delete share permanently?",
-      "description": "This permanently removes the database record for <strong>{title}</strong>. This is irreversible and skips the normal 30-day cleanup window. Only revoked shares can be deleted this way.",
+      "description": "This permanently removes the database record for <strong>{title}</strong>. This is irreversible and skips the normal 7-day cleanup window. Only revoked shares can be deleted this way.",
       "fallbackTitle": "this share",
       "owner": "Owner:",
       "cancel": "Cancel",

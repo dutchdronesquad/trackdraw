@@ -489,7 +489,7 @@ Focus:
 
 Possible later idea (not yet scoped, separate task):
 
-- Retention policy for long-inactive published shares, roughly a one-year inactivity window, distinct from the existing 30-day cleanup of revoked/expired shares — needs its own definition of "inactive" and an owner notice before anything is removed
+- Retention policy for long-inactive published shares, roughly a one-year inactivity window, distinct from the existing 7-day cleanup of revoked/expired shares — needs its own definition of "inactive" and an owner notice before anything is removed
 
 #### Share Version History (`Lower priority`)
 
