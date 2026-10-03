@@ -414,6 +414,8 @@ describe("metrics decision views", () => {
         publicationFailures: 0,
         unusedApiKeys: 0,
         expiredApiKeys: 0,
+        apiKeysNearLimit: 0,
+        upcomingAccountRemovals: 0,
         analyticsPipelineGaps: 0,
         buildingMetrics: 0,
         availability: { failures: true, pipeline: true },
@@ -432,6 +434,7 @@ describe("metrics decision views", () => {
           comparisonReady: true,
           quality: "healthy",
           measuredSince: "2026-07-01",
+          trend: [],
         },
         ...(["MTR-004", "MTR-005", "MTR-006"] as const).map((id) => ({
           id,
@@ -453,6 +456,7 @@ describe("metrics decision views", () => {
           quality:
             id === "MTR-006" ? ("low_volume" as const) : ("building" as const),
           measuredSince: "2026-08-12",
+          trend: [],
         })),
       ],
     } satisfies DailyCockpitData;
@@ -460,6 +464,7 @@ describe("metrics decision views", () => {
       id: "MTR-008" as const,
       windowDays: 28 as const,
       measuredSince: "2026-07-01",
+      trend: [],
       quality: "building" as const,
       rows: [],
     };

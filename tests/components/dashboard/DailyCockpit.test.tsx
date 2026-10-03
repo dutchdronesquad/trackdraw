@@ -43,6 +43,8 @@ function cockpitData({
       publicationFailures: 4,
       unusedApiKeys: 0,
       expiredApiKeys: 0,
+      apiKeysNearLimit: 0,
+      upcomingAccountRemovals: 0,
       analyticsPipelineGaps: 0,
       buildingMetrics: 0,
       availability: { failures: true, pipeline: true },
@@ -61,6 +63,7 @@ function cockpitData({
         comparisonReady: false,
         quality: "healthy",
         measuredSince: "2026-08-01",
+        trend: [],
       },
       ...(["MTR-004", "MTR-005", "MTR-006"] as const).map((id) => ({
         id,
@@ -86,6 +89,7 @@ function cockpitData({
         comparisonReady: false,
         quality: "healthy" as const,
         measuredSince: "2026-08-01",
+        trend: [],
       })),
     ],
   };
@@ -160,5 +164,18 @@ describe("DailyCockpit", () => {
     expect(screen.getByText("1 item needs attention")).toBeTruthy();
     expect(screen.getByText("Reliable product warning")).toBeTruthy();
     expect(screen.queryByText("Operational status unavailable")).toBeNull();
+  });
+
+  it("lists accounts reaching their removal date as an action", async () => {
+    const data = cockpitData();
+    data.operations.upcomingAccountRemovals = 2;
+    render(await DailyCockpit({ data }));
+
+    expect(screen.getByText("1 item needs attention")).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: /Accounts reaching their removal date/ })
+        .getAttribute("href")
+    ).toBe("/dashboard/users");
   });
 });

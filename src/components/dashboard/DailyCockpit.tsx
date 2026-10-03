@@ -1,11 +1,14 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   ArrowRight,
   CircleHelp,
+  Clock3,
   Eye,
+  Gauge,
   ImageOff,
-  Info,
   KeyRound,
   RefreshCcw,
   ShieldCheck,
@@ -13,8 +16,6 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
 import { productMetricValue } from "@/lib/dashboard-cockpit";
 import type {
   DailyCockpitData,
@@ -69,6 +70,43 @@ function metricWarningLabel(
   return t("warning.operationFallback");
 }
 
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return null;
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  const points = values.map((value, index) => [
+    (index / (values.length - 1)) * 200,
+    36 - ((value - min) / range) * 30,
+  ]);
+  const line = points
+    .map(
+      ([x, y], index) => `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`
+    )
+    .join(" ");
+  return (
+    <svg
+      viewBox="0 0 200 40"
+      preserveAspectRatio="none"
+      className="mt-2 block h-9 w-full"
+      aria-hidden="true"
+    >
+      <path
+        d={`${line} L200 40 L0 40 Z`}
+        fill="var(--chart-1)"
+        opacity={0.12}
+      />
+      <path
+        d={line}
+        fill="none"
+        stroke="var(--chart-1)"
+        strokeWidth={2}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 function MetricCell({
   id,
   metric,
@@ -76,7 +114,7 @@ function MetricCell({
   percent,
   date,
   t,
-  index,
+  isLast,
 }: {
   id: (typeof METRIC_IDS)[number];
   metric: DailyCockpitHeadlineMetric | null;
@@ -84,11 +122,9 @@ function MetricCell({
   percent: Intl.NumberFormat;
   date: Intl.DateTimeFormat;
   t: Awaited<ReturnType<typeof getTranslations>>;
-  index: number;
+  isLast: boolean;
 }) {
   const Icon = METRIC_ICONS[id];
-  const isLastItem = index === METRIC_IDS.length - 1;
-  const isDesktopBottomRow = index >= Math.ceil(METRIC_IDS.length / 2);
   const currentDisplay = metric
     ? formatValue(
         metric.valueKind,
@@ -128,50 +164,53 @@ function MetricCell({
     <Link
       href={metric?.drilldown ?? METRIC_DRILLDOWNS[id]}
       prefetch={false}
-      className={`hover:bg-muted/35 focus-visible:ring-ring group flex min-h-28 min-w-0 gap-3 p-4 transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none ${!isLastItem ? "border-b" : ""} ${isDesktopBottomRow ? "sm:border-b-0" : ""} ${index % 2 === 0 ? "sm:border-r" : ""}`}
+      className={cn(
+        "hover:bg-muted/35 focus-visible:ring-ring group flex min-w-0 flex-col gap-1 border-b p-4 transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none sm:border-r xl:border-b-0",
+        isLast && "border-b-0 sm:border-r-0"
+      )}
       aria-label={t("kpis.openDrilldown", { metric: t(`kpis.${id}.label`) })}
     >
-      <span className="bg-muted text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg">
-        <Icon className="size-4" aria-hidden="true" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-start justify-between gap-2">
-          <span className="text-sm leading-snug font-medium">
-            {t(`kpis.${id}.label`)}
-          </span>
-          <ArrowRight
-            className="text-muted-foreground mt-0.5 size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+      <span className="flex items-start justify-between gap-2 text-sm font-medium">
+        <span className="inline-flex items-center gap-2">
+          <Icon
+            className="text-muted-foreground size-4 shrink-0"
             aria-hidden="true"
           />
+          {t(`kpis.${id}.label`)}
         </span>
-        <span className="mt-1 block text-lg leading-tight font-semibold tabular-nums">
-          {stateLabel}
-        </span>
-        {metric?.current?.denominator != null ? (
-          <span className="text-muted-foreground mt-1 block text-xs tabular-nums">
-            {t("kpis.rateCounts", {
-              numerator: number.format(metric.current.numerator),
-              denominator: number.format(metric.current.denominator),
-            })}
-          </span>
-        ) : null}
-        {metric?.comparisonReady && previousDisplay ? (
-          <span className="text-muted-foreground mt-1 block text-xs">
-            {t("kpis.previousCompact", { value: previousDisplay })}
-            {liveDisplay
-              ? ` · ${t("kpis.liveCompact", { value: liveDisplay })}`
-              : ""}
-          </span>
-        ) : null}
-        <span className="text-muted-foreground mt-2 block text-xs">
-          {measuredSince
-            ? t("kpis.windowSince", {
-                window: METRIC_WINDOWS[id],
-                date: measuredSince,
-              })
-            : t("kpis.window", { window: METRIC_WINDOWS[id] })}
-        </span>
+        <ArrowRight
+          className="text-muted-foreground mt-0.5 size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
       </span>
+      <span className="text-2xl leading-tight font-semibold tabular-nums">
+        {stateLabel}
+      </span>
+      {metric?.current?.denominator != null ? (
+        <span className="text-muted-foreground block text-xs tabular-nums">
+          {t("kpis.rateCounts", {
+            numerator: number.format(metric.current.numerator),
+            denominator: number.format(metric.current.denominator),
+          })}
+        </span>
+      ) : null}
+      {metric?.comparisonReady && previousDisplay ? (
+        <span className="text-muted-foreground block text-xs">
+          {t("kpis.previousCompact", { value: previousDisplay })}
+          {liveDisplay
+            ? ` · ${t("kpis.liveCompact", { value: liveDisplay })}`
+            : ""}
+        </span>
+      ) : null}
+      <span className="text-muted-foreground block text-xs">
+        {measuredSince
+          ? t("kpis.windowSince", {
+              window: METRIC_WINDOWS[id],
+              date: measuredSince,
+            })
+          : t("kpis.window", { window: METRIC_WINDOWS[id] })}
+      </span>
+      <Sparkline values={metric?.trend ?? []} />
     </Link>
   );
 }
@@ -207,6 +246,26 @@ export default async function DailyCockpit({
           detail: t("operations.previews.detail"),
           href: "/dashboard/gallery",
           action: t("operations.previews.action"),
+        },
+        {
+          key: "rateLimits",
+          icon: Gauge,
+          count: data.operations.apiKeysNearLimit,
+          available: true,
+          actionable: true,
+          detail: t("operations.rateLimits.detail"),
+          href: "/dashboard/api-keys",
+          action: t("operations.rateLimits.action"),
+        },
+        {
+          key: "removals",
+          icon: Clock3,
+          count: data.operations.upcomingAccountRemovals,
+          available: true,
+          actionable: true,
+          detail: t("operations.removals.detail"),
+          href: "/dashboard/users",
+          action: t("operations.removals.action"),
         },
         {
           key: "failures",
@@ -259,136 +318,69 @@ export default async function DailyCockpit({
   ).length;
   const unavailableOperationCount = data
     ? operations.filter((operation) => !operation.available).length
-    : 4;
+    : operations.length || 6;
   const separateProductWarning = Boolean(
     data?.warning && data.warning.metricId !== "MTR-010"
   );
   const attentionCount =
     actionableOperations.length + (separateProductWarning ? 1 : 0);
-  const showAttentionPanel = attentionCount > 0 || !data;
   const buildingMetricCount =
     data?.headlines.filter(
       (metric) =>
         metric.quality === "not_started" || metric.quality === "building"
     ).length ?? METRIC_IDS.length;
 
+  const checkSummary = (
+    <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+      {clearOperationCount > 0 ? (
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck
+            className="size-4 text-emerald-600 dark:text-emerald-400"
+            aria-hidden="true"
+          />
+          {t("operations.confirmedClear", { count: clearOperationCount })}
+        </span>
+      ) : null}
+      {unavailableOperationCount > 0 ? (
+        <span className="inline-flex items-center gap-1.5">
+          <CircleHelp className="size-4" aria-hidden="true" />
+          {t("operations.notMeasured", { count: unavailableOperationCount })}
+        </span>
+      ) : null}
+    </p>
+  );
+
   return (
-    <section aria-labelledby="daily-status" className="space-y-5">
-      <div className="flex min-h-11 flex-col gap-2 border-b pb-3 sm:flex-row sm:items-center sm:gap-4">
-        <h2 id="daily-status" className="text-sm font-semibold sm:text-base">
-          {t("today.title")}
-        </h2>
-        {attentionCount > 0 ? (
-          <span className="inline-flex min-h-8 items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
-            <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
-            {t("today.actions", {
-              count: attentionCount,
-            })}
-          </span>
-        ) : data ? (
-          <span className="inline-flex min-h-8 items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
-            <ShieldCheck className="size-4" aria-hidden="true" />
-            {t("today.noActions")}
-          </span>
-        ) : (
-          <span className="text-muted-foreground inline-flex min-h-8 items-center gap-2 text-sm">
-            <CircleHelp className="size-4" aria-hidden="true" />
-            {t("today.unavailable")}
-          </span>
-        )}
-        {clearOperationCount > 0 ? (
-          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm sm:before:mr-2 sm:before:content-['·']">
-            <ShieldCheck
-              className="size-4 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
-            {t("operations.confirmedClear", { count: clearOperationCount })}
-          </span>
-        ) : null}
-        {unavailableOperationCount > 0 ? (
-          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm sm:before:mr-2 sm:before:content-['·']">
-            <CircleHelp className="size-4" aria-hidden="true" />
-            {t("operations.notMeasured", {
-              count: unavailableOperationCount,
-            })}
-          </span>
-        ) : null}
-      </div>
-
-      <div
-        className={cn(
-          "grid min-w-0 border-b pb-5",
-          showAttentionPanel && "lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]"
-        )}
-      >
+    <div className="space-y-6">
+      {attentionCount > 0 ? (
         <section
-          aria-labelledby="cockpit-headlines"
-          className={cn("min-w-0", showAttentionPanel && "lg:pr-6")}
+          aria-labelledby="cockpit-operations"
+          className="bg-card overflow-hidden rounded-lg border"
         >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 id="cockpit-headlines" className="text-base font-semibold">
-                {t("headlines.title")}
+          <div className="flex flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h2
+                id="cockpit-operations"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300"
+              >
+                <TriangleAlert className="size-4" aria-hidden="true" />
+                {t("operations.title")}
               </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t("headlines.description")}
-              </p>
+              <span className="text-sm font-medium">
+                {t("today.actions", { count: attentionCount })}
+              </span>
             </div>
-            <Link
-              href="/dashboard/metrics"
-              prefetch={false}
-              className="text-muted-foreground hover:text-foreground focus-visible:ring-ring hidden min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
-            >
-              {t("headlines.viewAnalytics")}
-              <ArrowRight className="size-3.5" aria-hidden="true" />
-            </Link>
+            {checkSummary}
           </div>
-          <div className="mt-4 grid min-w-0 grid-cols-1 border-y sm:grid-cols-2">
-            {METRIC_IDS.map((id, index) => (
-              <MetricCell
-                key={id}
-                id={id}
-                metric={
-                  data?.headlines.find((metric) => metric.id === id) ?? null
-                }
-                number={number}
-                percent={percent}
-                date={date}
-                t={t}
-                index={index}
-              />
-            ))}
-          </div>
-          <div className="text-muted-foreground mt-3 flex items-start gap-2 text-sm">
-            <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <p>
-              {buildingMetricCount > 0
-                ? t("headlines.collecting", { count: buildingMetricCount })
-                : t("headlines.ready")}
-            </p>
-          </div>
-        </section>
-
-        {showAttentionPanel ? (
-          <section
-            aria-labelledby="cockpit-operations"
-            className="order-first mb-5 min-w-0 border-b pb-5 lg:order-none lg:mb-0 lg:border-b-0 lg:border-l lg:pb-0 lg:pl-6"
-          >
-            <h2 id="cockpit-operations" className="text-base font-semibold">
-              {t("operations.title")}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("operations.description")}
-            </p>
-
+          <ul className="divide-y">
             {data?.warning ? (
-              <div className="mt-4 flex gap-3 border-b border-amber-500/25 pb-4">
+              <li className="flex gap-3 px-4 py-3">
                 <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
                   <TriangleAlert className="size-4" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{t("warning.title")}</p>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  <p className="text-muted-foreground mt-0.5 text-sm leading-relaxed">
                     {t("warning.detail", {
                       metric: metricWarningLabel(
                         data.warning.metricId,
@@ -412,65 +404,120 @@ export default async function DailyCockpit({
                     })}
                   </p>
                 </div>
-              </div>
+              </li>
             ) : null}
+            {actionableOperations.map((operation) => {
+              const Icon = operation.icon;
+              return (
+                <li key={operation.key}>
+                  <Link
+                    href={operation.href}
+                    prefetch={false}
+                    className="hover:bg-muted/35 focus-visible:ring-ring group flex items-center gap-3 px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                      <Icon className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-baseline gap-2">
+                        <span className="text-sm font-semibold">
+                          {t(`operations.${operation.key}.label`)}
+                        </span>
+                        <span className="text-sm font-semibold tabular-nums">
+                          {number.format(operation.count)}
+                        </span>
+                      </span>
+                      <span className="text-muted-foreground mt-0.5 block text-sm leading-relaxed">
+                        {operation.detail}
+                      </span>
+                    </span>
+                    <span className="hidden shrink-0 items-center gap-1 text-sm font-medium sm:inline-flex">
+                      {operation.action}
+                      <ArrowRight
+                        className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : (
+        <section
+          aria-label={t("today.title")}
+          className="bg-card flex flex-col gap-3 rounded-lg border px-4 py-3.5 sm:flex-row sm:items-center"
+        >
+          <span
+            className={cn(
+              "inline-flex size-10 shrink-0 items-center justify-center rounded-lg",
+              data
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            {data ? (
+              <ShieldCheck className="size-4" aria-hidden="true" />
+            ) : (
+              <CircleHelp className="size-4" aria-hidden="true" />
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">
+              {data ? t("today.noActions") : t("operations.unavailable")}
+            </p>
+            {data ? null : (
+              <p className="text-muted-foreground text-sm">
+                {t("operations.unavailableDetail")}
+              </p>
+            )}
+          </div>
+          {checkSummary}
+        </section>
+      )}
 
-            <div className="mt-4 divide-y">
-              {actionableOperations.length > 0 ? (
-                actionableOperations.map((operation) => {
-                  const Icon = operation.icon;
-                  return (
-                    <Link
-                      key={operation.key}
-                      href={operation.href}
-                      prefetch={false}
-                      className="focus-visible:ring-ring group flex min-h-11 items-start gap-3 py-3 first:pt-0 focus-visible:ring-2 focus-visible:outline-none"
-                    >
-                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                        <Icon className="size-4" aria-hidden="true" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline justify-between gap-3">
-                          <span className="text-sm font-semibold">
-                            {t(`operations.${operation.key}.label`)}
-                          </span>
-                          <span className="text-lg font-semibold tabular-nums">
-                            {number.format(operation.count)}
-                          </span>
-                        </span>
-                        <span className="text-muted-foreground mt-1 block text-sm leading-relaxed">
-                          {operation.detail}
-                        </span>
-                        <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium">
-                          {operation.action}
-                          <ArrowRight
-                            className="size-3.5 transition-transform group-hover:translate-x-0.5"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </span>
-                    </Link>
-                  );
-                })
-              ) : !data ? (
-                <div className="flex items-start gap-3 py-3 first:pt-0">
-                  <span className="bg-muted text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg">
-                    <CircleHelp className="size-4" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {t("operations.unavailable")}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                      {t("operations.unavailableDetail")}
-                    </p>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </section>
+      <section aria-labelledby="cockpit-headlines" className="space-y-3">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 id="cockpit-headlines" className="text-base font-semibold">
+              {t("headlines.title")}
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("headlines.description")}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/metrics"
+            prefetch={false}
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring hidden min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
+          >
+            {t("headlines.viewAnalytics")}
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </div>
+        <div className="bg-card grid min-w-0 grid-cols-1 overflow-hidden rounded-lg border sm:grid-cols-2 xl:grid-cols-4">
+          {METRIC_IDS.map((id, index) => (
+            <MetricCell
+              key={id}
+              id={id}
+              metric={
+                data?.headlines.find((metric) => metric.id === id) ?? null
+              }
+              number={number}
+              percent={percent}
+              date={date}
+              t={t}
+              isLast={index === METRIC_IDS.length - 1}
+            />
+          ))}
+        </div>
+        {buildingMetricCount > 0 ? (
+          <p className="text-muted-foreground text-sm">
+            {t("headlines.collecting", { count: buildingMetricCount })}
+          </p>
         ) : null}
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

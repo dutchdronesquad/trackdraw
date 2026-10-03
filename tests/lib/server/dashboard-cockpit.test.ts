@@ -56,6 +56,8 @@ describe("daily cockpit server data", () => {
     expect(apiKeyStatement?.bind).toHaveBeenCalledWith(
       "2026-08-14T12:34:56.000Z",
       "2026-07-15T12:34:56.000Z",
+      "2026-08-14T12:34:56.000Z",
+      "2026-08-14T12:34:56.000Z",
       "2026-08-14T12:34:56.000Z"
     );
   });

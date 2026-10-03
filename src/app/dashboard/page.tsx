@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -23,6 +24,7 @@ import DailyCockpit from "@/components/dashboard/DailyCockpit";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
+import { getSiteMediaUrl } from "@/lib/seo";
 import { listAuditEvents, type AuditEvent } from "@/lib/server/audit";
 import {
   getGalleryOverviewStats,
@@ -122,46 +124,39 @@ function humanEventLabel(
 
 // --- Components ---
 
-function PlatformStat({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  iconTone,
-}: {
-  label: string;
-  value: number | string;
-  icon: LucideIcon;
-  accent: string;
-  iconTone: string;
-}) {
-  return (
-    <div
-      className={`flex h-full min-w-0 items-center gap-3 rounded-xl border border-t-2 p-3.5 sm:p-4 sm:px-5 ${accent}`}
-    >
-      <span
-        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg sm:size-10 ${iconTone}`}
-      >
-        <Icon className="size-4" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-sm leading-snug">{label}</p>
-        <p className="text-xl leading-tight font-semibold tabular-nums">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
+function createDayLabel(
+  locale: string,
+  labels: { today: string; yesterday: string }
+) {
+  const timeZone = "Europe/Amsterdam";
+  const dayFormatter = new Intl.DateTimeFormat(locale, {
+    timeZone,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const keyFormatter = new Intl.DateTimeFormat("en-CA", { timeZone });
+  const now = Date.now();
+  const todayKey = keyFormatter.format(new Date(now));
+  const yesterdayKey = keyFormatter.format(new Date(now - 86_400_000));
+  return (value: string) => {
+    const key = keyFormatter.format(new Date(value));
+    if (key === todayKey) return labels.today;
+    if (key === yesterdayKey) return labels.yesterday;
+    return dayFormatter.format(new Date(value));
+  };
 }
 
 function RecentChanges({
   events,
   users,
   t,
+  dayLabel,
 }: {
   events: AuditEvent[];
   users: RecentUser[];
   t: (key: string, values?: Record<string, unknown>) => string;
+  dayLabel: (value: string) => string;
 }) {
   const changes = [
     ...events.map((event) => ({
@@ -188,62 +183,76 @@ function RecentChanges({
     );
   }
 
+  const renderChange = (change: (typeof changes)[number], index: number) => {
+    if (change.kind === "signup") {
+      const displayName =
+        change.user.name?.trim() ||
+        change.user.email?.trim() ||
+        t("fallback.unknownUser");
+      return (
+        <RevealListItem
+          key={`signup-${change.id}`}
+          className="flex min-h-14 items-center gap-3 px-4 py-2.5"
+          delay={index * 0.03}
+        >
+          <span className="bg-muted text-muted-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <UserPlus className="size-3.5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
+            <p className="truncate text-sm font-medium">{displayName}</p>
+            <p className="text-muted-foreground truncate text-sm">
+              {t("events.signedUp")}
+            </p>
+          </div>
+          <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
+            {formatRelativeTime(change.createdAt, t)}
+          </time>
+        </RevealListItem>
+      );
+    }
+
+    const cfg = eventConfig(change.event.eventType);
+    const Icon = cfg.icon;
+    return (
+      <RevealListItem
+        key={`audit-${change.id}`}
+        className="flex min-h-14 items-center gap-3 px-4 py-2.5"
+        delay={index * 0.03}
+      >
+        <span
+          className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${cfg.tone}`}
+        >
+          <Icon className="size-3.5" />
+        </span>
+        <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
+          <p className="truncate text-sm font-medium">
+            {actorLabel(change.event.actor, t("events.system"))}
+          </p>
+          <p className="text-muted-foreground truncate text-sm">
+            {humanEventLabel(change.event.eventType, t)}
+          </p>
+        </div>
+        <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
+          {formatRelativeTime(change.createdAt, t)}
+        </time>
+      </RevealListItem>
+    );
+  };
+
   return (
     <ul className="divide-y">
       {changes.map((change, index) => {
-        if (change.kind === "signup") {
-          const displayName =
-            change.user.name?.trim() ||
-            change.user.email?.trim() ||
-            t("fallback.unknownUser");
-          return (
-            <RevealListItem
-              key={`signup-${change.id}`}
-              className="flex min-h-14 items-center gap-3 py-2.5"
-              delay={index * 0.03}
+        const label = dayLabel(change.createdAt);
+        const header =
+          index === 0 || dayLabel(changes[index - 1].createdAt) !== label ? (
+            <li
+              key={`day-${label}`}
+              className="bg-muted text-muted-foreground px-4 py-1.5 text-xs font-medium"
             >
-              <span className="bg-muted text-muted-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <UserPlus className="size-3.5" aria-hidden="true" />
-              </span>
-              <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
-                <p className="truncate text-sm font-medium">{displayName}</p>
-                <p className="text-muted-foreground truncate text-sm">
-                  {t("events.signedUp")}
-                </p>
-              </div>
-              <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                {formatRelativeTime(change.createdAt, t)}
-              </time>
-            </RevealListItem>
-          );
-        }
-
-        const cfg = eventConfig(change.event.eventType);
-        const Icon = cfg.icon;
-        return (
-          <RevealListItem
-            key={`audit-${change.id}`}
-            className="flex min-h-14 items-center gap-3 py-2.5"
-            delay={index * 0.03}
-          >
-            <span
-              className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${cfg.tone}`}
-            >
-              <Icon className="size-3.5" />
-            </span>
-            <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
-              <p className="truncate text-sm font-medium">
-                {actorLabel(change.event.actor, t("events.system"))}
-              </p>
-              <p className="text-muted-foreground truncate text-sm">
-                {humanEventLabel(change.event.eventType, t)}
-              </p>
-            </div>
-            <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
-              {formatRelativeTime(change.createdAt, t)}
-            </time>
-          </RevealListItem>
-        );
+              {label}
+            </li>
+          ) : null;
+        return [header, renderChange(change, index)];
       })}
     </ul>
   );
@@ -283,41 +292,56 @@ function RecentGalleryEntries({
   }
 
   return (
-    <ul className="divide-y">
-      {entries.map((entry, index) => {
+    <ul className="grid grid-cols-2 gap-3 p-4">
+      {entries.slice(0, 4).map((entry, index) => {
         const badge =
           GALLERY_STATE_BADGE[entry.galleryState] ??
           GALLERY_STATE_BADGE["listed"]!;
+        const previewUrl = entry.galleryPreviewImage
+          ? entry.galleryPreviewImage.startsWith("http")
+            ? entry.galleryPreviewImage
+            : getSiteMediaUrl(entry.galleryPreviewImage)
+          : null;
         return (
-          <RevealListItem
-            key={entry.id}
-            className="flex min-h-14 items-center gap-3 py-2.5"
-            delay={index * 0.03}
-          >
-            <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
-              <ImageIcon className="text-muted-foreground size-3.5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {entry.galleryTitle ||
-                  entry.shareTitle ||
-                  t("fallback.untitled")}
-              </p>
-              <p className="text-muted-foreground truncate text-xs">
+          <RevealListItem key={entry.id} delay={index * 0.03}>
+            <Link
+              href="/dashboard/gallery"
+              prefetch={false}
+              className="focus-visible:ring-ring flex min-w-0 flex-col gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <span className="bg-muted relative block aspect-video overflow-hidden rounded-md border">
+                {previewUrl ? (
+                  <Image
+                    src={previewUrl}
+                    alt=""
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-muted-foreground absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_6px,transparent_6px,transparent_12px)]">
+                    <ImageIcon className="size-4" aria-hidden="true" />
+                  </span>
+                )}
+              </span>
+              <span className="flex min-w-0 items-center justify-between gap-2">
+                <span className="truncate text-sm font-medium">
+                  {entry.galleryTitle ||
+                    entry.shareTitle ||
+                    t("fallback.untitled")}
+                </span>
+                <span
+                  className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-medium ${badge.className}`}
+                >
+                  {t(`galleryState.${badge.labelKey}`)}
+                </span>
+              </span>
+              <span className="text-muted-foreground truncate text-xs">
                 {entry.ownerName ??
                   entry.ownerEmail ??
                   t("fallback.unknownOwner")}
-              </p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${badge.className}`}
-            >
-              {t(`galleryState.${badge.labelKey}`)}
-            </span>
-            <ArrowRight
-              className="text-muted-foreground size-3.5"
-              aria-hidden="true"
-            />
+              </span>
+            </Link>
           </RevealListItem>
         );
       })}
@@ -362,6 +386,11 @@ export default async function DashboardPage() {
   const t = await getTranslations("dashboard.overview");
   const tPages = await getTranslations("dashboard.pages");
   const locale = await getLocale();
+  const number = new Intl.NumberFormat(locale);
+  const dayLabel = createDayLabel(locale, {
+    today: t("days.today"),
+    yesterday: t("days.yesterday"),
+  });
   const updatedAt = cockpit
     ? create24HourDateTimeFormatter(locale, {
         timeZone: "Europe/Amsterdam",
@@ -392,71 +421,51 @@ export default async function DashboardPage() {
 
         {canReadMetrics ? <DailyCockpit data={cockpit} /> : null}
 
-        <section aria-labelledby="platform-snapshot" className="space-y-3">
-          <div>
-            <h2 id="platform-snapshot" className="text-base font-semibold">
-              {t("sections.platformSnapshot")}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {t("sections.platformSnapshotDescription")}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <Reveal className="h-full">
-              <PlatformStat
-                label={t("kpi.totalUsers.label")}
-                value={overviewStats.totalUsers}
-                icon={Users}
-                accent="border-t-emerald-500/70"
-                iconTone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-              />
-            </Reveal>
-            <Reveal className="h-full" delay={0.03}>
-              <PlatformStat
-                label={t("kpi.activeProjects.label")}
-                value={overviewStats.activeProjects}
-                icon={FolderOpen}
-                accent="border-t-violet-500/70"
-                iconTone="bg-violet-500/10 text-violet-700 dark:text-violet-300"
-              />
-            </Reveal>
-            <Reveal className="h-full" delay={0.06}>
-              <PlatformStat
-                label={t("kpi.activeShares.label")}
-                value={overviewStats.activeShares}
-                icon={Link2}
-                accent="border-t-orange-500/70"
-                iconTone="bg-orange-500/10 text-orange-700 dark:text-orange-300"
-              />
-            </Reveal>
-            <Reveal className="h-full" delay={0.09}>
-              <PlatformStat
-                label={t("kpi.gallery.label")}
-                value={galleryStats.public}
-                icon={ImageIcon}
-                accent="border-t-sky-500/70"
-                iconTone="bg-sky-500/10 text-sky-700 dark:text-sky-300"
-              />
-            </Reveal>
-          </div>
+        <section aria-labelledby="platform-snapshot">
+          <h2 id="platform-snapshot" className="sr-only">
+            {t("sections.platformSnapshot")}
+          </h2>
+          <dl className="text-muted-foreground flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {[
+              {
+                key: "totalUsers",
+                icon: Users,
+                value: overviewStats.totalUsers,
+              },
+              {
+                key: "activeProjects",
+                icon: FolderOpen,
+                value: overviewStats.activeProjects,
+              },
+              {
+                key: "activeShares",
+                icon: Link2,
+                value: overviewStats.activeShares,
+              },
+              { key: "gallery", icon: ImageIcon, value: galleryStats.public },
+            ].map(({ key, icon: Icon, value }) => (
+              <div key={key} className="flex items-center gap-2">
+                <Icon className="size-4" aria-hidden="true" />
+                <dd className="text-foreground font-semibold tabular-nums">
+                  {number.format(value)}
+                </dd>
+                <dt>{t(`kpi.${key}.label`)}</dt>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <div className="grid items-start border-t pt-6 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)]">
-          <Reveal className="min-w-0 lg:pr-6">
-            <div className="flex min-h-11 items-center justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("sections.recentChanges")}
-                </h2>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t("sections.recentChangesDescription")}
-                </p>
-              </div>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)]">
+          <Reveal className="bg-card min-w-0 overflow-hidden rounded-lg border">
+            <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
+              <h2 className="text-sm font-semibold">
+                {t("sections.recentChanges")}
+              </h2>
               {canReadAudit ? (
                 <Link
                   href="/dashboard/audit"
                   prefetch={false}
-                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   {t("actions.viewAll")}
                   <ArrowRight className="size-3.5" aria-hidden="true" />
@@ -467,26 +476,20 @@ export default async function DashboardPage() {
               events={recentAuditEvents}
               users={canReadUsers ? overviewStats.recentUsers : []}
               t={t as (key: string, values?: Record<string, unknown>) => string}
+              dayLabel={dayLabel}
             />
           </Reveal>
 
           <Reveal
-            className="mt-6 min-w-0 border-t pt-6 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6"
+            className="bg-card min-w-0 overflow-hidden rounded-lg border"
             delay={0.04}
           >
-            <div className="flex min-h-11 items-center justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("sections.gallery")}
-                </h2>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t("sections.galleryDescription")}
-                </p>
-              </div>
+            <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
+              <h2 className="text-sm font-semibold">{t("sections.gallery")}</h2>
               <Link
                 href="/dashboard/gallery"
                 prefetch={false}
-                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex shrink-0 items-center gap-1 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 {t("actions.viewAll")}
                 <ArrowRight className="size-3.5" aria-hidden="true" />
