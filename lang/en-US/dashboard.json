@@ -1551,8 +1551,13 @@
   },
   "emailPreview": {
     "templates": {
-      "title": "Templates",
-      "description": "Switch between account email templates"
+      "title": "Templates"
+    },
+    "searchPlaceholder": "Search templates",
+    "noResults": "No templates match your search",
+    "flows": {
+      "authentication": "Authentication",
+      "retention": "Account retention"
     },
     "items": {
       "magicLink": {
@@ -1576,11 +1581,13 @@
         "description": "Last warning seven days before scheduled account removal"
       }
     },
-    "subject": "Subject",
     "htmlPreview": "HTML Preview",
     "desktop": "Desktop",
     "mobileWidth": "Mobile width",
     "plainText": "Plain Text",
-    "plainTextHelper": "Fallback body used for text-only clients"
+    "plainTextHelper": "Fallback body used for text-only clients",
+    "from": "From",
+    "to": "To",
+    "viewport": "Preview width"
   }
 }

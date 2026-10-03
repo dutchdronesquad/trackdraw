@@ -11,6 +11,18 @@ export const emailPreviewKeys = [
   "retention-final",
 ] as const;
 export type EmailPreviewKey = (typeof emailPreviewKeys)[number];
+export type EmailPreviewFlow = "authentication" | "retention";
+
+export const emailPreviewMeta: Record<
+  EmailPreviewKey,
+  { flow: EmailPreviewFlow; recipient: string }
+> = {
+  "magic-link": { flow: "authentication", recipient: "pilot@trackdraw.app" },
+  "verify-email": { flow: "authentication", recipient: "pilot@trackdraw.app" },
+  "change-email": { flow: "authentication", recipient: "old@trackdraw.app" },
+  "retention-first": { flow: "retention", recipient: "pilot@trackdraw.app" },
+  "retention-final": { flow: "retention", recipient: "pilot@trackdraw.app" },
+};
 
 export function getEmailPreviewContent(key: EmailPreviewKey) {
   if (key === "retention-first" || key === "retention-final") {
