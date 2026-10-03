@@ -200,9 +200,9 @@ describe("DashboardSharesManager", () => {
     expect(
       screen.getByText(/background job runs daily at 00:17 UTC/i)
     ).toBeTruthy();
-    expect(screen.getByText(/revoked for more than 30 days/i)).toBeTruthy();
+    expect(screen.getByText(/revoked for more than 7 days/i)).toBeTruthy();
     expect(
-      screen.getByText(/temporary shares expired for more than 30 days/i)
+      screen.getByText(/temporary shares expired for more than 7 days/i)
     ).toBeTruthy();
   });
 
@@ -215,11 +215,28 @@ describe("DashboardSharesManager", () => {
     );
 
     const revokedCleanup = screen.getByLabelText(
-      /Expected cleanup 22 May 2026$/
+      /Expected cleanup 29 Apr 2026$/
     );
     expect(revokedCleanup.getAttribute("aria-label")).toMatch(/^Revoked\./);
-    expect(screen.getByLabelText(/Expected cleanup 20 Jun 2026$/)).toBeTruthy();
+    expect(screen.getByLabelText(/Expected cleanup 28 May 2026$/)).toBeTruthy();
     expect(screen.getAllByLabelText(/Expected cleanup/)).toHaveLength(2);
+  });
+
+  it.each([
+    ["2026-04-21T00:16:59.999Z", "28 Apr 2026"],
+    ["2026-04-21T00:17:00.000Z", "29 Apr 2026"],
+    ["2026-04-21T00:17:00.001Z", "29 Apr 2026"],
+  ])("uses the first cron strictly after 7 days from %s", (revokedAt, date) => {
+    render(
+      <DashboardSharesManager
+        currentUserRole="admin"
+        initialShares={[{ ...revokedShare, revokedAt }]}
+      />
+    );
+
+    expect(
+      screen.getByLabelText(`Revoked. Expected cleanup ${date}`)
+    ).toBeTruthy();
   });
 
   it("revokes active shares with a PATCH request", async () => {

@@ -29,6 +29,7 @@ __pycache__/
 /public/locales/
 
 # misc
+.omc/
 .DS_Store
 *.pem
 

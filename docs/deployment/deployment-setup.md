@@ -316,12 +316,14 @@ API keys are managed by Better Auth. Revoked keys are deleted through the API Ke
 
 The Worker runs a daily cron cleanup and removes:
 
-- revoked shares
-- shares that have been expired for more than 30 days
+- shares revoked more than 7 days ago, based on `revoked_at`
+- temporary shares expired for more than 7 days, based on `expires_at`
 - API keys that have been expired for more than 90 days
 - raw product events whose per-row 180-day expiry has passed (with a legacy created-at fallback)
 - privacy-minimized daily product metric aggregates older than 24 months
 - privacy-minimized daily localization-demand aggregates older than 24 months
+
+Active published shares are never selected by share cleanup.
 
 The five retention owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
 

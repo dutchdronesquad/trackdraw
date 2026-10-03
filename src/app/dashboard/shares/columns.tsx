@@ -34,8 +34,8 @@ export type Translate = (
   values?: Record<string, unknown>
 ) => string;
 
-const SHARE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-const SHARE_CLEANUP_UTC_HOUR = 3;
+const SHARE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const SHARE_CLEANUP_UTC_HOUR = 0;
 const SHARE_CLEANUP_UTC_MINUTE = 17;
 
 export function getOwnerLabel(share: DashboardShare, t: Translate) {
@@ -109,7 +109,7 @@ function getExpectedCleanupDate(share: DashboardShare) {
   const cleanupAt = new Date(eligibleAt);
   cleanupAt.setUTCHours(SHARE_CLEANUP_UTC_HOUR, SHARE_CLEANUP_UTC_MINUTE, 0, 0);
 
-  if (cleanupAt.getTime() < eligibleAt) {
+  if (cleanupAt.getTime() <= eligibleAt) {
     cleanupAt.setUTCDate(cleanupAt.getUTCDate() + 1);
   }
 
