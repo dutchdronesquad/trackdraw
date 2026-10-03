@@ -25,6 +25,8 @@ Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`.
 
 ## Build dependencies
 
+`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md).
+
 Keep `esbuild` as an explicit development dependency: the OpenNext Cloudflare CLI imports it directly, so deployment must not rely on another tool hoisting it into the root dependency tree. The PR build checks `opennextjs-cloudflare build --help` after `npm ci` to catch missing adapter dependencies before merge; deployment still runs the complete OpenNext build.
 
 ## Database split
