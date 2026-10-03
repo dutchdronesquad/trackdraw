@@ -1552,7 +1552,7 @@
   "emailPreview": {
     "templates": {
       "title": "Templates",
-      "description": "Switch between auth email variants"
+      "description": "Switch between account email templates"
     },
     "items": {
       "magicLink": {
@@ -1566,8 +1566,17 @@
       "changeEmail": {
         "label": "Email change",
         "description": "Primary account email change confirmation"
+      },
+      "retentionFirst": {
+        "label": "Inactivity warning",
+        "description": "First notice after eleven months of account inactivity"
+      },
+      "retentionFinal": {
+        "label": "Final inactivity warning",
+        "description": "Last warning seven days before scheduled account removal"
       }
     },
+    "subject": "Subject",
     "htmlPreview": "HTML Preview",
     "desktop": "Desktop",
     "mobileWidth": "Mobile width",

@@ -1,3 +1,4 @@
+import { AccountRetentionNoticeError } from "@/lib/server/account-retention-notices";
 import { describe, expect, it, vi } from "vitest";
 import {
   ScheduledCleanupError,
@@ -120,6 +121,41 @@ describe("scheduled cleanup", () => {
     expect(logger.error).not.toHaveBeenCalled();
   });
 
+  it("reports notice counts separately from deleted rows on success and failure", async () => {
+    const logger = createLogger();
+    const noticeHealth = { sent: 2, failed: 0, uncertain: 0 };
+    const task: ScheduledCleanupTask = {
+      name: "account_retention_notices",
+      run: vi.fn(async () => ({ notice_health: noticeHealth })),
+    };
+    const report = await runScheduledCleanup(scheduledContext, [task], {
+      logger,
+    });
+    expect(report.deleted_rows).toBe(0);
+    expect(report.tasks[0]).toMatchObject({
+      deleted_rows: null,
+      notice_health: noticeHealth,
+    });
+    task.run = async () => {
+      throw new AccountRetentionNoticeError({
+        sent: 1,
+        failed: 1,
+        uncertain: 3,
+      });
+    };
+    await expect(
+      runScheduledCleanup(scheduledContext, [task], { logger })
+    ).rejects.toMatchObject({
+      report: {
+        tasks: [
+          expect.objectContaining({
+            notice_health: { sent: 1, failed: 1, uncertain: 3 },
+          }),
+        ],
+      },
+    });
+  });
+
   it("registers all retention owners in the scheduled task set", async () => {
     const run = vi.fn(async () => ({ meta: { changes: 0 } }));
     const statement = {
@@ -135,6 +171,7 @@ describe("scheduled cleanup", () => {
     >[0]);
 
     expect(tasks.map((task) => task.name)).toEqual([
+      "account_retention_notices",
       "shares",
       "api_keys",
       "product_events",
