@@ -36,7 +36,7 @@ export type Translate = (
 
 const SHARE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const SHARE_CLEANUP_UTC_HOUR = 0;
-const SHARE_CLEANUP_UTC_MINUTE = 17;
+const SHARE_CLEANUP_UTC_MINUTE = 0;
 
 export function getOwnerLabel(share: DashboardShare, t: Translate) {
   if (!share.ownerUserId) return t("owner.anonymous");
