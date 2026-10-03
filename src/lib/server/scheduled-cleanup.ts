@@ -1,3 +1,7 @@
+import {
+  cleanupInactiveAccounts,
+  type AccountDeletionMediaBucket,
+} from "@/lib/server/account-deletion";
 import type { TransactionalMailer } from "@/lib/email/plunk-client";
 import {
   sendAccountRetentionNotices,
@@ -28,7 +32,8 @@ export type ScheduledCleanupTaskName =
   | "product_events"
   | "embed_referrers"
   | "localization_demand"
-  | "account_retention_notices";
+  | "account_retention_notices"
+  | "accounts";
 
 export type ScheduledCleanupTask = {
   name: ScheduledCleanupTaskName;
@@ -107,9 +112,11 @@ export class ScheduledCleanupError extends Error {
 
 export function createScheduledCleanupTasks(
   db: CleanupDatabase,
-  mailer: TransactionalMailer
+  mailer: TransactionalMailer,
+  mediaBucket?: AccountDeletionMediaBucket
 ): ScheduledCleanupTask[] {
   return [
+    { name: "accounts", run: () => cleanupInactiveAccounts(db, mediaBucket) },
     {
       name: "account_retention_notices",
       run: () => sendAccountRetentionNotices(db, { mailer }),

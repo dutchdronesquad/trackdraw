@@ -279,6 +279,8 @@ Migration `0021_account_activity.sql` adds `users.last_active_at`. Apply it befo
 
 Migration `0022_account_retention_notices.sql` adds durable first/final account notice records and an activity-update trigger that resets them atomically. Apply it before deploying the warning task. It does not delete accounts or cloud data.
 
+Migration `0023_account_deletion.sql` installs the shared account-deletion lifecycle and durable media cleanup work list. Apply it before deploying automatic deletion. The same database trigger handles admin deletion, Better Auth self-deletion, and cron deletion atomically.
+
 Mail rendering and the Plunk client are shared runtime-independent modules. The custom Worker supplies mail configuration through its bindings; the Next.js adapter retains `server-only` and reads server environment variables. Worker bundling needs no alias for the Next.js marker.
 
 ### Account retention warnings
@@ -291,7 +293,17 @@ Each run processes at most 25 accounts. A unique notice per account, activity ti
 
 Provider acceptance is recorded in `sent_at`; it is not a promise of inbox delivery. Plunk receives a stable `Idempotency-Key` per notice. Retries within 23 hours reuse it, including recovery when Plunk accepted a mail but its response or the database acknowledgment was lost. [Plunk's documented key retention](https://docs.useplunk.com/api-reference/public-api/sendEmail) is 24 hours, so an unacknowledged older attempt is held for reconciliation instead of risking a duplicate. `notice_health` reports sent, failed, and uncertain counts without account details; uncertain attempts make the task fail while other cron owners continue. Investigate provider delivery evidence before changing an uncertain row: record confirmed acceptance, or clear the pending attempt and replace its ID only if non-acceptance is confirmed. Never mark uncertain delivery as sent without evidence.
 
-Account deletion remains a separate follow-up (#921). That owner must require acknowledged first and final notices for the current activity period, respect the latest stored removal date and final notice grace period, and recheck activity/session eligibility. No account is deleted by this warning task.
+### Permanent account deletion
+
+The daily account owner deletes at the twelve-calendar-month anniversary, without an extra month or a recovery window. Both first and final notices must have acknowledged provider acceptance for the current activity timestamp. Both announced deadlines and at least seven days after final acknowledgment must have elapsed. Late warnings can extend removal to honor the promised response period; missing, invalid, or uncertain notice evidence prevents deletion. Stored content, account role, marketing preferences and analytics preferences do not extend the inactivity period. Valid or unknown session expiry always protects the account.
+
+Selection is bounded to 25 candidates. Each destructive `DELETE` rechecks the exact activity timestamp, twelve-month boundary, sessions and notices in the same atomic statement as the account lifecycle trigger. New activity before deletion preserves the account and all its content. A database error rolls back all related deletion. Admin and self-deletion use the same lifecycle without the inactivity guard.
+
+The lifecycle removes archived and active projects, layout presets, owned or project-linked shares, gallery listings, embed referrer counters, linked raw product events, creator activation facts, retention notices, API keys, sessions, accounts, passkeys and account-linked verification/audit records. Better Auth magic-link email payloads, user-ID tokens and passkey challenges are removed as well. New manual/self-deletion audit entries retain counts or the action only, without the deleted identity. Identifier-free metric aggregates remain service statistics.
+
+Gallery removal atomically records the preview object keys in `account_deletion_media`, including canonical keys for concurrent uploads. The account and content are already permanently gone: this list contains no account snapshot or recovery data. R2 deletion is retried until acceptance, at most 100 objects per run, including when no accounts are newly eligible. Failed or missing R2 bindings leave keys pending and fail the account owner; other cron owners continue. Admin and self-deletion also attempt immediate media cleanup. Media routes require a current gallery reference, so an object awaiting R2 cleanup is unavailable. An upload finishing after gallery deletion is added back to the work list. Media already downloaded by a visitor cannot be recalled.
+
+Before production activation, apply all migrations and verify the DB and MEDIA_BUCKET bindings. Run the local full-data and reactivation tests and inspect account-owner logs. Deploying the code enables permanent removal for accounts that satisfy every guard; rolling back code cannot restore deleted accounts.
 
 ## Validation flow
 
@@ -342,6 +354,8 @@ API keys are managed by Better Auth. Revoked keys are deleted through the API Ke
 
 The Worker runs a daily cron cleanup and removes:
 
+- inactive accounts after twelve calendar months, acknowledged warnings and the promised grace period
+- gallery preview objects recorded by the shared deletion lifecycle
 - shares revoked more than 7 days ago, based on `revoked_at`
 - temporary shares expired for more than 7 days, based on `expires_at`
 - API keys that have been expired for more than 90 days
@@ -351,7 +365,7 @@ The Worker runs a daily cron cleanup and removes:
 
 Active published shares are never selected by share cleanup.
 
-The six scheduled owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Account-notice logs additionally report `notice_health`; sends are never counted as deleted rows. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
+The seven scheduled owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Account-notice logs additionally report `notice_health`; sends are never counted as deleted rows. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
 
 If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying is safe: metric rows use deterministic keys with upserts, and data cleanup queries are threshold-based `DELETE` operations. Account-notice retry behavior follows the bounded provider window described above. Aggregation catches up at no more than seven complete UTC days per invocation and the query helper combines stored daily snapshots with only today's small live raw-event window.
 

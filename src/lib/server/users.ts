@@ -4,7 +4,8 @@ import { cache } from "react";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import type { AdminUser } from "@/lib/account/admin-users";
 import { getDatabase } from "@/lib/server/db";
-import { deleteSharesOwnedByUser } from "@/lib/server/shares";
+import { deleteUserAccount as deleteAccountData } from "@/lib/server/account-deletion";
+import { flushAccountDeletionMedia } from "@/lib/server/gallery-media";
 
 type UserRoleRow = {
   role: string | null;
@@ -259,50 +260,8 @@ export async function unbanUser(userId: string): Promise<AdminUser | null> {
 
 export async function deleteUserAccount(userId: string): Promise<void> {
   const db = await getDatabase();
-
-  await db
-    .prepare(
-      `
-        delete from product_events
-        where user_id = ?
-          or project_id in (select id from projects where owner_user_id = ?)
-          or share_token in (select token from shares where owner_user_id = ?)
-      `
-    )
-    .bind(userId, userId, userId)
-    .run();
-
-  await deleteSharesOwnedByUser(userId);
-
-  await db
-    .prepare(
-      `
-        delete from apikey
-        where referenceId = ?
-      `
-    )
-    .bind(userId)
-    .run();
-
-  await db
-    .prepare(
-      `
-        delete from projects
-        where owner_user_id = ?
-      `
-    )
-    .bind(userId)
-    .run();
-
-  await db
-    .prepare(
-      `
-        delete from users
-        where id = ?
-      `
-    )
-    .bind(userId)
-    .run();
+  await deleteAccountData(db, userId);
+  await flushAccountDeletionMedia();
 }
 
 export async function getUserContextStats(

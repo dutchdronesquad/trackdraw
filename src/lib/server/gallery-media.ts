@@ -1,6 +1,8 @@
 import "server-only";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDatabase } from "@/lib/server/db";
+import { cleanupAccountDeletionMedia } from "@/lib/server/account-deletion";
 import { buildGalleryPreviewImageKey } from "@/lib/server/gallery-preview";
 
 type R2Bucket = {
@@ -59,6 +61,23 @@ export async function uploadGalleryPreviewImage(params: {
     },
   });
 
+  const db = await getDatabase();
+  const entry = await db
+    .prepare("SELECT id FROM gallery_entries WHERE id = ?")
+    .bind(params.galleryEntryId)
+    .first<{ id: string }>();
+  if (!entry) {
+    // An upload can finish after concurrent account deletion. Keep its key
+    // durable even if the earlier media work list was already drained.
+    await db
+      .prepare(
+        "INSERT OR IGNORE INTO account_deletion_media (object_key) VALUES (?)"
+      )
+      .bind(key)
+      .run();
+    await flushAccountDeletionMedia();
+    return null;
+  }
   return key;
 }
 
@@ -71,4 +90,17 @@ export async function deleteGalleryPreviewImage(key: string | null) {
   }
 
   await bucket.delete(key);
+}
+
+// Database deletion is already final. R2 failure must not pretend it can be
+// undone; the durable work list is retried by the scheduled owner.
+export async function flushAccountDeletionMedia() {
+  try {
+    await cleanupAccountDeletionMedia(
+      await getDatabase(),
+      await getMediaBucket()
+    );
+  } catch {
+    console.error("[TrackDraw] Account media cleanup pending");
+  }
 }

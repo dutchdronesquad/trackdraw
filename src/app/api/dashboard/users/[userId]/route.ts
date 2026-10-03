@@ -366,12 +366,11 @@ export async function DELETE(
     await createAuditEvent({
       actorUserId: actor.id,
       targetUserId: null,
-      targetLabel: existingUser.email,
+      targetLabel: "Deleted account",
       eventType: auditEventTypes.accountDeleted,
       entityType: "user",
-      entityId: userId,
+      entityId: null,
       metadata: {
-        email: existingUser.email,
         role: existingUser.role,
         ...stats,
       },
