@@ -466,7 +466,7 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).not.toHaveBeenCalled();
     });
 
-    it("deletes the account and writes an audit event with pre-deletion stats", async () => {
+    it("deletes the account with transactional audit context and pre-deletion stats", async () => {
       const stats = {
         projectCount: 2,
         activeShareCount: 1,
@@ -484,19 +484,14 @@ describe("dashboard users API routes", () => {
 
       expect(response.status).toBe(200);
       await expect(response.json()).resolves.toEqual({ ok: true });
-      expect(deleteUserAccount).toHaveBeenCalledWith("user-2");
-      expect(createAuditEvent).toHaveBeenCalledWith({
+      expect(deleteUserAccount).toHaveBeenCalledWith("user-2", {
         actorUserId: adminActor.id,
-        targetUserId: null,
-        targetLabel: "Deleted account",
-        eventType: "account.deleted",
-        entityType: "user",
-        entityId: null,
         metadata: {
           role: targetUser.role,
           ...stats,
         },
       });
+      expect(createAuditEvent).not.toHaveBeenCalled();
     });
   });
 });

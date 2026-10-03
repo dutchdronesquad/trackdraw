@@ -24,6 +24,7 @@ type CleanupPreparedStatement = {
 
 type CleanupDatabase = {
   prepare(query: string): CleanupPreparedStatement;
+  batch<T>(statements: CleanupPreparedStatement[]): Promise<{ results: T[] }[]>;
 };
 
 export type ScheduledCleanupTaskName =

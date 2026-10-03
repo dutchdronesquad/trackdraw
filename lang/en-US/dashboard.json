@@ -1277,6 +1277,7 @@
       "openEntity": "Open entity",
       "viewActorHistory": "View actor history",
       "viewTargetHistory": "View target history",
+      "viewAccountLifecycle": "View account warning and deletion history",
       "noMetadata": "No additional metadata was recorded."
     },
     "fallback": {
@@ -1288,6 +1289,9 @@
       "accountBanned": "Account banned",
       "accountUnbanned": "Account unbanned",
       "accountDeleted": "Account deleted",
+      "accountRetentionNoticeAttempted": "Account warning send attempted",
+      "accountRetentionFirstNoticeSent": "First account warning accepted by email provider",
+      "accountRetentionFinalNoticeSent": "Final account warning accepted by email provider",
       "accountEmailChanged": "Email address changed",
       "apiKeyCreated": "API key created",
       "apiKeyRevoked": "API key revoked",

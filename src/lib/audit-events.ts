@@ -17,6 +17,9 @@ export type AuditEventCategory = (typeof auditEventCategories)[number];
 export const auditEventTypes = {
   accountBanned: "account.banned",
   accountDeleted: "account.deleted",
+  accountRetentionNoticeAttempted: "account.retention.notice.attempted",
+  accountRetentionFirstNoticeSent: "account.retention.first_notice.sent",
+  accountRetentionFinalNoticeSent: "account.retention.final_notice.sent",
   accountEmailChanged: "account.email.changed",
   accountRoleChanged: "account.role.changed",
   accountUnbanned: "account.unbanned",
@@ -51,6 +54,12 @@ export const auditEventTitleKeys: Record<string, string> = {
   [auditEventTypes.accountBanned]: "accountBanned",
   [auditEventTypes.accountUnbanned]: "accountUnbanned",
   [auditEventTypes.accountDeleted]: "accountDeleted",
+  [auditEventTypes.accountRetentionNoticeAttempted]:
+    "accountRetentionNoticeAttempted",
+  [auditEventTypes.accountRetentionFirstNoticeSent]:
+    "accountRetentionFirstNoticeSent",
+  [auditEventTypes.accountRetentionFinalNoticeSent]:
+    "accountRetentionFinalNoticeSent",
   [auditEventTypes.accountEmailChanged]: "accountEmailChanged",
   [auditEventTypes.apiKeyCreated]: "apiKeyCreated",
   [auditEventTypes.apiKeyRevoked]: "apiKeyRevoked",

@@ -6,7 +6,6 @@ import {
   cleanupAccountDeletionMedia,
   deleteUserAccount,
 } from "@/lib/server/account-deletion";
-
 import { sendAccountRetentionNotices } from "@/lib/server/account-retention-notices";
 import type { PlunkMailOptions } from "@/lib/email/plunk-client";
 
@@ -150,7 +149,7 @@ describe("account deletion lifecycle", () => {
   it("refuses deletion when the lifecycle migration is incomplete", async () => {
     sqlite.exec("DROP TRIGGER account_deleted_data");
     await expect(deleteUserAccount(db(), "pilot")).rejects.toThrow(
-      "requires migration 0023"
+      "requires migrations 0023 and 0024"
     );
     expect(exists()).toBe(true);
   });
@@ -208,7 +207,6 @@ describe("account deletion lifecycle", () => {
       "passkey",
       "layout_presets",
       "product_events",
-      "audit_events",
       "embed_referrer_daily",
       "product_metric_creator_activations",
       "account_retention_notices",
