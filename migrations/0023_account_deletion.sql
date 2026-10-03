@@ -25,10 +25,12 @@ BEFORE DELETE ON users
 BEGIN
   DELETE FROM verifications
   WHERE value = OLD.id OR lower(identifier) = lower(OLD.email)
-    OR CASE WHEN json_valid(value) THEN
+    -- Parentheses keep D1's remote SQL parser from treating this END as the
+    -- trigger terminator (cloudflare/workers-sdk#4727).
+    OR (CASE WHEN json_valid(value) THEN
       lower(json_extract(value, '$.email')) = lower(OLD.email)
       OR json_extract(value, '$.userData.id') = OLD.id
-    ELSE 0 END;
+    ELSE 0 END);
 
   DELETE FROM audit_events
   WHERE actor_user_id = OLD.id OR target_user_id = OLD.id
