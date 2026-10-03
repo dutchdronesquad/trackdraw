@@ -1,11 +1,11 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import MetricsTooltipCard from "@/components/dashboard/MetricsTooltipCard";
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
@@ -96,13 +96,29 @@ export function WeeklyActivity({
           <XAxis dataKey="week" tickFormatter={date} minTickGap={32} />
           <YAxis allowDecimals={false} />
           <ChartTooltip
-            content={
-              <ChartTooltipContent
-                labelFormatter={(_, payload) =>
-                  payload[0]?.payload?.label ?? ""
-                }
-              />
-            }
+            cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const row = payload[0]?.payload as
+                (typeof rows)[number] | undefined;
+              return (
+                <MetricsTooltipCard
+                  label={row?.label ?? ""}
+                  rows={(["started", "exports", "views"] as const).map(
+                    (key) => {
+                      const value = payload.find(
+                        (item) => item.dataKey === key
+                      )?.value;
+                      return {
+                        key,
+                        label: config[key].label,
+                        value: typeof value === "number" ? number(value) : "—",
+                      };
+                    }
+                  )}
+                />
+              );
+            }}
           />
           <ChartLegend content={<ChartLegendContent />} />
           <Line
