@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   buildCockpitHeadlineMetrics,
+  productMetricValue,
   selectReliableProductWarning,
   type CockpitHeadlineMetric,
   type ReliableProductWarning,
@@ -21,6 +22,8 @@ export type DailyCockpitOperations = {
   publicationFailures: number;
   unusedApiKeys: number;
   expiredApiKeys: number;
+  apiKeysNearLimit: number;
+  upcomingAccountRemovals: number;
   analyticsPipelineGaps: number;
   buildingMetrics: number;
   availability: {
@@ -31,6 +34,7 @@ export type DailyCockpitOperations = {
 
 export type DailyCockpitHeadlineMetric = CockpitHeadlineMetric & {
   measuredSince: string | null;
+  trend: number[];
 };
 
 export type DailyCockpitData = {
@@ -51,6 +55,8 @@ const SERIES_RANGES: ReadonlyArray<{
   { metricId: "MTR-010", historyDays: 70 },
 ];
 const UNUSED_API_KEY_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const UPCOMING_REMOVAL_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+const TREND_POINTS = 28;
 const PRODUCT_METRIC_PIPELINE_SUCCESS_SLA_MS = 25 * 60 * 60 * 1000;
 
 function utcDay(date: Date) {
@@ -70,6 +76,24 @@ function latestCompleteRows(rows: ProductMetricDailyRow[]) {
       right.day_utc.localeCompare(left.day_utc)
     )[0]?.day_utc;
   return day ? rows.filter((row) => row.day_utc === day) : [];
+}
+
+// Daily values of the same window/dimension as the headline, oldest first.
+function headlineTrend(
+  rows: ProductMetricDailyRow[] | undefined,
+  current: ProductMetricDailyRow | null
+) {
+  if (!rows || !current) return [];
+  return rows
+    .filter(
+      (row) =>
+        row.completeness_state === "complete" &&
+        row.dimension === current.dimension &&
+        row.window_days === current.window_days
+    )
+    .sort((left, right) => left.day_utc.localeCompare(right.day_utc))
+    .slice(-TREND_POINTS)
+    .map((row) => productMetricValue(row) ?? 0);
 }
 
 function failureCount(rows: ProductMetricDailyRow[], operation: string) {
@@ -116,34 +140,39 @@ export async function getDailyCockpit(
     now.getTime() - UNUSED_API_KEY_AGE_MS
   ).toISOString();
 
-  const [seriesPairs, states, previewRow, apiKeyRow] = await Promise.all([
-    Promise.all(
-      SERIES_RANGES.map(
-        async ({ metricId, historyDays }) =>
-          [
-            metricId,
-            await getProductMetricSeries(
-              db,
+  const removalWindowEnd = new Date(
+    now.getTime() + UPCOMING_REMOVAL_WINDOW_MS
+  ).toISOString();
+
+  const [seriesPairs, states, previewRow, apiKeyRow, removalRow] =
+    await Promise.all([
+      Promise.all(
+        SERIES_RANGES.map(
+          async ({ metricId, historyDays }) =>
+            [
               metricId,
-              addUtcDays(today, -historyDays),
-              toExclusive,
-              now
-            ),
-          ] as const
-      )
-    ),
-    getProductMetricMeasurementStates(db),
-    db
-      .prepare(
-        `select count(*) as count
+              await getProductMetricSeries(
+                db,
+                metricId,
+                addUtcDays(today, -historyDays),
+                toExclusive,
+                now
+              ),
+            ] as const
+        )
+      ),
+      getProductMetricMeasurementStates(db),
+      db
+        .prepare(
+          `select count(*) as count
          from gallery_entries
          where gallery_state in ('listed', 'featured')
            and (gallery_preview_image is null or trim(gallery_preview_image) = '')`
-      )
-      .first<{ count: number }>(),
-    db
-      .prepare(
-        `select
+        )
+        .first<{ count: number }>(),
+      db
+        .prepare(
+          `select
            coalesce(sum(case
              when enabled = 1
                and (expiresAt is null or expiresAt > ?)
@@ -152,12 +181,40 @@ export async function getDailyCockpit(
              then 1 else 0 end), 0) as unused,
            coalesce(sum(case
              when enabled = 1 and expiresAt is not null and expiresAt <= ?
-             then 1 else 0 end), 0) as expired
+             then 1 else 0 end), 0) as expired,
+           coalesce(sum(case
+             when enabled = 1
+               and (expiresAt is null or expiresAt > ?)
+               and rateLimitEnabled = 1
+               and rateLimitMax > 0
+               and lastRequest is not null
+               and (julianday(?) - julianday(lastRequest)) * 86400000
+                 <= rateLimitTimeWindow
+               and requestCount >= rateLimitMax * 0.8
+             then 1 else 0 end), 0) as nearLimit
          from apikey`
-      )
-      .bind(now.toISOString(), unusedApiKeyCutoff, now.toISOString())
-      .first<{ unused: number; expired: number }>(),
-  ]);
+        )
+        .bind(
+          now.toISOString(),
+          unusedApiKeyCutoff,
+          now.toISOString(),
+          now.toISOString(),
+          now.toISOString()
+        )
+        .first<{ unused: number; expired: number; nearLimit: number }>(),
+      db
+        .prepare(
+          `select count(*) as count
+         from account_retention_notices n
+         join users u
+           on u.id = n.user_id and u.last_active_at = n.activity_at
+         where n.stage = 'first'
+           and julianday(n.removal_at) > julianday(?)
+           and julianday(n.removal_at) <= julianday(?)`
+        )
+        .bind(now.toISOString(), removalWindowEnd)
+        .first<{ count: number }>(),
+    ]);
 
   const series = Object.fromEntries(seriesPairs) as Partial<
     Record<ProductMetricId, ProductMetricDailyRow[]>
@@ -173,6 +230,7 @@ export async function getDailyCockpit(
         comparisonReady: false,
         quality: "invalid" as const,
         measuredSince: state.measured_since,
+        trend: [],
       };
     }
     if (state?.completeness_state === "incomplete") {
@@ -182,11 +240,13 @@ export async function getDailyCockpit(
         comparisonReady: false,
         quality: "degraded" as const,
         measuredSince: state.measured_since,
+        trend: headlineTrend(series[headline.id], headline.current),
       };
     }
     return {
       ...headline,
       measuredSince: state?.measured_since ?? null,
+      trend: headlineTrend(series[headline.id], headline.current),
     };
   });
   const failureRows = series["MTR-010"] ?? [];
@@ -206,6 +266,8 @@ export async function getDailyCockpit(
       publicationFailures: failureCount(failureRows, "gallery_publish"),
       unusedApiKeys: Number(apiKeyRow?.unused ?? 0),
       expiredApiKeys: Number(apiKeyRow?.expired ?? 0),
+      apiKeysNearLimit: Number(apiKeyRow?.nearLimit ?? 0),
+      upcomingAccountRemovals: Number(removalRow?.count ?? 0),
       analyticsPipelineGaps: hasPipelineIssue(states, now) ? 1 : 0,
       buildingMetrics: states.filter(
         (state) =>

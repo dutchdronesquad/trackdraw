@@ -118,6 +118,16 @@
         "detail": "Published gallery entries without a stored preview image.",
         "action": "Review gallery entries"
       },
+      "rateLimits": {
+        "label": "API keys near their rate limit",
+        "detail": "These keys have used at least 80% of their limit in the current window and may start receiving rate-limit errors.",
+        "action": "Review API keys"
+      },
+      "removals": {
+        "label": "Accounts reaching their removal date",
+        "detail": "Inactive accounts scheduled for removal within 14 days. The final warning goes out automatically.",
+        "action": "Review accounts"
+      },
       "failures": {
         "label": "Publication and export attempts",
         "detail": "A reliable failure-rate warning is active. The latest complete 7-day window contains {export} failed export attempts and {publication} failed gallery publication attempts.",
@@ -205,6 +215,10 @@
       "minutes": "{count}m ago",
       "hours": "{count}h ago",
       "days": "{count}d ago"
+    },
+    "days": {
+      "today": "Today",
+      "yesterday": "Yesterday"
     }
   },
   "overviewCards": {
