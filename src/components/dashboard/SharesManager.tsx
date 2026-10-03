@@ -3,15 +3,43 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { type SortingState, useTable } from "@tanstack/react-table";
-import { Clock3, Loader2 } from "lucide-react";
+import {
+  Ban,
+  Clock3,
+  ExternalLink,
+  Link2,
+  Loader2,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
+  formatDate,
+  getExpectedCleanupDate,
+  getGalleryStateTone,
+  getLifecycleDetail,
   getLifecycleState,
+  getLifecycleTone,
   getOwnerLabel,
   getSharesColumns,
-  type ShareLifecycleState,
+  isShareExpiringSoon,
   type Translate,
 } from "@/app/dashboard/shares/columns";
+import {
+  DangerAction,
+  DetailList,
+  DetailSection,
+} from "@/components/dashboard/DetailSheet";
+import StatusFilter from "@/components/dashboard/StatusFilter";
+import ToneBadge from "@/components/dashboard/ToneBadge";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,11 +67,17 @@ type ShareOwnerFilterValue = "anonymous" | "account";
 
 const sharesManagerRoles: AccountRole[] = ["moderator", "admin"];
 const purgeManagerRoles: AccountRole[] = ["admin"];
-const lifecycleFilterValues: ShareLifecycleState[] = [
-  "active",
-  "expired",
-  "revoked",
-];
+type ShareSegment = "all" | "active" | "expiring" | "revoked" | "expired";
+
+const segmentFilters: Record<ShareSegment, (share: DashboardShare) => boolean> =
+  {
+    all: () => true,
+    active: (share) => getLifecycleState(share) === "active",
+    expiring: (share) => isShareExpiringSoon(share),
+    revoked: (share) => getLifecycleState(share) === "revoked",
+    expired: (share) => getLifecycleState(share) === "expired",
+  };
+
 const typeFilterValues: ShareTypeFilterValue[] = ["published", "temporary"];
 const ownerFilterValues: ShareOwnerFilterValue[] = ["anonymous", "account"];
 
@@ -61,9 +95,9 @@ export default function DashboardSharesManager({
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pendingToken, setPendingToken] = useState<string | null>(null);
-  const [selectedLifecycles, setSelectedLifecycles] = useState<
-    ShareLifecycleState[]
-  >([]);
+  const isMobile = useIsMobile();
+  const [segment, setSegment] = useState<ShareSegment>("all");
+  const [inspectShare, setInspectShare] = useState<DashboardShare | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<ShareTypeFilterValue[]>(
     []
   );
@@ -120,6 +154,15 @@ export default function DashboardSharesManager({
             : share
         )
       );
+      setInspectShare((previous) =>
+        previous?.token === token
+          ? {
+              ...previous,
+              revokedAt: new Date().toISOString(),
+              galleryState: null,
+            }
+          : previous
+      );
       setRevokeCandidate(null);
       toast.success(t("messages.revokeSuccess"));
     } catch (error) {
@@ -158,6 +201,9 @@ export default function DashboardSharesManager({
 
       setShares((previous) =>
         previous.filter((share) => share.token !== token)
+      );
+      setInspectShare((previous) =>
+        previous?.token === token ? null : previous
       );
       setPurgeCandidate(null);
       toast.success(t("messages.purgeSuccess"));
@@ -198,11 +244,12 @@ export default function DashboardSharesManager({
       }),
     [canManageShares, canPurgeShares, copyShareLink, pendingToken, t, tCommon]
   );
+  const segmentedShares = useMemo(
+    () => shares.filter(segmentFilters[segment]),
+    [shares, segment]
+  );
   const columnFilters = useMemo(
     () => [
-      ...(selectedLifecycles.length > 0
-        ? [{ id: "status", value: selectedLifecycles }]
-        : []),
       ...(selectedTypes.length > 0
         ? [{ id: "type", value: selectedTypes }]
         : []),
@@ -210,12 +257,12 @@ export default function DashboardSharesManager({
         ? [{ id: "owner", value: selectedOwners }]
         : []),
     ],
-    [selectedLifecycles, selectedOwners, selectedTypes]
+    [selectedOwners, selectedTypes]
   );
 
   const table = useTable({
     features: dataTableFeatures,
-    data: shares,
+    data: segmentedShares,
     columns,
     state: { globalFilter, sorting, columnFilters },
     initialState: {
@@ -237,19 +284,10 @@ export default function DashboardSharesManager({
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
-  const lifecycleFacetRows =
-    table.getColumn("status")?.getFacetedRowModel().rows ?? [];
   const typeFacetRows =
     table.getColumn("type")?.getFacetedRowModel().rows ?? [];
   const ownerFacetRows =
     table.getColumn("owner")?.getFacetedRowModel().rows ?? [];
-  const lifecycleFilterOptions = lifecycleFilterValues.map((value) => ({
-    value,
-    label: t(`statusValues.${value}`),
-    count: lifecycleFacetRows.filter(
-      (row) => getLifecycleState(row.original) === value
-    ).length,
-  }));
   const typeFilterOptions = typeFilterValues.map((value) => ({
     value,
     label: t(`typeValues.${value}`),
@@ -265,17 +303,60 @@ export default function DashboardSharesManager({
   }));
   const emptyMessage =
     shares.length === 0 ? t("empty.default") : t("empty.filtered");
+  const segmentCount = (value: ShareSegment) =>
+    shares.filter(segmentFilters[value]).length;
+  const visibleRows = table.getRowModel().rows;
+  const tr = t as unknown as Translate;
+  const inspectState = inspectShare ? getLifecycleState(inspectShare) : null;
+  const inspectCleanup = inspectShare
+    ? getExpectedCleanupDate(inspectShare)
+    : null;
 
   return (
     <div className="space-y-4">
-      <div className="bg-muted/35 flex items-start gap-3 rounded-lg border px-4 py-3">
-        <Clock3 className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-        <div className="space-y-0.5 text-sm">
-          <p className="font-medium">{t("retention.title")}</p>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            {t("retention.description")}
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <StatusFilter
+          label={t("segments.label")}
+          value={segment}
+          onChange={setSegment}
+          items={[
+            {
+              value: "all",
+              label: t("segments.all"),
+              count: segmentCount("all"),
+            },
+            {
+              value: "active",
+              label: t("segments.active"),
+              count: segmentCount("active"),
+            },
+            {
+              value: "expiring",
+              label: t("segments.expiring"),
+              count: segmentCount("expiring"),
+              attention: true,
+            },
+            {
+              value: "revoked",
+              label: t("segments.revoked"),
+              count: segmentCount("revoked"),
+            },
+            {
+              value: "expired",
+              label: t("segments.expired"),
+              count: segmentCount("expired"),
+            },
+          ]}
+        />
+        <p className="text-muted-foreground flex items-start gap-1.5 text-xs leading-relaxed lg:max-w-md">
+          <Clock3 className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <span>
+            <span className="text-foreground font-medium">
+              {t("retention.title")}
+            </span>{" "}
+            <span>{t("retention.description")}</span>
+          </span>
+        </p>
       </div>
 
       <DataTableToolbar
@@ -283,12 +364,6 @@ export default function DashboardSharesManager({
         onSearchChange={setGlobalFilter}
         searchPlaceholder={t("filters.searchPlaceholder")}
       >
-        <DataTableFacetFilter
-          title={t("filters.status")}
-          selected={selectedLifecycles}
-          options={lifecycleFilterOptions}
-          onChange={setSelectedLifecycles}
-        />
         <DataTableFacetFilter
           title={t("filters.type")}
           selected={selectedTypes}
@@ -303,12 +378,50 @@ export default function DashboardSharesManager({
         />
       </DataTableToolbar>
 
+      {isMobile ? (
+        <ul className="divide-y overflow-hidden rounded-lg border">
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => {
+              const share = row.original;
+              return (
+                <li key={row.id}>
+                  <button
+                    type="button"
+                    onClick={() => setInspectShare(share)}
+                    className="hover:bg-muted/50 flex min-h-14 w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {share.title}
+                      </span>
+                      <span className="text-muted-foreground block truncate text-xs">
+                        {getOwnerLabel(share, tr)} ·{" "}
+                        {getLifecycleDetail(share, tr)}
+                      </span>
+                    </span>
+                    <ToneBadge tone={getLifecycleTone(share)}>
+                      {t(`statusValues.${getLifecycleState(share)}`)}
+                    </ToneBadge>
+                  </button>
+                </li>
+              );
+            })
+          ) : (
+            <li className="text-muted-foreground px-4 py-6 text-center text-sm">
+              {emptyMessage}
+            </li>
+          )}
+        </ul>
+      ) : null}
+
       <DataTable
         table={table}
         columnsLength={columns.length}
         emptyMessage={emptyMessage}
         minWidthClassName="min-w-[920px]"
         emptyClassName="py-8"
+        wrapperClassName={isMobile ? "hidden" : undefined}
+        onRowClick={(row) => setInspectShare(row.original)}
         getRowAriaLabel={(row) => t("aria.row", { title: row.original.title })}
         pagination={{
           summary: (
@@ -321,6 +434,145 @@ export default function DashboardSharesManager({
           ),
         }}
       />
+
+      <Sheet
+        open={inspectShare !== null}
+        onOpenChange={(open) => {
+          if (!open) setInspectShare(null);
+        }}
+      >
+        <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md">
+          {inspectShare && inspectState ? (
+            <>
+              <SheetHeader className="border-b p-6 pr-12 text-left">
+                <SheetTitle className="truncate text-base">
+                  {inspectShare.title}
+                </SheetTitle>
+                <SheetDescription className="truncate">
+                  {getOwnerLabel(inspectShare, tr)}
+                  {inspectShare.ownerEmail
+                    ? ` · ${inspectShare.ownerEmail}`
+                    : ""}
+                </SheetDescription>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <ToneBadge tone={getLifecycleTone(inspectShare)}>
+                    {t(`statusValues.${inspectState}`)}
+                  </ToneBadge>
+                  <ToneBadge
+                    tone={
+                      inspectShare.shareType === "published" ? "sky" : "neutral"
+                    }
+                  >
+                    {t(`typeValues.${inspectShare.shareType}`)}
+                  </ToneBadge>
+                  {inspectShare.galleryState ? (
+                    <ToneBadge
+                      tone={getGalleryStateTone(inspectShare.galleryState)}
+                    >
+                      {tCommon(`status.${inspectShare.galleryState}`)}
+                    </ToneBadge>
+                  ) : null}
+                </div>
+              </SheetHeader>
+
+              <DetailSection title={t("panel.sections.link")}>
+                <p className="bg-background mb-3 rounded-md border px-3 py-2 font-mono text-xs break-all">
+                  {`/share/${inspectShare.token}`}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void copyShareLink(inspectShare.token)}
+                  >
+                    <Link2 />
+                    {t("actions.copyLink")}
+                  </Button>
+                  {inspectState !== "revoked" ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link
+                        href={`/share/${inspectShare.token}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        prefetch={false}
+                      >
+                        <ExternalLink />
+                        {t("actions.open")}
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              </DetailSection>
+
+              <DetailSection title={t("panel.sections.lifecycle")}>
+                <DetailList
+                  items={[
+                    {
+                      label: t("table.created"),
+                      value: formatDate(inspectShare.createdAt),
+                    },
+                    {
+                      label: t("panel.fields.status"),
+                      value: getLifecycleDetail(inspectShare, tr),
+                      className: isShareExpiringSoon(inspectShare)
+                        ? "font-medium text-amber-700 dark:text-amber-300"
+                        : undefined,
+                    },
+                    {
+                      label: t("panel.fields.cleanup"),
+                      value: inspectCleanup ?? t("panel.fields.notScheduled"),
+                    },
+                    {
+                      label: t("table.gallery"),
+                      value: inspectShare.galleryState
+                        ? tCommon(`status.${inspectShare.galleryState}`)
+                        : t("table.notInGallery"),
+                    },
+                  ]}
+                />
+              </DetailSection>
+
+              {canManageShares ? (
+                <DetailSection className="space-y-2">
+                  {inspectState !== "revoked" ? (
+                    <DangerAction
+                      description={t("panel.messages.revokeDescription")}
+                      action={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                          onClick={() => setRevokeCandidate(inspectShare)}
+                        >
+                          <Ban className="size-3.5" />
+                          {t("actions.revoke")}
+                        </Button>
+                      }
+                    />
+                  ) : null}
+                  {inspectState === "revoked" && canPurgeShares ? (
+                    <DangerAction
+                      description={t("panel.messages.purgeDescription")}
+                      action={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                          onClick={() => setPurgeCandidate(inspectShare)}
+                        >
+                          <Trash2 className="size-3.5" />
+                          {t("panel.actions.purge")}
+                        </Button>
+                      }
+                    />
+                  ) : null}
+                </DetailSection>
+              ) : null}
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
 
       <Dialog
         open={revokeCandidate !== null}
