@@ -23,7 +23,7 @@ describe("product metric aggregates", () => {
     expect(statement.bind).toHaveBeenCalledWith("1.1.0");
   });
 
-  it("backfills complete UTC days with retry-safe anonymous metric rows", async () => {
+  it("backfills complete UTC days at midnight with retry-safe anonymous metric rows", async () => {
     const prepare = vi.fn();
     const activation = createD1Statement({ run: { meta: { changes: 1 } } });
     const state = createD1Statement({
@@ -47,7 +47,7 @@ describe("product metric aggregates", () => {
 
     const result = await runProductMetricMaintenance(
       { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
-      new Date("2026-08-14T00:17:00.000Z")
+      new Date("2026-08-14T00:00:00.000Z")
     );
 
     expect(activation.sql).toContain("product_metric_creator_activations");
@@ -76,7 +76,7 @@ describe("product metric aggregates", () => {
       "2026-08-13",
       "2026-08-13T00:00:00.000Z",
       "2026-08-14T00:00:00.000Z",
-      "2026-08-14T00:17:00.000Z",
+      "2026-08-14T00:00:00.000Z",
       1
     );
     expect(result.health).toEqual({
@@ -107,7 +107,7 @@ describe("product metric aggregates", () => {
 
     const result = await runProductMetricMaintenance(
       { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
-      new Date("2026-08-14T00:17:00.000Z")
+      new Date("2026-08-14T00:00:00.000Z")
     );
 
     expect(result.health.aggregated_days).toBe(7);
@@ -130,7 +130,7 @@ describe("product metric aggregates", () => {
 
     const result = await runProductMetricMaintenance(
       { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
-      new Date("2026-08-14T00:17:00.000Z")
+      new Date("2026-08-14T00:00:00.000Z")
     );
 
     expect(invalidate.sql).toContain("completeness_state = 'invalid'");

@@ -29,12 +29,12 @@ export function getEmailPreviewContent(key: EmailPreviewKey) {
     const stage = key === "retention-first" ? "first" : "final";
     return buildAccountRetentionEmail(
       stage,
-      new Date("2026-11-03T00:17:00.000Z"),
-      new Date("2025-11-03T00:17:00.000Z"),
+      new Date("2026-11-03T00:00:00.000Z"),
+      new Date("2025-11-03T00:00:00.000Z"),
       new Date(
         stage === "first"
-          ? "2026-10-03T00:17:00.000Z"
-          : "2026-10-27T00:17:00.000Z"
+          ? "2026-10-03T00:00:00.000Z"
+          : "2026-10-27T00:00:00.000Z"
       )
     );
   }

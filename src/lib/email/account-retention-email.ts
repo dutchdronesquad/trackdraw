@@ -16,8 +16,7 @@ export function buildAccountRetentionEmail(
     year: "numeric",
     timeZone: "UTC",
   }).format(removalAt);
-  const time = removalAt.toISOString().slice(11, 16);
-  const deadline = `${date} at ${time} UTC`;
+  const deadline = date;
   const title =
     stage === "first"
       ? "Keep your TrackDraw account"

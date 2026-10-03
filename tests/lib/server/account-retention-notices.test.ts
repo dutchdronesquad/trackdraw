@@ -13,6 +13,7 @@ import { sendAccountRetentionNotices } from "@/lib/server/account-retention-noti
 
 import {
   addUtcCalendarMonths,
+  ceilUtcDay,
   formatAccountInactivity,
 } from "@/lib/server/account-retention-timeline";
 
@@ -108,11 +109,12 @@ describe("account retention notices", () => {
       expect.objectContaining({
         to: { address: "pilot@example.test", name: "Pilot" },
         emailType: "account-retention",
-        textBody: expect.stringContaining("3 November 2026 at 12:00 UTC"),
+        textBody: expect.stringContaining("4 November 2026"),
       })
     );
     expect(notices()).toHaveLength(1);
     expect(notices()[0].sent_at).toBe(clock.toISOString());
+    expect(notices()[0].removal_at).toBe("2026-11-04T00:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledTimes(1);
     sqlite.exec("update users set marketing_opt_in = 1");
@@ -122,15 +124,15 @@ describe("account retention notices", () => {
 
   it("sends the final notice exactly seven days before removal and never repeats either notice", async () => {
     await run();
-    clock = new Date("2026-10-27T11:59:59.999Z");
+    clock = new Date("2026-10-27T23:59:59.999Z");
     await run();
     expect(send).toHaveBeenCalledTimes(1);
-    clock = new Date("2026-10-27T12:00:00.000Z");
+    clock = new Date("2026-10-28T00:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledTimes(2);
     const final = send.mock.calls[1][0];
     expect(final.subject).toMatch(/^Final warning/);
-    expect(final.textBody).toContain("3 November 2026 at 12:00 UTC");
+    expect(final.textBody).toContain("4 November 2026");
     expect(final.idempotencyKey).not.toBe(send.mock.calls[0][0].idempotencyKey);
     clock = new Date("2026-12-01");
     await run();
@@ -175,12 +177,12 @@ describe("account retention notices", () => {
     clock = new Date("2026-12-01T12:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledOnce();
-    expect(notices()[0].removal_at).toBe("2027-01-01T12:00:00.000Z");
+    expect(notices()[0].removal_at).toBe("2027-01-02T00:00:00.000Z");
   });
 
   it("cancels pending notices atomically on authenticated activity and starts a fresh future period", async () => {
     await run();
-    clock = new Date("2026-10-27T12:00:00.000Z");
+    clock = new Date("2026-10-28T00:00:00.000Z");
     await recordAuthenticatedAccountActivity(
       adapter(),
       { id: "pilot", lastActiveAt: "2025-11-03" },
@@ -189,13 +191,13 @@ describe("account retention notices", () => {
     expect(notices()).toEqual([]);
     await run();
     expect(send).toHaveBeenCalledTimes(1);
-    clock = new Date("2027-09-27T12:00:00.000Z");
+    clock = new Date("2027-09-28T00:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledTimes(2);
     expect(send.mock.calls[1][0].idempotencyKey).not.toBe(
       send.mock.calls[0][0].idempotencyKey
     );
-    expect(send.mock.calls[1][0].textBody).toContain("27 October 2027");
+    expect(send.mock.calls[1][0].textBody).toContain("28 October 2027");
   });
   it("does not deliver a notice when activity changes after its claim", async () => {
     afterClaim = () => activity(clock.toISOString());
@@ -278,11 +280,11 @@ describe("account retention notices", () => {
     clock = new Date("2027-01-03T12:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledOnce();
-    expect(notices()[0].removal_at).toBe("2027-02-03T12:00:00.000Z");
+    expect(notices()[0].removal_at).toBe("2027-02-04T00:00:00.000Z");
     clock = new Date("2027-02-04T12:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledTimes(2);
-    expect(notices()[0].removal_at).toBe("2027-02-11T12:00:00.000Z");
+    expect(notices()[0].removal_at).toBe("2027-02-12T00:00:00.000Z");
   });
   it("cascades notice records on account deletion", async () => {
     await run();
@@ -314,6 +316,15 @@ describe("account retention notices", () => {
 
 describe("calendar boundaries and retention email", () => {
   it.each([
+    ["2026-11-03T00:00:00.000Z", "2026-11-03T00:00:00.000Z"],
+    ["2026-11-03T00:00:00.001Z", "2026-11-04T00:00:00.000Z"],
+    ["2026-12-31T23:59:59.999Z", "2027-01-01T00:00:00.000Z"],
+    ["2024-02-29T12:00:00.000Z", "2024-03-01T00:00:00.000Z"],
+  ])("rounds deadlines up to UTC midnight: %s", (value, expected) => {
+    expect(ceilUtcDay(new Date(value)).toISOString()).toBe(expected);
+  });
+
+  it.each([
     ["2025-11-03T12:00:00Z", "2026-10-03T12:00:00Z", "11 months"],
     ["2025-11-03T12:00:00Z", "2026-10-27T12:00:00Z", "11 months"],
     ["2025-03-31T12:00:00Z", "2026-02-28T12:00:00Z", "11 months"],
@@ -338,10 +349,10 @@ describe("calendar boundaries and retention email", () => {
     clock = new Date("2026-02-28T12:00:00.000Z");
     await run();
     expect(send).toHaveBeenCalledOnce();
-    expect(notices()[0].removal_at).toBe("2026-03-31T12:00:00.000Z");
+    expect(notices()[0].removal_at).toBe("2026-04-01T00:00:00.000Z");
   });
   it.each(["first", "final"] as const)(
-    "includes a concrete UTC deadline and normal sign-in action: %s",
+    "includes only the removal date and normal sign-in action: %s",
     (stage) => {
       const mail = buildAccountRetentionEmail(
         stage,
@@ -350,7 +361,9 @@ describe("calendar boundaries and retention email", () => {
         new Date("2026-10-27T00:17:00.000Z")
       );
       for (const body of [mail.htmlBody, mail.textBody]) {
-        expect(body).toContain("3 November 2026 at 00:17 UTC");
+        expect(body).toContain("3 November 2026");
+        expect(body).not.toContain("00:17");
+        expect(body).not.toContain("UTC");
         if (stage === "first")
           expect(body).toContain("inactive for about 11 months.");
         else {

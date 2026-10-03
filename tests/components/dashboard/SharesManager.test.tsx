@@ -198,7 +198,7 @@ describe("DashboardSharesManager", () => {
 
     expect(screen.getByText("Automatic cleanup is active")).toBeTruthy();
     expect(
-      screen.getByText(/background job runs daily at 00:17 UTC/i)
+      screen.getByText(/background job runs daily at 00:00 UTC/i)
     ).toBeTruthy();
     expect(screen.getByText(/revoked for more than 7 days/i)).toBeTruthy();
     expect(
@@ -223,9 +223,9 @@ describe("DashboardSharesManager", () => {
   });
 
   it.each([
-    ["2026-04-21T00:16:59.999Z", "28 Apr 2026"],
-    ["2026-04-21T00:17:00.000Z", "29 Apr 2026"],
-    ["2026-04-21T00:17:00.001Z", "29 Apr 2026"],
+    ["2026-04-20T23:59:59.999Z", "28 Apr 2026"],
+    ["2026-04-21T00:00:00.000Z", "29 Apr 2026"],
+    ["2026-04-21T00:00:00.001Z", "29 Apr 2026"],
   ])("uses the first cron strictly after 7 days from %s", (revokedAt, date) => {
     render(
       <DashboardSharesManager
