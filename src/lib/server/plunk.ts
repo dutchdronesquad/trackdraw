@@ -1,81 +1,23 @@
 import "server-only";
 
-const PLUNK_API_URL = "https://next-api.useplunk.com/v1/send";
+import {
+  createPlunkMailer,
+  type PlunkMailOptions,
+} from "@/lib/email/plunk-client";
 
-type PlunkRecipient = {
-  address: string;
-  name?: string | null;
-};
-
-type SendPlunkMailOptions = {
-  to: PlunkRecipient;
-  subject: string;
-  htmlBody: string;
-  textBody: string;
-};
-
-function getRequiredEnv(name: string) {
-  const value = process.env[name]?.trim();
-  return value ? value : null;
-}
-
-function getPlunkConfig() {
-  return {
-    apiKey: getRequiredEnv("PLUNK_API_KEY"),
-    fromEmail: getRequiredEnv("PLUNK_FROM_EMAIL"),
-    fromName: getRequiredEnv("PLUNK_FROM_NAME") ?? "TrackDraw",
-    replyToEmail: getRequiredEnv("PLUNK_REPLY_TO_EMAIL"),
-  };
+function getPlunkMailer() {
+  return createPlunkMailer({
+    PLUNK_API_KEY: process.env.PLUNK_API_KEY,
+    PLUNK_FROM_EMAIL: process.env.PLUNK_FROM_EMAIL,
+    PLUNK_FROM_NAME: process.env.PLUNK_FROM_NAME,
+    PLUNK_REPLY_TO_EMAIL: process.env.PLUNK_REPLY_TO_EMAIL,
+  });
 }
 
 export function isPlunkConfigured() {
-  const config = getPlunkConfig();
-  return Boolean(config.apiKey && config.fromEmail);
+  return getPlunkMailer().isConfigured();
 }
 
-export async function sendPlunkMail(options: SendPlunkMailOptions) {
-  const config = getPlunkConfig();
-  if (!config.apiKey) {
-    throw new Error("Missing Plunk configuration. Set PLUNK_API_KEY.");
-  }
-  if (!config.fromEmail) {
-    throw new Error(
-      "Missing Plunk sender configuration. Set PLUNK_FROM_EMAIL to a verified sender address."
-    );
-  }
-
-  const payload = {
-    to: options.to.address,
-    subject: options.subject,
-    body: options.htmlBody,
-    subscribed: false,
-    name: config.fromName,
-    ...(config.fromEmail ? { from: config.fromEmail } : {}),
-    ...(config.replyToEmail ? { reply: config.replyToEmail } : {}),
-    headers: {
-      "X-TrackDraw-Email-Type": "auth-magic-link",
-    },
-  };
-
-  const response = await fetch(PLUNK_API_URL, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (response.ok) {
-    return;
-  }
-
-  const errorText = await response.text();
-  const plunkHint = errorText.includes("public key")
-    ? " Use a Plunk secret/server API key for PLUNK_API_KEY, not a public/browser key."
-    : "";
-  throw new Error(
-    `Plunk send failed with ${response.status}: ${errorText || "unknown error"}${plunkHint}`
-  );
+export function sendPlunkMail(options: PlunkMailOptions) {
+  return getPlunkMailer().send(options);
 }

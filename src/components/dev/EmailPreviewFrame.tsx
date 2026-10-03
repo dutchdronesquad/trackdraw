@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type AuthEmailPreviewFrameProps = {
+type EmailPreviewFrameProps = {
   html: string;
   title: string;
   className?: string;
@@ -10,11 +10,11 @@ type AuthEmailPreviewFrameProps = {
 
 const MIN_HEIGHT = 520;
 
-export function AuthEmailPreviewFrame({
+export function EmailPreviewFrame({
   html,
   title,
   className,
-}: AuthEmailPreviewFrameProps) {
+}: EmailPreviewFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(MIN_HEIGHT);
 

@@ -1,3 +1,7 @@
+import {
+  createPlunkMailer,
+  type PlunkEnvironment,
+} from "./src/lib/email/plunk-client";
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
 import { getEarlyWorkerResponse } from "./src/lib/server/request-guards";
@@ -18,7 +22,7 @@ type D1Database = {
   prepare(query: string): D1PreparedStatement;
 };
 
-type WorkerEnv = {
+type WorkerEnv = PlunkEnvironment & {
   DB: D1Database;
 };
 
@@ -45,7 +49,10 @@ const worker = {
   },
 
   async scheduled(controller: ScheduledController, env: WorkerEnv) {
-    await runScheduledCleanup(controller, createScheduledCleanupTasks(env.DB));
+    await runScheduledCleanup(
+      controller,
+      createScheduledCleanupTasks(env.DB, createPlunkMailer(env))
+    );
   },
 };
 

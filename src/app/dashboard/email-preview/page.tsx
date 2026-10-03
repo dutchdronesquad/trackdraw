@@ -3,13 +3,14 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { AuthEmailPreviewFrame } from "@/components/dev/AuthEmailPreviewFrame";
+import { EmailPreviewFrame } from "@/components/dev/EmailPreviewFrame";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
-  getAuthEmailPreviewContent,
-  type AuthEmailPreviewKey,
-} from "@/lib/server/auth-email";
+  getEmailPreviewContent,
+  emailPreviewKeys,
+  type EmailPreviewKey,
+} from "@/lib/server/email-preview";
 import { hasCapability } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
@@ -23,21 +24,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const previewKeys: AuthEmailPreviewKey[] = [
-  "magic-link",
-  "verify-email",
-  "change-email",
-];
-
-const previewItemMessageKeys: Record<AuthEmailPreviewKey, string> = {
+const previewItemMessageKeys: Record<EmailPreviewKey, string> = {
   "magic-link": "magicLink",
   "verify-email": "verifyEmail",
   "change-email": "changeEmail",
+  "retention-first": "retentionFirst",
+  "retention-final": "retentionFinal",
 };
 
-function parsePreviewKey(value: string | undefined): AuthEmailPreviewKey {
-  return previewKeys.includes(value as AuthEmailPreviewKey)
-    ? (value as AuthEmailPreviewKey)
+function parsePreviewKey(value: string | undefined): EmailPreviewKey {
+  return emailPreviewKeys.includes(value as EmailPreviewKey)
+    ? (value as EmailPreviewKey)
     : "magic-link";
 }
 
@@ -55,14 +52,14 @@ export default async function DashboardEmailPreviewPage({
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const activeKey = parsePreviewKey(resolvedSearchParams?.template);
-  const content = getAuthEmailPreviewContent(activeKey);
+  const content = getEmailPreviewContent(activeKey);
   const fromAddress =
     process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
 
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
   const tEmail = await getTranslations("dashboard.emailPreview");
-  const previewItems = previewKeys.map((key) => ({
+  const previewItems = emailPreviewKeys.map((key) => ({
     key,
     label: tEmail(`items.${previewItemMessageKeys[key]}.label`),
     description: tEmail(`items.${previewItemMessageKeys[key]}.description`),
@@ -115,6 +112,9 @@ export default async function DashboardEmailPreviewPage({
                   <p className="text-muted-foreground mt-0.5 text-xs">
                     {activeItem.label}: {activeItem.description}
                   </p>
+                  <p className="mt-1 text-sm">
+                    {tEmail("subject")}: {content.subject}
+                  </p>
                 </div>
                 <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   <span className="rounded-full border px-2.5 py-1 font-medium">
@@ -131,8 +131,8 @@ export default async function DashboardEmailPreviewPage({
             </div>
             <div className="bg-muted/30 p-3 sm:p-5">
               <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border bg-[#dfe8f6] shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                <AuthEmailPreviewFrame
-                  title={`${activeKey} email preview`}
+                <EmailPreviewFrame
+                  title={`${activeItem.label} — ${tEmail("htmlPreview")}`}
                   html={content.htmlBody}
                   className="block w-full bg-[#dfe8f6]"
                 />

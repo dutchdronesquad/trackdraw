@@ -1,3 +1,9 @@
+import type { TransactionalMailer } from "@/lib/email/plunk-client";
+import {
+  sendAccountRetentionNotices,
+  AccountRetentionNoticeError,
+  type AccountRetentionNoticeHealth,
+} from "@/lib/server/account-retention-notices";
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
@@ -21,7 +27,8 @@ export type ScheduledCleanupTaskName =
   | "api_keys"
   | "product_events"
   | "embed_referrers"
-  | "localization_demand";
+  | "localization_demand"
+  | "account_retention_notices";
 
 export type ScheduledCleanupTask = {
   name: ScheduledCleanupTaskName;
@@ -47,6 +54,7 @@ type ScheduledCleanupTaskSuccess = {
   duration_ms: number;
   cron: string;
   scheduled_at: string;
+  notice_health?: AccountRetentionNoticeHealth;
   aggregation_health?: {
     aggregated_days: number;
     aggregate_rows: number;
@@ -68,6 +76,7 @@ type ScheduledCleanupTaskFailure = {
   scheduled_at: string;
   error_name: string;
   error_message: string;
+  notice_health?: AccountRetentionNoticeHealth;
 };
 
 export type ScheduledCleanupTaskResult =
@@ -97,9 +106,14 @@ export class ScheduledCleanupError extends Error {
 }
 
 export function createScheduledCleanupTasks(
-  db: CleanupDatabase
+  db: CleanupDatabase,
+  mailer: TransactionalMailer
 ): ScheduledCleanupTask[] {
   return [
+    {
+      name: "account_retention_notices",
+      run: () => sendAccountRetentionNotices(db, { mailer }),
+    },
     { name: "shares", run: () => cleanupExpiredShares(db) },
     { name: "api_keys", run: () => cleanupExpiredApiKeys(db) },
     {
@@ -172,6 +186,19 @@ function getAggregationHealth(result: unknown) {
   };
 }
 
+function getNoticeHealth(result: unknown) {
+  if (
+    typeof result === "object" &&
+    result !== null &&
+    "notice_health" in result
+  ) {
+    return {
+      notice_health: result.notice_health as AccountRetentionNoticeHealth,
+    };
+  }
+  return {};
+}
+
 function getErrorDetails(error: unknown) {
   if (error instanceof Error) {
     const normalizedMessage = error.message.replace(/\s+/g, " ").trim();
@@ -217,6 +244,7 @@ export async function runScheduledCleanup(
           cron: context.cron,
           scheduled_at: scheduledAt,
           ...getAggregationHealth(result),
+          ...getNoticeHealth(result),
         };
       } catch (error) {
         return {
@@ -229,6 +257,9 @@ export async function runScheduledCleanup(
           cron: context.cron,
           scheduled_at: scheduledAt,
           ...getErrorDetails(error),
+          ...(error instanceof AccountRetentionNoticeError
+            ? { notice_health: error.noticeHealth }
+            : {}),
         };
       }
     })

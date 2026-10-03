@@ -94,7 +94,7 @@ Worker secrets:
 
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_TRUSTED_ORIGINS` only if you need additional allowed origins beyond `NEXT_PUBLIC_SITE_URL`
-- `PLUNK_API_KEY` (required for magic links, email verification, and change-email confirmation mails; must be a secret/server key, not a public/browser key)
+- `PLUNK_API_KEY` (required for magic links, email verification, change-email confirmation mails, and account retention notices; must be a secret/server key, not a public/browser key)
 
 Worker vars:
 
@@ -277,6 +277,22 @@ Migration `0019_product_metrics_export_failure_details.sql` advances the product
 
 Migration `0021_account_activity.sql` adds `users.last_active_at`. Apply it before deploying account activity tracking. Existing accounts start with the latest valid account creation, session creation, session update, or migration timestamp. The migration timestamp is a conservative adoption floor, so old or missing history cannot make an existing account immediately eligible for inactivity deletion. Administrative profile edits are not evidence of authenticated use.
 
+Migration `0022_account_retention_notices.sql` adds durable first/final account notice records and an activity-update trigger that resets them atomically. Apply it before deploying the warning task. It does not delete accounts or cloud data.
+
+Mail rendering and the Plunk client are shared runtime-independent modules. The custom Worker supplies mail configuration through its bindings; the Next.js adapter retains `server-only` and reads server environment variables. Worker bundling needs no alias for the Next.js marker.
+
+### Account retention warnings
+
+The dashboard Email Preview page includes both retention templates, their subjects, and HTML/plain-text previews with fixed sample dates. It uses the same builders as real notices and sends no mail.
+
+The daily cron sends transactional Plunk notices after eleven calendar months of authenticated inactivity and seven days before the scheduled twelve-month removal date. UTC calendar months clamp to the last day of the target month. The first email shows the approximate inactivity duration in months; the final email emphasizes that it is the last warning. Both show a concrete UTC date and link to the normal sign-in flow; sign-in or authenticated use starts a new period without a separate keep-account flag. The guard always protects a valid, non-expired session and conservatively protects unknown session expiry. Marketing opt-in and product analytics preferences do not gate these service notices. The sender omits Plunk's `subscribed` property to preserve existing contact preferences.
+
+Each run processes at most 25 accounts. A unique notice per account, activity timestamp, and stage plus a five-minute database claim prevents duplicate cron delivery. Claims are rechecked against current activity and sessions immediately before sending. Reactivation removes all old notice state; a mail already in flight cannot be recalled, but cannot recreate the canceled timeline. A delayed first warning grants at least one calendar month to respond; a delayed final reminder grants at least seven days. The final notice's stored `removal_at` takes precedence if a delay extends the earlier date.
+
+Provider acceptance is recorded in `sent_at`; it is not a promise of inbox delivery. Plunk receives a stable `Idempotency-Key` per notice. Retries within 23 hours reuse it, including recovery when Plunk accepted a mail but its response or the database acknowledgment was lost. [Plunk's documented key retention](https://docs.useplunk.com/api-reference/public-api/sendEmail) is 24 hours, so an unacknowledged older attempt is held for reconciliation instead of risking a duplicate. `notice_health` reports sent, failed, and uncertain counts without account details; uncertain attempts make the task fail while other cron owners continue. Investigate provider delivery evidence before changing an uncertain row: record confirmed acceptance, or clear the pending attempt and replace its ID only if non-acceptance is confirmed. Never mark uncertain delivery as sent without evidence.
+
+Account deletion remains a separate follow-up (#921). That owner must require acknowledged first and final notices for the current activity period, respect the latest stored removal date and final notice grace period, and recheck activity/session eligibility. No account is deleted by this warning task.
+
 ## Validation flow
 
 Typical local workflow:
@@ -335,9 +351,9 @@ The Worker runs a daily cron cleanup and removes:
 
 Active published shares are never selected by share cleanup.
 
-The five retention owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
+The six scheduled owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Account-notice logs additionally report `notice_health`; sends are never counted as deleted rows. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
 
-If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying is safe: metric rows use deterministic keys with upserts, and every retention query is a threshold-based `DELETE`. Aggregation catches up at no more than seven complete UTC days per invocation and the query helper combines stored daily snapshots with only today's small live raw-event window.
+If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying is safe: metric rows use deterministic keys with upserts, and data cleanup queries are threshold-based `DELETE` operations. Account-notice retry behavior follows the bounded provider window described above. Aggregation catches up at no more than seven complete UTC days per invocation and the query helper combines stored daily snapshots with only today's small live raw-event window.
 
 The cron schedule is configured in `wrangler.jsonc`. It runs at 00:17 UTC so the previous complete UTC day is aggregated shortly after it closes. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 

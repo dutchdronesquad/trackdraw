@@ -4,6 +4,12 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
+## [Unreleased]
+
+### Account retention notices
+
+Inactive accounts receive advance email notices with a scheduled removal date. Signing in and using TrackDraw keeps the account and restarts the inactivity period.
+
 ## [1.17.0]
 
 ### RaceGOW Gate
