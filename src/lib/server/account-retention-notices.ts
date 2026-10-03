@@ -2,7 +2,10 @@ import {
   buildAccountRetentionEmail,
   type AccountRetentionNoticeStage,
 } from "@/lib/email/account-retention-email";
-import { addUtcCalendarMonths } from "@/lib/server/account-retention-timeline";
+import {
+  addUtcCalendarMonths,
+  ceilUtcDay,
+} from "@/lib/server/account-retention-timeline";
 import type { TransactionalMailer } from "@/lib/email/plunk-client";
 
 type Statement = {
@@ -117,12 +120,14 @@ export async function sendAccountRetentionNotices(
     const baseline = candidate.removal_at
       ? new Date(candidate.removal_at)
       : addUtcCalendarMonths(new Date(candidate.activity_at), 12);
-    const removalAt = new Date(
-      Math.max(
-        baseline.getTime(),
-        stage === "first"
-          ? addUtcCalendarMonths(time, 1).getTime()
-          : time.getTime() + 7 * DAY_MS
+    const removalAt = ceilUtcDay(
+      new Date(
+        Math.max(
+          baseline.getTime(),
+          stage === "first"
+            ? addUtcCalendarMonths(time, 1).getTime()
+            : time.getTime() + 7 * DAY_MS
+        )
       )
     );
     try {

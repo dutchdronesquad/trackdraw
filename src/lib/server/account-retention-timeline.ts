@@ -10,6 +10,14 @@ export function addUtcCalendarMonths(date: Date, months: number) {
   return result;
 }
 
+// Keep full retention/response periods when scheduling removal at midnight.
+export function ceilUtcDay(date: Date) {
+  const result = new Date(date);
+  result.setUTCHours(0, 0, 0, 0);
+  if (result < date) result.setUTCDate(result.getUTCDate() + 1);
+  return result;
+}
+
 export function formatAccountInactivity(activityAt: Date, now: Date) {
   let months =
     (now.getUTCFullYear() - activityAt.getUTCFullYear()) * 12 +

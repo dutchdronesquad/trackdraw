@@ -7,6 +7,9 @@ import {
   deleteUserAccount,
 } from "@/lib/server/account-deletion";
 
+import { sendAccountRetentionNotices } from "@/lib/server/account-retention-notices";
+import type { PlunkMailOptions } from "@/lib/email/plunk-client";
+
 let sqlite: DatabaseSync;
 let clock: Date;
 let beforeQuery: ((query: string) => void) | undefined;
@@ -94,6 +97,36 @@ beforeEach(() => {
 afterEach(() => sqlite.close());
 
 describe("account deletion lifecycle", () => {
+  it("deletes at the announced midnight after both notices and a full response period", async () => {
+    sqlite.exec("DELETE FROM account_retention_notices");
+    const mailer = {
+      isConfigured: () => true,
+      send: vi.fn(async (_mail: PlunkMailOptions) => {}),
+    };
+    clock = new Date("2026-09-03T12:00:00.000Z");
+    await sendAccountRetentionNotices(db(), { mailer, now: () => clock });
+    expect(mailer.send.mock.calls[0][0].textBody).toContain("4 October 2026");
+    // Sending just after midnight must still grant seven full days.
+    clock = new Date("2026-09-27T00:00:00.001Z");
+    await sendAccountRetentionNotices(db(), { mailer, now: () => clock });
+    expect(mailer.send.mock.calls[1][0].textBody).toContain("5 October 2026");
+    clock = new Date("2026-10-04T00:00:00.000Z");
+    expect((await run()).meta.changes).toBe(0);
+    clock = new Date("2026-10-04T23:59:59.999Z");
+    expect((await run()).meta.changes).toBe(0);
+    clock = new Date("2026-10-05T00:00:00.000Z");
+    expect((await run()).meta.changes).toBe(1);
+    expect(exists()).toBe(false);
+  });
+
+  it("preserves an existing deadline with a time until the following midnight run", async () => {
+    clock = new Date("2026-10-03T00:00:00.000Z");
+    expect((await run()).meta.changes).toBe(0);
+    expect(exists()).toBe(true);
+    clock = new Date("2026-10-04T00:00:00.000Z");
+    expect((await run()).meta.changes).toBe(1);
+  });
+
   it("preserves other accounts' content and unrelated anonymous shares", async () => {
     ownedData();
     user("survivor", "2026-10-01");

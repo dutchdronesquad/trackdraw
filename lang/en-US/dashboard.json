@@ -251,7 +251,7 @@
         "buildingHint": "This value uses a fixed {window}-day reporting period. The first complete period is still being collected; {elapsed} days are available.",
         "buildingHintGeneric": "The first complete measurement period is still being collected; {elapsed} days are available.",
         "catchingUpHint": "Enough history exists, but aggregation has not reached the latest complete day yet.",
-        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:17 UTC.",
+        "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:00 UTC.",
         "sampleCount": "{count} of {minimum} observations",
         "incompleteHint": "Coverage for this measurement is incomplete."
       },
@@ -1520,7 +1520,7 @@
     },
     "retention": {
       "title": "Automatic cleanup is active",
-      "description": "A background job runs daily at 00:17 UTC. It permanently deletes shares revoked for more than 7 days and temporary shares expired for more than 7 days."
+      "description": "A background job runs daily at 00:00 UTC. It permanently deletes shares revoked for more than 7 days and temporary shares expired for more than 7 days."
     },
     "lifecycle": {
       "revokedOn": "Revoked {date}",

@@ -12,8 +12,8 @@ vi.mock("server-only", () => ({}));
 const mailer = { isConfigured: () => false, send: vi.fn(async () => {}) };
 
 const scheduledContext = {
-  cron: "17 0 * * *",
-  scheduledTime: Date.UTC(2026, 6, 23, 0, 17),
+  cron: "0 0 * * *",
+  scheduledTime: Date.UTC(2026, 6, 23, 0, 0),
 };
 
 function createLogger() {
