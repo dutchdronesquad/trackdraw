@@ -137,6 +137,8 @@ npm run migrate:up:production
 
 `npm run lint` runs Oxlint, including its React Compiler checks.
 
+`npm run build` explicitly uses webpack for production builds to keep the OpenNext Worker bundle smaller. OpenNext preview and deployment builds call this same script. `npm run dev` uses Turbopack for local development.
+
 ## Translation Workflow
 
 <a href="https://crowdin.com/project/trackdraw"><picture>
