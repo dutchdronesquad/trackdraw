@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Bell } from "lucide-react";
@@ -16,6 +17,7 @@ import {
 import { listAuditEventFacets, queryAuditEvents } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
@@ -118,6 +120,21 @@ function pageHref(params: URLSearchParams, page: number) {
 function clearFilterHref(params: URLSearchParams, keys: string[]) {
   const next = new URLSearchParams(params);
   keys.forEach((key) => next.delete(key));
+  if (next.get("range") === "30d") next.delete("range");
+  const query = next.toString();
+  return query ? `/dashboard/audit?${query}` : "/dashboard/audit";
+}
+
+function categoryHref(
+  params: URLSearchParams,
+  value: AuditEventCategory | undefined
+) {
+  const next = new URLSearchParams(params);
+  next.delete("page");
+  next.delete("event");
+  next.delete("type");
+  if (value) next.set("category", value);
+  else next.delete("category");
   if (next.get("range") === "30d") next.delete("range");
   const query = next.toString();
   return query ? `/dashboard/audit?${query}` : "/dashboard/audit";
@@ -278,13 +295,44 @@ export default async function DashboardAuditPage({
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.audit")}
       />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-5 p-4 pt-0">
         <DashboardPageIntro
           icon={Bell}
           title={t("pages.audit")}
           description={t("pages.auditIntro")}
           accent="bg-rose-500/10 text-rose-600 dark:text-rose-400"
         />
+        <nav
+          aria-label={t("audit.filters.category")}
+          className="-mx-4 flex [scrollbar-width:none] gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0"
+        >
+          {[
+            undefined,
+            ...auditEventCategories.filter(
+              (value) => availableCategories.has(value) || value === category
+            ),
+          ].map((value) => {
+            const active = category === value;
+            return (
+              <Link
+                key={value ?? "all"}
+                href={categoryHref(currentParams, value)}
+                prefetch={false}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "focus-visible:ring-ring/40 inline-flex h-8 shrink-0 items-center rounded-lg border px-3 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2",
+                  active
+                    ? "border-brand-primary/35 bg-brand-primary/6 text-foreground"
+                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {value
+                  ? t(`audit.categoryValues.${value}`)
+                  : t("audit.filters.allCategories")}
+              </Link>
+            );
+          })}
+        </nav>
         <AuditFilters
           key={currentParams.toString()}
           values={{
@@ -372,8 +420,6 @@ export default async function DashboardAuditPage({
         <DashboardAuditEventsTable
           events={result.events}
           total={result.total}
-          actorCount={result.actorCount}
-          targetCount={result.targetCount}
           page={result.page}
           pageCount={result.pageCount}
           previousHref={

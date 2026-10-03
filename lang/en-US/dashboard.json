@@ -1290,14 +1290,6 @@
       "inspect": "Inspect {event}",
       "copy": "Copy {label}"
     },
-    "stats": {
-      "visibleEvents": "Visible events",
-      "visibleEventsHelper": "Matching the active server-side filters",
-      "actors": "Actors",
-      "actorsHelper": "Distinct accounts making changes",
-      "targets": "Targets",
-      "targetsHelper": "Distinct accounts affected"
-    },
     "table": {
       "event": "Event",
       "actor": "Actor",
@@ -1323,7 +1315,13 @@
       "viewActorHistory": "View actor history",
       "viewTargetHistory": "View target history",
       "viewAccountLifecycle": "View account warning and deletion history",
-      "noMetadata": "No additional metadata was recorded."
+      "noMetadata": "No additional metadata was recorded.",
+      "who": "Who",
+      "whatChanged": "What changed",
+      "record": "Record",
+      "field": "Field",
+      "before": "Before",
+      "after": "After"
     },
     "fallback": {
       "unknownUser": "Unknown user",
@@ -1374,6 +1372,11 @@
     "entity": {
       "share": "Share {token}",
       "id": "ID {id}"
+    },
+    "timeline": {
+      "today": "Today · {date}",
+      "yesterday": "Yesterday · {date}",
+      "summary": "{total, plural, one {# event} other {# events}}"
     }
   },
   "gallery": {
