@@ -301,7 +301,7 @@ describe("metrics decision views", () => {
     ).toContain("h-11");
     fireEvent.change(projectLimit, { target: { value: "999" } });
     expect((projectLimit as HTMLInputElement).value).toBe("5");
-    expect(screen.getAllByText("21+")).toHaveLength(3);
+    expect(screen.getAllByText("21+")).toHaveLength(1);
     expect(screen.getByText("Free-plan impact")).toBeTruthy();
     expect(screen.getByText("Commercial signals")).toBeTruthy();
   });
@@ -693,7 +693,7 @@ describe("metrics decision views", () => {
       })
     ).toHaveLength(2);
     expect(
-      screen.getByRole("heading", { name: "Weekly activity" })
+      screen.getByRole("heading", { name: "How active is each week?" })
     ).toBeTruthy();
     const evidence = screen.getByRole("region", {
       name: "Core product metrics",
@@ -720,7 +720,9 @@ describe("metrics decision views", () => {
     expect(within(evidence).queryByText(/Distinct signed-in users/)).toBeNull();
     expect(within(evidence).queryByText("Trend")).toBeNull();
     expect(within(evidence).getByRole("table").className).toContain("text-sm");
-    expect(screen.queryByRole("button", { name: "Editor usage" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Who uses the editor?" })
+    ).toBeNull();
     expect(screen.queryByText("Product metrics data dictionary")).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Sharing + Embed reach" })
@@ -732,7 +734,7 @@ describe("metrics decision views", () => {
       "min-h-11"
     );
     const acquisitionHeading = screen.getByRole("heading", {
-      name: "Acquisition source mix",
+      name: "Where do new sessions come from?",
     });
     expect(acquisitionHeading).toBeTruthy();
     expect(acquisitionHeading.closest('[role="tabpanel"]')).toBeTruthy();
@@ -742,7 +744,9 @@ describe("metrics decision views", () => {
     expect(screen.getByText("No data for this period.")).toBeTruthy();
 
     expect(
-      screen.getByRole("heading", { name: "Localization demand" })
+      screen.getByRole("heading", {
+        name: "Which language should we translate next?",
+      })
     ).toBeTruthy();
     expect(
       screen.getByRole("heading", { name: "Preferred browser language" })
@@ -859,7 +863,7 @@ describe("metrics decision views", () => {
     expect(screen.queryByRole("alert")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
-    expect(screen.getByText("Creator retention")).toBeTruthy();
+    expect(screen.getByText("Do activated creators come back?")).toBeTruthy();
     expect(screen.getByText("Active creator rate")).toBeTruthy();
     expect(screen.getByText("60%")).toBeTruthy();
     expect(
@@ -867,19 +871,21 @@ describe("metrics decision views", () => {
     ).toBeTruthy();
 
     await user.click(screen.getByRole("tab", { name: "Creation" }));
-    expect(screen.getByText("Content growth")).toBeTruthy();
+    expect(screen.getByText("How much content is being created?")).toBeTruthy();
     expect(screen.getByText("Valuable sessions")).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Where sessions stop" })
+      screen.getByRole("heading", { name: "Where do sessions stop?" })
     ).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Time to first result" })
+      screen.getByRole("heading", {
+        name: "How fast do creators get a first result?",
+      })
     ).toBeTruthy();
     expect(
       screen.getByText("12 valuable sessions from 30 editor sessions.")
     ).toBeTruthy();
     const adoption = screen
-      .getByRole("heading", { name: "Feature adoption" })
+      .getByRole("heading", { name: "Which features do creators use?" })
       .closest("section");
     expect(adoption).toBeTruthy();
     expect(
@@ -891,7 +897,7 @@ describe("metrics decision views", () => {
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     expect(screen.getByText("Export usage")).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Export reliability by format" })
+      screen.getByRole("heading", { name: "Do exports work in every format?" })
     ).toBeTruthy();
     expect(screen.getByText("777")).toBeTruthy();
     expect(screen.getByText("Publication session rate")).toBeTruthy();
@@ -899,7 +905,7 @@ describe("metrics decision views", () => {
       screen.getByText("7 published sessions from 12 valuable sessions.")
     ).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
-    expect(screen.getByText("Thresholded embed reach")).toBeTruthy();
+    expect(screen.getByText("Where are tracks embedded?")).toBeTruthy();
     // One failed request affects several panels, but exposes only one retry action.
     vi.mocked(loadLocalizationDemand).mockRejectedValue(
       new Error("unavailable")
