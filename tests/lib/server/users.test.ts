@@ -9,7 +9,8 @@ vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   prepare: vi.fn(),
-  deleteSharesOwnedByUser: vi.fn(),
+  deleteAccountData: vi.fn(),
+  flushMedia: vi.fn(),
 }));
 
 vi.mock("@/lib/server/db", () => ({
@@ -18,8 +19,11 @@ vi.mock("@/lib/server/db", () => ({
   })),
 }));
 
-vi.mock("@/lib/server/shares", () => ({
-  deleteSharesOwnedByUser: mocks.deleteSharesOwnedByUser,
+vi.mock("@/lib/server/account-deletion", () => ({
+  deleteUserAccount: mocks.deleteAccountData,
+}));
+vi.mock("@/lib/server/gallery-media", () => ({
+  flushAccountDeletionMedia: mocks.flushMedia,
 }));
 
 import {
@@ -36,7 +40,8 @@ import {
 
 beforeEach(() => {
   mocks.prepare.mockReset();
-  mocks.deleteSharesOwnedByUser.mockReset();
+  mocks.deleteAccountData.mockReset();
+  mocks.flushMedia.mockReset();
 });
 
 describe("getUserRoleById", () => {
@@ -314,53 +319,12 @@ describe("unbanUser", () => {
 });
 
 describe("deleteUserAccount", () => {
-  it("deletes shares, API keys, product events, and projects before deleting the user row", async () => {
-    mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
-    const productEventsStatement = createD1Statement();
-    const apiKeyStatement = createD1Statement();
-    const projectsStatement = createD1Statement();
-    const usersStatement = createD1Statement();
-    installD1Statements(mocks.prepare, [
-      productEventsStatement,
-      apiKeyStatement,
-      projectsStatement,
-      usersStatement,
-    ]);
-
+  it("uses the shared account lifecycle and flushes queued media", async () => {
     await deleteUserAccount("user-4");
-
-    expect(mocks.deleteSharesOwnedByUser).toHaveBeenCalledWith("user-4");
-    expect(apiKeyStatement.sql).toContain("delete from apikey");
-    expect(apiKeyStatement.bind).toHaveBeenCalledWith("user-4");
-    expect(apiKeyStatement.run).toHaveBeenCalledOnce();
-    expect(productEventsStatement.sql).toContain("delete from product_events");
-    expect(productEventsStatement.bind).toHaveBeenCalledWith(
-      "user-4",
-      "user-4",
+    expect(mocks.deleteAccountData).toHaveBeenCalledWith(
+      { prepare: mocks.prepare },
       "user-4"
     );
-    expect(productEventsStatement.run).toHaveBeenCalledOnce();
-    expect(projectsStatement.sql).toContain("delete from projects");
-    expect(projectsStatement.bind).toHaveBeenCalledWith("user-4");
-    expect(usersStatement.sql).toContain("delete from users");
-    expect(usersStatement.bind).toHaveBeenCalledWith("user-4");
-    expect(usersStatement.run).toHaveBeenCalledOnce();
-  });
-
-  it("does not issue a raw gallery_entries delete (relies on deleteGalleryEntry for preview-image cleanup)", async () => {
-    mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
-    installD1Statements(mocks.prepare, [
-      createD1Statement(),
-      createD1Statement(),
-      createD1Statement(),
-      createD1Statement(),
-    ]);
-
-    await deleteUserAccount("user-4");
-
-    const sqlCalls = mocks.prepare.mock.calls.map(([sql]) => String(sql));
-    expect(
-      sqlCalls.some((sql) => sql.includes("delete from gallery_entries"))
-    ).toBe(false);
+    expect(mocks.flushMedia).toHaveBeenCalledOnce();
   });
 });

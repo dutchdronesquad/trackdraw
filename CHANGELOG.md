@@ -6,9 +6,9 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-### Account retention notices
+### Account retention
 
-Inactive accounts receive advance email notices with a scheduled removal date. Signing in and using TrackDraw keeps the account and restarts the inactivity period.
+Accounts inactive for twelve months are permanently removed with their cloud data after advance email notices. Signing in and using TrackDraw keeps the account and restarts the inactivity period.
 
 ## [1.17.0]
 

@@ -6,12 +6,21 @@ import {
 } from "../../helpers/cloudflare";
 import { routeContext } from "../../helpers/api-routes";
 
+vi.mock("server-only", () => ({}));
+
 const mocks = vi.hoisted(() => ({
+  first: vi.fn(),
   getCloudflareContext: vi.fn(),
 }));
 
 vi.mock("@opennextjs/cloudflare", () => ({
   getCloudflareContext: mocks.getCloudflareContext,
+}));
+
+vi.mock("@/lib/server/db", () => ({
+  getDatabase: async () => ({
+    prepare: () => ({ bind: () => ({ first: mocks.first }) }),
+  }),
 }));
 
 import { GET } from "@/app/api/media/[...key]/route";
@@ -23,6 +32,7 @@ function mediaContext(key: string[]) {
 describe("media API route", () => {
   beforeEach(() => {
     mocks.getCloudflareContext.mockReset();
+    mocks.first.mockReset().mockResolvedValue({ id: "entry" });
   });
 
   it("rejects empty media keys before reading R2", async () => {
@@ -46,6 +56,18 @@ describe("media API route", () => {
 
     expect(response.status).toBe(500);
     await expect(response.text()).resolves.toBe("Missing media bucket binding");
+  });
+
+  it("hides media immediately after its gallery entry is deleted, even if R2 cleanup is pending", async () => {
+    const bucket = createMockMediaBucket();
+    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    mocks.first.mockResolvedValue(null);
+    const response = await GET(
+      new Request("http://localhost/api/media/gallery/previews/deleted.webp"),
+      mediaContext(["gallery", "previews", "deleted.webp"])
+    );
+    expect(response.status).toBe(404);
+    expect(bucket.get).not.toHaveBeenCalled();
   });
 
   it("returns 404 when the R2 object does not exist", async () => {

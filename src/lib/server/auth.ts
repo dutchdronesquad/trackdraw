@@ -166,8 +166,11 @@ export async function getAuth() {
       },
       deleteUser: {
         enabled: true,
-        afterDelete: async (user) => {
-          await recordSelfAccountDeleted(user);
+        afterDelete: async () => {
+          const { flushAccountDeletionMedia } =
+            await import("@/lib/server/gallery-media");
+          await flushAccountDeletionMedia();
+          await recordSelfAccountDeleted();
         },
       },
     },

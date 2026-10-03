@@ -174,6 +174,7 @@ describe("scheduled cleanup", () => {
     );
 
     expect(tasks.map((task) => task.name)).toEqual([
+      "accounts",
       "account_retention_notices",
       "shares",
       "api_keys",

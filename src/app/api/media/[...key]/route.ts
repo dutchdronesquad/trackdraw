@@ -1,3 +1,4 @@
+import { getDatabase } from "@/lib/server/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 type MediaRouteContext = {
@@ -40,6 +41,15 @@ export async function GET(_request: Request, context: MediaRouteContext) {
   if (!env.MEDIA_BUCKET) {
     return new Response("Missing media bucket binding", { status: 500 });
   }
+
+  const db = await getDatabase();
+  const entry = await db
+    .prepare(
+      "SELECT id FROM gallery_entries WHERE gallery_preview_image = ? LIMIT 1"
+    )
+    .bind(objectKey)
+    .first<{ id: string }>();
+  if (!entry) return new Response("Media object not found", { status: 404 });
 
   const object = await env.MEDIA_BUCKET.get(objectKey);
   if (!object) {

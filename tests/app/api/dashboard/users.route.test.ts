@@ -488,12 +488,11 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).toHaveBeenCalledWith({
         actorUserId: adminActor.id,
         targetUserId: null,
-        targetLabel: targetUser.email,
+        targetLabel: "Deleted account",
         eventType: "account.deleted",
         entityType: "user",
-        entityId: "user-2",
+        entityId: null,
         metadata: {
-          email: targetUser.email,
           role: targetUser.role,
           ...stats,
         },

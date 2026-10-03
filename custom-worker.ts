@@ -1,3 +1,4 @@
+import type { AccountDeletionMediaBucket } from "./src/lib/server/account-deletion";
 import {
   createPlunkMailer,
   type PlunkEnvironment,
@@ -24,6 +25,7 @@ type D1Database = {
 
 type WorkerEnv = PlunkEnvironment & {
   DB: D1Database;
+  MEDIA_BUCKET?: AccountDeletionMediaBucket;
 };
 
 type ScheduledController = {
@@ -51,7 +53,11 @@ const worker = {
   async scheduled(controller: ScheduledController, env: WorkerEnv) {
     await runScheduledCleanup(
       controller,
-      createScheduledCleanupTasks(env.DB, createPlunkMailer(env))
+      createScheduledCleanupTasks(
+        env.DB,
+        createPlunkMailer(env),
+        env.MEDIA_BUCKET
+      )
     );
   },
 };

@@ -69,8 +69,8 @@ describe("auth audit events", () => {
     );
   });
 
-  it("keeps a safe actor snapshot when an account deletes itself", async () => {
-    await recordSelfAccountDeleted(user);
+  it("records self-deletion without retaining the deleted identity", async () => {
+    await recordSelfAccountDeleted();
     await recordAccountEmailChanged(
       {
         id: user.id,
@@ -83,11 +83,10 @@ describe("auth audit events", () => {
       1,
       expect.objectContaining({
         actorUserId: null,
-        actorLabel: "pilot@example.com",
+        actorLabel: "Deleted account",
         eventType: "account.deleted",
         metadata: {
           initiatedBy: "self",
-          email: "pilot@example.com",
         },
       })
     );

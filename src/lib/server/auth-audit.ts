@@ -12,19 +12,18 @@ type PasskeyAuditUser = {
   id: string;
 };
 
-export async function recordSelfAccountDeleted(user: AuthAuditUser) {
+export async function recordSelfAccountDeleted() {
   return recordAuditEvent({
     actorKind: "user",
-    actorLabel: user.email,
+    actorLabel: "Deleted account",
     actorUserId: null,
     targetUserId: null,
-    targetLabel: user.email,
+    targetLabel: "Deleted account",
     eventType: auditEventTypes.accountDeleted,
     entityType: "user",
-    entityId: user.id,
+    entityId: null,
     metadata: {
       initiatedBy: "self",
-      email: user.email,
     },
   });
 }
