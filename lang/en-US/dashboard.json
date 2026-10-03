@@ -1147,8 +1147,8 @@
   },
   "apiKeys": {
     "filters": {
-      "searchPlaceholder": "Search key name or owner...",
-      "status": "Status"
+      "searchPlaceholder": "Search key name, prefix, or owner...",
+      "clear": "Clear filters"
     },
     "statusValues": {
       "active": "Active",
@@ -1159,9 +1159,9 @@
       "key": "Key",
       "owner": "Owner",
       "status": "Status",
-      "requests": "Requests",
       "lastUsed": "Last used",
-      "expires": "Expires"
+      "expires": "Expires",
+      "rateLimit": "Rate limit"
     },
     "empty": {
       "default": "No API keys found.",
@@ -1176,12 +1176,8 @@
       "hours": "{count} hr"
     },
     "panel": {
-      "title": "API Key",
-      "empty": {
-        "selectRow": "Select a key row to inspect its details."
-      },
       "stats": {
-        "requests": "Requests",
+        "windowRequests": "This window",
         "remaining": "Remaining",
         "rateLimit": "Rate limit"
       },
@@ -1190,16 +1186,42 @@
         "owner": "Owner"
       },
       "fields": {
-        "status": "Status",
-        "prefix": "Prefix",
         "permissions": "Permissions",
         "created": "Created",
         "expires": "Expires",
-        "lastUsed": "Last used",
-        "name": "Name",
-        "email": "Email",
-        "userId": "User ID"
+        "lastUsed": "Last used"
+      },
+      "badges": {
+        "nearLimit": "{percent}% of rate limit",
+        "expiring": "Expires {date}"
+      },
+      "messages": {
+        "nearLimit": "This key has almost used its rate limit for the current window. Further requests will be rejected until the window resets.",
+        "revokeDescription": "Revoke this key. Integrations that use it stop working immediately."
+      },
+      "actions": {
+        "revoke": "Revoke"
       }
+    },
+    "segments": {
+      "label": "Filter API keys",
+      "all": "All keys",
+      "active": "Active",
+      "nearLimit": "Near rate limit",
+      "expiring": "Expiring within 14 days",
+      "neverUsed": "Never used",
+      "inactive": "Expired or disabled"
+    },
+    "revokeDialog": {
+      "title": "Revoke API key?",
+      "description": "Integrations that use <strong>{name}</strong> stop working immediately. The owner has to create a new key to reconnect. This cannot be undone.",
+      "owner": "Owner",
+      "lastUsed": "Last used",
+      "cancel": "Cancel",
+      "revoking": "Revoking…",
+      "confirm": "Revoke key",
+      "success": "{name} has been revoked.",
+      "failed": "Could not revoke the API key."
     }
   },
   "audit": {
@@ -1460,7 +1482,8 @@
       "copyLink": "Copy link",
       "openShare": "Open share",
       "emptyTitle": "Gallery entry",
-      "emptyDescription": "Select a gallery row to inspect its public context."
+      "emptyDescription": "Select a gallery row to inspect its public context.",
+      "deleteDescription": "Remove this entry from the gallery permanently. The share link stays governed by its share record."
     },
     "reviewState": {
       "revokedTitle": "Share is revoked",
@@ -1483,12 +1506,24 @@
       "cancel": "Cancel",
       "deleting": "Deleting…",
       "deleteEntry": "Delete entry"
+    },
+    "segments": {
+      "label": "Filter gallery entries",
+      "all": "All entries",
+      "featured": "Featured",
+      "listed": "Listed",
+      "hidden": "Hidden",
+      "missingPreview": "Missing preview"
+    },
+    "view": {
+      "label": "View",
+      "grid": "Grid view",
+      "table": "Table view"
     }
   },
   "shares": {
     "filters": {
       "searchPlaceholder": "Search title, owner or token...",
-      "status": "Status",
       "type": "Type",
       "owner": "Owner"
     },
@@ -1546,7 +1581,7 @@
       "showing": "Showing {filtered} of {total} shares."
     },
     "retention": {
-      "title": "Automatic cleanup is active",
+      "title": "Automatic cleanup is active.",
       "description": "A background job runs daily at 00:00 UTC. It permanently deletes shares revoked for more than 7 days and temporary shares expired for more than 7 days."
     },
     "lifecycle": {
@@ -1574,6 +1609,32 @@
       "cancel": "Cancel",
       "purging": "Deleting…",
       "purgeShare": "Delete permanently"
+    },
+    "segments": {
+      "label": "Filter shares",
+      "all": "All shares",
+      "active": "Active",
+      "expiring": "Expiring within 7 days",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "panel": {
+      "sections": {
+        "link": "Link",
+        "lifecycle": "Lifecycle"
+      },
+      "fields": {
+        "status": "Status",
+        "cleanup": "Cleanup",
+        "notScheduled": "Not scheduled"
+      },
+      "messages": {
+        "revokeDescription": "Stop this link from working. It is purged after 7 days.",
+        "purgeDescription": "Delete the share now instead of waiting for cleanup."
+      },
+      "actions": {
+        "purge": "Delete"
+      }
     }
   },
   "emailPreview": {

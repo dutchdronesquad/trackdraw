@@ -196,7 +196,7 @@ describe("DashboardSharesManager", () => {
       />
     );
 
-    expect(screen.getByText("Automatic cleanup is active")).toBeTruthy();
+    expect(screen.getByText("Automatic cleanup is active.")).toBeTruthy();
     expect(
       screen.getByText(/background job runs daily at 00:00 UTC/i)
     ).toBeTruthy();
@@ -322,5 +322,31 @@ describe("DashboardSharesManager", () => {
 
     expect(screen.getByText("Page 2 of 2")).toBeTruthy();
     expect(screen.getByText("Track 11")).toBeTruthy();
+  });
+
+  it("filters shares that expire soon and opens their details", async () => {
+    const user = userEvent.setup();
+    const expiringShare: DashboardShare = {
+      ...anonymousShare,
+      token: "expiring-token",
+      title: "Expiring Track",
+      expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={[activeShare, expiringShare]}
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Expiring within 7 days 1" })
+    );
+    expect(screen.queryByText("Track One")).toBeNull();
+
+    await user.click(screen.getByText("Expiring Track"));
+    expect(await screen.findByText("Lifecycle")).toBeTruthy();
+    expect(screen.getByText("/share/expiring-token")).toBeTruthy();
   });
 });

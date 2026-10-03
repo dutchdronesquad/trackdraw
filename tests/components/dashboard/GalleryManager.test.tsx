@@ -124,6 +124,7 @@ describe("DashboardGalleryManager", () => {
       />
     );
 
+    await user.click(screen.getByRole("button", { name: "Table view" }));
     await user.click(screen.getByLabelText("Feature Track One"));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
@@ -167,6 +168,7 @@ describe("DashboardGalleryManager", () => {
       />
     );
 
+    await user.click(screen.getByRole("button", { name: "Table view" }));
     await user.click(screen.getByLabelText("Delete Track One"));
     expect(screen.getByText("Delete gallery entry?")).toBeTruthy();
 
@@ -203,22 +205,31 @@ describe("DashboardGalleryManager", () => {
     expect(screen.getByText("Track 11")).toBeTruthy();
   });
 
-  it("uses translated gallery state labels in the state facet", async () => {
+  it("filters entries by gallery state and missing preview media", async () => {
     const user = userEvent.setup();
     render(
       <DashboardGalleryManager
         currentUserRole="moderator"
-        initialEntries={[entry]}
+        initialEntries={[
+          entry,
+          {
+            ...entry,
+            id: "entry-2",
+            shareToken: "share-token-2",
+            galleryTitle: "Hidden Track",
+            galleryState: "hidden",
+            galleryPreviewImage: null,
+          },
+        ]}
       />
     );
 
-    const stateFilter = screen.getByRole("button", { name: "State" });
-    expect(stateFilter.textContent).not.toContain("selected");
-    await user.click(stateFilter);
+    await user.click(screen.getByRole("button", { name: "Hidden 1" }));
+    expect(screen.getByText("Hidden Track")).toBeTruthy();
+    expect(screen.queryByText("Track One")).toBeNull();
 
-    expect(screen.getAllByText("Listed").length).toBeGreaterThan(0);
-    expect(screen.getByText("Featured")).toBeTruthy();
-    expect(screen.getByText("Hidden")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Missing preview 1" }));
+    expect(screen.getByText("Hidden Track")).toBeTruthy();
     expect(screen.queryByText("Unlisted (regular shares)")).toBeNull();
   });
 });

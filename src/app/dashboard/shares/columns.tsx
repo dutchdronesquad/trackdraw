@@ -26,7 +26,12 @@ import {
 } from "@/components/AppTooltip";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
+import {
+  dashboardToneClassNames,
+  type DashboardTone,
+} from "@/components/dashboard/ToneBadge";
 import type { DashboardShare } from "@/lib/server/shares";
+import { cn } from "@/lib/utils";
 
 export type ShareLifecycleState = "active" | "expired" | "revoked";
 export type Translate = (
@@ -53,29 +58,36 @@ export function getLifecycleState(share: DashboardShare): ShareLifecycleState {
   return "active";
 }
 
-function getLifecycleVariant(
-  state: ShareLifecycleState
-): "default" | "muted" | "outline" {
-  if (state === "active") return "outline";
-  return "muted";
+const EXPIRING_SOON_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function isShareExpiringSoon(share: DashboardShare, now = Date.now()) {
+  if (getLifecycleState(share) !== "active" || !share.expiresAt) return false;
+  return new Date(share.expiresAt).getTime() - now <= EXPIRING_SOON_MS;
 }
 
-function getGalleryStateVariant(
+export function getLifecycleTone(share: DashboardShare): DashboardTone {
+  const state = getLifecycleState(share);
+  if (state === "revoked") return "destructive";
+  if (state === "expired") return "neutral";
+  return isShareExpiringSoon(share) ? "amber" : "emerald";
+}
+
+export function getGalleryStateTone(
   state: NonNullable<DashboardShare["galleryState"]>
-): "default" | "muted" | "outline" {
-  if (state === "featured") return "default";
-  if (state === "hidden") return "muted";
-  return "outline";
+): DashboardTone {
+  if (state === "featured") return "amber";
+  if (state === "hidden") return "neutral";
+  return "emerald";
 }
 
-function getGalleryStateLabel(
+export function getGalleryStateLabel(
   state: NonNullable<DashboardShare["galleryState"]>,
   tCommon: Translate
 ) {
   return tCommon(`status.${state}`);
 }
 
-function formatDate(value: string | null) {
+export function formatDate(value: string | null) {
   if (!value) return "—";
 
   try {
@@ -94,7 +106,7 @@ function formatCleanupDate(value: Date) {
   }).format(value);
 }
 
-function getExpectedCleanupDate(share: DashboardShare) {
+export function getExpectedCleanupDate(share: DashboardShare) {
   const anchor = share.revokedAt
     ? share.revokedAt
     : share.shareType === "temporary"
@@ -116,7 +128,7 @@ function getExpectedCleanupDate(share: DashboardShare) {
   return formatCleanupDate(cleanupAt);
 }
 
-function getLifecycleDetail(share: DashboardShare, t: Translate) {
+export function getLifecycleDetail(share: DashboardShare, t: Translate) {
   const state = getLifecycleState(share);
   if (state === "revoked") {
     return t("lifecycle.revokedOn", { date: formatDate(share.revokedAt) });
@@ -221,7 +233,12 @@ export function getSharesColumns({
       meta: { className: "w-28" },
       cell: ({ row }) => (
         <Badge
-          variant={row.original.shareType === "published" ? "outline" : "muted"}
+          variant="outline"
+          className={
+            dashboardToneClassNames[
+              row.original.shareType === "published" ? "sky" : "neutral"
+            ]
+          }
         >
           {t(`typeValues.${row.original.shareType}`)}
         </Badge>
@@ -254,10 +271,13 @@ export function getSharesColumns({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge
-                    variant={getLifecycleVariant(state)}
+                    variant="outline"
                     tabIndex={0}
                     aria-label={accessibleLifecycleLabel}
-                    className="focus-visible:ring-ring/40 shrink-0 cursor-help rounded-md outline-none focus-visible:ring-2"
+                    className={cn(
+                      "focus-visible:ring-ring/40 shrink-0 cursor-help rounded-md outline-none focus-visible:ring-2",
+                      dashboardToneClassNames[getLifecycleTone(row.original)]
+                    )}
                   >
                     {lifecycleLabel}
                   </Badge>
@@ -267,11 +287,24 @@ export function getSharesColumns({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Badge variant={getLifecycleVariant(state)} className="shrink-0">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "shrink-0",
+                  dashboardToneClassNames[getLifecycleTone(row.original)]
+                )}
+              >
                 {lifecycleLabel}
               </Badge>
             )}
-            <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+            <span
+              className={cn(
+                "min-w-0 flex-1 truncate text-xs",
+                isShareExpiringSoon(row.original)
+                  ? "font-medium text-amber-700 dark:text-amber-300"
+                  : "text-muted-foreground"
+              )}
+            >
               {getLifecycleDetail(row.original, t)}
             </span>
           </div>
@@ -285,7 +318,14 @@ export function getSharesColumns({
       meta: { className: "w-32" },
       cell: ({ row }) =>
         row.original.galleryState ? (
-          <Badge variant={getGalleryStateVariant(row.original.galleryState)}>
+          <Badge
+            variant="outline"
+            className={
+              dashboardToneClassNames[
+                getGalleryStateTone(row.original.galleryState)
+              ]
+            }
+          >
             {getGalleryStateLabel(row.original.galleryState, tCommon)}
           </Badge>
         ) : (

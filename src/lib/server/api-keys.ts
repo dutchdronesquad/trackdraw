@@ -398,3 +398,42 @@ export async function listApiKeysForAdmin(): Promise<AdminApiKey[]> {
 
   return result.results.map(mapAdminApiKeyRow);
 }
+
+export type RevokedAdminApiKey = {
+  id: string;
+  name: string | null;
+  prefix: string | null;
+  start: string | null;
+  ownerUserId: string;
+};
+
+export async function revokeApiKeyForAdmin(
+  keyId: string
+): Promise<RevokedAdminApiKey | null> {
+  const db = await getDatabase();
+  const row = await db
+    .prepare(
+      `
+        delete from apikey
+        where id = ?
+        returning id, name, prefix, start, referenceId
+      `
+    )
+    .bind(keyId)
+    .first<{
+      id: string;
+      name: string | null;
+      prefix: string | null;
+      start: string | null;
+      referenceId: string;
+    }>();
+
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    prefix: row.prefix,
+    start: row.start,
+    ownerUserId: row.referenceId,
+  };
+}

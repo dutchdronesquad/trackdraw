@@ -12,8 +12,11 @@ import {
   ExternalLink,
   ImageOff,
   Info,
+  LayoutGrid,
   Link2,
+  List,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -22,19 +25,27 @@ import {
   formatFieldSize,
   getEmbedAvailable,
   getEmbedUnavailableReason,
+  getFeatureAction,
   getGalleryColumns,
   getInspectSummary,
   getOwnerLabel,
   getPreviewImageUrl,
   getShareLifecycleLabel,
   getShareLifecycleState,
-  getShareLifecycleVariant,
+  getShareLifecycleTone,
   getStateLabel,
-  getStateVariant,
+  getStateTone,
+  getVisibilityAction,
   type GalleryUpdateAction,
   type Translate,
 } from "@/app/dashboard/gallery/columns";
-import { Badge } from "@/components/ui/badge";
+import {
+  DangerAction,
+  DetailSection,
+  DetailStats,
+} from "@/components/dashboard/DetailSheet";
+import StatusFilter from "@/components/dashboard/StatusFilter";
+import ToneBadge from "@/components/dashboard/ToneBadge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,12 +58,20 @@ import {
 } from "@/components/ui/dialog";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
+import DataTablePagination from "@/components/data-table/DataTablePagination";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { dataTableFeatures } from "@/components/data-table/tableFeatures";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { AccountRole } from "@/lib/account/roles";
+import { cn } from "@/lib/utils";
 import type {
   DashboardGalleryEntry,
-  GalleryState,
   StoredGalleryEntry,
 } from "@/lib/server/gallery";
 
@@ -64,12 +83,25 @@ type DashboardGalleryManagerProps = {
 type ShareLifecycleState = "active" | "expired" | "revoked";
 
 const galleryManagerRoles: AccountRole[] = ["moderator", "admin"];
-const stateFilterValues: GalleryState[] = ["listed", "featured", "hidden"];
 const shareFilterValues: ShareLifecycleState[] = [
   "active",
   "expired",
   "revoked",
 ];
+
+type GallerySegment =
+  "all" | "featured" | "listed" | "hidden" | "missingPreview";
+
+const segmentFilters: Record<
+  GallerySegment,
+  (entry: DashboardGalleryEntry) => boolean
+> = {
+  all: () => true,
+  featured: (entry) => entry.galleryState === "featured",
+  listed: (entry) => entry.galleryState === "listed",
+  hidden: (entry) => entry.galleryState === "hidden",
+  missingPreview: (entry) => getPreviewImageUrl(entry) === null,
+};
 
 function InspectDetail({
   label,
@@ -84,23 +116,6 @@ function InspectDetail({
         {label}
       </dt>
       <dd className="text-sm wrap-break-word">{value}</dd>
-    </div>
-  );
-}
-
-function InspectMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1 truncate text-sm font-medium">{value}</dd>
     </div>
   );
 }
@@ -138,23 +153,6 @@ function InspectNotice({
   );
 }
 
-function InspectSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="space-y-3">
-      <h3 className="text-muted-foreground text-xs font-medium uppercase">
-        {title}
-      </h3>
-      {children}
-    </section>
-  );
-}
-
 export default function DashboardGalleryManager({
   currentUserRole,
   initialEntries,
@@ -162,14 +160,13 @@ export default function DashboardGalleryManager({
   const t = useTranslations("dashboard.gallery");
   const tCommon = useTranslations("common");
   const [entries, setEntries] = useState(initialEntries);
+  const [segment, setSegment] = useState<GallerySegment>("all");
+  const [view, setView] = useState<"grid" | "table">("grid");
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pendingShareToken, setPendingShareToken] = useState<string | null>(
     null
   );
-  const [selectedGalleryStates, setSelectedGalleryStates] = useState<
-    GalleryState[]
-  >([]);
   const [selectedShareLifecycles, setSelectedShareLifecycles] = useState<
     ShareLifecycleState[]
   >([]);
@@ -221,6 +218,11 @@ export default function DashboardGalleryManager({
           )
         );
 
+        setInspectCandidate((previous) =>
+          previous?.shareToken === payload.entry.shareToken
+            ? { ...previous, ...payload.entry }
+            : previous
+        );
         toast.success(t("messages.updateSuccess", { action }));
       } catch (error) {
         toast.error(
@@ -264,6 +266,9 @@ export default function DashboardGalleryManager({
         previous.filter((entry) => entry.shareToken !== shareToken)
       );
       setDeleteCandidate(null);
+      setInspectCandidate((previous) =>
+        previous?.shareToken === shareToken ? null : previous
+      );
       toast.success(t("messages.deleteSuccess"));
     } catch (error) {
       toast.error(
@@ -307,21 +312,21 @@ export default function DashboardGalleryManager({
       }),
     [canManageGallery, pendingShareToken, t, tCommon, updateEntry]
   );
+  const segmentedEntries = useMemo(
+    () => entries.filter(segmentFilters[segment]),
+    [entries, segment]
+  );
   const columnFilters = useMemo(
-    () => [
-      ...(selectedGalleryStates.length > 0
-        ? [{ id: "galleryState", value: selectedGalleryStates }]
-        : []),
-      ...(selectedShareLifecycles.length > 0
+    () =>
+      selectedShareLifecycles.length > 0
         ? [{ id: "shareLifecycle", value: selectedShareLifecycles }]
-        : []),
-    ],
-    [selectedGalleryStates, selectedShareLifecycles]
+        : [],
+    [selectedShareLifecycles]
   );
 
   const table = useTable({
     features: dataTableFeatures,
-    data: entries,
+    data: segmentedEntries,
     columns,
     state: { globalFilter, sorting, columnFilters },
     initialState: {
@@ -341,16 +346,8 @@ export default function DashboardGalleryManager({
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
-  const stateFacetRows =
-    table.getColumn("galleryState")?.getFacetedRowModel().rows ?? [];
   const shareFacetRows =
     table.getColumn("shareLifecycle")?.getFacetedRowModel().rows ?? [];
-  const stateFilterOptions = stateFilterValues.map((value) => ({
-    value,
-    label: getStateLabel(value, tCommon as unknown as Translate),
-    count: stateFacetRows.filter((row) => row.original.galleryState === value)
-      .length,
-  }));
   const shareFilterOptions = shareFilterValues.map((value) => ({
     value,
     label: t(`shareValues.${value}`),
@@ -370,361 +367,493 @@ export default function DashboardGalleryManager({
     ? getInspectSummary(inspectCandidate, t as unknown as Translate)
     : null;
 
+  const segmentCount = (value: GallerySegment) =>
+    entries.filter(segmentFilters[value]).length;
+  const visibleRows = table.getRowModel().rows;
+  const tr = t as unknown as Translate;
+  const trCommon = tCommon as unknown as Translate;
+  const inspectFeatureAction = inspectCandidate
+    ? getFeatureAction(inspectCandidate, tr)
+    : null;
+  const inspectVisibilityAction = inspectCandidate
+    ? getVisibilityAction(inspectCandidate, tr)
+    : null;
+  const inspectPending =
+    inspectCandidate !== null &&
+    pendingShareToken === inspectCandidate.shareToken;
+
   return (
     <div className="space-y-4">
+      <StatusFilter
+        label={t("segments.label")}
+        value={segment}
+        onChange={setSegment}
+        items={[
+          {
+            value: "all",
+            label: t("segments.all"),
+            count: segmentCount("all"),
+          },
+          {
+            value: "featured",
+            label: t("segments.featured"),
+            count: segmentCount("featured"),
+          },
+          {
+            value: "listed",
+            label: t("segments.listed"),
+            count: segmentCount("listed"),
+          },
+          {
+            value: "hidden",
+            label: t("segments.hidden"),
+            count: segmentCount("hidden"),
+          },
+          {
+            value: "missingPreview",
+            label: t("segments.missingPreview"),
+            count: segmentCount("missingPreview"),
+            attention: true,
+          },
+        ]}
+      />
+
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
         searchPlaceholder={t("filters.searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title={t("filters.state")}
-          selected={selectedGalleryStates}
-          options={stateFilterOptions}
-          onChange={setSelectedGalleryStates}
-        />
-        <DataTableFacetFilter
           title={t("filters.share")}
           selected={selectedShareLifecycles}
           options={shareFilterOptions}
           onChange={setSelectedShareLifecycles}
         />
+        <div
+          role="group"
+          aria-label={t("view.label")}
+          className="bg-muted inline-flex h-9 items-center gap-0.5 rounded-lg p-1"
+        >
+          {(
+            [
+              ["grid", LayoutGrid, t("view.grid")],
+              ["table", List, t("view.table")],
+            ] as const
+          ).map(([value, Icon, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={view === value}
+              aria-label={label}
+              onClick={() => setView(value)}
+              className={cn(
+                "text-muted-foreground inline-flex h-7 w-8 cursor-pointer items-center justify-center rounded-md transition-colors",
+                view === value && "bg-background text-foreground shadow-sm"
+              )}
+            >
+              <Icon className="size-3.5" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
       </DataTableToolbar>
 
-      <DataTable
-        table={table}
-        columnsLength={columns.length}
-        emptyMessage={emptyMessage}
-        minWidthClassName="min-w-[920px]"
-        emptyClassName="py-8"
-        onRowClick={(row) => setInspectCandidate(row.original)}
-        getRowAriaLabel={(row) =>
-          t("aria.row", { title: row.original.galleryTitle })
-        }
-        pagination={{
-          summary: (
+      {view === "grid" ? (
+        <div className="space-y-3">
+          {visibleRows.length > 0 ? (
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {visibleRows.map((row) => {
+                const item = row.original;
+                const previewUrl = getPreviewImageUrl(item);
+                return (
+                  <li key={row.id}>
+                    <button
+                      type="button"
+                      aria-label={t("aria.row", { title: item.galleryTitle })}
+                      onClick={() => setInspectCandidate(item)}
+                      className="bg-card hover:border-brand-primary/40 focus-visible:ring-ring/40 flex w-full cursor-pointer flex-col overflow-hidden rounded-lg border text-left transition-colors outline-none focus-visible:ring-2"
+                    >
+                      <span className="bg-muted relative block aspect-video w-full">
+                        {previewUrl ? (
+                          <Image
+                            src={previewUrl}
+                            alt=""
+                            fill
+                            unoptimized
+                            className={cn(
+                              "object-cover",
+                              item.galleryState === "hidden" && "opacity-55"
+                            )}
+                          />
+                        ) : (
+                          <span className="text-muted-foreground absolute inset-0 flex items-center justify-center gap-1.5 bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_6px,transparent_6px,transparent_12px)] text-xs font-medium">
+                            <ImageOff className="size-3.5" aria-hidden="true" />
+                            {t("inspect.noPreviewMedia")}
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-1 border-t px-3 pt-2.5 pb-3">
+                        <span className="truncate text-sm font-medium">
+                          {item.galleryTitle}
+                        </span>
+                        <span className="text-muted-foreground truncate text-xs">
+                          {getOwnerLabel(item)} ·{" "}
+                          {formatDate(item.galleryPublishedAt)}
+                        </span>
+                        <span className="mt-1 flex flex-wrap gap-1.5">
+                          <ToneBadge tone={getStateTone(item.galleryState)}>
+                            {getStateLabel(item.galleryState, trCommon)}
+                          </ToneBadge>
+                          {previewUrl ? null : (
+                            <ToneBadge tone="amber">
+                              {t("inspect.previewMissing")}
+                            </ToneBadge>
+                          )}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground rounded-lg border py-10 text-center text-sm">
+              {emptyMessage}
+            </p>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-muted-foreground text-xs">
               {t("status.showing", {
                 filtered: filteredRowCount,
                 total: entries.length,
               })}
             </p>
-          ),
-        }}
-      />
+            <DataTablePagination table={table} />
+          </div>
+        </div>
+      ) : (
+        <DataTable
+          table={table}
+          columnsLength={columns.length}
+          emptyMessage={emptyMessage}
+          minWidthClassName="min-w-[920px]"
+          emptyClassName="py-8"
+          onRowClick={(row) => setInspectCandidate(row.original)}
+          getRowAriaLabel={(row) =>
+            t("aria.row", { title: row.original.galleryTitle })
+          }
+          pagination={{
+            summary: (
+              <p className="text-muted-foreground text-xs">
+                {t("status.showing", {
+                  filtered: filteredRowCount,
+                  total: entries.length,
+                })}
+              </p>
+            ),
+          }}
+        />
+      )}
 
-      <Dialog
+      <Sheet
         open={inspectCandidate !== null}
         onOpenChange={(open) => {
           if (!open) setInspectCandidate(null);
         }}
       >
-        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden p-0 sm:max-w-4xl">
+        <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md">
           {inspectCandidate && inspectShareLifecycle && inspectSummary ? (
-            <div className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col">
-              <DialogHeader className="border-b p-6 pr-12">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <DialogTitle className="truncate">
-                      {inspectCandidate.galleryTitle}
-                    </DialogTitle>
-                    <DialogDescription className="mt-1">
-                      {t("inspect.title")}
-                    </DialogDescription>
+            <>
+              <div className="bg-muted relative aspect-video w-full shrink-0 border-b">
+                {inspectPreviewImageUrl ? (
+                  <Image
+                    src={inspectPreviewImageUrl}
+                    alt={inspectCandidate.galleryTitle}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
+                    <ImageOff className="size-8 opacity-50" />
+                    <p className="text-sm font-medium">
+                      {t("inspect.noPreviewMedia")}
+                    </p>
                   </div>
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <Badge
-                      variant={getStateVariant(inspectCandidate.galleryState)}
-                    >
-                      {getStateLabel(
-                        inspectCandidate.galleryState,
-                        tCommon as unknown as Translate
-                      )}
-                    </Badge>
-                    <Badge
-                      variant={getShareLifecycleVariant(inspectShareLifecycle)}
-                    >
-                      {getShareLifecycleLabel(
-                        inspectShareLifecycle,
-                        t as unknown as Translate
-                      )}
-                    </Badge>
-                    <Badge
-                      variant={inspectPreviewImageUrl ? "outline" : "muted"}
-                    >
-                      {inspectPreviewImageUrl
-                        ? t("inspect.previewReady")
-                        : t("inspect.previewMissing")}
-                    </Badge>
-                  </div>
-                </div>
-              </DialogHeader>
-
-              <div className="min-h-0 overflow-y-auto">
-                <div className="grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-                  <div className="border-b p-6 lg:border-r lg:border-b-0">
-                    <div className="bg-muted relative aspect-video overflow-hidden rounded-md border">
-                      {inspectPreviewImageUrl ? (
-                        <Image
-                          src={inspectPreviewImageUrl}
-                          alt={inspectCandidate.galleryTitle}
-                          fill
-                          unoptimized
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
-                          <ImageOff className="size-8 opacity-50" />
-                          <p className="text-sm font-medium">
-                            {t("inspect.noPreviewMedia")}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5">
-                      <InspectMetric
-                        label={t("inspect.field")}
-                        value={formatFieldSize(
-                          inspectCandidate,
-                          t as unknown as Translate
-                        )}
-                      />
-                      <InspectMetric
-                        label={t("inspect.elements")}
-                        value={formatElementCount(
-                          inspectCandidate,
-                          t as unknown as Translate
-                        )}
-                      />
-                      <InspectMetric
-                        label={t("inspect.published")}
-                        value={formatDate(inspectCandidate.galleryPublishedAt)}
-                      />
-                      <InspectMetric
-                        label={t("inspect.updated")}
-                        value={formatDate(inspectCandidate.updatedAt)}
-                      />
-                    </dl>
-                  </div>
-
-                  <div className="space-y-7 p-6">
-                    <InspectSection title={t("inspect.reviewOutcome")}>
-                      <InspectNotice
-                        tone={inspectSummary.tone}
-                        title={inspectSummary.title}
-                        detail={inspectSummary.detail}
-                      />
-                    </InspectSection>
-
-                    <InspectSection title={t("inspect.publicListing")}>
-                      <dl className="space-y-1">
-                        <InspectDetail
-                          label={t("inspect.description")}
-                          value={
-                            <span className="leading-6">
-                              {inspectCandidate.galleryDescription ||
-                                t("inspect.noDescription")}
-                            </span>
-                          }
-                        />
-                        <InspectDetail
-                          label={t("inspect.shareTitle")}
-                          value={
-                            inspectCandidate.shareTitle ||
-                            t("inspect.untitledTrack")
-                          }
-                        />
-                      </dl>
-                    </InspectSection>
-
-                    <InspectSection title={t("inspect.shareLifecycle")}>
-                      <dl className="space-y-1">
-                        <InspectDetail
-                          label={t("inspect.type")}
-                          value={
-                            <Badge
-                              variant={
-                                inspectCandidate.shareType === "published"
-                                  ? "outline"
-                                  : "muted"
-                              }
-                            >
-                              {inspectCandidate.shareType === "published"
-                                ? t("inspect.published_")
-                                : t("inspect.temporary")}
-                            </Badge>
-                          }
-                        />
-                        <InspectDetail
-                          label={t("inspect.embed")}
-                          value={
-                            getEmbedAvailable(inspectCandidate) ? (
-                              <Link
-                                href={`/embed/${inspectCandidate.shareToken}`}
-                                prefetch={false}
-                                className="flex items-center gap-1 text-sm hover:underline"
-                              >
-                                <Link2 className="size-3.5 shrink-0" />
-                                {t("inspect.available")}
-                              </Link>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">
-                                {getEmbedUnavailableReason(
-                                  inspectCandidate,
-                                  t as unknown as Translate
-                                ) ?? t("fallback.notAvailable")}
-                              </span>
-                            )
-                          }
-                        />
-                        {inspectCandidate.projectId ? (
-                          <InspectDetail
-                            label={t("inspect.projectId")}
-                            value={
-                              <span className="flex items-center gap-1.5">
-                                <span className="truncate font-mono text-xs">
-                                  {inspectCandidate.projectId}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-5 shrink-0"
-                                  aria-label={t("inspect.copyProjectId")}
-                                  onClick={() =>
-                                    void copyToClipboard(
-                                      inspectCandidate.projectId!,
-                                      t("inspect.projectId")
-                                    )
-                                  }
-                                >
-                                  <Copy className="size-3" />
-                                </Button>
-                              </span>
-                            }
-                          />
-                        ) : null}
-                        <InspectDetail
-                          label={t("inspect.shareCreated")}
-                          value={formatDate(inspectCandidate.shareCreatedAt)}
-                        />
-                        <InspectDetail
-                          label={t("inspect.entryUpdated")}
-                          value={formatDate(inspectCandidate.updatedAt)}
-                        />
-                        {inspectCandidate.shareExpiresAt ? (
-                          <InspectDetail
-                            label={t("inspect.expires")}
-                            value={formatDate(inspectCandidate.shareExpiresAt)}
-                          />
-                        ) : null}
-                        {inspectCandidate.shareRevokedAt ? (
-                          <InspectDetail
-                            label={t("inspect.revoked")}
-                            value={formatDate(inspectCandidate.shareRevokedAt)}
-                          />
-                        ) : null}
-                      </dl>
-                    </InspectSection>
-
-                    <InspectSection title={t("inspect.record")}>
-                      <dl className="space-y-1">
-                        <InspectDetail
-                          label={t("inspect.owner")}
-                          value={getOwnerLabel(inspectCandidate)}
-                        />
-                        <InspectDetail
-                          label={t("inspect.ownerEmail")}
-                          value={
-                            inspectCandidate.ownerEmail ??
-                            inspectCandidate.ownerUserId
-                          }
-                        />
-                        <InspectDetail
-                          label={t("inspect.ownerId")}
-                          value={
-                            <span className="flex items-center gap-1.5">
-                              <span className="truncate font-mono text-xs">
-                                {inspectCandidate.ownerUserId}
-                              </span>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="size-5 shrink-0"
-                                aria-label={t("inspect.copyOwnerId")}
-                                onClick={() =>
-                                  void copyToClipboard(
-                                    inspectCandidate.ownerUserId,
-                                    t("inspect.ownerId")
-                                  )
-                                }
-                              >
-                                <Copy className="size-3" />
-                              </Button>
-                            </span>
-                          }
-                        />
-                        <InspectDetail
-                          label={t("inspect.shareToken")}
-                          value={
-                            <span className="font-mono text-xs">
-                              {inspectCandidate.shareToken}
-                            </span>
-                          }
-                        />
-                        {inspectCandidate.galleryPreviewImage ? (
-                          <InspectDetail
-                            label={t("inspect.previewFile")}
-                            value={
-                              <span className="font-mono text-xs">
-                                {inspectCandidate.galleryPreviewImage}
-                              </span>
-                            }
-                          />
-                        ) : null}
-                      </dl>
-                    </InspectSection>
-                  </div>
-                </div>
+                )}
               </div>
 
-              <DialogFooter className="border-t p-6 pt-4 sm:justify-between">
-                <DialogClose asChild>
-                  <Button variant="outline">{t("inspect.close")}</Button>
-                </DialogClose>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void copyShareLink(inspectCandidate)}
+              <SheetHeader className="border-b p-6 text-left">
+                <SheetTitle className="truncate text-base">
+                  {inspectCandidate.galleryTitle}
+                </SheetTitle>
+                <SheetDescription className="truncate">
+                  {getOwnerLabel(inspectCandidate)} ·{" "}
+                  {formatDate(inspectCandidate.galleryPublishedAt)}
+                </SheetDescription>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <ToneBadge tone={getStateTone(inspectCandidate.galleryState)}>
+                    {getStateLabel(inspectCandidate.galleryState, trCommon)}
+                  </ToneBadge>
+                  <ToneBadge
+                    tone={getShareLifecycleTone(inspectShareLifecycle)}
                   >
-                    <Copy className="size-4" />
-                    {t("inspect.copyLink")}
-                  </Button>
-                  <Button asChild>
+                    {getShareLifecycleLabel(inspectShareLifecycle, tr)}
+                  </ToneBadge>
+                  <ToneBadge
+                    tone={inspectPreviewImageUrl ? "emerald" : "amber"}
+                  >
+                    {inspectPreviewImageUrl
+                      ? t("inspect.previewReady")
+                      : t("inspect.previewMissing")}
+                  </ToneBadge>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-3">
+                  {canManageGallery &&
+                  inspectFeatureAction &&
+                  inspectVisibilityAction ? (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={inspectPending}
+                        onClick={() =>
+                          void updateEntry(
+                            inspectCandidate.shareToken,
+                            inspectFeatureAction.action
+                          )
+                        }
+                      >
+                        <inspectFeatureAction.icon />
+                        {inspectFeatureAction.label}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={inspectPending}
+                        onClick={() =>
+                          void updateEntry(
+                            inspectCandidate.shareToken,
+                            inspectVisibilityAction.action
+                          )
+                        }
+                      >
+                        <inspectVisibilityAction.icon />
+                        {inspectVisibilityAction.label}
+                      </Button>
+                    </>
+                  ) : null}
+                  <Button asChild size="sm" variant="outline">
                     <Link
                       href={`/share/${inspectCandidate.shareToken}`}
                       prefetch={false}
                     >
-                      <ExternalLink className="size-4" />
+                      <ExternalLink />
                       {t("inspect.openShare")}
                     </Link>
                   </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void copyShareLink(inspectCandidate)}
+                  >
+                    <Copy />
+                    {t("inspect.copyLink")}
+                  </Button>
                 </div>
-              </DialogFooter>
-            </div>
-          ) : (
-            <DialogHeader className="p-6 pr-12">
-              <DialogTitle>{t("inspect.emptyTitle")}</DialogTitle>
-              <DialogDescription>
-                {t("inspect.emptyDescription")}
-              </DialogDescription>
-            </DialogHeader>
-          )}
-        </DialogContent>
-      </Dialog>
+              </SheetHeader>
+
+              <DetailStats
+                items={[
+                  {
+                    label: t("inspect.field"),
+                    value: formatFieldSize(inspectCandidate, tr),
+                  },
+                  {
+                    label: t("inspect.elements"),
+                    value: formatElementCount(inspectCandidate, tr),
+                  },
+                  {
+                    label: t("inspect.updated"),
+                    value: formatDate(inspectCandidate.updatedAt),
+                  },
+                ]}
+              />
+
+              <DetailSection title={t("inspect.reviewOutcome")}>
+                <InspectNotice
+                  tone={inspectSummary.tone}
+                  title={inspectSummary.title}
+                  detail={inspectSummary.detail}
+                />
+              </DetailSection>
+
+              <DetailSection title={t("inspect.publicListing")}>
+                <p className="text-sm leading-6">
+                  {inspectCandidate.galleryDescription ||
+                    t("inspect.noDescription")}
+                </p>
+                <p className="text-muted-foreground mt-2 text-xs">
+                  {t("inspect.shareTitle")}:{" "}
+                  {inspectCandidate.shareTitle || t("inspect.untitledTrack")}
+                </p>
+              </DetailSection>
+
+              <DetailSection title={t("inspect.shareLifecycle")}>
+                <dl className="space-y-1">
+                  <InspectDetail
+                    label={t("inspect.type")}
+                    value={
+                      inspectCandidate.shareType === "published"
+                        ? t("inspect.published_")
+                        : t("inspect.temporary")
+                    }
+                  />
+                  <InspectDetail
+                    label={t("inspect.embed")}
+                    value={
+                      getEmbedAvailable(inspectCandidate) ? (
+                        <Link
+                          href={`/embed/${inspectCandidate.shareToken}`}
+                          prefetch={false}
+                          className="flex items-center gap-1 text-sm hover:underline"
+                        >
+                          <Link2 className="size-3.5 shrink-0" />
+                          {t("inspect.available")}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">
+                          {getEmbedUnavailableReason(inspectCandidate, tr) ??
+                            t("fallback.notAvailable")}
+                        </span>
+                      )
+                    }
+                  />
+                  {inspectCandidate.projectId ? (
+                    <InspectDetail
+                      label={t("inspect.projectId")}
+                      value={
+                        <span className="flex items-center gap-1.5">
+                          <span className="truncate font-mono text-xs">
+                            {inspectCandidate.projectId}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-5 shrink-0"
+                            aria-label={t("inspect.copyProjectId")}
+                            onClick={() =>
+                              void copyToClipboard(
+                                inspectCandidate.projectId!,
+                                t("inspect.projectId")
+                              )
+                            }
+                          >
+                            <Copy className="size-3" />
+                          </Button>
+                        </span>
+                      }
+                    />
+                  ) : null}
+                  <InspectDetail
+                    label={t("inspect.shareCreated")}
+                    value={formatDate(inspectCandidate.shareCreatedAt)}
+                  />
+                  {inspectCandidate.shareExpiresAt ? (
+                    <InspectDetail
+                      label={t("inspect.expires")}
+                      value={formatDate(inspectCandidate.shareExpiresAt)}
+                    />
+                  ) : null}
+                  {inspectCandidate.shareRevokedAt ? (
+                    <InspectDetail
+                      label={t("inspect.revoked")}
+                      value={formatDate(inspectCandidate.shareRevokedAt)}
+                    />
+                  ) : null}
+                </dl>
+              </DetailSection>
+
+              <DetailSection title={t("inspect.record")}>
+                <dl className="space-y-1">
+                  <InspectDetail
+                    label={t("inspect.ownerEmail")}
+                    value={
+                      inspectCandidate.ownerEmail ??
+                      inspectCandidate.ownerUserId
+                    }
+                  />
+                  <InspectDetail
+                    label={t("inspect.ownerId")}
+                    value={
+                      <span className="flex items-center gap-1.5">
+                        <span className="truncate font-mono text-xs">
+                          {inspectCandidate.ownerUserId}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-5 shrink-0"
+                          aria-label={t("inspect.copyOwnerId")}
+                          onClick={() =>
+                            void copyToClipboard(
+                              inspectCandidate.ownerUserId,
+                              t("inspect.ownerId")
+                            )
+                          }
+                        >
+                          <Copy className="size-3" />
+                        </Button>
+                      </span>
+                    }
+                  />
+                  <InspectDetail
+                    label={t("inspect.shareToken")}
+                    value={
+                      <span className="font-mono text-xs">
+                        {inspectCandidate.shareToken}
+                      </span>
+                    }
+                  />
+                  {inspectCandidate.galleryPreviewImage ? (
+                    <InspectDetail
+                      label={t("inspect.previewFile")}
+                      value={
+                        <span className="font-mono text-xs break-all">
+                          {inspectCandidate.galleryPreviewImage}
+                        </span>
+                      }
+                    />
+                  ) : null}
+                </dl>
+              </DetailSection>
+
+              {canManageGallery ? (
+                <DetailSection>
+                  <DangerAction
+                    description={t("inspect.deleteDescription")}
+                    action={
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                        onClick={() => setDeleteCandidate(inspectCandidate)}
+                      >
+                        <Trash2 className="size-3.5" />
+                        {t("actions.delete")}
+                      </Button>
+                    }
+                  />
+                </DetailSection>
+              ) : null}
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
 
       <Dialog
         open={deleteCandidate !== null}

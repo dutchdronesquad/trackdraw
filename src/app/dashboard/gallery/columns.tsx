@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
@@ -11,7 +12,6 @@ import {
   StarOff,
   Trash2,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,6 +27,9 @@ import {
 } from "@/components/AppTooltip";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
+import ToneBadge, {
+  type DashboardTone,
+} from "@/components/dashboard/ToneBadge";
 import { getSiteMediaUrl } from "@/lib/seo";
 import type { DashboardGalleryEntry, GalleryState } from "@/lib/server/gallery";
 import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units";
@@ -54,14 +57,6 @@ export function getTrackSecondaryLabel(entry: DashboardGalleryEntry) {
   }
 
   return entry.shareToken;
-}
-
-export function getStateVariant(
-  state: GalleryState
-): "default" | "muted" | "outline" {
-  if (state === "featured") return "default";
-  if (state === "hidden") return "muted";
-  return "outline";
 }
 
 export function getStateLabel(state: GalleryState, tCommon: Translate) {
@@ -96,13 +91,6 @@ export function getShareLifecycleLabel(
   t: Translate
 ) {
   return t(`shareValues.${state}`);
-}
-
-export function getShareLifecycleVariant(
-  state: ShareLifecycleState
-): "default" | "muted" | "outline" {
-  if (state === "active") return "outline";
-  return "muted";
 }
 
 export function formatDate(value: string | null) {
@@ -146,6 +134,20 @@ export function formatFieldSize(entry: DashboardGalleryEntry, t: Translate) {
 export function formatElementCount(entry: DashboardGalleryEntry, t: Translate) {
   if (entry.shapeCount == null) return t("fallback.notAvailable");
   return t("meta.elementCount", { count: entry.shapeCount });
+}
+
+export function getStateTone(state: GalleryState): DashboardTone {
+  if (state === "featured") return "amber";
+  if (state === "hidden") return "neutral";
+  return "emerald";
+}
+
+export function getShareLifecycleTone(
+  state: ShareLifecycleState
+): DashboardTone {
+  if (state === "revoked") return "destructive";
+  if (state === "expired") return "neutral";
+  return "sky";
 }
 
 export function getPreviewImageUrl(entry: DashboardGalleryEntry) {
@@ -234,7 +236,7 @@ function ActionTooltip({
   );
 }
 
-function getFeatureAction(entry: DashboardGalleryEntry, t: Translate) {
+export function getFeatureAction(entry: DashboardGalleryEntry, t: Translate) {
   return entry.galleryState !== "featured"
     ? {
         action: "feature" as const,
@@ -248,7 +250,10 @@ function getFeatureAction(entry: DashboardGalleryEntry, t: Translate) {
       };
 }
 
-function getVisibilityAction(entry: DashboardGalleryEntry, t: Translate) {
+export function getVisibilityAction(
+  entry: DashboardGalleryEntry,
+  t: Translate
+) {
   return entry.galleryState !== "hidden"
     ? {
         action: "hide" as const,
@@ -298,16 +303,37 @@ export function getGalleryColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">
-            {row.original.galleryTitle}
-          </p>
-          <p className="text-muted-foreground truncate text-xs">
-            {getTrackSecondaryLabel(row.original)}
-          </p>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const previewUrl = getPreviewImageUrl(row.original);
+        return (
+          <div className="flex min-w-0 items-center gap-3">
+            {previewUrl ? (
+              <span className="bg-muted relative h-10 w-16 shrink-0 overflow-hidden rounded-md border">
+                <Image
+                  src={previewUrl}
+                  alt=""
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </span>
+            ) : (
+              <span
+                aria-hidden="true"
+                className="h-10 w-16 shrink-0 rounded-md border bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_4px,transparent_4px,transparent_8px)]"
+              />
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {row.original.galleryTitle}
+              </p>
+              <p className="text-muted-foreground truncate text-xs">
+                {getTrackSecondaryLabel(row.original)}
+              </p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: "owner",
@@ -331,9 +357,9 @@ export function getGalleryColumns({
       header: t("table.state"),
       meta: { className: "w-28" },
       cell: ({ row }) => (
-        <Badge variant={getStateVariant(row.original.galleryState)}>
+        <ToneBadge tone={getStateTone(row.original.galleryState)}>
           {getStateLabel(row.original.galleryState, tCommon)}
-        </Badge>
+        </ToneBadge>
       ),
     },
     {
@@ -349,12 +375,9 @@ export function getGalleryColumns({
 
         return (
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <Badge
-              variant={getShareLifecycleVariant(lifecycleState)}
-              className="shrink-0"
-            >
+            <ToneBadge tone={getShareLifecycleTone(lifecycleState)}>
               {getShareLifecycleLabel(lifecycleState, t)}
-            </Badge>
+            </ToneBadge>
             <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
               {getShareLifecycleDetail(row.original, t)}
             </span>

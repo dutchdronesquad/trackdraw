@@ -3,7 +3,7 @@
 import React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import DashboardApiKeysManager from "@/components/dashboard/ApiKeysManager";
 import type { AdminApiKey } from "@/lib/server/api-keys";
 
@@ -31,7 +31,10 @@ function createApiKey(index: number): AdminApiKey {
 }
 
 describe("DashboardApiKeysManager", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
   it("paginates API keys", async () => {
     const user = userEvent.setup();
@@ -48,5 +51,44 @@ describe("DashboardApiKeysManager", () => {
 
     expect(screen.getByText("Page 2 of 2")).toBeTruthy();
     expect(screen.getByText("API key 11")).toBeTruthy();
+  });
+
+  it("filters keys near their rate limit and revokes a key", async () => {
+    const user = userEvent.setup();
+    const busyKey: AdminApiKey = {
+      ...createApiKey(1),
+      name: "Timing bridge",
+      requestCount: 95,
+      lastRequest: new Date().toISOString(),
+      rateLimitEnabled: true,
+      rateLimitMax: 100,
+      rateLimitTimeWindowMs: 60 * 60 * 1000,
+    };
+    const fetchMock = vi.fn(async () =>
+      Response.json({ ok: true }, { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <DashboardApiKeysManager
+        initialKeys={[busyKey, createApiKey(2)]}
+        canRevoke
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Near rate limit 1" }));
+    expect(screen.getByText("Timing bridge")).toBeTruthy();
+    expect(screen.queryByText("API key 2")).toBeNull();
+
+    await user.click(screen.getByText("Timing bridge"));
+    await user.click(screen.getByRole("button", { name: "Revoke" }));
+    await user.click(screen.getByRole("button", { name: "Revoke key" }));
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/dashboard/api-keys/key-1", {
+      method: "DELETE",
+    });
+    expect(
+      await screen.findByText("No API keys match the current filters.")
+    ).toBeTruthy();
   });
 });

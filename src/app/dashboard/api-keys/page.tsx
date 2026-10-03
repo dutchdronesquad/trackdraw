@@ -48,7 +48,10 @@ export default async function DashboardApiKeysPage() {
           description={t("pages.apiKeysIntro")}
           accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
         />
-        <DashboardApiKeysManager initialKeys={apiKeys} />
+        <DashboardApiKeysManager
+          initialKeys={apiKeys}
+          canRevoke={hasCapability(currentUser.role, "admin.api-keys.update")}
+        />
       </div>
     </>
   );
