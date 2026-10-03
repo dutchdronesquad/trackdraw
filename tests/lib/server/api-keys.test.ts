@@ -10,6 +10,10 @@ vi.mock("@/lib/server/db", () => ({
   getDatabase: vi.fn(),
 }));
 
+vi.mock("@/lib/server/account-activity", () => ({
+  recordAuthenticatedAccountActivity: vi.fn(),
+}));
+
 import {
   createApiKeyForSession,
   deleteApiKeyForSession,
@@ -21,6 +25,7 @@ import {
 } from "@/lib/server/api-keys";
 import { getAuth } from "@/lib/server/auth";
 import { getDatabase } from "@/lib/server/db";
+import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
 
 const apiKeyRecord = {
   id: "key-1",
@@ -144,6 +149,10 @@ describe("API key server helpers", () => {
       },
     });
     expect(bind).toHaveBeenCalledWith("user-1");
+    expect(recordAuthenticatedAccountActivity).toHaveBeenCalledWith(
+      { prepare },
+      result.identity.user
+    );
   });
 
   it("returns 401 for bad, expired, disabled, and orphaned bearer keys", async () => {
@@ -188,6 +197,7 @@ describe("API key server helpers", () => {
       status: 401,
       code: "invalid_api_key",
     });
+    expect(recordAuthenticatedAccountActivity).not.toHaveBeenCalled();
   });
 
   it("maps Better Auth API key throttling to 429 with retry timing", async () => {

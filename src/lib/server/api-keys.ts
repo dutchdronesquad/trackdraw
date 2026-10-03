@@ -2,6 +2,7 @@ import "server-only";
 
 import { getAuth } from "@/lib/server/auth";
 import { getDatabase } from "@/lib/server/db";
+import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
 
 export const apiKeyExpiryDayOptions = [7, 30, 90, 365] as const;
 export type ApiKeyExpiryDays = (typeof apiKeyExpiryDayOptions)[number];
@@ -41,6 +42,7 @@ type UserRow = {
   id: string;
   email: string | null;
   name: string | null;
+  lastActiveAt: string | null;
 };
 
 function toIsoString(value: Date | string | null | undefined) {
@@ -183,12 +185,14 @@ function getRetryAfterSeconds(error: ApiKeyVerificationError | null) {
   return Math.max(1, Math.ceil(tryAgainIn / 1000));
 }
 
-async function getUserById(userId: string) {
-  const db = await getDatabase();
+async function getUserById(
+  db: Awaited<ReturnType<typeof getDatabase>>,
+  userId: string
+) {
   return db
     .prepare(
       `
-        select id, email, name
+        select id, email, name, last_active_at as lastActiveAt
         from users
         where id = ?
         limit 1
@@ -235,7 +239,8 @@ export async function getApiIdentityFromBearerKey(options: {
     };
   }
 
-  const user = await getUserById(verified.key.referenceId);
+  const db = await getDatabase();
+  const user = await getUserById(db, verified.key.referenceId);
   if (!user) {
     return {
       ok: false as const,
@@ -245,10 +250,12 @@ export async function getApiIdentityFromBearerKey(options: {
     };
   }
 
+  await recordAuthenticatedAccountActivity(db, user);
+
   return {
     ok: true as const,
     identity: {
-      user,
+      user: { id: user.id, email: user.email, name: user.name },
       key: verified.key,
     } satisfies ApiIdentity,
   };

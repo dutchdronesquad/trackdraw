@@ -275,6 +275,8 @@ Migration `0017_localization_demand_daily.sql` adds identifier-free UTC daily lo
 
 Migration `0019_product_metrics_export_failure_details.sql` advances the product metrics measurement state to contract version `1.1.0` and extends the existing deduplication indexes to accept both compatible v1 contract versions. Apply it before deploying structured `export.failed` events or the exact-attempt dashboard drilldown.
 
+Migration `0021_account_activity.sql` adds `users.last_active_at`. Apply it before deploying account activity tracking. Existing accounts start with the latest valid account creation, session creation, session update, or migration timestamp. The migration timestamp is a conservative adoption floor, so old or missing history cannot make an existing account immediately eligible for inactivity deletion. Administrative profile edits are not evidence of authenticated use.
+
 ## Validation flow
 
 Typical local workflow:
@@ -310,6 +312,14 @@ Recommended local auth test flow:
 7. confirm Studio shows the signed-in state and authenticated APIs stop returning `401`
 
 ## Retention Cleanup
+
+### Account activity
+
+Authenticated browser use, successful sign-in, Better Auth session checks, and valid API-key use refresh `users.last_active_at` at most once every 24 hours. The existing session/user lookup avoids a write for recent activity; the update also checks persisted activity to prevent duplicate writes from concurrent requests. New accounts receive an initial timestamp through Better Auth. Activity tracking is operational account data and remains active when product analytics is disabled.
+
+`isAccountInactive()` requires activity older than the caller's cutoff and no valid, non-expired session for the account. Unknown activity or session expiry prevents an inactivity classification. This guard protects long-lived sessions even if activity recording fails or the timestamp is stale. Admin `lastLoginAt` continues to mean the latest session creation time. This foundation does not schedule warnings or delete inactive accounts; those lifecycle steps remain separate work.
+
+### Scheduled cleanup
 
 Shares become invalid when `expires_at` is reached, but they are not deleted immediately.
 API keys are managed by Better Auth. Revoked keys are deleted through the API Key plugin, and expired key records are removed by scheduled cleanup after the retention window.
