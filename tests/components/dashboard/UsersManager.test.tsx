@@ -17,6 +17,8 @@ function createUser(index: number): AdminUser {
     createdAt: `2026-07-${String(index).padStart(2, "0")}T10:00:00.000Z`,
     updatedAt: `2026-07-${String(index).padStart(2, "0")}T10:00:00.000Z`,
     lastLoginAt: null,
+    lastActiveAt: null,
+    removalAt: null,
     projectCount: 0,
     bannedAt: null,
     banReason: null,
@@ -73,5 +75,33 @@ describe("DashboardUsersManager", () => {
     expect(screen.getByText("User 12")).toBeTruthy();
     expect(screen.queryByText("User 1")).toBeNull();
     expect(screen.getByText("Showing 1 of 12 accounts.")).toBeTruthy();
+  });
+
+  it("filters inactive accounts and clears filters from the empty state", async () => {
+    const user = userEvent.setup();
+    const users = [
+      { ...createUser(1), lastActiveAt: "2020-01-01T00:00:00.000Z" },
+      createUser(2),
+    ];
+
+    render(
+      <DashboardUsersManager currentUserId="user-9" initialUsers={users} />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Inactive 11+ months 1" })
+    );
+    expect(screen.getByText("User 1")).toBeTruthy();
+    expect(screen.queryByText("User 2")).toBeNull();
+
+    await user.type(
+      screen.getByPlaceholderText("Search by name or email..."),
+      "nobody"
+    );
+    expect(screen.getByText("No accounts match these filters")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(screen.getByText("User 1")).toBeTruthy();
+    expect(screen.getByText("User 2")).toBeTruthy();
   });
 });

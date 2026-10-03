@@ -34,6 +34,8 @@ type AdminUserRow = {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
+  lastActiveAt?: string | null;
+  removalAt?: string | null;
   projectCount: number;
   bannedAt: string | null;
   banReason: string | null;
@@ -49,6 +51,8 @@ function mapAdminUser(row: AdminUserRow): AdminUser {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     lastLoginAt: row.lastLoginAt ?? null,
+    lastActiveAt: row.lastActiveAt ?? null,
+    removalAt: row.removalAt ?? null,
     projectCount: Number(row.projectCount ?? 0),
     bannedAt: row.bannedAt ?? null,
     banReason: row.banReason ?? null,
@@ -87,6 +91,14 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
           u.updatedAt,
           u.banned_at as bannedAt,
           u.ban_reason as banReason,
+          u.last_active_at as lastActiveAt,
+          (
+            select n.removal_at
+            from account_retention_notices n
+            where n.user_id = u.id
+              and n.activity_at = u.last_active_at
+              and n.stage = 'first'
+          ) as removalAt,
           ls.lastLoginAt,
           coalesce(pc.cnt, 0) as projectCount
         from users u
@@ -140,6 +152,14 @@ export async function getAdminUserById(
           u.updatedAt,
           u.banned_at as bannedAt,
           u.ban_reason as banReason,
+          u.last_active_at as lastActiveAt,
+          (
+            select n.removal_at
+            from account_retention_notices n
+            where n.user_id = u.id
+              and n.activity_at = u.last_active_at
+              and n.stage = 'first'
+          ) as removalAt,
           ls.lastLoginAt,
           coalesce(pc.cnt, 0) as projectCount
         from users u
@@ -197,7 +217,8 @@ export async function updateUserRole(
         where id = ?
         returning
           id, name, email, image, role, createdAt, updatedAt,
-          banned_at as bannedAt, ban_reason as banReason
+          banned_at as bannedAt, ban_reason as banReason,
+          last_active_at as lastActiveAt
       `
     )
     .bind(role, now, userId)
@@ -221,7 +242,8 @@ export async function banUser(
         where id = ?
         returning
           id, name, email, image, role, createdAt, updatedAt,
-          banned_at as bannedAt, ban_reason as banReason
+          banned_at as bannedAt, ban_reason as banReason,
+          last_active_at as lastActiveAt
       `
     )
     .bind(now, reason, now, userId)
@@ -252,7 +274,8 @@ export async function unbanUser(userId: string): Promise<AdminUser | null> {
         where id = ?
         returning
           id, name, email, image, role, createdAt, updatedAt,
-          banned_at as bannedAt, ban_reason as banReason
+          banned_at as bannedAt, ban_reason as banReason,
+          last_active_at as lastActiveAt
       `
     )
     .bind(now, userId)

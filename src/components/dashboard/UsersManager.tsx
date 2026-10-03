@@ -10,6 +10,7 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  Search,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -18,7 +19,7 @@ import {
   formatDate,
   getUserLabel,
   getUsersColumns,
-  roleBadgeClassName,
+  roleTone,
   type Translate,
 } from "@/app/dashboard/users/columns";
 import {
@@ -31,15 +32,24 @@ import {
   getAccountRoleLabel,
   type AccountRole,
 } from "@/lib/account/roles";
-import type { AdminUser } from "@/lib/account/admin-users";
+import { isInactiveAccount, type AdminUser } from "@/lib/account/admin-users";
 import type { AuditEvent } from "@/lib/server/audit";
 import type { UserContextStats } from "@/lib/server/users";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { dataTableFeatures } from "@/components/data-table/tableFeatures";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import {
+  DangerAction,
+  DetailList,
+  DetailNotice,
+  DetailSection,
+  DetailStats,
+} from "@/components/dashboard/DetailSheet";
+import StatusFilter from "@/components/dashboard/StatusFilter";
+import ToneBadge from "@/components/dashboard/ToneBadge";
+import UserAvatar from "@/components/UserAvatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -79,16 +89,23 @@ type DashboardUsersManagerProps = {
   initialUsers: AdminUser[];
 };
 
-function getUserInitials(user: AdminUser) {
-  const name = user.name?.trim();
-  if (name) {
-    const parts = name.split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  }
-  return (user.email?.[0] ?? "?").toUpperCase();
+type UserSegment = "all" | "staff" | "inactive" | "banned";
+
+const segmentFilters: Record<UserSegment, (user: AdminUser) => boolean> = {
+  all: () => true,
+  staff: (user) => user.role !== "user",
+  inactive: (user) => isInactiveAccount(user),
+  banned: (user) => Boolean(user.bannedAt),
+};
+
+function mergeAdminUser(previous: AdminUser, updated: AdminUser): AdminUser {
+  return {
+    ...previous,
+    role: updated.role,
+    bannedAt: updated.bannedAt,
+    banReason: updated.banReason,
+    updatedAt: updated.updatedAt,
+  };
 }
 
 function formatAuditEventType(eventType: string) {
@@ -106,7 +123,9 @@ export default function DashboardUsersManager({
   initialUsers,
 }: DashboardUsersManagerProps) {
   const t = useTranslations("dashboard.users");
+  const isMobile = useIsMobile();
   const [users, setUsers] = useState(initialUsers);
+  const [segment, setSegment] = useState<UserSegment>("all");
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [globalFilter, setGlobalFilter] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<AccountRole[]>([]);
@@ -265,9 +284,11 @@ export default function DashboardUsersManager({
       }
 
       const updated = payload.user;
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? mergeAdminUser(u, updated) : u))
+      );
       setInspectCandidate((prev) =>
-        prev?.id === updated.id ? { ...prev, ...updated } : prev
+        prev?.id === updated.id ? mergeAdminUser(prev, updated) : prev
       );
       setDraftRoles((prev) => ({ ...prev, [updated.id]: updated.role }));
       toast.success(
@@ -317,9 +338,11 @@ export default function DashboardUsersManager({
       }
 
       const updated = payload.user;
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? mergeAdminUser(u, updated) : u))
+      );
       setInspectCandidate((prev) =>
-        prev?.id === updated.id ? { ...prev, ...updated } : prev
+        prev?.id === updated.id ? mergeAdminUser(prev, updated) : prev
       );
       setBanCandidate(null);
       setBanReasonDetail("");
@@ -361,9 +384,11 @@ export default function DashboardUsersManager({
       }
 
       const updated = payload.user;
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? mergeAdminUser(u, updated) : u))
+      );
       setInspectCandidate((prev) =>
-        prev?.id === updated.id ? { ...prev, ...updated } : prev
+        prev?.id === updated.id ? mergeAdminUser(prev, updated) : prev
       );
       toast.success(
         t("banDialog.unbanSuccess", {
@@ -422,6 +447,10 @@ export default function DashboardUsersManager({
       }),
     [currentUserId, t]
   );
+  const segmentedUsers = useMemo(
+    () => users.filter(segmentFilters[segment]),
+    [users, segment]
+  );
   const columnFilters = useMemo(
     () =>
       selectedRoles.length > 0 ? [{ id: "role", value: selectedRoles }] : [],
@@ -430,7 +459,7 @@ export default function DashboardUsersManager({
 
   const table = useTable({
     features: dataTableFeatures,
-    data: users,
+    data: segmentedUsers,
     columns,
     state: {
       globalFilter,
@@ -459,8 +488,75 @@ export default function DashboardUsersManager({
     count: roleCounts?.get(role) ?? 0,
   }));
 
+  const segmentCounts = {
+    all: users.length,
+    staff: users.filter(segmentFilters.staff).length,
+    inactive: users.filter(segmentFilters.inactive).length,
+    banned: users.filter(segmentFilters.banned).length,
+  };
+  const hasFilters =
+    globalFilter.trim() !== "" || selectedRoles.length > 0 || segment !== "all";
+  const clearFilters = () => {
+    setGlobalFilter("");
+    setSelectedRoles([]);
+    setSegment("all");
+  };
+  const emptyState = hasFilters ? (
+    <div className="flex flex-col items-center gap-2 py-6 whitespace-normal">
+      <span className="bg-muted text-muted-foreground inline-flex size-10 items-center justify-center rounded-lg">
+        <Search className="size-4" aria-hidden="true" />
+      </span>
+      <p className="text-foreground text-sm font-medium">
+        {t("empty.filtered")}
+      </p>
+      <p className="text-muted-foreground text-sm">{t("empty.filteredHint")}</p>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-2"
+        onClick={clearFilters}
+      >
+        {t("filters.clear")}
+      </Button>
+    </div>
+  ) : (
+    t("empty.default")
+  );
+  const visibleRows = table.getRowModel().rows;
+  const inspectInactive = inspectCandidate
+    ? isInactiveAccount(inspectCandidate)
+    : false;
+  const inspectLastActive =
+    inspectCandidate?.lastActiveAt ?? inspectCandidate?.lastLoginAt ?? null;
+
   return (
     <div className="space-y-4">
+      <StatusFilter
+        label={t("segments.label")}
+        value={segment}
+        onChange={setSegment}
+        items={[
+          { value: "all", label: t("segments.all"), count: segmentCounts.all },
+          {
+            value: "staff",
+            label: t("segments.staff"),
+            count: segmentCounts.staff,
+          },
+          {
+            value: "inactive",
+            label: t("segments.inactive"),
+            count: segmentCounts.inactive,
+            attention: true,
+          },
+          {
+            value: "banned",
+            label: t("segments.banned"),
+            count: segmentCounts.banned,
+          },
+        ]}
+      />
+
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
@@ -474,10 +570,69 @@ export default function DashboardUsersManager({
         />
       </DataTableToolbar>
 
+      {isMobile ? (
+        <ul className="divide-y overflow-hidden rounded-lg border">
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => {
+              const user = row.original;
+              const lastActive = user.lastActiveAt ?? user.lastLoginAt;
+              return (
+                <li key={row.id}>
+                  <button
+                    type="button"
+                    onClick={() => openInspectCandidate(user)}
+                    className="hover:bg-muted/50 flex min-h-14 w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left"
+                  >
+                    <UserAvatar
+                      name={user.name}
+                      email={user.email}
+                      className="size-9 text-xs"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {getUserLabel(user, t("fallback.unnamedUser"))}
+                      </span>
+                      <span
+                        className={cn(
+                          "block truncate text-xs",
+                          isInactiveAccount(user)
+                            ? "font-medium text-amber-700 dark:text-amber-300"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {lastActive
+                          ? t("mobile.lastActive", {
+                              date: formatDate(lastActive),
+                            })
+                          : (user.email ?? user.id)}
+                      </span>
+                    </span>
+                    {user.bannedAt ? (
+                      <ToneBadge tone="destructive">
+                        {t("table.banned")}
+                      </ToneBadge>
+                    ) : user.role !== "user" ? (
+                      <ToneBadge tone={roleTone(user.role)}>
+                        {getAccountRoleLabel(user.role)}
+                      </ToneBadge>
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })
+          ) : (
+            <li className="text-muted-foreground px-4 py-6 text-center text-sm">
+              {emptyState}
+            </li>
+          )}
+        </ul>
+      ) : null}
+
       <DataTable
         table={table}
         columnsLength={columns.length}
-        emptyMessage={t("empty.default")}
+        emptyMessage={emptyState}
+        wrapperClassName={isMobile ? "hidden" : undefined}
         onRowClick={(row) => openInspectCandidate(row.original)}
         pagination={{
           summary: (
@@ -497,47 +652,68 @@ export default function DashboardUsersManager({
           if (!open) closeInspectCandidate();
         }}
       >
-        <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-sm">
+        <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
           {inspectCandidate ? (
             <>
-              <SheetHeader className="border-b px-6 py-5">
-                <div className="flex items-center gap-4">
-                  <Avatar className="size-12 shrink-0">
-                    <AvatarFallback className="bg-muted text-sm font-semibold">
-                      {getUserInitials(inspectCandidate)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <SheetTitle className="truncate text-base leading-tight">
-                        {getUserLabel(
-                          inspectCandidate,
-                          t("fallback.unnamedUser")
-                        )}
-                      </SheetTitle>
-                      {inspectCandidate.bannedAt && (
-                        <Badge
-                          variant="outline"
-                          className="border-destructive/25 bg-destructive/10 text-destructive h-5 shrink-0 px-1.5 text-[10px]"
-                        >
-                          {t("panel.badges.banned")}
-                        </Badge>
+              <SheetHeader className="border-b p-6 pr-12 text-left">
+                <div className="flex items-start gap-4">
+                  <UserAvatar
+                    name={inspectCandidate.name}
+                    email={inspectCandidate.email}
+                    className="size-10 text-sm"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <SheetTitle className="truncate text-base leading-tight">
+                      {getUserLabel(
+                        inspectCandidate,
+                        t("fallback.unnamedUser")
                       )}
-                    </div>
-                    <SheetDescription className="truncate text-xs">
+                    </SheetTitle>
+                    <SheetDescription className="mt-0.5 truncate">
                       {inspectCandidate.email ?? inspectCandidate.id}
                     </SheetDescription>
-                    {inspectCandidate.bannedAt && (
-                      <p className="text-destructive/80 mt-0.5 truncate text-[11px]">
-                        {t("panel.messages.bannedSince", {
-                          date: formatDate(inspectCandidate.bannedAt),
-                          reason: inspectCandidate.banReason ?? "—",
-                        })}
-                      </p>
-                    )}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {inspectCandidate.bannedAt ? (
+                        <ToneBadge tone="destructive">
+                          {t("panel.badges.banned")}
+                        </ToneBadge>
+                      ) : (
+                        <ToneBadge tone={roleTone(inspectCandidate.role)}>
+                          {getAccountRoleLabel(inspectCandidate.role)}
+                        </ToneBadge>
+                      )}
+                      {inspectCandidate.removalAt ? (
+                        <ToneBadge tone="amber">
+                          {t("panel.badges.removal", {
+                            date: formatDate(inspectCandidate.removalAt),
+                          })}
+                        </ToneBadge>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </SheetHeader>
+
+              {inspectCandidate.bannedAt ? (
+                <DetailNotice tone="destructive">
+                  {t("panel.messages.bannedSince", {
+                    date: formatDate(inspectCandidate.bannedAt),
+                    reason: inspectCandidate.banReason ?? "—",
+                  })}
+                </DetailNotice>
+              ) : null}
+              {inspectInactive && inspectLastActive ? (
+                <DetailNotice tone="amber">
+                  {inspectCandidate.removalAt
+                    ? t("panel.messages.removalScheduled", {
+                        lastActive: formatDate(inspectLastActive),
+                        removal: formatDate(inspectCandidate.removalAt),
+                      })
+                    : t("panel.messages.inactive", {
+                        lastActive: formatDate(inspectLastActive),
+                      })}
+                </DetailNotice>
+              ) : null}
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {inspectLoading ? (
@@ -546,9 +722,9 @@ export default function DashboardUsersManager({
                     {t("panel.status.loading")}
                   </div>
                 ) : inspectData ? (
-                  <div className="divide-y">
-                    <div className="grid grid-cols-4 divide-x px-0">
-                      {[
+                  <>
+                    <DetailStats
+                      items={[
                         {
                           label: t("panel.stats.projects"),
                           value: inspectData.stats.projectCount,
@@ -565,113 +741,90 @@ export default function DashboardUsersManager({
                           label: t("panel.stats.apiKeys"),
                           value: inspectData.stats.apiKeyCount,
                         },
-                      ].map(({ label, value }) => (
-                        <div
-                          key={label}
-                          className="flex flex-col items-center gap-0.5 py-4"
-                        >
-                          <span className="text-xl font-semibold tabular-nums">
-                            {value}
-                          </span>
-                          <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                            {label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                      ]}
+                    />
 
-                    <div className="space-y-3 px-6 py-5">
-                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                        {t("panel.sections.account")}
-                      </p>
-                      <dl className="space-y-2.5">
-                        <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">
-                            {t("panel.fields.memberSince")}
-                          </dt>
-                          <dd className="text-xs font-medium">
-                            {formatDate(inspectCandidate.createdAt)}
-                          </dd>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">
-                            {t("panel.fields.lastLogin")}
-                          </dt>
-                          <dd className="text-xs font-medium">
-                            {inspectCandidate.lastLoginAt
+                    <DetailSection title={t("panel.sections.account")}>
+                      <DetailList
+                        items={[
+                          {
+                            label: t("panel.fields.memberSince"),
+                            value: formatDate(inspectCandidate.createdAt),
+                          },
+                          {
+                            label: t("panel.fields.lastActive"),
+                            value: inspectLastActive
+                              ? formatDate(inspectLastActive)
+                              : "—",
+                          },
+                          {
+                            label: t("panel.fields.lastLogin"),
+                            value: inspectCandidate.lastLoginAt
                               ? formatDate(inspectCandidate.lastLoginAt)
-                              : "—"}
-                          </dd>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">
-                            {t("panel.fields.role")}
-                          </dt>
-                          <dd>
-                            <Badge
-                              variant="outline"
-                              className={roleBadgeClassName(
-                                inspectCandidate.role
-                              )}
-                            >
-                              {getAccountRoleLabel(inspectCandidate.role)}
-                            </Badge>
-                          </dd>
-                        </div>
-                        <div className="flex items-start justify-between gap-4">
-                          <dt className="text-muted-foreground shrink-0 text-xs">
-                            {t("panel.fields.userId")}
-                          </dt>
-                          <dd className="flex min-w-0 items-center gap-1">
-                            <span className="text-muted-foreground truncate font-mono text-[11px]">
-                              {inspectCandidate.id}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="text-muted-foreground hover:text-foreground size-5 shrink-0"
-                              aria-label={t("panel.actions.copyUserId")}
-                              onClick={() =>
-                                void copyToClipboard(
-                                  inspectCandidate.id,
-                                  t("panel.fields.userId")
-                                )
-                              }
-                            >
-                              <Copy className="size-3" />
-                            </Button>
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
+                              : "—",
+                          },
+                          ...(inspectCandidate.removalAt
+                            ? [
+                                {
+                                  label: t("panel.fields.removalDate"),
+                                  value: formatDate(inspectCandidate.removalAt),
+                                  className:
+                                    "font-medium text-amber-700 dark:text-amber-300",
+                                },
+                              ]
+                            : []),
+                          {
+                            label: t("panel.fields.userId"),
+                            value: (
+                              <span className="inline-flex items-center gap-1">
+                                <span className="text-muted-foreground truncate font-mono text-xs">
+                                  {inspectCandidate.id}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-muted-foreground hover:text-foreground size-6 shrink-0"
+                                  aria-label={t("panel.actions.copyUserId")}
+                                  onClick={() =>
+                                    void copyToClipboard(
+                                      inspectCandidate.id,
+                                      t("panel.fields.userId")
+                                    )
+                                  }
+                                >
+                                  <Copy className="size-3.5" />
+                                </Button>
+                              </span>
+                            ),
+                          },
+                        ]}
+                      />
+                    </DetailSection>
 
-                    <div className="flex items-center justify-between gap-4 px-6 py-2.5">
-                      <dt className="text-muted-foreground shrink-0 text-xs">
-                        {t("panel.actions.changeRole")}
-                      </dt>
+                    <DetailSection title={t("panel.actions.changeRole")}>
                       {inspectCandidate.id === currentUserId ? (
-                        <dd className="text-muted-foreground text-xs">
+                        <p className="text-muted-foreground text-sm">
                           {t("panel.messages.cannotChangeOwnRole")}
-                        </dd>
+                        </p>
                       ) : (
-                        <dd className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={pendingUserId === inspectCandidate.id}
-                                className="hover:bg-muted hover:text-foreground h-7 cursor-pointer justify-between gap-1.5 rounded-md px-2 text-xs shadow-none"
+                                className="hover:bg-muted hover:text-foreground h-8 flex-1 cursor-pointer justify-between text-xs shadow-none"
                               >
                                 {getAccountRoleLabel(
                                   draftRoles[inspectCandidate.id] ??
                                     inspectCandidate.role
                                 )}
-                                <ChevronDown className="text-muted-foreground size-3" />
+                                <ChevronDown className="text-muted-foreground size-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="start">
                               <DropdownMenuRadioGroup
                                 value={
                                   draftRoles[inspectCandidate.id] ??
@@ -698,14 +851,7 @@ export default function DashboardUsersManager({
                           </DropdownMenu>
                           <Button
                             size="sm"
-                            variant="outline"
-                            className={cn(
-                              "hover:bg-muted hover:text-foreground h-7 cursor-pointer rounded-md px-2.5 text-xs shadow-none",
-                              (draftRoles[inspectCandidate.id] ??
-                                inspectCandidate.role) !==
-                                inspectCandidate.role &&
-                                "border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
-                            )}
+                            className="h-8"
                             disabled={
                               (draftRoles[inspectCandidate.id] ??
                                 inspectCandidate.role) ===
@@ -715,100 +861,37 @@ export default function DashboardUsersManager({
                             onClick={() => void saveRole(inspectCandidate.id)}
                           >
                             {pendingUserId === inspectCandidate.id ? (
-                              <Loader2 className="size-3 animate-spin" />
+                              <Loader2 className="size-3.5 animate-spin" />
                             ) : (
                               t("panel.actions.save")
                             )}
                           </Button>
-                        </dd>
+                        </div>
                       )}
-                    </div>
+                    </DetailSection>
 
-                    <div className="flex items-center justify-between gap-4 px-6 py-2.5">
-                      <dt className="text-muted-foreground shrink-0 text-xs">
-                        {t("panel.actions.moderation")}
-                      </dt>
-                      {inspectCandidate.id === currentUserId ? (
-                        <dd className="text-muted-foreground text-xs">
-                          {t("panel.messages.cannotModerateSelf")}
-                        </dd>
-                      ) : (
-                        <dd className="flex items-center gap-1.5">
-                          {inspectCandidate.bannedAt ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="hover:bg-muted hover:text-foreground h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
-                              disabled={
-                                pendingBanUserId === inspectCandidate.id
-                              }
-                              onClick={() =>
-                                void submitUnban(inspectCandidate.id)
-                              }
-                            >
-                              {pendingBanUserId === inspectCandidate.id ? (
-                                <Loader2 className="size-3.5 animate-spin" />
-                              ) : (
-                                <ShieldCheck className="size-3.5" />
-                              )}
-                              {t("panel.actions.unban")}
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="hover:bg-muted hover:text-foreground h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
-                              onClick={() => {
-                                setBanReasonCode("spam");
-                                setBanReasonDetail("");
-                                setBanCandidate(inspectCandidate);
-                              }}
-                            >
-                              <Ban className="size-3.5" />
-                              {t("panel.actions.ban")}
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
-                            onClick={() =>
-                              openDeleteCandidate(inspectCandidate)
-                            }
-                          >
-                            <Trash2 className="size-3.5" />
-                            {t("panel.actions.delete")}
-                          </Button>
-                        </dd>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 px-6 py-5">
-                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                        {t("panel.sections.recentActivity")}
-                      </p>
+                    <DetailSection title={t("panel.sections.recentActivity")}>
                       {inspectData.recentEvents.length > 0 ? (
-                        <ul className="space-y-1">
+                        <ul className="space-y-2.5">
                           {inspectData.recentEvents.map((event) => {
                             const isActor =
                               event.actorUserId === inspectCandidate.id;
                             return (
                               <li
                                 key={event.id}
-                                className="flex items-start gap-3 rounded-md py-2"
+                                className="flex items-start justify-between gap-3"
                               >
-                                <div className="bg-muted-foreground/40 mt-1.5 size-1.5 shrink-0 rounded-full" />
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm leading-tight">
-                                    {formatAuditEventType(event.eventType)}
-                                  </p>
-                                  <p className="text-muted-foreground mt-0.5 text-xs">
+                                <span className="min-w-0 text-sm leading-tight">
+                                  {formatAuditEventType(event.eventType)}
+                                  <span className="text-muted-foreground mt-0.5 block text-xs">
                                     {isActor
                                       ? t("panel.relation.actor")
-                                      : t("panel.relation.target")}{" "}
-                                    · {formatDate(event.createdAt)}
-                                  </p>
-                                </div>
+                                      : t("panel.relation.target")}
+                                  </span>
+                                </span>
+                                <span className="text-muted-foreground shrink-0 text-xs">
+                                  {formatDate(event.createdAt)}
+                                </span>
                               </li>
                             );
                           })}
@@ -818,8 +901,83 @@ export default function DashboardUsersManager({
                           {t("panel.messages.noAuditEvents")}
                         </p>
                       )}
-                    </div>
-                  </div>
+                    </DetailSection>
+
+                    <DetailSection
+                      title={t("panel.actions.moderation")}
+                      className="space-y-2"
+                    >
+                      {inspectCandidate.id === currentUserId ? (
+                        <p className="text-muted-foreground text-sm">
+                          {t("panel.messages.cannotModerateSelf")}
+                        </p>
+                      ) : (
+                        <>
+                          <DangerAction
+                            description={
+                              inspectCandidate.bannedAt
+                                ? t("panel.moderation.unbanDescription")
+                                : t("panel.moderation.banDescription")
+                            }
+                            action={
+                              inspectCandidate.bannedAt ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                                  disabled={
+                                    pendingBanUserId === inspectCandidate.id
+                                  }
+                                  onClick={() =>
+                                    void submitUnban(inspectCandidate.id)
+                                  }
+                                >
+                                  {pendingBanUserId === inspectCandidate.id ? (
+                                    <Loader2 className="size-3.5 animate-spin" />
+                                  ) : (
+                                    <ShieldCheck className="size-3.5" />
+                                  )}
+                                  {t("panel.actions.unban")}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                                  onClick={() => {
+                                    setBanReasonCode("spam");
+                                    setBanReasonDetail("");
+                                    setBanCandidate(inspectCandidate);
+                                  }}
+                                >
+                                  <Ban className="size-3.5" />
+                                  {t("panel.actions.ban")}
+                                </Button>
+                              )
+                            }
+                          />
+                          <DangerAction
+                            description={t(
+                              "panel.moderation.deleteDescription"
+                            )}
+                            action={
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 shrink-0 gap-1.5 px-2.5 text-xs shadow-none"
+                                onClick={() =>
+                                  openDeleteCandidate(inspectCandidate)
+                                }
+                              >
+                                <Trash2 className="size-3.5" />
+                                {t("panel.actions.delete")}
+                              </Button>
+                            }
+                          />
+                        </>
+                      )}
+                    </DetailSection>
+                  </>
                 ) : null}
               </div>
 
