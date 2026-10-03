@@ -1025,22 +1025,25 @@
   "users": {
     "filters": {
       "searchPlaceholder": "Search by name or email...",
-      "role": "Role"
+      "role": "Role",
+      "clear": "Clear filters"
     },
     "table": {
       "user": "User",
       "projects": "Projects",
       "role": "Role",
       "joined": "Joined",
-      "lastLogin": "Last login",
-      "banned": "Banned"
+      "banned": "Banned",
+      "lastActive": "Last active"
     },
     "selfBadge": "(you)",
     "fallback": {
       "unnamedUser": "Unnamed user"
     },
     "empty": {
-      "default": "No users found."
+      "default": "No users found.",
+      "filtered": "No accounts match these filters",
+      "filteredHint": "Try another name or email, or clear the filters."
     },
     "status": {
       "showing": "Showing {filtered} of {total} accounts."
@@ -1070,7 +1073,9 @@
         "memberSince": "Member since",
         "lastLogin": "Last login",
         "role": "Role",
-        "userId": "User ID"
+        "userId": "User ID",
+        "lastActive": "Last active",
+        "removalDate": "Removal date"
       },
       "actions": {
         "copyUserId": "Copy user ID",
@@ -1083,17 +1088,25 @@
         "delete": "Delete"
       },
       "badges": {
-        "banned": "Banned"
+        "banned": "Banned",
+        "removal": "Removal {date}"
       },
       "messages": {
         "cannotChangeOwnRole": "Cannot change own role",
         "noAuditEvents": "No audit events recorded.",
         "cannotModerateSelf": "You cannot ban or delete your own account.",
-        "bannedSince": "Banned since {date} · {reason}"
+        "bannedSince": "Banned since {date} · {reason}",
+        "removalScheduled": "Inactive since {lastActive}. The account and its content are removed on {removal} unless the user signs in.",
+        "inactive": "Inactive since {lastActive}. A removal warning is sent automatically."
       },
       "relation": {
         "actor": "Actor",
         "target": "Target"
+      },
+      "moderation": {
+        "banDescription": "Block sign-in and end active sessions.",
+        "unbanDescription": "Allow this account to sign in again.",
+        "deleteDescription": "Delete the account and all of its content now."
       }
     },
     "banDialog": {
@@ -1120,6 +1133,16 @@
       "confirmDelete": "Delete permanently",
       "deleteFailed": "Could not delete the account.",
       "deleteSuccess": "{name} has been permanently deleted."
+    },
+    "segments": {
+      "label": "Filter accounts",
+      "all": "All users",
+      "staff": "Staff",
+      "inactive": "Inactive 11+ months",
+      "banned": "Banned"
+    },
+    "mobile": {
+      "lastActive": "Last active {date}"
     }
   },
   "apiKeys": {
