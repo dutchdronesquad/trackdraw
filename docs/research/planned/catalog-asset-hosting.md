@@ -26,7 +26,7 @@ Originally decided: **`obstacles`** (repository `dutchdronesquad/obstacles`), mi
 
 Artwork, source models and maintenance scripts live in [dutchdronesquad/track-assets](https://github.com/dutchdronesquad/track-assets), organized per organization. Repository documentation explains attribution and rights separately from the MIT-licensed maintenance tools.
 
-Cloudflare R2 serves stable URLs at `https://assets.trackdraw.app/multigp/<filename>.webp`. The former `obstacles.trackdraw.app` hostname serves the same bucket for consumers that still use it. A push to the default branch publishes the assets automatically. There are no asset version tags, pinned copies or consumer bump steps. Responses use a five-minute cache lifetime and CORS for browser consumers.
+Cloudflare R2 serves stable URLs at `https://assets.trackdraw.app/multigp/<filename>.webp`. A push to the default branch publishes the assets automatically. There are no asset version tags, pinned copies or consumer bump steps. Responses use a five-minute cache lifetime and CORS for browser consumers.
 
 ### Consumers
 
