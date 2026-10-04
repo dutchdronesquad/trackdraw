@@ -1,10 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>dutchdronesquad/.github:renovate-base"],
-  "vulnerabilityAlerts": {
-    "enabled": true
-  },
-  "osvVulnerabilityAlerts": true,
+  "extends": ["github>dutchdronesquad/.github:renovate-node"],
   "lockFileMaintenance": {
     "enabled": false
   },
@@ -12,29 +8,25 @@
     {
       "groupName": "Radix UI",
       "groupSlug": "radix-ui",
-      "matchPackageNames": ["@radix-ui/{/,}**"]
+      "matchPackageNames": ["@radix-ui/{/,}**"],
+      "matchUpdateTypes": ["major"]
     },
     {
       "groupName": "Better Auth",
       "groupSlug": "better-auth",
-      "matchPackageNames": ["better-auth", "@better-auth/{/,}**"]
+      "matchPackageNames": ["better-auth", "@better-auth/{/,}**"],
+      "matchUpdateTypes": ["major"]
     },
     {
       "groupName": "Vitest",
       "groupSlug": "vitest",
-      "matchPackageNames": ["vitest", "@vitest/{/,}**"]
+      "matchPackageNames": ["vitest", "@vitest/{/,}**"],
+      "matchUpdateTypes": ["major"]
     },
     {
       "matchManagers": ["github-actions"],
       "extractVersion": "^(?<version>v\\d+\\.\\d+\\.\\d+)$",
       "versioning": "regex:^v(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d+))?$"
-    },
-    {
-      "groupName": "npm dependencies",
-      "groupSlug": "npm-dependencies",
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
     }
   ]
 }
