@@ -20,13 +20,13 @@ Good faith alone does not create a redistribution right, so treat this as a deli
 
 Home Assistant's [`home-assistant/brands`](https://github.com/home-assistant/brands) repository is the closest prior art: a separate repo, one folder per integration domain, served from its own CDN (`brands.home-assistant.io`), with a blanket disclaimer that all names/trademarks belong to their respective owners and are used for identification only. Do not copy the name "brands" for TrackDraw's version — these are not logos or trademarks, they are official third-party obstacle textures and dimensions (construction/manufacturing references, not brand marks).
 
-Decided: **`obstacles`** (repository `dutchdronesquad/obstacles`), mirroring the short, one-word style of `home-assistant/brands` while matching existing naming already in this codebase (`multigp-obstacles/`, "MultiGP Obstacle Asset Workflow"). Rejected alternatives: `elements` (broader, would also cover non-obstacle catalog items such as flags/labels, but that breadth isn't needed today and reads more abstractly); `trackdraw-catalog-assets` (unambiguous but longer, and the `trackdraw-` prefix is redundant under the `dutchdronesquad` organization).
+Originally decided: **`obstacles`** (repository `dutchdronesquad/obstacles`), mirroring the short, one-word style of `home-assistant/brands` while matching existing naming already in this codebase (`multigp-obstacles/`, "MultiGP Obstacle Asset Workflow"). Rejected alternatives: `elements` (broader, would also cover non-obstacle catalog items such as flags/labels, but that breadth isn't needed today and reads more abstractly); `trackdraw-catalog-assets` (unambiguous but longer, and the `trackdraw-` prefix is redundant under the `dutchdronesquad` organization). The repository was later renamed to **`track-assets`** (`dutchdronesquad/track-assets`), matching `track-viewer`: it holds artwork collections and templates rather than obstacle definitions, and leaves room for other shared track assets.
 
 ## Implemented Direction
 
-Artwork, source models and maintenance scripts live in [dutchdronesquad/obstacles](https://github.com/dutchdronesquad/obstacles), organized per organization. Repository documentation explains attribution and rights separately from the MIT-licensed maintenance tools.
+Artwork, source models and maintenance scripts live in [dutchdronesquad/track-assets](https://github.com/dutchdronesquad/track-assets), organized per organization. Repository documentation explains attribution and rights separately from the MIT-licensed maintenance tools.
 
-Cloudflare R2 serves stable URLs at `https://obstacles.trackdraw.app/multigp/<filename>.webp`. A push to the default branch publishes the assets automatically. There are no asset version tags, pinned copies or consumer bump steps. Responses use a five-minute cache lifetime and CORS for browser consumers.
+Cloudflare R2 serves stable URLs at `https://assets.trackdraw.app/multigp/<filename>.webp`. A push to the default branch publishes the assets automatically. There are no asset version tags, pinned copies or consumer bump steps. Responses use a five-minute cache lifetime and CORS for browser consumers.
 
 ### Consumers
 

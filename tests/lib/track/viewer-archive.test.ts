@@ -14,6 +14,7 @@ import {
 import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
 import { toApiViewerSnapshotPackage } from "@/lib/server/api-projects";
 import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/viewer/snapshot/types";
+import { OBSTACLE_ASSETS_URL } from "@trackdraw/viewer/assets/asset-url";
 import type { StoredProject } from "@/lib/server/projects";
 
 vi.mock("server-only", () => ({}));
@@ -66,7 +67,8 @@ describe("viewer course export integration", () => {
     expect(archive.assets.size).toBe(1);
     for (const bytes of archive.assets.values()) expect(bytes).toEqual(texture);
     expect(fetchAsset).toHaveBeenCalledExactlyOnceWith(
-      "https://obstacles.trackdraw.app/multigp/5x10-hurdle-multigp.webp",
+      // The host follows the installed viewer version.
+      `${OBSTACLE_ASSETS_URL}/multigp/5x10-hurdle-multigp.webp`,
       { credentials: "omit" }
     );
   });
