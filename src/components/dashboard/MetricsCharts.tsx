@@ -4,7 +4,7 @@ import { forwardRef, useId, useMemo, useRef, useState } from "react";
 import MetricsTooltipCard from "@/components/dashboard/MetricsTooltipCard";
 import ToneBadge from "@/components/dashboard/ToneBadge";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowRight, CalendarIcon, Search } from "lucide-react";
+import { CalendarIcon, ChevronRight } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import {
   Area,
@@ -12,6 +12,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   ComposedChart,
   Line,
   ReferenceLine,
@@ -56,6 +57,7 @@ import {
   calculateCostPerActiveCreator,
   calculateCreatorRange,
   calculatePlanLimitImpact,
+  isNearLimit,
 } from "@/lib/metrics-planning";
 import type {
   AdminMetrics,
@@ -490,6 +492,8 @@ function getGrowthRangeLabel(
   return t(`ranges.${range}`);
 }
 
+const SEGMENTED_RANGES = ["3m", "6m", "12m", "ytd"] as const;
+
 type RangePickerTriggerProps = Omit<
   ButtonProps,
   "children" | "size" | "variant"
@@ -713,12 +717,14 @@ export function UserGrowthRangePicker({
   today,
   onPresetSelect,
   onCustomApply,
+  segmented = false,
 }: {
   activeRange: GrowthRange;
   customRange: GrowthCustomRange | null;
   today: string;
   onPresetSelect: (range: GrowthPresetRange) => void;
   onCustomApply: (range: GrowthCustomRange) => void;
+  segmented?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.userGrowth");
   const [open, setOpen] = useState(false);
@@ -788,9 +794,57 @@ export function UserGrowthRangePicker({
             setOpen(nextOpen);
           }}
         >
-          <PopoverTrigger asChild>
-            <RangePickerTrigger label={triggerLabel} />
-          </PopoverTrigger>
+          {segmented ? (
+            <div
+              role="group"
+              aria-label={t("picker.range")}
+              className="bg-muted text-muted-foreground inline-flex h-9 items-center gap-0.5 rounded-[10px] p-1"
+            >
+              {SEGMENTED_RANGES.map((range) => (
+                <button
+                  key={range}
+                  type="button"
+                  aria-pressed={activeRange === range}
+                  aria-label={t(`ranges.${range}`)}
+                  onClick={() => onPresetSelect(range)}
+                  className={cn(
+                    "focus-visible:ring-ring h-full rounded-[7px] px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    activeRange === range
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:text-foreground"
+                  )}
+                >
+                  {t(`rangesShort.${range}`)}
+                </button>
+              ))}
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-pressed={activeRange === "custom"}
+                  aria-label={`${t("picker.range")} ${triggerLabel}`}
+                  className={cn(
+                    "focus-visible:ring-ring data-[state=open]:text-foreground inline-flex h-full max-w-[14rem] items-center gap-1.5 rounded-[7px] px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    activeRange === "custom" ||
+                      !SEGMENTED_RANGES.includes(
+                        activeRange as (typeof SEGMENTED_RANGES)[number]
+                      )
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:text-foreground"
+                  )}
+                >
+                  <span className="truncate">
+                    {activeRange === "custom" && customRange
+                      ? triggerLabel
+                      : t("picker.customShort")}
+                  </span>
+                </button>
+              </PopoverTrigger>
+            </div>
+          ) : (
+            <PopoverTrigger asChild>
+              <RangePickerTrigger label={triggerLabel} />
+            </PopoverTrigger>
+          )}
           <PopoverContent
             align="end"
             className="bg-popover w-max max-w-[calc(100vw-2rem)] overflow-hidden p-0"
@@ -1357,42 +1411,6 @@ function previousEventCount(
 
 function hasComparisonBaseline(usage: ProductInsights["usage"]) {
   return usage.coverage?.comparisonReady ?? usage.trackingDays >= 60;
-}
-
-export function MetricsFocusBanner({ metrics }: { metrics: AdminMetrics }) {
-  const t = useTranslations("dashboard.metrics.focus");
-  if (metrics.gallery.missingPreview === 0) return null;
-
-  return (
-    <section
-      aria-labelledby="metrics-focus-title"
-      className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/8 p-4 sm:flex-row sm:items-center"
-    >
-      <Search
-        className="size-5 shrink-0 text-amber-700 dark:text-amber-300"
-        aria-hidden="true"
-      />
-      <div className="min-w-0 flex-1">
-        <h2 id="metrics-focus-title" className="text-sm font-semibold">
-          {t("preview.title")}:{" "}
-          {t("preview.value", {
-            count: metrics.gallery.missingPreview,
-            total: metrics.gallery.total,
-          })}
-        </h2>
-        <p className="text-muted-foreground mt-0.5 text-sm leading-relaxed">
-          {t("preview.detail")}
-        </p>
-      </div>
-      <a
-        href="#sharing-health"
-        className="inline-flex shrink-0 items-center gap-2 self-start text-sm font-semibold underline-offset-4 hover:underline sm:self-center"
-      >
-        {t("preview.link")}
-        <ArrowRight className="size-3.5" aria-hidden="true" />
-      </a>
-    </section>
-  );
 }
 
 function UsageComparison({
@@ -2077,9 +2095,11 @@ const CANDIDATE_LIMIT_MAX = 20;
 const HISTOGRAM_OVERFLOW_BUCKET = CANDIDATE_LIMIT_MAX + 1;
 
 const SAFE_COLOR = "var(--chart-1)";
-const AFFECTED_COLOR = "hsl(0 72% 51%)";
+const NEAR_COLOR = "#f59e0b";
+const AFFECTED_COLOR = "var(--destructive)";
 
 type DistRow = [number, number, number];
+type PlanResource = "projects" | "shares" | "presets";
 
 function buildHistogram(counts: number[]) {
   const freq: number[] = Array(HISTOGRAM_OVERFLOW_BUCKET + 1).fill(0);
@@ -2097,195 +2117,185 @@ function buildHistogram(counts: number[]) {
 }
 
 function LimitControl({
-  title,
+  resource,
   limit,
-  near,
-  above,
-  totalUsers,
   onLimitChange,
 }: {
-  title: string;
+  resource: PlanResource;
   limit: number;
-  near: number;
-  above: number;
-  totalUsers: number;
   onLimitChange: (v: number) => void;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
-  const inputId = useId();
-  const rangeId = `${inputId}-range`;
-  const numberId = `${inputId}-number`;
-  const resultId = `${inputId}-result`;
-  const descriptionId = `${inputId}-description`;
-  const pct = totalUsers > 0 ? Math.round((above / totalUsers) * 100) : 0;
+  const rangeId = useId();
+  const title = t(`resourceNames.${resource}`);
 
   return (
-    <fieldset className="space-y-2 border-t px-4 py-4 first:border-t-0">
-      <legend className="sr-only">
-        {t("fieldsetLegend", { resource: title })}
-      </legend>
+    <div className="flex flex-col gap-2 text-sm">
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={numberId} className="text-sm font-medium">
-          {title}
-        </label>
-        <span
-          id={resultId}
-          role="status"
-          aria-live="polite"
-          className={cn(
-            "text-xs tabular-nums",
-            above > 0
-              ? "font-medium text-rose-600 dark:text-rose-400"
-              : "text-muted-foreground"
-          )}
-        >
-          {t("aboveLimitCount", { count: above, pct })}
+        <label htmlFor={rangeId}>{t(`controlLabels.${resource}`)}</label>
+        <span className="font-semibold tabular-nums" aria-hidden="true">
+          {limit}
         </span>
       </div>
-      <div className="flex items-center gap-3">
-        <label htmlFor={rangeId} className="sr-only">
-          {t("rangeLabel", { resource: title })}
-        </label>
-        <input
-          id={rangeId}
-          type="range"
-          min={0}
-          max={CANDIDATE_LIMIT_MAX}
-          value={limit}
-          aria-describedby={`${resultId} ${descriptionId}`}
-          onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
-          className="accent-brand-primary h-11 min-w-0 flex-1 cursor-pointer md:h-9"
-        />
-        <input
-          id={numberId}
-          type="number"
-          aria-label={t("numberLabel", { resource: title })}
-          min={0}
-          max={CANDIDATE_LIMIT_MAX}
-          value={limit}
-          aria-describedby={`${resultId} ${descriptionId}`}
-          onChange={(e) => {
-            const n = parseInt(e.target.value, 10);
-            if (!isNaN(n) && n >= 0 && n <= CANDIDATE_LIMIT_MAX) {
-              onLimitChange(n);
-            }
-          }}
-          className="h-11 w-16 shrink-0 rounded-md border bg-transparent px-2 text-base tabular-nums md:h-9 md:text-sm"
-        />
-      </div>
-      <p className="text-muted-foreground text-xs tabular-nums">
-        {t("nearLimit", { near })}
-      </p>
-      <p id={descriptionId} className="sr-only">
-        {t("limitExplanation", { limit })}
-      </p>
-    </fieldset>
+      <input
+        id={rangeId}
+        type="range"
+        min={1}
+        max={CANDIDATE_LIMIT_MAX}
+        value={limit}
+        aria-label={t("rangeLabel", { resource: title })}
+        aria-valuetext={t("limitExplanation", { limit })}
+        onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
+        className="accent-brand-primary h-5 w-full cursor-pointer"
+      />
+    </div>
   );
 }
 
 function ResourceHistogram({
-  title,
+  resource,
   counts,
   limit,
 }: {
-  title: string;
+  resource: PlanResource;
   counts: number[];
   limit: number;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
-  const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
+  const resourceName = t(`resourceNames.${resource}`).toLowerCase();
+  const distConfig = {
+    users: { label: t("usersAxis"), color: SAFE_COLOR },
+  } satisfies ChartConfig;
   const histogram = useMemo(
     () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
     [counts]
   );
 
   return (
-    <div className="space-y-3">
-      <ChartContainer config={distConfig} className="h-56 w-full">
-        <BarChart
-          accessibilityLayer
-          data={histogram}
-          margin={{ left: 0, right: 8, top: 16, bottom: 18 }}
-          barCategoryGap="14%"
-        >
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis
-            dataKey="label"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11 }}
-            tickMargin={4}
-            label={{
-              value: t("perUserAxis", { title }),
-              position: "insideBottom",
-              offset: -12,
-              style: { fontSize: 11, fill: "var(--muted-foreground)" },
-            }}
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11 }}
-            allowDecimals={false}
-            width={28}
-          />
-          <ChartTooltip
-            cursor={false}
-            content={({ active, payload, label }) => {
-              if (!active || !payload?.length) return null;
-              const count = Number(payload[0]?.value ?? 0);
-              const qualifier =
-                label === `${HISTOGRAM_OVERFLOW_BUCKET}+`
-                  ? ""
-                  : t("withExactly");
-              return (
-                <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
-                  <p className="text-foreground font-semibold tabular-nums">
-                    {t("usersCount", { count })}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {t("withCount", {
-                      qualifier,
-                      count: String(label ?? ""),
-                      resource: title.toLowerCase(),
-                    })}
-                  </p>
-                </div>
-              );
-            }}
-          />
-          {limit > 0 ? (
-            <ReferenceLine
-              x={String(limit)}
-              stroke="var(--foreground)"
-              strokeDasharray="4 3"
-              label={{
-                value: t("limitMarker", { limit }),
-                position: "top",
-                fontSize: 11,
-                fill: "var(--foreground)",
-              }}
-            />
-          ) : null}
-          <Bar dataKey="users" radius={[3, 3, 0, 0]}>
-            {histogram.map((entry) => (
-              <Cell
-                key={entry.bucket}
-                fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
-                fillOpacity={entry.bucket > limit ? 0.75 : 0.68}
+    <ChartContainer config={distConfig} className="aspect-auto h-56 w-full">
+      <BarChart
+        accessibilityLayer
+        data={histogram}
+        margin={{ left: 0, right: 8, top: 20, bottom: 0 }}
+        barCategoryGap="14%"
+      >
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+          allowDecimals={false}
+          width={32}
+        />
+        <ChartTooltip
+          cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+          content={({ active, payload }) => {
+            const entry = payload?.[0]?.payload as
+              (typeof histogram)[number] | undefined;
+            if (!active || !entry) return null;
+            return (
+              <MetricsTooltipCard
+                label={t("withCount", {
+                  qualifier:
+                    entry.bucket === HISTOGRAM_OVERFLOW_BUCKET
+                      ? ""
+                      : t("withExactly"),
+                  count: entry.label,
+                  resource: resourceName,
+                })}
+                rows={[
+                  {
+                    key: "users",
+                    label: t("usersAxis"),
+                    value: entry.users,
+                  },
+                ]}
               />
-            ))}
-          </Bar>
-        </BarChart>
-      </ChartContainer>
-      <DataTableDisclosure
-        label={t("viewData")}
-        columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
-        rows={histogram.map((entry) => [entry.label, entry.users])}
-      />
-    </div>
+            );
+          }}
+        />
+        <ReferenceLine
+          x={String(limit)}
+          stroke="var(--foreground)"
+          strokeDasharray="4 3"
+          label={{
+            value: t("limitMarker", { limit }),
+            position: "insideTopRight",
+            fontSize: 12,
+            fontWeight: 500,
+            fill: "var(--foreground)",
+          }}
+        />
+        <Bar dataKey="users" radius={3}>
+          {histogram.map((entry) => (
+            <Cell
+              key={entry.bucket}
+              fill={
+                entry.bucket > limit
+                  ? AFFECTED_COLOR
+                  : isNearLimit(entry.bucket, limit)
+                    ? NEAR_COLOR
+                    : SAFE_COLOR
+              }
+            />
+          ))}
+          <LabelList
+            dataKey="users"
+            position="top"
+            fontSize={12}
+            fontWeight={500}
+            className="fill-foreground"
+            formatter={(value) => (Number(value) > 0 ? String(value) : "")}
+          />
+        </Bar>
+      </BarChart>
+    </ChartContainer>
   );
 }
+
+function PlanStatStrip({
+  items,
+}: {
+  items: Array<{
+    key: string;
+    value: string | number;
+    label: string;
+    tone?: "destructive" | "amber" | "muted";
+  }>;
+}) {
+  return (
+    <dl className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
+      {items.map((item) => (
+        <div
+          key={item.key}
+          className="flex flex-col-reverse border-b px-4 py-3.5 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0"
+        >
+          <dt className="text-muted-foreground text-xs">{item.label}</dt>
+          <dd
+            className={cn(
+              "text-2xl leading-8 font-semibold tabular-nums",
+              item.tone === "destructive" && "text-destructive",
+              item.tone === "amber" && "text-amber-700 dark:text-amber-300",
+              item.tone === "muted" && "text-muted-foreground"
+            )}
+          >
+            {item.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+const planInputClassName =
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-[10px] border bg-transparent px-3 text-sm tabular-nums outline-none focus-visible:ring-[3px]";
 
 export function PlanLimitSimulator({
   userDistribution,
@@ -2297,9 +2307,7 @@ export function PlanLimitSimulator({
   const t = useTranslations("dashboard.metrics.planLimit");
   const locale = useLocale();
   const [limits, setLimits] = useState({ projects: 5, shares: 5, presets: 5 });
-  const [focusResource, setFocusResource] = useState<
-    "projects" | "shares" | "presets"
-  >("projects");
+  const [focusResource, setFocusResource] = useState<PlanResource>("projects");
   const [monthlyCostInput, setMonthlyCostInput] = useState("");
   const [costSource, setCostSource] = useState("");
   const [pricingAssumptions, setPricingAssumptions] = useState({
@@ -2316,16 +2324,12 @@ export function PlanLimitSimulator({
     [userDistribution]
   );
   const totalUsers = activeDistribution.length;
-  const projCounts = useMemo(
-    () => activeDistribution.map((r) => r[0]),
-    [activeDistribution]
-  );
-  const shareCounts = useMemo(
-    () => activeDistribution.map((r) => r[1]),
-    [activeDistribution]
-  );
-  const presetCounts = useMemo(
-    () => activeDistribution.map((r) => r[2]),
+  const counts = useMemo(
+    () => ({
+      projects: activeDistribution.map((r) => r[0]),
+      shares: activeDistribution.map((r) => r[1]),
+      presets: activeDistribution.map((r) => r[2]),
+    }),
     [activeDistribution]
   );
 
@@ -2349,14 +2353,17 @@ export function PlanLimitSimulator({
     Number(behaviorRange.lower) || 0,
     Number(behaviorRange.upper) || 0
   );
-  const impactPct =
-    totalUsers > 0 ? Math.round((impact.nearOrAboveAny / totalUsers) * 100) : 0;
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "EUR",
       maximumFractionDigits: 2,
     }).format(value);
+  const sharePercent = new Intl.NumberFormat(locale, {
+    style: "percent",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
 
   if (userDistribution.length === 0) {
     return (
@@ -2366,240 +2373,217 @@ export function PlanLimitSimulator({
     );
   }
 
-  const resources = [
-    {
-      key: "projects" as const,
-      title: t("projects"),
-      counts: projCounts,
-      limit: limits.projects,
-    },
-    {
-      key: "shares" as const,
-      title: t("shareLinks"),
-      counts: shareCounts,
-      limit: limits.shares,
-    },
-    {
-      key: "presets" as const,
-      title: t("presets"),
-      counts: presetCounts,
-      limit: limits.presets,
-    },
-  ];
-  const focused =
-    resources.find((resource) => resource.key === focusResource) ??
-    resources[0];
+  const resources: PlanResource[] = ["projects", "shares", "presets"];
+  const focused = impact.resources[focusResource];
+  const focusedLimit = limits[focusResource];
+  const paidAdoption = Number(pricingAssumptions.paidAdoption) || 0;
 
   return (
     <div className="space-y-4">
-      <div className="grid items-start gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
-        <div className="min-w-0 space-y-4">
-          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
-            <div className="border-b px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base font-semibold">{t("title")}</h2>
-                <ToneBadge tone="sky">{t("simulated")}</ToneBadge>
-              </div>
-              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("controlsDescription")}
-              </p>
-            </div>
+      <div className="flex flex-wrap items-start gap-4">
+        <section
+          aria-labelledby="plan-limits-title"
+          className="bg-card min-w-0 flex-[1_1_300px] overflow-hidden rounded-lg border"
+        >
+          <div className="border-b px-4 py-3.5">
+            <h2
+              id="plan-limits-title"
+              className="text-base leading-6 font-semibold"
+            >
+              {t("title")}
+            </h2>
+            <p className="text-muted-foreground mt-0.5 text-sm leading-5">
+              {t("controlsDescription")}
+            </p>
+          </div>
+          <div className="flex flex-col gap-5 p-4">
             {resources.map((resource) => (
               <LimitControl
-                key={resource.key}
-                title={resource.title}
-                limit={resource.limit}
-                totalUsers={totalUsers}
-                near={impact.resources[resource.key].near}
-                above={impact.resources[resource.key].above}
-                onLimitChange={(v) =>
-                  setLimits((prev) => ({ ...prev, [resource.key]: v }))
-                }
+                key={resource}
+                resource={resource}
+                limit={limits[resource]}
+                onLimitChange={(v) => {
+                  setLimits((prev) => ({ ...prev, [resource]: v }));
+                  setFocusResource(resource);
+                }}
               />
             ))}
-            <div className="text-muted-foreground space-y-1 border-t px-4 py-3 text-xs">
-              <p>{t("nearDefinition")}</p>
-              <p>{t("emptyExcluded", { count: impact.emptyAccounts })}</p>
-            </div>
-          </section>
+            <p className="text-muted-foreground text-xs leading-[18px]">
+              {t("nearDefinition")}{" "}
+              {t("emptyExcluded", { count: impact.emptyAccounts })}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 border-t p-4">
+            <label htmlFor="plan-monthly-cost" className="text-sm font-medium">
+              {t("monthlyInfrastructureCost")}
+            </label>
+            <span className="relative block">
+              <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm">
+                €
+              </span>
+              <input
+                id="plan-monthly-cost"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="0.01"
+                value={monthlyCostInput}
+                onChange={(event) => setMonthlyCostInput(event.target.value)}
+                className={cn(planInputClassName, "pl-7")}
+              />
+            </span>
+            <p className="text-muted-foreground text-xs leading-[18px]">
+              {t("costHelp")}
+            </p>
+          </div>
+        </section>
 
-          <details className="bg-card group rounded-lg border p-4">
-            <summary className="cursor-pointer text-sm font-semibold">
-              {t("behaviorAdvanced")}
-            </summary>
-            <div className="mt-3 space-y-3">
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                {t("behaviorAssumption")}
-              </p>
-              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-                {(["lower", "upper"] as const).map((key) => (
-                  <label key={key} className="space-y-1 text-xs">
-                    <span className="text-muted-foreground">{t(key)}</span>
-                    <span className="relative block">
-                      <input
-                        type="number"
-                        aria-label={t(key)}
-                        step="0.5"
-                        value={behaviorRange[key]}
-                        onChange={(event) =>
-                          setBehaviorRange((previous) => ({
-                            ...previous,
-                            [key]: event.target.value,
-                          }))
-                        }
-                        className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
-                      />
-                      <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
-                        %
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <p className="text-sm font-semibold tabular-nums">
-                {t("creatorRange", {
-                  lower: creatorRange[0],
-                  upper: creatorRange[1],
+        <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-4">
+          <section
+            aria-labelledby="plan-impact-title"
+            className="bg-card min-w-0 overflow-hidden rounded-lg border"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-4 py-3.5">
+              <h2
+                id="plan-impact-title"
+                className="text-base leading-6 font-semibold"
+              >
+                {t("impactTitle", {
+                  limit: focusedLimit,
+                  resource: t(`resourceSingular.${focusResource}`),
                 })}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {t("directionalOnly")}
-              </p>
-            </div>
-          </details>
-        </div>
-
-        <div className="min-w-0 space-y-4">
-          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
-            <div className="flex flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold">
-                  {t("scenarioTitle")}
-                </h2>
-                <p className="text-muted-foreground mt-0.5 text-sm">
-                  {t("scenarioDescription")}
-                </p>
-              </div>
+              </h2>
               <ToneBadge tone="sky">{t("simulated")}</ToneBadge>
             </div>
-            <dl className="grid grid-cols-1 border-b sm:grid-cols-3">
-              <div className="border-b px-4 py-3 sm:border-r sm:border-b-0">
-                <dd
-                  className={cn(
-                    "text-2xl font-semibold tabular-nums",
-                    impact.aboveAny > 0 && "text-rose-600 dark:text-rose-400"
-                  )}
-                >
-                  {impact.aboveAny}
-                </dd>
-                <dt className="text-muted-foreground text-xs">
-                  {t("accountsAbove")}
-                </dt>
-              </div>
-              <div className="border-b px-4 py-3 sm:border-r sm:border-b-0">
-                <dd
-                  className={cn(
-                    "text-2xl font-semibold tabular-nums",
-                    impact.nearAny > 0 && "text-amber-700 dark:text-amber-300"
-                  )}
-                >
-                  {impact.nearAny}
-                </dd>
-                <dt className="text-muted-foreground text-xs">
-                  {t("accountsNear")}
-                </dt>
-              </div>
-              <div className="px-4 py-3">
-                <dd className="text-2xl font-semibold tabular-nums">
-                  {impactPct}%
-                </dd>
-                <dt className="text-muted-foreground text-xs">
-                  {t("accountsAffectedShare")}
-                </dt>
-              </div>
-            </dl>
-            <div className="space-y-3 p-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-muted-foreground text-xs tabular-nums">
-                  {t("nearOrAboveDetail", {
-                    pct: impactPct,
-                    near: impact.nearAny,
-                    above: impact.aboveAny,
+            <div className="border-b">
+              <PlanStatStrip
+                items={[
+                  {
+                    key: "above",
+                    value: focused.above,
+                    label: t("accountsAbove"),
+                    tone: focused.above > 0 ? "destructive" : undefined,
+                  },
+                  {
+                    key: "near",
+                    value: focused.near,
+                    label: t("accountsNear"),
+                    tone: focused.near > 0 ? "amber" : undefined,
+                  },
+                  {
+                    key: "share",
+                    value: sharePercent.format(
+                      totalUsers ? focused.above / totalUsers : 0
+                    ),
+                    label: t("accountsAffectedShare"),
+                  },
+                ]}
+              />
+            </div>
+            <div className="p-4">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-muted-foreground text-xs">
+                  {t("distributionCaption", {
+                    resource: t(`resourceNames.${focusResource}`).toLowerCase(),
                   })}
                 </p>
                 <div
                   role="group"
                   aria-label={t("distributionFor")}
-                  className="bg-muted inline-flex h-9 items-center gap-0.5 self-start rounded-lg p-1"
+                  className="bg-muted inline-flex h-8 items-center gap-0.5 rounded-lg p-1"
                 >
                   {resources.map((resource) => (
                     <button
-                      key={resource.key}
+                      key={resource}
                       type="button"
-                      aria-pressed={focused.key === resource.key}
-                      onClick={() => setFocusResource(resource.key)}
+                      aria-pressed={focusResource === resource}
+                      onClick={() => setFocusResource(resource)}
                       className={cn(
-                        "text-muted-foreground h-7 cursor-pointer rounded-md px-3 text-xs font-medium transition-colors",
-                        focused.key === resource.key &&
+                        "text-muted-foreground h-6 cursor-pointer rounded-md px-2.5 text-xs font-medium transition-colors",
+                        focusResource === resource &&
                           "bg-background text-foreground shadow-sm"
                       )}
                     >
-                      {resource.title}
+                      {t(`resourceNames.${resource}`)}
                     </button>
                   ))}
                 </div>
               </div>
               <ResourceHistogram
-                key={focused.key}
-                title={focused.title}
-                counts={focused.counts}
-                limit={focused.limit}
+                key={focusResource}
+                resource={focusResource}
+                counts={counts[focusResource]}
+                limit={focusedLimit}
               />
-              <p className="text-muted-foreground text-xs">
-                {t("distributionSource")}
-              </p>
             </div>
           </section>
 
-          <section className="bg-card min-w-0 overflow-hidden rounded-lg border">
-            <div className="space-y-3 p-4">
-              <div>
-                <p className="text-sm font-semibold">{t("pricingTitle")}</p>
-                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                  {t("pricingDescription")}
-                </p>
-              </div>
-              <label className="block space-y-1 text-xs">
-                <span className="text-muted-foreground">
-                  {t("monthlyInfrastructureCost")}
-                </span>
-                <span className="relative block">
-                  <span className="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2">
-                    €
-                  </span>
-                  <input
-                    type="number"
-                    aria-label={t("monthlyInfrastructureCost")}
-                    min={0}
-                    step="0.01"
-                    value={monthlyCostInput}
-                    onChange={(event) =>
-                      setMonthlyCostInput(event.target.value)
-                    }
-                    className="h-11 w-full rounded-md border bg-transparent pr-3 pl-7 text-base tabular-nums sm:h-9 sm:pr-2 sm:pl-6 sm:text-sm"
-                  />
-                </span>
-              </label>
-              <p className="text-muted-foreground -mt-1 text-xs tabular-nums">
-                {costPerCreator !== null
-                  ? t("costPerActiveCreatorContext", {
-                      cost: formatCurrency(costPerCreator),
-                    })
-                  : t("enterMonthlyCost")}
+          <section
+            aria-labelledby="plan-pricing-title"
+            className="bg-card min-w-0 overflow-hidden rounded-lg border"
+          >
+            <div className="border-b px-4 py-3.5">
+              <h2
+                id="plan-pricing-title"
+                className="text-base leading-6 font-semibold"
+              >
+                {t("pricingTitle")}
+              </h2>
+              <p className="text-muted-foreground mt-0.5 text-sm leading-5">
+                {t("pricingDescription")}
               </p>
-              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+            </div>
+            <PlanStatStrip
+              items={[
+                {
+                  key: "perCreator",
+                  value:
+                    costPerCreator !== null
+                      ? formatCurrency(costPerCreator)
+                      : "—",
+                  label: t("costPerActiveCreator"),
+                  tone: costPerCreator === null ? "muted" : undefined,
+                },
+                {
+                  key: "adoption",
+                  value: `${paidAdoption}%`,
+                  label: t("assumedPaidAdoption"),
+                },
+                {
+                  key: "floor",
+                  value: costCoverageEstimate
+                    ? formatCurrency(
+                        costCoverageEstimate.costCoveringPricePerPaidCreator
+                      )
+                    : "—",
+                  label: t("priceFloorLabel"),
+                  tone: costCoverageEstimate ? undefined : "muted",
+                },
+              ]}
+            />
+            <p className="text-muted-foreground border-t px-4 py-2.5 text-xs tabular-nums">
+              {costCoverageEstimate
+                ? t("pricingContext", {
+                    paid: new Intl.NumberFormat(locale, {
+                      maximumFractionDigits: 1,
+                    }).format(costCoverageEstimate.expectedPaidCreators),
+                    breakEven: formatCurrency(
+                      costCoverageEstimate.breakEvenPerPaidCreator
+                    ),
+                  })
+                : t("enterMonthlyCost")}
+            </p>
+            <details className="group border-t">
+              <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                {t("behaviorAdvanced")}
+                <ChevronRight
+                  className="size-4 transition-transform group-open:rotate-90"
+                  aria-hidden="true"
+                />
+              </summary>
+              <div className="grid gap-4 border-t p-4 sm:grid-cols-2">
                 {(["paidAdoption", "costBuffer"] as const).map((key) => (
-                  <label key={key} className="space-y-1 text-xs">
+                  <label key={key} className="flex flex-col gap-1.5 text-xs">
                     <span className="text-muted-foreground">{t(key)}</span>
                     <span className="relative block">
                       <input
@@ -2615,62 +2599,79 @@ export function PlanLimitSimulator({
                             [key]: event.target.value,
                           }))
                         }
-                        className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
+                        className={cn(planInputClassName, "pr-7")}
                       />
-                      <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
+                      <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2">
                         %
                       </span>
                     </span>
                   </label>
                 ))}
+                <label className="flex flex-col gap-1.5 text-xs sm:col-span-2">
+                  <span className="text-muted-foreground">
+                    {t("costSource")}
+                  </span>
+                  <input
+                    type="text"
+                    aria-label={t("costSource")}
+                    value={costSource}
+                    onChange={(event) => setCostSource(event.target.value)}
+                    placeholder={t("costSourcePlaceholder")}
+                    className={planInputClassName}
+                  />
+                  <span className="text-muted-foreground leading-relaxed">
+                    {costSource.trim()
+                      ? t("derivedCostSource", { source: costSource.trim() })
+                      : t("missingCostSource")}
+                  </span>
+                </label>
+                <p className="text-muted-foreground text-xs leading-relaxed sm:col-span-2">
+                  {t("pricingAssumption")}
+                </p>
+                <div className="flex flex-col gap-2 border-t pt-4 sm:col-span-2">
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    {t("behaviorAssumption")}
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {(["lower", "upper"] as const).map((key) => (
+                      <label
+                        key={key}
+                        className="flex flex-col gap-1.5 text-xs"
+                      >
+                        <span className="text-muted-foreground">{t(key)}</span>
+                        <span className="relative block">
+                          <input
+                            type="number"
+                            aria-label={t(key)}
+                            step="0.5"
+                            value={behaviorRange[key]}
+                            onChange={(event) =>
+                              setBehaviorRange((previous) => ({
+                                ...previous,
+                                [key]: event.target.value,
+                              }))
+                            }
+                            className={cn(planInputClassName, "pr-7")}
+                          />
+                          <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2">
+                            %
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold tabular-nums">
+                    {t("creatorRange", {
+                      lower: creatorRange[0],
+                      upper: creatorRange[1],
+                    })}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {t("directionalOnly")}
+                  </p>
+                </div>
               </div>
-              <div className="bg-muted/45 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">
-                  {t("priceFloor")}
-                </p>
-                <p className="mt-0.5 text-2xl font-bold tabular-nums">
-                  {costCoverageEstimate
-                    ? formatCurrency(
-                        costCoverageEstimate.costCoveringPricePerPaidCreator
-                      )
-                    : t("notAvailable")}
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-                  {costCoverageEstimate
-                    ? t("pricingContext", {
-                        paid: new Intl.NumberFormat(locale, {
-                          maximumFractionDigits: 1,
-                        }).format(costCoverageEstimate.expectedPaidCreators),
-                        breakEven: formatCurrency(
-                          costCoverageEstimate.breakEvenPerPaidCreator
-                        ),
-                      })
-                    : t("enterMonthlyCost")}
-                </p>
-                <p className="text-muted-foreground mt-1 text-[0.65rem]">
-                  {t("perMonthExTax")}
-                </p>
-              </div>
-              <label className="block space-y-1 text-xs">
-                <span className="text-muted-foreground">{t("costSource")}</span>
-                <input
-                  type="text"
-                  aria-label={t("costSource")}
-                  value={costSource}
-                  onChange={(event) => setCostSource(event.target.value)}
-                  placeholder={t("costSourcePlaceholder")}
-                  className="h-11 w-full rounded-md border bg-transparent px-3 text-base sm:h-9 sm:px-2 sm:text-sm"
-                />
-              </label>
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                {costSource.trim()
-                  ? t("derivedCostSource", { source: costSource.trim() })
-                  : t("missingCostSource")}
-              </p>
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                {t("pricingAssumption")}
-              </p>
-            </div>
+            </details>
           </section>
         </div>
       </div>

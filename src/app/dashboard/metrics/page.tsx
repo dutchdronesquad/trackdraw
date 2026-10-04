@@ -3,10 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
-import {
-  MetricsFocusBanner,
-  MetricsWorkspace,
-} from "@/components/dashboard/MetricsChartsLoader";
+import { MetricsWorkspace } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { getDailyCockpit } from "@/lib/server/dashboard-cockpit";
@@ -70,8 +67,6 @@ export default async function DashboardMetricsPage() {
         title={t("pages.metrics")}
       />
       <main className="flex w-full min-w-0 flex-1 flex-col gap-5 p-4 pt-0">
-        <MetricsFocusBanner metrics={metrics} />
-
         <MetricsWorkspace
           metrics={metrics}
           insights={insights}
@@ -87,7 +82,7 @@ export default async function DashboardMetricsPage() {
           header={{
             title: tMetrics("explorer.header.title"),
             subtitle: tMetrics("explorer.header.subtitle"),
-            updatedLabel: tMetrics("overview.updatedLabel"),
+            updatedLabel: tMetrics("explorer.header.updated"),
             lastUpdated,
             dateTime: now.toISOString(),
           }}

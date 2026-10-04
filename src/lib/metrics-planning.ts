@@ -26,7 +26,7 @@ export type PlanLimitImpact = {
 
 const NEAR_LIMIT_FRACTION = 0.8;
 
-function isNearLimit(value: number, limit: number) {
+export function isNearLimit(value: number, limit: number) {
   if (limit <= 0 || value <= 0 || value > limit) return false;
   return value >= Math.ceil(limit * NEAR_LIMIT_FRACTION);
 }

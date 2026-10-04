@@ -1,8 +1,9 @@
 import "server-only";
 
-import type {
-  ProductActivityAnalysis,
-  WeeklyProductActivity,
+import {
+  TIME_TO_RESULT_BUCKETS,
+  type ProductActivityAnalysis,
+  type WeeklyProductActivity,
 } from "@/lib/metrics-analysis";
 import {
   addUtcDays,
@@ -16,7 +17,8 @@ import { getDatabase } from "@/lib/server/db";
 // Only ordered events in that same period and session contribute to progression.
 const ACTIVITY_SQL = `
 with events as (
-  select created_at, event_type, session_id
+  select created_at, event_type, session_id,
+    case when event_type = 'share.viewed' then json_extract(metadata_json, '$.surface') end as surface
   from product_events
   where contract_version in ('1.0.0', '1.1.0')
     and created_at >= ?1 and created_at < ?2 and created_at >= ?3
@@ -60,16 +62,25 @@ with events as (
 ), event_weeks as (
   select date(created_at, printf('-%d days', (cast(strftime('%w', created_at) as integer) + 6) % 7)) as week,
     sum(case when event_type = 'export.completed' then 1 else 0 end) as exports,
-    sum(case when event_type = 'share.viewed' then 1 else 0 end) as views
+    sum(case when event_type = 'share.viewed' then 1 else 0 end) as views,
+    sum(case when event_type = 'share.viewed' and surface = 'embed' then 1 else 0 end) as embed_views
   from events group by week
 )
-select e.week, e.exports, e.views, coalesce(c.started, 0) as started, coalesce(c.edited, 0) as edited,
+select e.week, e.exports, e.views, e.embed_views, coalesce(c.started, 0) as started, coalesce(c.edited, 0) as edited,
   coalesce(c.valuable, 0) as valuable, coalesce(c.completed, 0) as completed,
-  t.median_seconds, t.p75_seconds
+  t.median_seconds, t.p75_seconds, null as duration_buckets
 from event_weeks e left join cohorts c on c.week = e.week left join timings t on t.week = e.week
 union all
-select '*', 0, 0, count(*), count(edited_at), count(valuable_at), count(first_result_at),
-  (select median_seconds from timings where week = '*'), (select p75_seconds from timings where week = '*')
+select '*', 0, 0, 0, count(*), count(edited_at), count(valuable_at), count(first_result_at),
+  (select median_seconds from timings where week = '*'), (select p75_seconds from timings where week = '*'),
+  (select json_array(
+    sum(case when seconds < 60 then 1 else 0 end),
+    sum(case when seconds >= 60 and seconds < 180 then 1 else 0 end),
+    sum(case when seconds >= 180 and seconds < 300 then 1 else 0 end),
+    sum(case when seconds >= 300 and seconds < 600 then 1 else 0 end),
+    sum(case when seconds >= 600 and seconds < 1800 then 1 else 0 end),
+    sum(case when seconds >= 1800 then 1 else 0 end)
+  ) from durations)
 from journeys
 `;
 
@@ -77,13 +88,21 @@ type ActivityRow = {
   week: string;
   exports: number;
   views: number;
+  embed_views: number;
   started: number;
   edited: number;
   valuable: number;
   completed: number;
   median_seconds: number | null;
   p75_seconds: number | null;
+  duration_buckets: string | null;
 };
+
+function parseDurationBuckets(value: string | null | undefined) {
+  if (!value) return TIME_TO_RESULT_BUCKETS.map(() => 0);
+  const parsed = JSON.parse(value) as Array<number | null>;
+  return TIME_TO_RESULT_BUCKETS.map((_, index) => parsed[index] ?? 0);
+}
 
 export async function getProductActivityAnalysis(
   db: Awaited<ReturnType<typeof getDatabase>>,
@@ -151,6 +170,7 @@ export async function getProductActivityAnalysis(
       completed: row?.completed ?? 0,
       exports: row?.exports ?? 0,
       views: row?.views ?? 0,
+      embedViews: row?.embed_views ?? 0,
       medianSeconds: row?.median_seconds ?? null,
       p75Seconds: row?.p75_seconds ?? null,
     });
@@ -167,6 +187,7 @@ export async function getProductActivityAnalysis(
       samples: summary?.completed ?? 0,
       medianSeconds: summary?.median_seconds ?? null,
       p75Seconds: summary?.p75_seconds ?? null,
+      buckets: parseDurationBuckets(summary?.duration_buckets),
     },
     exportReliability: exports.results.map((row) => ({
       format: row.format,

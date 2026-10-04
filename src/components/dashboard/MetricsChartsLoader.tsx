@@ -37,11 +37,6 @@ export const DistributionSummary = dynamic(
   { ssr: false }
 );
 
-export const MetricsFocusBanner = dynamic(
-  () => import("./MetricsCharts").then((m) => m.MetricsFocusBanner),
-  { ssr: false }
-);
-
 export const ExportUsageBreakdown = dynamic(
   () => import("./MetricsCharts").then((m) => m.ExportUsageBreakdown),
   { ssr: false }

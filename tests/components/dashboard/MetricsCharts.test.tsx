@@ -270,7 +270,7 @@ describe("metrics decision views", () => {
     ).toBe("/share/race-layout");
   });
 
-  it("labels both controls in every plan-limit simulator", () => {
+  it("labels every plan-limit slider and follows the changed resource", () => {
     render(
       <PlanLimitSimulator
         activeCreators={2}
@@ -282,27 +282,22 @@ describe("metrics decision views", () => {
       />
     );
 
-    expect(
-      screen.getByRole("slider", { name: "Projects free-plan limit slider" })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("spinbutton", {
-        name: "Projects free-plan limit value",
-      })
-    ).toBeTruthy();
-    const projectLimit = screen.getByRole("spinbutton", {
-      name: "Projects free-plan limit value",
+    const projectLimit = screen.getByRole("slider", {
+      name: "Projects free-plan limit slider",
     });
     expect(projectLimit.getAttribute("max")).toBe("20");
-    expect(projectLimit.className).toContain("h-11");
     expect(
-      screen.getByRole("slider", { name: "Projects free-plan limit slider" })
-        .className
-    ).toContain("h-11");
-    fireEvent.change(projectLimit, { target: { value: "999" } });
-    expect((projectLimit as HTMLInputElement).value).toBe("5");
-    expect(screen.getAllByText("21+")).toHaveLength(1);
-    expect(screen.getByText("Free-plan impact")).toBeTruthy();
+      screen.getByRole("heading", { name: "Impact of a 5-project limit" })
+    ).toBeTruthy();
+
+    fireEvent.change(
+      screen.getByRole("slider", { name: "Presets free-plan limit slider" }),
+      { target: { value: "7" } }
+    );
+    expect(
+      screen.getByRole("heading", { name: "Impact of a 7-preset limit" })
+    ).toBeTruthy();
+    expect(screen.getByText("Accounts by number of presets")).toBeTruthy();
     expect(screen.getByText("Commercial signals")).toBeTruthy();
   });
 
@@ -319,36 +314,32 @@ describe("metrics decision views", () => {
     );
 
     expect(screen.getAllByText("Simulated").length).toBeGreaterThan(0);
-    expect(screen.getByText("1 near limit")).toBeTruthy();
+    expect(screen.getByText("accounts above the limit")).toBeTruthy();
+    expect(screen.getByText("50.0%")).toBeTruthy();
     expect(
-      screen.getByText("100% of accounts with content · 1 near · 1 above")
+      screen.getByText(
+        "Enter the monthly infrastructure cost to calculate the price floor."
+      )
     ).toBeTruthy();
-    expect(screen.getAllByText("n/a").length).toBeGreaterThan(0);
-    expect(
-      screen.getByLabelText("Monthly infrastructure cost").className
-    ).toContain("h-11");
 
     await user.type(
       screen.getByLabelText("Monthly infrastructure cost"),
       "100"
     );
+    await user.click(screen.getByText("Advanced assumptions"));
     await user.type(
       screen.getByLabelText("Source or evidence"),
       "July invoice"
     );
 
-    expect(screen.getByText("Cost coverage estimate")).toBeTruthy();
-    expect(screen.getByText("€10.00 per active creator")).toBeTruthy();
+    expect(screen.getByText("Paid plan price floor")).toBeTruthy();
+    expect(screen.getByText("€10.00")).toBeTruthy();
     expect(
       screen.getByText(
         "0.5 expected paid creators · €200.00 base cost per paid account"
       )
     ).toBeTruthy();
     expect(screen.getByText("€200.00")).toBeTruthy();
-    const advanced = screen
-      .getByText("Advanced assumptions")
-      .closest("details");
-    expect(advanced?.hasAttribute("open")).toBe(false);
     expect(
       screen.getByText(
         "Derived from July invoice and the observed 30-day active-creator count."
@@ -674,7 +665,6 @@ describe("metrics decision views", () => {
     );
 
     expect(container.querySelectorAll("[data-chart]")).toHaveLength(1);
-    expect(screen.getByText("Completed exports")).toBeTruthy();
     expect(
       screen.queryByRole("navigation", { name: "Product journey metrics" })
     ).toBeNull();
@@ -693,12 +683,11 @@ describe("metrics decision views", () => {
       })
     ).toHaveLength(2);
     expect(
-      screen.getByRole("heading", { name: "How active is each week?" })
+      screen.getByRole("heading", { name: "How far do shared tracks travel?" })
     ).toBeTruthy();
     const evidence = screen.getByRole("region", {
       name: "Core product metrics",
     });
-    expect(within(evidence).getByText("MTR-001")).toBeTruthy();
     expect(
       within(evidence).getByRole("columnheader", {
         name: "Reporting period",
@@ -709,7 +698,7 @@ describe("metrics decision views", () => {
     );
     expect(
       within(evidence).getAllByLabelText(
-        /Collecting history.*This value uses a fixed 7-day reporting period/
+        /Collecting since.*This value uses a fixed 7-day reporting period/
       )
     ).toHaveLength(1);
     expect(within(evidence).getByText("10 of 30 observations")).toBeTruthy();
@@ -749,11 +738,9 @@ describe("metrics decision views", () => {
       })
     ).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Preferred browser language" })
+      screen.getByRole("columnheader", { name: "Preferred browser language" })
     ).toBeTruthy();
-    expect(
-      screen.getByRole("heading", { name: "Interface language used" })
-    ).toBeTruthy();
+    expect(screen.getByText("Interface language used")).toBeTruthy();
     expect(screen.getByText("Grouped for privacy")).toBeTruthy();
     expect(
       screen.getByText("Translation candidates above threshold")
@@ -801,7 +788,11 @@ describe("metrics decision views", () => {
       );
     };
     await openRange("Last 3 months");
-    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Last 12 months",
+      })
+    );
     expect(loadLocalizationDemand).toHaveBeenLastCalledWith({
       from: "2025-07-01",
       to: "2026-07-09",
@@ -814,7 +805,11 @@ describe("metrics decision views", () => {
       "Loading localization"
     );
     await openRange("Last 12 months");
-    await user.click(screen.getByRole("button", { name: "Last 3 months" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Last 3 months",
+      })
+    );
     await act(async () =>
       resolveRange({
         id: "L10N-001",
@@ -832,13 +827,17 @@ describe("metrics decision views", () => {
     );
     expect(screen.queryByText("999")).toBeNull();
     expect(
-      screen.getByRole("heading", { name: "Preferred browser language" })
+      screen.getByRole("columnheader", { name: "Preferred browser language" })
     ).toBeTruthy();
     vi.mocked(loadLocalizationDemand).mockRejectedValueOnce(
       new Error("unavailable")
     );
     await openRange("Last 3 months");
-    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Last 12 months",
+      })
+    );
     expect(await screen.findByRole("alert")).toBeTruthy();
     vi.mocked(loadLocalizationDemand).mockResolvedValueOnce({
       id: "L10N-001",
@@ -864,15 +863,14 @@ describe("metrics decision views", () => {
 
     await user.click(screen.getByRole("tab", { name: "Creators" }));
     expect(screen.getByText("Do activated creators come back?")).toBeTruthy();
-    expect(screen.getByText("Active creator rate")).toBeTruthy();
-    expect(screen.getByText("60%")).toBeTruthy();
     expect(
-      screen.getByText("18 active creators from 30 editor actors.")
+      screen.getByText(
+        "Mature creator-activation cohorts will appear after the observation window is complete."
+      )
     ).toBeTruthy();
 
     await user.click(screen.getByRole("tab", { name: "Creation" }));
     expect(screen.getByText("How much content is being created?")).toBeTruthy();
-    expect(screen.getByText("Valuable sessions")).toBeTruthy();
     expect(
       screen.getByRole("heading", { name: "Where do sessions stop?" })
     ).toBeTruthy();
@@ -880,9 +878,6 @@ describe("metrics decision views", () => {
       screen.getByRole("heading", {
         name: "How fast do creators get a first result?",
       })
-    ).toBeTruthy();
-    expect(
-      screen.getByText("12 valuable sessions from 30 editor sessions.")
     ).toBeTruthy();
     const adoption = screen
       .getByRole("heading", { name: "Which features do creators use?" })
@@ -895,14 +890,8 @@ describe("metrics decision views", () => {
     ).toEqual(["3D preview: 70%", "Import: 20%"]);
 
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
-    expect(screen.getByText("Export usage")).toBeTruthy();
     expect(
       screen.getByRole("heading", { name: "Do exports work in every format?" })
-    ).toBeTruthy();
-    expect(screen.getByText("777")).toBeTruthy();
-    expect(screen.getByText("Publication session rate")).toBeTruthy();
-    expect(
-      screen.getByText("7 published sessions from 12 valuable sessions.")
     ).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Where are tracks embedded?")).toBeTruthy();
@@ -911,23 +900,31 @@ describe("metrics decision views", () => {
       new Error("unavailable")
     );
     await openRange("Last 12 months");
-    await user.click(screen.getByRole("button", { name: "Last 3 months" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Last 3 months",
+      })
+    );
     vi.mocked(loadProductInsights).mockRejectedValueOnce(
       new Error("unavailable")
     );
     await openRange("Last 3 months");
-    await user.click(screen.getByRole("button", { name: "Last 12 months" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Last 12 months",
+      })
+    );
     expect(await screen.findByRole("alert")).toBeTruthy();
     expect(screen.getAllByRole("alert")).toHaveLength(1);
     expect(screen.getAllByRole("button", { name: "Retry" })).toHaveLength(1);
-    expect(screen.getAllByText("Temporarily unavailable")).toHaveLength(4);
-    expect(screen.queryByText("777")).toBeNull();
+    expect(screen.getAllByText("Temporarily unavailable")).toHaveLength(3);
+    expect(screen.queryByText("events.example.org")).toBeNull();
     await user.click(screen.getByRole("tab", { name: "Creators" }));
     expect(screen.queryByRole("alert")).toBeNull();
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     const callsBeforeRetry = vi.mocked(loadProductInsights).mock.calls.length;
     await user.click(screen.getByRole("button", { name: "Retry" }));
-    expect(await screen.findByText("777")).toBeTruthy();
+    expect(await screen.findByText("events.example.org")).toBeTruthy();
     expect(vi.mocked(loadProductInsights).mock.calls.length).toBe(
       callsBeforeRetry + 1
     );
@@ -939,7 +936,9 @@ describe("metrics decision views", () => {
         name: "Export and publishing reliability",
       })
     ).toBeTruthy();
-    expect(within(operations as HTMLElement).getByText("10")).toBeTruthy();
+    expect(
+      within(operations as HTMLElement).getByText("10 failed")
+    ).toBeTruthy();
     expect(
       within(operations as HTMLElement).getAllByText("Rendering").length
     ).toBeTruthy();
@@ -973,14 +972,8 @@ describe("metrics decision views", () => {
     expect(
       within(recentAttempts!).queryByText("Detail not recorded")
     ).toBeNull();
-    expect(
-      within(operations as HTMLElement).getByText("6 failed")
-    ).toBeTruthy();
-    expect(
-      within(operations as HTMLElement).getByText(
-        /20 outcomes.*30% failure rate/
-      )
-    ).toBeTruthy();
+    expect(within(operations as HTMLElement).getByText("30%")).toBeTruthy();
+    expect(within(operations as HTMLElement).getByText("50%")).toBeTruthy();
 
     await user.click(screen.getByRole("tab", { name: "Overview" }));
     expect(document.querySelector("#operations")).toBeNull();

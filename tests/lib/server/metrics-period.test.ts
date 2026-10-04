@@ -166,6 +166,7 @@ describe("selected product insight periods", () => {
       samples: 3,
       medianSeconds: 180,
       p75Seconds: 600,
+      buckets: [0, 1, 1, 0, 1, 0],
     });
     expect(analysis?.weeks).toHaveLength(1);
     expect(analysis?.weeks[0]).toMatchObject({
@@ -238,6 +239,7 @@ describe("selected product insight periods", () => {
       samples: 2,
       medianSeconds: 180,
       p75Seconds: 240,
+      buckets: [0, 1, 1, 0, 0, 0],
     });
     const empty = await getProductInsights(
       { from: "2026-07-13", to: "2026-07-19" },
@@ -247,6 +249,7 @@ describe("selected product insight periods", () => {
       samples: 0,
       medianSeconds: null,
       p75Seconds: null,
+      buckets: [0, 0, 0, 0, 0, 0],
     });
     expect(empty.analysis?.weeks[0]?.exports).toBe(0);
   });
