@@ -39,42 +39,36 @@ export default async function MetricsPlanningPage() {
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.metrics")}
       />
-      <main className="flex w-full min-w-0 flex-1 flex-col gap-6 p-4 pt-0 pb-6">
-        <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
+      <main className="flex w-full min-w-0 flex-1 flex-col gap-5 p-4 pt-0 pb-6">
+        <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+          <div>
+            <h1 className="text-2xl leading-8 font-semibold tracking-tight">
               {tMetrics("planningPage.title")}
             </h1>
-            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+            <p className="text-muted-foreground mt-1 max-w-[720px] text-sm">
               {tMetrics("planningPage.description")}
             </p>
           </div>
-          <section
+          <dl
             aria-label={tMetrics("planningPage.observedBaseline")}
-            className="flex flex-col gap-1 lg:items-end"
+            className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-sm"
           >
-            <dl className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-              <div className="flex items-baseline gap-1.5">
-                <dd className="text-foreground font-semibold tabular-nums">
-                  {metrics.users.activeLastThirtyDays}
-                </dd>
-                <dt>{tMetrics("planningPage.activeCreators")}</dt>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <dd className="text-foreground font-semibold tabular-nums">
-                  {accountsWithContent}
-                </dd>
-                <dt>{tMetrics("planningPage.accountsWithContent")}</dt>
-              </div>
-              <ToneBadge tone="amber">
-                {tMetrics("planningPage.observed")}
-              </ToneBadge>
-            </dl>
-            <p className="text-muted-foreground max-w-xl text-xs lg:text-right">
-              {tMetrics("planningPage.activeCreatorsSource")}{" "}
-              {tMetrics("planningPage.accountsSource")}
-            </p>
-          </section>
+            <div className="flex items-baseline gap-1">
+              <dd className="text-foreground font-semibold tabular-nums">
+                {metrics.users.activeLastThirtyDays}
+              </dd>
+              <dt>{tMetrics("planningPage.activeCreators")}</dt>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <dd className="text-foreground font-semibold tabular-nums">
+                {accountsWithContent}
+              </dd>
+              <dt>{tMetrics("planningPage.accountsWithContent")}</dt>
+            </div>
+            <ToneBadge tone="neutral">
+              {tMetrics("planningPage.observed")}
+            </ToneBadge>
+          </dl>
         </header>
 
         <PlanLimitSimulator

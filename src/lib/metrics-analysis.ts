@@ -1,3 +1,6 @@
+// Upper bounds in seconds; the last bucket is open-ended.
+export const TIME_TO_RESULT_BUCKETS = [60, 180, 300, 600, 1800, null] as const;
+
 export type JourneyCounts = {
   started: number;
   edited: number;
@@ -11,6 +14,7 @@ export type WeeklyProductActivity = JourneyCounts & {
   to: string;
   exports: number;
   views: number;
+  embedViews: number;
   medianSeconds: number | null;
   p75Seconds: number | null;
 };
@@ -22,6 +26,7 @@ export type ProductActivityAnalysis = {
     samples: number;
     medianSeconds: number | null;
     p75Seconds: number | null;
+    buckets: number[];
   };
   exportReliability: Array<{
     format: string;

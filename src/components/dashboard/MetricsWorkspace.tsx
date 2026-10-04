@@ -1,13 +1,18 @@
 "use client";
 
 import {
-  WeeklyActivity,
-  JourneyDropoff,
-  TimeToResult,
-  ExportReliability,
-} from "@/components/dashboard/ProductAnalysis";
+  ContentTrend,
+  EditorSplit,
+  EmbedSitesTable,
+  ExportFormatTable,
+  JourneyFunnel,
+  RetentionTrend,
+  SharingHealthGrid,
+  TimeToResultHistogram,
+  WeeklyViewsChart,
+} from "@/components/dashboard/MetricsDesignCharts";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { usePeriodMetrics } from "@/components/dashboard/use-period-metrics";
 import {
   loadLocalizationDemand,
@@ -17,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  Circle,
+  ChevronRight,
   Info,
   Languages,
   LayoutDashboard,
@@ -28,12 +33,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  ContentGrowthChart,
-  EditorUsageBreakdown,
-  EmbedReachTable,
-  ExportUsageBreakdown,
-  ShareUsageBreakdown,
-  SharingHealth,
   UserGrowthCard,
   UserGrowthRangePicker,
 } from "@/components/dashboard/MetricsCharts";
@@ -46,17 +45,26 @@ import {
 import {
   AcquisitionAside,
   ContentAside,
-  EmbedAside,
+  EmbedShareAside,
   ExportReliabilityAside,
-  ExportUsageAside,
   GrowthAside,
   JourneyAside,
-  LocalizationAside,
   RetentionAside,
+  ShareReachAside,
   TimingAside,
-  WeeklyAside,
 } from "@/components/dashboard/MetricsAsides";
 import MetricsSection from "@/components/dashboard/MetricsSection";
+import ToneBadge, {
+  type DashboardTone,
+} from "@/components/dashboard/ToneBadge";
+import {
+  MetricsEmpty,
+  MetricsInlineBar,
+  MetricsStackedBar,
+  MetricsStatStrip,
+  MetricsSwatch,
+  metricsTableClassNames as tableClass,
+} from "@/components/dashboard/MetricsVisuals";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import type {
@@ -142,6 +150,7 @@ const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
   operations: "distribution",
 };
 
+const ELEVATED_FAILURE_RATE = 0.05;
 const COCKPIT_FAILURE_OPERATIONS = ["export", "gallery_publish"] as const;
 
 function cockpitFailureRows(metric: MetricsExplorerMetric) {
@@ -168,13 +177,13 @@ function cockpitFailureRows(metric: MetricsExplorerMetric) {
     );
 }
 
-const QUALITY_CLASS: Record<MetricsExplorerQuality, string> = {
-  healthy: "text-emerald-700 dark:text-emerald-300",
-  building: "text-amber-700 dark:text-amber-300",
-  low_volume: "text-amber-700 dark:text-amber-300",
-  degraded: "text-orange-700 dark:text-orange-300",
-  invalid: "text-destructive",
-  not_started: "text-muted-foreground",
+const QUALITY_TONE: Record<MetricsExplorerQuality, DashboardTone> = {
+  healthy: "emerald",
+  building: "amber",
+  low_volume: "amber",
+  degraded: "amber",
+  invalid: "destructive",
+  not_started: "neutral",
 };
 
 function metricValue(
@@ -243,30 +252,25 @@ function QualityLabel({
   windowDays?: number;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.quality");
+  const locale = useLocale();
   const progress =
     quality === "building" && measuredSince && generatedAt && windowDays
       ? buildingProgressDays(measuredSince, generatedAt, windowDays)
       : null;
   const catchingUp = progress && progress.elapsed >= progress.total;
+  const shortDate = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
   const labelText = catchingUp
     ? t("catchingUp")
-    : progress
-      ? t("buildingProgress", {
-          elapsed: progress.elapsed,
-          total: progress.total,
+    : quality === "building" && measuredSince
+      ? t("collectingSince", {
+          date: shortDate.format(new Date(`${measuredSince}T00:00:00.000Z`)),
         })
       : t(quality);
-  const label = (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-medium",
-        QUALITY_CLASS[quality]
-      )}
-    >
-      <Circle className="size-2 fill-current" aria-hidden="true" />
-      {labelText}
-    </span>
-  );
+  const label = <ToneBadge tone={QUALITY_TONE[quality]}>{labelText}</ToneBadge>;
 
   if (quality !== "not_started" && quality !== "building") return label;
 
@@ -371,13 +375,102 @@ function MetricDelta({
   );
 }
 
-function ExplorerBarRows({
-  metric,
-  namespace,
-}: {
-  metric: MetricsExplorerMetric;
-  namespace: "sources" | "features";
-}) {
+const ACQUISITION_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-4)",
+  "var(--chart-3)",
+  "var(--chart-5)",
+];
+
+function sortExplorerRows(metric: MetricsExplorerMetric) {
+  return [...metric.rows].sort(
+    (left, right) =>
+      (right.value ?? 0) - (left.value ?? 0) ||
+      left.dimension.localeCompare(right.dimension)
+  );
+}
+
+function AcquisitionMix({ metric }: { metric: MetricsExplorerMetric }) {
+  const t = useTranslations("dashboard.metrics.explorer");
+  const locale = useLocale();
+  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const percent = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "percent",
+        maximumFractionDigits: 0,
+      }),
+    [locale]
+  );
+  const ranked = sortExplorerRows(metric);
+  const rows = [
+    ...ranked.filter(
+      (row) => row.dimension !== "other" && row.dimension !== "unknown"
+    ),
+    ...ranked.filter(
+      (row) => row.dimension === "other" || row.dimension === "unknown"
+    ),
+  ].map((row, index) => {
+    const muted = row.dimension === "other" || row.dimension === "unknown";
+    return {
+      ...row,
+      label: t(`sources.${row.dimension}`),
+      muted,
+      color: muted
+        ? "var(--muted-foreground)"
+        : ACQUISITION_COLORS[index % ACQUISITION_COLORS.length],
+    };
+  });
+
+  if (rows.length === 0) {
+    return (
+      <MetricsEmpty>
+        {t(
+          metric.quality === "not_started" ? "empty.notStarted" : "empty.noData"
+        )}
+      </MetricsEmpty>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3.5">
+      <MetricsStackedBar
+        label={rows
+          .map((row) => `${row.label} ${formatRowValue(row, percent)}`)
+          .join(", ")}
+        segments={rows.map((row) => ({
+          key: row.dimension,
+          value: row.numerator,
+          color: row.color,
+          muted: row.muted,
+        }))}
+      />
+      <div className="grid grid-cols-[16px_minmax(0,1fr)_72px_56px] items-center gap-x-3 gap-y-2.5 text-sm">
+        {rows.map((row) => (
+          <Fragment key={row.dimension}>
+            <MetricsSwatch
+              color={row.color}
+              className={cn(
+                "size-2.5 rounded-[3px]",
+                row.muted && "opacity-40"
+              )}
+            />
+            <span className="min-w-0 truncate">{row.label}</span>
+            <span className="text-muted-foreground text-right tabular-nums">
+              {number.format(row.numerator)}
+            </span>
+            <span className="text-right font-medium tabular-nums">
+              {formatRowValue(row, percent)}
+            </span>
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeatureAdoption({ metric }: { metric: MetricsExplorerMetric }) {
   const t = useTranslations("dashboard.metrics.explorer");
   const locale = useLocale();
   const percent = useMemo(
@@ -388,49 +481,42 @@ function ExplorerBarRows({
       }),
     [locale]
   );
-  const rows = [...metric.rows].sort(
-    (left, right) =>
-      (right.value ?? 0) - (left.value ?? 0) ||
-      left.dimension.localeCompare(right.dimension)
-  );
+  const rows = sortExplorerRows(metric);
 
   if (rows.length === 0) {
     return (
-      <div className="text-muted-foreground flex min-h-48 items-center justify-center text-center text-sm">
+      <MetricsEmpty>
         {t(
           metric.quality === "not_started" ? "empty.notStarted" : "empty.noData"
         )}
-      </div>
+      </MetricsEmpty>
     );
   }
 
   return (
-    <div className="max-w-3xl space-y-3">
-      {rows.map((row) => (
-        <div key={row.dimension} className="space-y-1.5">
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span>{t(`${namespace}.${row.dimension}`)}</span>
-            <span className="font-semibold tabular-nums">
-              {formatRowValue(row, percent)}
-              <span className="text-muted-foreground ml-2 font-normal">
-                {row.numerator}
-              </span>
-            </span>
-          </div>
-          <div
-            className="bg-muted h-2 overflow-hidden rounded-full"
-            role="img"
-            aria-label={`${t(`${namespace}.${row.dimension}`)}: ${formatRowValue(row, percent)}`}
-          >
+    <div className="grid grid-cols-[120px_minmax(0,1fr)_44px] items-center gap-x-3 gap-y-2.5 text-sm">
+      {rows.map((row) => {
+        const label = t(`features.${row.dimension}`);
+        const value = formatRowValue(row, percent);
+        return (
+          <Fragment key={row.dimension}>
+            <span className="min-w-0 truncate">{label}</span>
             <span
-              className="block h-full rounded-full bg-sky-500"
-              style={{
-                width: `${Math.max(0, Math.min(100, (row.value ?? 0) * 100))}%`,
-              }}
-            />
-          </div>
-        </div>
-      ))}
+              className="bg-muted h-2 overflow-hidden rounded-full"
+              role="img"
+              aria-label={`${label}: ${value}`}
+            >
+              <span
+                className="block h-full rounded-full bg-[var(--chart-1)]"
+                style={{
+                  width: `${Math.max(0, Math.min(100, (row.value ?? 0) * 100))}%`,
+                }}
+              />
+            </span>
+            <span className="text-right tabular-nums">{value}</span>
+          </Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -449,134 +535,81 @@ function RetentionTable({ metric }: { metric: MetricsExplorerMetric }) {
   const date = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
-        dateStyle: "medium",
+        day: "numeric",
+        month: "short",
         timeZone: "UTC",
       }),
     [locale]
   );
   if (metric.rows.length === 0) {
-    return (
-      <div className="text-muted-foreground flex min-h-48 items-center justify-center text-center text-sm">
-        {t("empty")}
-      </div>
-    );
+    return <MetricsEmpty>{t("empty")}</MetricsEmpty>;
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[34rem] text-sm">
+      <table className={cn(tableClass.table, "min-w-[560px]")}>
         <thead>
-          <tr className="text-muted-foreground border-b text-left">
-            <th scope="col" className="py-2 pr-3 font-medium">
+          <tr className={tableClass.headRow}>
+            <th scope="col" className={tableClass.head}>
               {t("cohort")}
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className={cn(tableClass.head, "text-right")}>
               {t("activated")}
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className={cn(tableClass.head, "text-right")}>
               {t("returned")}
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className={cn(tableClass.head, "w-[34%]")}>
               {t("rate")}
             </th>
-            <th scope="col" className="py-2 pl-3 text-right font-medium">
+            <th scope="col" className={tableClass.head}>
               {t("quality")}
             </th>
           </tr>
         </thead>
         <tbody>
-          {metric.rows.map((row) => (
-            <tr key={row.day} className="border-b last:border-0">
-              <td className="py-3 pr-3 font-medium">
-                {date.format(new Date(`${row.day}T00:00:00.000Z`))}
-              </td>
-              <td className="px-3 py-3 text-right tabular-nums">
-                {row.denominator ?? "—"}
-              </td>
-              <td className="px-3 py-3 text-right tabular-nums">
-                {row.numerator}
-              </td>
-              <td className="px-3 py-3 text-right font-semibold tabular-nums">
-                {formatRowValue(row, percent)}
-              </td>
-              <td className="py-3 pl-3 text-right">
-                <QualityLabel quality={row.quality} />
-              </td>
-            </tr>
-          ))}
+          {metric.rows.map((row) => {
+            const mature = row.quality === "healthy";
+            return (
+              <tr key={row.day} className={tableClass.row}>
+                <td
+                  className={cn(
+                    tableClass.cell,
+                    !mature && "text-muted-foreground"
+                  )}
+                >
+                  {t("weekOf", {
+                    date: date.format(new Date(`${row.day}T00:00:00.000Z`)),
+                  })}
+                </td>
+                <td className={cn(tableClass.cell, "text-right tabular-nums")}>
+                  {row.denominator ?? "—"}
+                </td>
+                <td className={cn(tableClass.cell, "text-right tabular-nums")}>
+                  {row.numerator}
+                </td>
+                <td className={tableClass.cell}>
+                  <MetricsInlineBar
+                    ratio={row.value ?? 0}
+                    value={formatRowValue(row, percent)}
+                    muted={!mature}
+                  />
+                </td>
+                <td className={tableClass.cell}>
+                  {mature ? (
+                    <ToneBadge tone="emerald">{t("mature")}</ToneBadge>
+                  ) : row.quality === "building" ? (
+                    <ToneBadge tone="neutral">{t("maturing")}</ToneBadge>
+                  ) : (
+                    <QualityLabel quality={row.quality} />
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
-  );
-}
-
-function DecisionMetric({
-  metric,
-  generatedAt,
-}: {
-  metric: MetricsExplorerMetric;
-  generatedAt: string;
-}) {
-  const t = useTranslations("dashboard.metrics.explorer");
-  const locale = useLocale();
-  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
-  const percent = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: "percent",
-        maximumFractionDigits: 0,
-      }),
-    [locale]
-  );
-  const row = metric.rows.find((entry) => entry.dimension === "");
-  const value = row?.value ?? null;
-  const context = row
-    ? t(`decisionMetrics.${metric.id}.context`, {
-        numerator: row.numerator,
-        denominator: row.denominator ?? row.sampleSize ?? 0,
-      })
-    : t("empty.noData");
-
-  return (
-    <section
-      className="bg-card flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
-      aria-labelledby={`decision-metric-${metric.id}`}
-    >
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2
-            id={`decision-metric-${metric.id}`}
-            className="text-sm font-semibold"
-          >
-            {t(`metrics.${metric.id}.name`)}
-          </h2>
-          <span className="text-muted-foreground text-xs">{metric.id}</span>
-        </div>
-        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-          {context}
-        </p>
-      </div>
-      <div className="flex shrink-0 items-center justify-between gap-5 sm:justify-end">
-        <div className="text-left sm:text-right">
-          <p className="text-xl font-semibold tracking-tight tabular-nums">
-            {value === null
-              ? "—"
-              : metric.id === "MTR-003"
-                ? number.format(value)
-                : percent.format(value)}
-          </p>
-          <p className="text-muted-foreground text-xs">
-            {t("reportingPeriod.completeDays", { days: metric.windowDays })}
-          </p>
-        </div>
-        <QualityLabel
-          quality={metric.quality}
-          measuredSince={metric.measuredSince}
-          generatedAt={generatedAt}
-          windowDays={metric.windowDays}
-        />
-      </div>
-    </section>
   );
 }
 
@@ -610,24 +643,34 @@ function PeriodInsightState({
   insights,
   failed,
   source,
+  inset = false,
   children,
 }: {
   insights: ProductInsights | undefined;
   failed?: boolean;
   source: "events" | "embeds" | "content";
+  inset?: boolean;
   children: React.ReactNode;
 }) {
   const t = useTranslations("dashboard.metrics.explorer.period");
   if (!insights)
     return failed ? (
-      <p className="text-muted-foreground flex min-h-24 w-full items-center justify-center gap-2 py-4 text-center text-sm">
+      <p
+        className={cn(
+          "text-muted-foreground flex min-h-24 w-full items-center justify-center gap-2 py-4 text-center text-sm",
+          inset && "px-4"
+        )}
+      >
         <Info className="size-4 shrink-0" aria-hidden="true" />
         {t("temporarilyUnavailable")}
       </p>
     ) : (
       <p
         role="status"
-        className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
+        className={cn(
+          "text-muted-foreground flex items-center gap-2 py-2 text-sm",
+          inset && "p-4"
+        )}
       >
         <RefreshCw
           className="size-4 motion-safe:animate-spin"
@@ -648,7 +691,11 @@ function PeriodInsightState({
       (!coverage.from ||
         (period && period.to < (coverage.availableFrom ?? coverage.from))));
   if (unavailable)
-    return <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
+    return (
+      <p className={cn("text-muted-foreground text-sm", inset && "p-4")}>
+        {t("unavailable")}
+      </p>
+    );
   return <>{children}</>;
 }
 
@@ -665,6 +712,14 @@ function LocalizationDemandTable({
       new Intl.NumberFormat(locale, {
         style: "percent",
         maximumFractionDigits: 0,
+      }),
+    [locale]
+  );
+  const shareFormat = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "percent",
+        maximumFractionDigits: 1,
       }),
     [locale]
   );
@@ -688,209 +743,218 @@ function LocalizationDemandTable({
     return countryNames.of(country) ?? country;
   };
   const translationCandidateCount = metrics.languages.filter(
-    (row) => row.supported === false
+    (row) =>
+      row.supported === false &&
+      row.language !== "other" &&
+      row.language !== "unknown"
   ).length;
   const interfaceSummary = metrics.servedLocales
     .map((row) => `${formatLanguage(row.locale)} ${percent.format(row.share)}`)
     .join(", ");
-  const chartColors = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-  ];
+  const statusRank = (supported: boolean | null) =>
+    supported === false ? 0 : supported ? 1 : 2;
+  const rows = [...metrics.languages].sort(
+    (left, right) =>
+      statusRank(left.supported) - statusRank(right.supported) ||
+      right.creatorSessions - left.creatorSessions
+  );
+  const maxSessions = Math.max(
+    1,
+    ...rows
+      .filter((row) => row.supported !== null)
+      .map((row) => row.creatorSessions)
+  );
 
   if (metrics.languages.length === 0) {
     return (
-      <div className="text-muted-foreground flex min-h-48 items-center justify-center text-center text-sm">
+      <MetricsEmpty>
         {t(metrics.quality === "not_started" ? "notStarted" : "noData")}
-      </div>
+      </MetricsEmpty>
     );
   }
 
   return (
     <div>
-      <dl className="grid border-b pb-5 sm:grid-cols-3">
-        <div className="pb-4 sm:pr-5 sm:pb-0">
-          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
-            {number.format(metrics.totalCreatorSessions)}
-          </dd>
-          <dt className="text-muted-foreground mt-1 text-xs">
-            {t("creatorSessions")}
-          </dt>
-        </div>
-        <div className="border-t py-4 sm:border-t-0 sm:border-l sm:px-5 sm:py-0">
-          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
-            {metrics.unsupportedCreatorSessions === null
-              ? t("belowThresholdValue")
-              : number.format(metrics.unsupportedCreatorSessions)}
-          </dd>
-          <dt className="text-muted-foreground mt-1 text-xs">
-            {t("unsupportedLanguageSessions")}
-          </dt>
-        </div>
-        <div className="border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
-          <dd className="text-2xl font-semibold tracking-tight tabular-nums">
-            {number.format(translationCandidateCount)}
-          </dd>
-          <dt className="text-muted-foreground mt-1 text-xs">
-            {t("translationCandidates")}
-          </dt>
-        </div>
-      </dl>
-
-      <section className="border-b py-5" aria-labelledby="preferred-language">
-        <h3 id="preferred-language" className="text-sm font-semibold">
-          {t("preferredBrowserLanguage")}
-        </h3>
-        <div className="text-muted-foreground mt-4 hidden grid-cols-[minmax(12rem,1fr)_8rem_minmax(16rem,1fr)_minmax(16rem,1.4fr)] gap-6 border-b pb-2 text-xs lg:grid">
-          <span>{t("language")}</span>
-          <span>{t("sessions")}</span>
-          <span>{t("share")}</span>
-          <span>{t("status")}</span>
-        </div>
-        <ul className="mt-3 divide-y">
-          {metrics.languages.map((row) => (
-            <li
-              key={row.language}
-              className="grid gap-3 py-3 first:pt-0 last:pb-0 lg:grid-cols-[minmax(12rem,1fr)_8rem_minmax(16rem,1fr)_minmax(16rem,1.4fr)] lg:items-start lg:gap-6"
-            >
-              <div>
-                <p className="text-sm font-medium">
-                  {formatLanguage(row.language)}
-                </p>
-              </div>
-              <div className="text-muted-foreground text-xs tabular-nums">
-                {t("sessionCount", {
-                  count: number.format(row.creatorSessions),
-                })}
-                {metrics.comparisonReady ? (
-                  <p className="mt-1.5">
-                    {t("previousSelectedPeriod", {
-                      count: number.format(row.previousCreatorSessions),
-                    })}
-                  </p>
-                ) : null}
-              </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="w-9 shrink-0 text-xs font-medium tabular-nums">
-                    {percent.format(row.share)}
+      <MetricsStatStrip
+        items={[
+          {
+            key: "sessions",
+            value: number.format(metrics.totalCreatorSessions),
+            label: t("creatorSessions"),
+          },
+          {
+            key: "unsupported",
+            value:
+              metrics.unsupportedCreatorSessions === null ? (
+                t("belowThresholdValue")
+              ) : (
+                <>
+                  {number.format(metrics.unsupportedCreatorSessions)}{" "}
+                  <span className="text-muted-foreground text-sm font-normal">
+                    {shareFormat.format(
+                      metrics.totalCreatorSessions
+                        ? metrics.unsupportedCreatorSessions /
+                            metrics.totalCreatorSessions
+                        : 0
+                    )}
                   </span>
-                  <div
-                    className="bg-muted h-1.5 min-w-0 flex-1 overflow-hidden rounded-full"
-                    role="progressbar"
-                    aria-label={`${formatLanguage(row.language)} ${percent.format(row.share)}`}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={Math.round(row.share * 100)}
+                </>
+              ),
+            label: t("unsupportedLanguageSessions"),
+          },
+          {
+            key: "candidates",
+            value: number.format(translationCandidateCount),
+            label: t("translationCandidates"),
+            tone: translationCandidateCount > 0 ? "amber" : "default",
+          },
+        ]}
+      />
+      <div className="overflow-x-auto">
+        <table className={cn(tableClass.table, "min-w-[720px]")}>
+          <thead>
+            <tr className={tableClass.headRow}>
+              <th scope="col" className={tableClass.head}>
+                {t("preferredBrowserLanguage")}
+              </th>
+              <th scope="col" className={cn(tableClass.head, "w-[28%]")}>
+                {t("sessions")}
+              </th>
+              <th scope="col" className={tableClass.head}>
+                {t("status")}
+              </th>
+              <th scope="col" className={tableClass.head}>
+                {t("countries")}
+              </th>
+              {metrics.comparisonReady ? (
+                <th scope="col" className={cn(tableClass.head, "text-right")}>
+                  {t("previous")}
+                </th>
+              ) : null}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) =>
+              row.supported === null ? (
+                <tr key={row.language} className={tableClass.row}>
+                  <td
+                    className={cn(
+                      tableClass.cell,
+                      "text-muted-foreground font-medium"
+                    )}
                   >
-                    <div
-                      className="h-full rounded-full bg-[var(--chart-1)]"
-                      style={{ width: `${Math.min(row.share * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="text-muted-foreground text-xs">
-                <p className="flex items-center gap-2 font-medium">
-                  <span
-                    className="bg-muted-foreground size-1.5 shrink-0 rounded-full"
-                    aria-hidden="true"
-                  />
-                  {row.supported === null
-                    ? t(
+                    {row.groupedLanguageCount != null
+                      ? t("groupedLanguages", {
+                          count: row.groupedLanguageCount,
+                        })
+                      : formatLanguage(row.language)}
+                  </td>
+                  <td className={cn(tableClass.cell, "text-xs tabular-nums")}>
+                    {row.groupedLanguageCount != null
+                      ? t("belowThresholdEach")
+                      : number.format(row.creatorSessions)}
+                  </td>
+                  <td className={tableClass.cell}>
+                    <ToneBadge tone="neutral">
+                      {t(
                         row.language === "unknown"
                           ? "unavailable"
                           : "groupedForPrivacy"
-                      )
-                    : row.supported
-                      ? t("supported")
-                      : t("candidate")}
-                </p>
-                {row.countries.length > 0 ? (
-                  <p className="mt-1 pl-3.5">
-                    {t("leadingCountries")}:{" "}
-                    {row.countries
-                      .slice(0, 4)
-                      .map(
-                        (country) =>
-                          `${formatCountry(country.country)} ${number.format(country.creatorSessions)}`
-                      )
-                      .join(" · ")}
-                  </p>
-                ) : null}
-                {row.groupedLanguageCount != null ? (
-                  <p className="mt-1 pl-3.5">
-                    {t("groupedForPrivacyDetail", {
-                      count: number.format(row.groupedLanguageCount),
-                    })}
-                  </p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="text-muted-foreground mt-4 flex items-start gap-2 text-xs leading-relaxed">
-          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          <p>
-            {metrics.comparisonReady
-              ? t("privacyNote")
-              : t("privacyAndComparisonNote")}
-          </p>
-        </div>
-      </section>
-
+                      )}
+                    </ToneBadge>
+                  </td>
+                  <td
+                    colSpan={metrics.comparisonReady ? 2 : 1}
+                    className={cn(
+                      tableClass.cell,
+                      "text-muted-foreground text-xs"
+                    )}
+                  >
+                    {row.language === "unknown"
+                      ? null
+                      : t("groupedForPrivacyNote")}
+                  </td>
+                </tr>
+              ) : (
+                <tr key={row.language} className={tableClass.row}>
+                  <td className={cn(tableClass.cell, "font-medium")}>
+                    {formatLanguage(row.language)}
+                  </td>
+                  <td className={tableClass.cell}>
+                    <MetricsInlineBar
+                      ratio={row.creatorSessions / maxSessions}
+                      value={number.format(row.creatorSessions)}
+                      color={row.supported ? "var(--chart-2)" : "#f59e0b"}
+                      label={`${formatLanguage(row.language)} ${percent.format(row.share)}`}
+                    />
+                  </td>
+                  <td className={tableClass.cell}>
+                    <ToneBadge tone={row.supported ? "emerald" : "amber"}>
+                      {t(row.supported ? "supported" : "candidate")}
+                    </ToneBadge>
+                  </td>
+                  <td
+                    className={cn(
+                      tableClass.cell,
+                      "text-muted-foreground text-xs"
+                    )}
+                  >
+                    {row.countries.length > 0
+                      ? row.countries
+                          .slice(0, 3)
+                          .map((country) => formatCountry(country.country))
+                          .join(", ")
+                      : "—"}
+                  </td>
+                  {metrics.comparisonReady ? (
+                    <td
+                      className={cn(
+                        tableClass.cell,
+                        "text-muted-foreground text-right tabular-nums"
+                      )}
+                    >
+                      {number.format(row.previousCreatorSessions)}
+                    </td>
+                  ) : null}
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+      {!metrics.comparisonReady ? (
+        <p className="text-muted-foreground border-t px-4 py-3 text-xs">
+          {t("privacyAndComparisonNote")}
+        </p>
+      ) : null}
       {metrics.servedLocales.length > 0 ? (
-        <section className="pt-5" aria-labelledby="interface-language">
-          <h3 id="interface-language" className="text-sm font-semibold">
+        <div className="flex flex-col gap-2 border-t px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+          <p className="shrink-0 text-xs font-medium">
             {t("interfaceLanguageUsed")}
-          </h3>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {t("interfaceLanguageDescription")}
           </p>
           <div
-            className="bg-muted mt-4 flex h-2.5 overflow-hidden rounded-full"
+            className="bg-muted flex h-2 min-w-0 flex-1 overflow-hidden rounded-full"
             role="img"
             aria-label={t("interfaceLanguageSummary", {
               locales: interfaceSummary,
             })}
           >
             {metrics.servedLocales.map((row, index) => (
-              <TooltipProvider key={row.locale} delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={`${formatLanguage(row.locale)} ${percent.format(row.share)}`}
-                      className="focus-visible:ring-ring p-0 outline-none focus-visible:ring-2 focus-visible:ring-inset"
-                      style={{
-                        width: `${Math.min(row.share * 100, 100)}%`,
-                        backgroundColor:
-                          chartColors[index % chartColors.length],
-                      }}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent className="flex items-center gap-2">
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor:
-                          chartColors[index % chartColors.length],
-                      }}
-                      aria-hidden="true"
-                    />
-                    <span>{formatLanguage(row.locale)}</span>
-                    <span className="font-semibold tabular-nums">
-                      {percent.format(row.share)}
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <span
+                key={row.locale}
+                title={`${formatLanguage(row.locale)} ${percent.format(row.share)}`}
+                style={{
+                  width: `${Math.min(row.share * 100, 100)}%`,
+                  backgroundColor:
+                    ACQUISITION_COLORS[index % ACQUISITION_COLORS.length],
+                }}
+              />
             ))}
           </div>
-        </section>
+          <p className="text-muted-foreground shrink-0 text-xs tabular-nums">
+            {interfaceSummary}
+          </p>
+        </div>
       ) : null}
     </div>
   );
@@ -918,7 +982,23 @@ export default function MetricsWorkspace({
       }),
     [locale]
   );
+  const precisePercent = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }),
+    [locale]
+  );
   const [activeView, setActiveView] = useState<MetricsView>("overview");
+  const openView = (view: MetricsView) => ({
+    label: t("openView", { view: t(`views.${view}`) }),
+    onClick: () => {
+      setActiveView(view);
+      window.history.replaceState(null, "", `#${view}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+  });
   const [growthRange, setGrowthRange] = useState<GrowthRange>("3m");
   const [growthCustomRange, setGrowthCustomRange] =
     useState<GrowthCustomRange | null>(null);
@@ -1076,30 +1156,29 @@ export default function MetricsWorkspace({
   return (
     <div className="space-y-4">
       {header ? (
-        <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
+        <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+          <div>
+            <h1 className="text-2xl leading-8 font-semibold tracking-tight">
               {header.title}
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {header.subtitle} · {header.updatedLabel}{" "}
-              <time dateTime={header.dateTime}>{header.lastUpdated}</time>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {header.subtitle} {header.updatedLabel}{" "}
+              <time dateTime={header.dateTime}>{header.lastUpdated}</time>.
             </p>
           </div>
           <div className="flex items-center gap-2">
             {canRunMaintenance ? <RunMetricMaintenanceButton /> : null}
-            <div className="flex flex-col items-end gap-1">
-              <UserGrowthRangePicker
-                activeRange={growthRange}
-                customRange={growthCustomRange}
-                today={growthTimeline.today}
-                onPresetSelect={setGrowthRange}
-                onCustomApply={(value) => {
-                  setGrowthCustomRange(value);
-                  setGrowthRange("custom");
-                }}
-              />
-            </div>
+            <UserGrowthRangePicker
+              segmented
+              activeRange={growthRange}
+              customRange={growthCustomRange}
+              today={growthTimeline.today}
+              onPresetSelect={setGrowthRange}
+              onCustomApply={(value) => {
+                setGrowthCustomRange(value);
+                setGrowthRange("custom");
+              }}
+            />
           </div>
         </header>
       ) : null}
@@ -1137,7 +1216,7 @@ export default function MetricsWorkspace({
           />
         ) : null}
 
-        <TabsContent value="overview" className="mt-3 space-y-3">
+        <TabsContent value="overview" className="mt-4 space-y-4">
           <MetricsSection
             title={t("questions.growth")}
             description={t("questions.growthDescription")}
@@ -1147,6 +1226,7 @@ export default function MetricsWorkspace({
                   growthRange === "custom" ? null : growthByRange[growthRange]
                 }
                 growthTimeline={growthTimeline}
+                link={openView("creators")}
               />
             }
           >
@@ -1167,22 +1247,42 @@ export default function MetricsWorkspace({
             />
           </MetricsSection>
           <MetricsSection
-            title={t("overview.exportTitle")}
-            description={t("overview.exportNote")}
+            title={t("questions.retention")}
+            description={t("questions.retentionDescription")}
+            status={
+              <QualityLabel
+                quality={explorer.retention.quality}
+                measuredSince={explorer.retention.measuredSince}
+                generatedAt={explorer.generatedAt}
+              />
+            }
             aside={
-              selectedInsights ? (
-                <ExportUsageAside usage={selectedInsights.usage} />
-              ) : null
+              <RetentionAside
+                metric={explorer.retention}
+                link={openView("creators")}
+              />
+            }
+          >
+            <RetentionTrend metric={explorer.retention} />
+          </MetricsSection>
+          <MetricsSection
+            title={t("questions.reach")}
+            description={t("questions.reachDescription")}
+            aside={
+              <ShareReachAside
+                analysis={selectedInsights?.analysis}
+                usage={selectedInsights?.usage}
+                link={openView("distribution")}
+              />
             }
           >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-
               source="events"
             >
-              {selectedInsights ? (
-                <ExportUsageBreakdown usage={selectedInsights.usage} compact />
+              {selectedInsights?.analysis ? (
+                <WeeklyViewsChart analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
           </MetricsSection>
@@ -1190,43 +1290,37 @@ export default function MetricsWorkspace({
           <MetricsSection
             title={t("evidence.title")}
             description={t("evidence.description")}
-            bodyClassName="p-0 sm:p-0"
+            bodyClassName="p-0"
           >
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[38rem] text-sm">
+              <table className={cn(tableClass.table, "min-w-[720px]")}>
                 <thead>
-                  <tr className="text-muted-foreground border-b text-left text-xs">
-                    <th scope="col" className="px-4 py-1.5 font-medium sm:pl-5">
+                  <tr className={tableClass.headRow}>
+                    <th scope="col" className={tableClass.head}>
                       {t("evidence.metric")}
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-1.5 text-right font-medium"
+                      className={cn(tableClass.head, "text-right")}
                     >
                       {t("evidence.current")}
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-1.5 text-right font-medium"
+                      className={cn(tableClass.head, "text-right")}
                     >
                       {t("evidence.previous")}
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-1.5 text-right font-medium"
+                      className={cn(tableClass.head, "text-right")}
                     >
                       {t("evidence.change")}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-1.5 text-right font-medium"
-                    >
+                    <th scope="col" className={tableClass.head}>
                       {t("evidence.quality")}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-1.5 text-right font-medium sm:pr-5"
-                    >
+                    <th scope="col" className={tableClass.head}>
                       {t("evidence.window")}
                     </th>
                   </tr>
@@ -1235,30 +1329,33 @@ export default function MetricsWorkspace({
                   {EVIDENCE_METRICS.map((id) => {
                     const snapshot = snapshots.get(id)!;
                     return (
-                      <tr key={id} className="border-b last:border-0">
-                        <td className="px-4 py-2 sm:pl-5">
-                          <span className="font-medium">
-                            {t(`metrics.${id}.name`)}
-                          </span>
-                          <span className="text-muted-foreground ml-2 text-xs">
-                            {id}
-                          </span>
+                      <tr key={id} className={tableClass.row}>
+                        <td className={cn(tableClass.cell, "font-medium")}>
+                          {t(`metrics.${id}.name`)}
                         </td>
-                        <td className="px-3 py-2 text-right font-semibold tabular-nums">
+                        <td
+                          className={cn(
+                            tableClass.cell,
+                            "text-right tabular-nums"
+                          )}
+                        >
                           {formatValue(snapshot, number, percent)}
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums">
+                        <td
+                          className={cn(
+                            tableClass.cell,
+                            "text-muted-foreground text-right tabular-nums"
+                          )}
+                        >
                           {formatPreviousValue(snapshot, number, percent)}
                           {snapshot.previousLimited ? (
-                            <p className="text-muted-foreground text-xs">
-                              {t("quality.low_volume")}
-                            </p>
+                            <p className="text-xs">{t("quality.low_volume")}</p>
                           ) : null}
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className={cn(tableClass.cell, "text-right")}>
                           <MetricDelta snapshot={snapshot} percent={percent} />
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className={tableClass.cell}>
                           <QualityLabel
                             quality={snapshot.quality}
                             measuredSince={snapshot.measuredSince}
@@ -1275,7 +1372,12 @@ export default function MetricsWorkspace({
                             </p>
                           ) : null}
                         </td>
-                        <td className="px-4 py-2 text-right tabular-nums sm:pr-5">
+                        <td
+                          className={cn(
+                            tableClass.cell,
+                            "text-muted-foreground text-xs"
+                          )}
+                        >
                           {t(
                             id === "MTR-005"
                               ? "reportingPeriod.matureCohort"
@@ -1290,31 +1392,9 @@ export default function MetricsWorkspace({
               </table>
             </div>
           </MetricsSection>
-          <MetricsSection
-            title={t("analysis.weeklyTitle")}
-            aside={<WeeklyAside analysis={selectedInsights?.analysis} />}
-          >
-            <PeriodInsightState
-              insights={selectedInsights}
-              failed={periodInsights.failed}
-
-              source="events"
-            >
-              {selectedInsights?.analysis ? (
-                <WeeklyActivity
-                  analysis={selectedInsights.analysis}
-                  coverage={selectedInsights.usage.coverage}
-                />
-              ) : null}
-            </PeriodInsightState>
-          </MetricsSection>
         </TabsContent>
 
         <TabsContent value="creators" className="mt-4 space-y-4">
-          <DecisionMetric
-            metric={explorer.activeCreatorRate}
-            generatedAt={explorer.generatedAt}
-          />
           <MetricsSection
             title={t("questions.growth")}
             description={t("questions.growthDescription")}
@@ -1344,7 +1424,8 @@ export default function MetricsWorkspace({
           </MetricsSection>
           <MetricsSection
             title={t("retention.title")}
-            description={t("period.fixedWindow")}
+            description={t("retention.description")}
+            bodyClassName="p-0"
             status={
               <QualityLabel
                 quality={explorer.retention.quality}
@@ -1361,7 +1442,7 @@ export default function MetricsWorkspace({
         <TabsContent value="audience" className="mt-4 space-y-4">
           <MetricsSection
             title={t("acquisition.title")}
-            description={t("period.fixedWindow")}
+            description={t("acquisition.description")}
             status={
               <QualityLabel
                 quality={explorer.acquisition.quality}
@@ -1371,10 +1452,7 @@ export default function MetricsWorkspace({
             }
             aside={<AcquisitionAside metric={explorer.acquisition} />}
           >
-            <ExplorerBarRows
-              metric={explorer.acquisition}
-              namespace="sources"
-            />
+            <AcquisitionMix metric={explorer.acquisition} />
           </MetricsSection>
           <MetricsSection
             title={t("localization.title")}
@@ -1384,24 +1462,28 @@ export default function MetricsWorkspace({
                 <QualityLabel quality={selectedLocalization.quality} />
               ) : null
             }
-            aside={<LocalizationAside metrics={selectedLocalization} />}
+            bodyClassName="p-0"
           >
             {selectedLocalization ? (
               <>
                 {selectedLocalization.quality === "building" ? (
-                  <p className="text-muted-foreground mb-4 text-xs">
+                  <p className="text-muted-foreground border-b px-4 py-3 text-xs">
                     {t("localization.partialCoverage")}
                   </p>
                 ) : null}
                 <LocalizationDemandTable metrics={selectedLocalization} />
               </>
             ) : localizationFailed ? (
-              <MetricsLoadError
-                message={t("localization.loadFailed")}
-                retry={localization.retry}
-              />
+              <div className="p-4">
+                <MetricsLoadError
+                  message={t("localization.loadFailed")}
+                  retry={localization.retry}
+                />
+              </div>
             ) : (
-              <p role="status">{t("localization.loading")}</p>
+              <p role="status" className="text-muted-foreground p-4 text-sm">
+                {t("localization.loading")}
+              </p>
             )}
           </MetricsSection>
         </TabsContent>
@@ -1409,72 +1491,54 @@ export default function MetricsWorkspace({
         <TabsContent value="creation" className="mt-4 space-y-4">
           <MetricsSection
             title={t("analysis.journeyTitle")}
+            description={t("analysis.journeyDescription")}
             aside={<JourneyAside analysis={selectedInsights?.analysis} />}
           >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-
               source="events"
             >
               {selectedInsights?.analysis ? (
-                <JourneyDropoff analysis={selectedInsights.analysis} />
+                <JourneyFunnel analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
           </MetricsSection>
           <MetricsSection
             title={t("analysis.timingTitle")}
+            description={t("analysis.timingDescription")}
             aside={<TimingAside analysis={selectedInsights?.analysis} />}
           >
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-
               source="events"
             >
               {selectedInsights?.analysis ? (
-                <TimeToResult analysis={selectedInsights.analysis} />
+                <TimeToResultHistogram analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
           </MetricsSection>
-
-          <DecisionMetric
-            metric={explorer.valuableSessions}
-            generatedAt={explorer.generatedAt}
-          />
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid items-stretch gap-4 lg:grid-cols-2">
             <MetricsSection
               title={t("editor.title")}
               description={t("editor.description")}
             >
-              <div>
-                <PeriodInsightState
-                  insights={selectedInsights}
-                  failed={periodInsights.failed}
-
-                  source="events"
-                >
-                  {selectedInsights ? (
-                    <EditorUsageBreakdown usage={selectedInsights.usage} />
-                  ) : null}
-                </PeriodInsightState>
-              </div>
+              <PeriodInsightState
+                insights={selectedInsights}
+                failed={periodInsights.failed}
+                source="events"
+              >
+                {selectedInsights ? (
+                  <EditorSplit usage={selectedInsights.usage} />
+                ) : null}
+              </PeriodInsightState>
             </MetricsSection>
             <MetricsSection
               title={t("adoption.title")}
-              description={t("period.fixedWindow")}
-              status={
-                <QualityLabel
-                  quality={explorer.adoption.quality}
-                  measuredSince={explorer.adoption.measuredSince}
-                  generatedAt={explorer.generatedAt}
-                />
-              }
+              description={t("adoption.description")}
             >
-              <ExplorerBarRows
-                metric={explorer.adoption}
-                namespace="features"
-              />
+              <FeatureAdoption metric={explorer.adoption} />
             </MetricsSection>
           </div>
           <MetricsSection
@@ -1484,24 +1548,23 @@ export default function MetricsWorkspace({
               <ContentAside points={selectedInsights?.contentGrowth ?? []} />
             }
           >
-            <div>
-              <PeriodInsightState
-                insights={selectedInsights}
-                failed={periodInsights.failed}
-
-                source="content"
-              >
-                {selectedInsights ? (
-                  <ContentGrowthChart data={selectedInsights.contentGrowth} />
-                ) : null}
-              </PeriodInsightState>
-            </div>
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              source="content"
+            >
+              {selectedInsights ? (
+                <ContentTrend points={selectedInsights.contentGrowth} />
+              ) : null}
+            </PeriodInsightState>
           </MetricsSection>
         </TabsContent>
 
         <TabsContent value="distribution" className="mt-4 space-y-4">
           <MetricsSection
             title={t("analysis.exportTitle")}
+            description={t("analysis.exportDescription")}
+            bodyClassName="p-0"
             aside={
               <ExportReliabilityAside analysis={selectedInsights?.analysis} />
             }
@@ -1509,156 +1572,127 @@ export default function MetricsWorkspace({
             <PeriodInsightState
               insights={selectedInsights}
               failed={periodInsights.failed}
-
               source="events"
+              inset
             >
               {selectedInsights?.analysis ? (
-                <ExportReliability analysis={selectedInsights.analysis} />
+                <ExportFormatTable analysis={selectedInsights.analysis} />
               ) : null}
             </PeriodInsightState>
           </MetricsSection>
-
-          <DecisionMetric
-            metric={explorer.publicationSessionRate}
-            generatedAt={explorer.generatedAt}
-          />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <MetricsSection title={t("overview.exportTitle")}>
-              <div>
-                <PeriodInsightState
-                  insights={selectedInsights}
-                  failed={periodInsights.failed}
-
-                  source="events"
-                >
-                  {selectedInsights ? (
-                    <ExportUsageBreakdown usage={selectedInsights.usage} />
-                  ) : null}
-                </PeriodInsightState>
-              </div>
-            </MetricsSection>
-            <MetricsSection
-              title={t("sharing.title")}
-              description={t("sharing.description")}
-            >
-              <div>
-                <PeriodInsightState
-                  insights={selectedInsights}
-                  failed={periodInsights.failed}
-
-                  source="events"
-                >
-                  {selectedInsights ? (
-                    <ShareUsageBreakdown usage={selectedInsights.usage} />
-                  ) : null}
-                </PeriodInsightState>
-              </div>
-            </MetricsSection>
-          </div>
           <MetricsSection
-            title={t("sharing.healthTitle")}
-            description={t("period.currentState")}
+            title={t("sharing.title")}
+            description={t("sharing.description")}
+            aside={
+              <EmbedShareAside
+                analysis={selectedInsights?.analysis}
+                usage={selectedInsights?.usage}
+              />
+            }
           >
-            <div>
-              <SharingHealth
+            <PeriodInsightState
+              insights={selectedInsights}
+              failed={periodInsights.failed}
+              source="events"
+            >
+              {selectedInsights?.analysis ? (
+                <WeeklyViewsChart analysis={selectedInsights.analysis} split />
+              ) : null}
+            </PeriodInsightState>
+          </MetricsSection>
+          <div className="grid items-stretch gap-4 lg:grid-cols-2">
+            <MetricsSection
+              title={t("sharing.healthTitle")}
+              description={t("sharing.healthDescription")}
+              bodyClassName="p-0"
+            >
+              <SharingHealthGrid
                 shares={metrics.shares}
                 gallery={metrics.gallery}
               />
-            </div>
-          </MetricsSection>
-          <MetricsSection
-            title={t("sharing.embedTitle")}
-            description={t("sharing.embedDescription")}
-            aside={
-              selectedInsights ? (
-                <EmbedAside usage={selectedInsights.usage} />
-              ) : null
-            }
-          >
-            <div>
+            </MetricsSection>
+            <MetricsSection
+              title={t("sharing.embedTitle")}
+              description={t("sharing.embedDescription")}
+              bodyClassName="p-0"
+            >
               <PeriodInsightState
                 insights={selectedInsights}
                 failed={periodInsights.failed}
-
                 source="embeds"
+                inset
               >
                 {selectedInsights ? (
-                  <EmbedReachTable usage={selectedInsights.usage} />
+                  <EmbedSitesTable usage={selectedInsights.usage} />
                 ) : null}
               </PeriodInsightState>
-            </div>
-          </MetricsSection>
+            </MetricsSection>
+          </div>
 
           <section
             id="operations"
             className="bg-card scroll-mt-20 overflow-hidden rounded-lg border"
             aria-labelledby="operations-title"
           >
-            <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
-              <div>
-                <h2 id="operations-title" className="text-base font-semibold">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-4 py-3.5">
+              <div className="min-w-0">
+                <h2
+                  id="operations-title"
+                  className="text-base leading-6 font-semibold"
+                >
                   {t("operations.title")}
                 </h2>
-                <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-relaxed">
-                  {t("period.fixedWindow")}
+                <p className="text-muted-foreground mt-0.5 text-sm leading-5">
+                  {t("operations.description")}
+                  {failureWindowEnd
+                    ? ` ${t("operations.windowEnd", {
+                        date: date.format(
+                          new Date(`${failureWindowEnd}T00:00:00.000Z`)
+                        ),
+                      })}.`
+                    : null}
                 </p>
               </div>
-              <QualityLabel
-                quality={explorer.failures.quality}
-                measuredSince={explorer.failures.measuredSince}
-                generatedAt={explorer.generatedAt}
-                windowDays={explorer.failures.windowDays}
-              />
+              {failureCount > 0 ? (
+                <ToneBadge tone="destructive">
+                  {t("operations.failedShort", { count: failureCount })}
+                </ToneBadge>
+              ) : (
+                <QualityLabel
+                  quality={explorer.failures.quality}
+                  measuredSince={explorer.failures.measuredSince}
+                  generatedAt={explorer.generatedAt}
+                  windowDays={explorer.failures.windowDays}
+                />
+              )}
             </div>
 
             {failureRows.length > 0 ? (
               <>
-                <div className="flex flex-col gap-1 border-b px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
-                  <div>
-                    <span className="text-2xl font-semibold tracking-tight tabular-nums">
-                      {number.format(failureCount)}
-                    </span>
-                    <span className="text-muted-foreground ml-2 text-sm">
-                      {t("operations.failedAttempts")}
-                    </span>
-                  </div>
-                  {failureWindowEnd ? (
-                    <p className="text-muted-foreground text-xs">
-                      {t("operations.windowEnd", {
-                        date: date.format(
-                          new Date(`${failureWindowEnd}T00:00:00.000Z`)
-                        ),
-                      })}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="hidden overflow-x-auto sm:block">
-                  <table className="w-full min-w-[44rem] text-sm">
+                <div className="overflow-x-auto">
+                  <table className={cn(tableClass.table, "min-w-[720px]")}>
                     <thead>
-                      <tr className="text-muted-foreground border-b text-left text-xs">
-                        <th
-                          className="px-4 py-2 font-medium sm:pl-5"
-                          scope="col"
-                        >
+                      <tr className={tableClass.headRow}>
+                        <th className={tableClass.head} scope="col">
                           {t("operations.operation")}
                         </th>
-                        <th className="px-3 py-2 font-medium" scope="col">
+                        <th className={tableClass.head} scope="col">
                           {t("operations.category")}
                         </th>
                         <th
-                          className="px-3 py-2 text-right font-medium"
+                          className={cn(tableClass.head, "text-right")}
                           scope="col"
                         >
                           {t("operations.failed")}
                         </th>
                         <th
-                          className="px-3 py-2 text-right font-medium"
+                          className={cn(tableClass.head, "text-right")}
                           scope="col"
                         >
                           {t("operations.outcomes")}
                         </th>
                         <th
-                          className="px-4 py-2 text-right font-medium sm:pr-5"
+                          className={cn(tableClass.head, "text-right")}
                           scope="col"
                         >
                           {t("operations.rate")}
@@ -1666,73 +1700,74 @@ export default function MetricsWorkspace({
                       </tr>
                     </thead>
                     <tbody>
-                      {failureRows.map((row) => (
-                        <tr
-                          key={row.dimension}
-                          className="border-b last:border-0"
-                        >
-                          <td className="px-4 py-3 font-medium sm:pl-5">
-                            {t(`operations.operations.${row.operation}`)}
-                          </td>
-                          <td className="px-3 py-3">
-                            {t(`operations.categories.${row.category}`)}
-                          </td>
-                          <td className="px-3 py-3 text-right font-semibold tabular-nums">
-                            {number.format(row.numerator)}
-                          </td>
-                          <td className="px-3 py-3 text-right tabular-nums">
-                            {row.denominator === null
-                              ? "—"
-                              : number.format(row.denominator)}
-                          </td>
-                          <td className="px-4 py-3 text-right tabular-nums sm:pr-5">
-                            {row.value === null
-                              ? "—"
-                              : percent.format(row.value)}
-                          </td>
-                        </tr>
-                      ))}
+                      {failureRows.map((row) => {
+                        const elevated =
+                          row.value !== null &&
+                          row.value >= ELEVATED_FAILURE_RATE;
+                        return (
+                          <tr
+                            key={row.dimension}
+                            className={cn(
+                              tableClass.row,
+                              elevated && "bg-destructive/5"
+                            )}
+                          >
+                            <td className={cn(tableClass.cell, "font-medium")}>
+                              {t(`operations.operations.${row.operation}`)}
+                            </td>
+                            <td
+                              className={cn(
+                                tableClass.cell,
+                                "text-muted-foreground text-xs"
+                              )}
+                            >
+                              {t(`operations.categories.${row.category}`)}
+                            </td>
+                            <td
+                              className={cn(
+                                tableClass.cell,
+                                "text-right tabular-nums"
+                              )}
+                            >
+                              {number.format(row.numerator)}
+                            </td>
+                            <td
+                              className={cn(
+                                tableClass.cell,
+                                "text-right tabular-nums"
+                              )}
+                            >
+                              {row.denominator === null
+                                ? "—"
+                                : number.format(row.denominator)}
+                            </td>
+                            <td
+                              className={cn(
+                                tableClass.cell,
+                                "text-right tabular-nums",
+                                elevated && "text-destructive font-medium"
+                              )}
+                            >
+                              {row.value === null
+                                ? "—"
+                                : precisePercent.format(row.value)}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
-                <ul className="divide-y sm:hidden">
-                  {failureRows.map((row) => (
-                    <li key={`${row.dimension}:mobile`} className="px-4 py-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="font-medium">
-                          {t(`operations.operations.${row.operation}`)}
-                        </span>
-                        <span className="font-semibold tabular-nums">
-                          {t("operations.failedShort", {
-                            count: row.numerator,
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {t(`operations.categories.${row.category}`)} ·{" "}
-                        {t("operations.mobileSummary", {
-                          outcomes:
-                            row.denominator === null
-                              ? "—"
-                              : number.format(row.denominator),
-                          rate:
-                            row.value === null
-                              ? "—"
-                              : percent.format(row.value),
-                        })}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-muted-foreground border-t px-4 py-3 text-xs leading-relaxed sm:px-5">
-                  {t("operations.lowVolumeNote")}
-                </p>
                 {explorer.recentFailures.length > 0 ? (
                   <details className="group border-t">
-                    <summary className="focus-visible:ring-ring cursor-pointer list-none px-4 py-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none sm:px-5">
+                    <summary className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
                       {t("operations.recentSummary", {
                         count: explorer.recentFailures.length,
                       })}
+                      <ChevronRight
+                        className="size-4 transition-transform group-open:rotate-90"
+                        aria-hidden="true"
+                      />
                     </summary>
                     <div className="border-t">
                       <div className="px-4 py-3 sm:px-5">

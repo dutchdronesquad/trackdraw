@@ -250,11 +250,12 @@
     },
     "explorer": {
       "header": {
-        "title": "Product metrics",
-        "subtitle": "Aggregate product health"
+        "title": "Metrics",
+        "subtitle": "Product health, one question at a time.",
+        "updated": "Updated"
       },
       "quality": {
-        "healthy": "Ready",
+        "healthy": "Complete data",
         "building": "Collecting history",
         "low_volume": "Limited sample",
         "degraded": "Data issue",
@@ -267,7 +268,8 @@
         "catchingUpHint": "Enough history exists, but aggregation has not reached the latest complete day yet.",
         "notStartedHint": "Measurement starts after the first complete aggregation period. Aggregation runs nightly at 00:00 UTC.",
         "sampleCount": "{count} of {minimum} observations",
-        "incompleteHint": "Coverage for this measurement is incomplete."
+        "incompleteHint": "Coverage for this measurement is incomplete.",
+        "collectingSince": "Collecting since {date}"
       },
       "comparison": {
         "unavailable": "No reliable comparison",
@@ -440,7 +442,7 @@
         "countries": "Leading countries",
         "support": "TrackDraw support",
         "supported": "Supported",
-        "candidate": "Translation candidate",
+        "candidate": "Candidate",
         "grouped": "Grouped",
         "unavailable": "Unavailable",
         "totalSessions": "{count} creator sessions",
@@ -461,7 +463,10 @@
         "partialCoverage": "Partial history · available observations only.",
         "loading": "Loading localization demand…",
         "loadFailed": "Could not load localization demand for this period.",
-        "retry": "Retry"
+        "retry": "Retry",
+        "groupedLanguages": "{count, plural, one {# other language} other {# other languages}}",
+        "belowThresholdEach": "< 5 each",
+        "groupedForPrivacyNote": "Combined so no individual creator is identifiable."
       },
       "editor": {
         "title": "Who uses the editor?",
@@ -473,7 +478,7 @@
       },
       "content": {
         "title": "How much content is being created?",
-        "description": "Projects, shares, and presets over time."
+        "description": "Projects, shares, and presets created per month."
       },
       "sharing": {
         "title": "How are shared tracks viewed?",
@@ -491,14 +496,15 @@
         "returned": "Returned",
         "rate": "30-day rate",
         "quality": "Quality",
-        "empty": "Mature creator-activation cohorts will appear after the observation window is complete."
+        "empty": "Mature creator-activation cohorts will appear after the observation window is complete.",
+        "weekOf": "Week of {date}",
+        "mature": "Mature",
+        "maturing": "Maturing"
       },
       "operations": {
         "title": "Export and publishing reliability",
-        "description": "Failed terminal attempts in the latest complete 7-day reporting period. Repeated attempts are counted separately.",
-        "failedAttempts": "failed attempts",
+        "description": "Failed terminal attempts in the latest complete 7-day period.",
         "failedShort": "{count} failed",
-        "mobileSummary": "{outcomes} outcomes · {rate} failure rate",
         "windowEnd": "Window ending {date}",
         "operation": "Operation",
         "category": "Category",
@@ -514,7 +520,6 @@
         "categoryOnly": "Category only",
         "empty": "No failed publication or export attempts were recorded in the latest complete window.",
         "notStarted": "Waiting for the first complete publication and export failure window.",
-        "lowVolumeNote": "Rates with fewer than 30 terminal outcomes are labeled low volume. The attempt counts remain factual.",
         "operations": {
           "export": "Export",
           "gallery_publish": "Gallery publication"
@@ -571,14 +576,20 @@
         "temporarilyUnavailable": "Temporarily unavailable"
       },
       "analysis": {
-        "weeklyTitle": "How active is each week?",
         "journeyTitle": "Where do sessions stop?",
         "timingTitle": "How fast do creators get a first result?",
-        "exportTitle": "Do exports work in every format?"
+        "exportTitle": "Do exports work in every format?",
+        "journeyDescription": "Editor sessions through each step to a first result in the selected period.",
+        "timingDescription": "Time from opening the editor to the first share, export, or publication.",
+        "exportDescription": "Export usage and reliability by format in the selected period."
       },
       "questions": {
         "growth": "Is the creator base growing?",
-        "growthDescription": "Registered accounts over time and new sign-ups per period."
+        "growthDescription": "Registered accounts over time and new sign-ups per period.",
+        "retention": "Do creators come back?",
+        "retentionDescription": "Share of activated creators who return within 30 days, per weekly cohort.",
+        "reach": "How far do shared tracks travel?",
+        "reachDescription": "Weekly views of share links and embeds."
       },
       "asides": {
         "change": {
@@ -590,11 +601,6 @@
           "added": "{count} new in this range",
           "note": "Latest period: {latest} new accounts, compared with {previous} the period before."
         },
-        "weekly": {
-          "label": "sessions started in the latest week",
-          "ref": "the week before",
-          "note": "{valuable} sessions reached a valuable result ({rate})."
-        },
         "retention": {
           "label": "return within 30 days, latest cohort",
           "note": "{returned} of {activated} activated creators came back."
@@ -602,11 +608,6 @@
         "acquisition": {
           "label": "of eligible sessions came from {source}",
           "note": "{count, plural, one {# source} other {# sources}} recorded in this period."
-        },
-        "localization": {
-          "label": "of creator sessions prefer an unsupported language",
-          "note": "{language} is the largest unsupported language with {sessions} sessions.",
-          "noCandidate": "No unsupported language has enough sessions to report."
         },
         "journey": {
           "label": "of started sessions reach a valuable result",
@@ -625,19 +626,24 @@
           "note": "Also created: {shares} shares and {presets} presets."
         },
         "exports": {
-          "label": "of export attempts failed",
           "worst": "{format} has the highest failure rate at {rate}.",
-          "none": "No failed exports among {count} completed exports."
+          "none": "No failed exports among {count} completed exports.",
+          "completedLabel": "completed exports",
+          "ratio": "{format} fails {ratio}× more often than other formats"
         },
-        "exportUsage": {
-          "label": "completed exports",
-          "note": "{format} is the most used format ({share})."
+        "shareReach": {
+          "label": "views in week {week}",
+          "ref": "week {week}",
+          "note": "Embeds account for {share} of all views in this period.",
+          "exports": "Completed exports this period: {count} ({breakdown})."
         },
-        "embeds": {
-          "label": "qualifying embed views",
-          "note": "Across {count} websites above the reporting threshold."
+        "embedShare": {
+          "label": "of views come from embeds",
+          "since": "From {share} in week {week}",
+          "topSite": "{host} is the largest embedding website with {views} views."
         }
-      }
+      },
+      "openView": "Open {view}"
     },
     "kpi": {
       "activeAccounts": {
@@ -712,45 +718,6 @@
       "planning": {
         "title": "Plans and limits",
         "description": "Account-level resource distribution, possible free-plan limits, and cost coverage."
-      }
-    },
-    "focus": {
-      "eyebrow": "Needs attention",
-      "nextCheck": "Next check:",
-      "categories": {
-        "product": "Product",
-        "operations": "Operations",
-        "measurement": "Measurement"
-      },
-      "preview": {
-        "title": "Gallery previews need attention",
-        "value": "{count} of {total}",
-        "detail": "These gallery entries currently have no usable preview image, which can directly weaken gallery browsing.",
-        "question": "Check whether preview generation failed or the stored media is no longer available.",
-        "link": "View sharing health"
-      },
-      "movement": {
-        "title": "Largest movement: {metric}",
-        "value": "{change}%",
-        "detail": "{current} in the last 30 days, compared with {previous} in the previous 30 days.",
-        "link": "View the underlying usage",
-        "questions": {
-          "editor": "Compare this movement with active accounts and completed outputs before treating it as a change in creator demand.",
-          "exports": "Check editor starts and the format mix to distinguish reach from repeated exporting.",
-          "views": "Check the share-versus-embed mix and active share count before interpreting the change."
-        }
-      },
-      "metrics": {
-        "editor": "editor starts",
-        "exports": "completed exports",
-        "views": "public viewing sessions"
-      },
-      "baseline": {
-        "title": "A reliable comparison is still being built",
-        "value": "{days}/60 days",
-        "detail": "The focus banner needs two complete 30-day windows before it can highlight a period-over-period movement.",
-        "question": "Use the detailed usage sections for context, but avoid treating early totals as a trend.",
-        "link": "Review current usage"
       }
     },
     "comparison": {
@@ -959,7 +926,8 @@
         "presets": "Presets",
         "custom": "Custom range",
         "customPlaceholder": "Select a date range",
-        "apply": "Apply"
+        "apply": "Apply",
+        "customShort": "Custom"
       },
       "summary": {
         "newInRange": "New in range",
@@ -967,6 +935,12 @@
         "strongestPeriod": "Strongest {period}",
         "strongestValue": "{label} · +{count}",
         "noPeriod": "n/a"
+      },
+      "rangesShort": {
+        "3m": "3M",
+        "6m": "6M",
+        "12m": "12M",
+        "ytd": "YTD"
       }
     },
     "detail": {
@@ -981,60 +955,27 @@
     },
     "planLimit": {
       "title": "Candidate free limits",
-      "description": "Set a proposed free-plan limit for each resource. Highlighted, outlined bars show accounts above that limit; this simulation does not change any account.",
       "simulated": "Simulated",
       "observed": "Observed",
-      "observedDistribution": "Current account distribution",
-      "simulationAssumption": "One account per row. Usage is observed; candidate limits and outcomes are simulated.",
-      "distributionSource": "Source: production database aggregate",
-      "projects": "Projects",
-      "shareLinks": "Share links",
-      "presets": "Presets",
-      "perUserAxis": "{title} per user",
       "usersAxis": "users",
-      "usersCount": "{count, plural, one {# user} other {# users}}",
       "withExactly": "exactly ",
       "withCount": "with {qualifier}{count} {resource}",
-      "freeLimit": "Free limit: max {limit} · bars in",
-      "red": "red",
-      "exceedIt": "exceed it",
-      "affected": "{affected} / {total}",
-      "pctAffected": "{pct}% affected",
-      "totalImpact": "Total impact",
-      "totalImpactDescription": "Unique users affected by at least one of the limits above",
-      "pctOfUsers": "{pct}% of {total} users with content",
-      "excludedAccounts": " · {count} empty accounts excluded",
       "noData": "No user data yet",
-      "fieldsetLegend": "{resource} free-plan limit simulation",
       "rangeLabel": "{resource} free-plan limit slider",
-      "numberLabel": "{resource} free-plan limit value",
-      "candidateLimit": "Candidate limit",
-      "aboveLimit": "{pct}% above limit",
-      "nearLimit": "{near} near limit",
       "nearDefinition": "Near means within 20% of a candidate limit; above is counted separately.",
       "emptyExcluded": "{count} empty accounts excluded.",
       "limitExplanation": "Proposed free limit: {limit}. Outlined bars represent accounts above this limit.",
-      "viewData": "View distribution data",
-      "resourceCount": "{resource} per account",
-      "scenarioTitle": "Free-plan impact",
-      "scenarioDescription": "See how many existing accounts are close to or above the candidate limits.",
-      "accountsNearOrAbove": "Accounts near or above a limit",
-      "nearOrAboveDetail": "{pct}% of accounts with content · {near} near · {above} above",
       "monthlyInfrastructureCost": "Monthly infrastructure cost",
       "costSource": "Source or evidence",
       "costSourcePlaceholder": "e.g. July Cloudflare invoice",
-      "notAvailable": "n/a",
-      "costPerActiveCreatorContext": "{cost} per active creator",
       "derivedCostSource": "Derived from {source} and the observed 30-day active-creator count.",
       "missingCostSource": "Add a source before using this estimate in a decision.",
-      "pricingTitle": "Cost coverage estimate",
-      "pricingDescription": "Estimate what a future paid plan would need to charge to cover infrastructure costs. This is not a recommended selling price.",
+      "pricingTitle": "Paid plan price floor",
+      "pricingDescription": "What a paid plan would need to cost to cover running costs. This is not a recommended selling price.",
       "paidAdoption": "Paid adoption",
       "costBuffer": "Cost buffer",
-      "priceFloor": "Estimated cost-covering price",
       "pricingContext": "{paid} expected paid creators · {breakEven} base cost per paid account",
-      "enterMonthlyCost": "Enter a monthly cost to calculate a price.",
-      "perMonthExTax": "per month · excluding tax",
+      "enterMonthlyCost": "Enter the monthly infrastructure cost to calculate the price floor.",
       "pricingAssumption": "Assumption: one paid account per paying creator. The estimate only covers the entered infrastructure cost plus the optional buffer; tax, payment fees, support, market demand, and willingness to pay are excluded.",
       "behaviorAdvanced": "Advanced assumptions",
       "behaviorAssumption": "Manual directional range; it is not inferred from current usage and is not a forecast.",
@@ -1048,13 +989,33 @@
       "upgrades": "Upgrades · unavailable",
       "downgrades": "Downgrades · unavailable",
       "churn": "Churn · unavailable",
-      "controlsDescription": "Drag a limit to see which existing accounts it would affect. Nothing changes for any account.",
-      "aboveLimitCount": "{count, plural, one {# account above} other {# accounts above}} · {pct}%",
+      "controlsDescription": "Drag to see who a limit would affect. Nothing changes for any account.",
       "limitMarker": "Limit {limit}",
-      "accountsAbove": "accounts above a limit",
-      "accountsNear": "accounts near a limit",
+      "accountsAbove": "accounts above the limit",
+      "accountsNear": "accounts near the limit",
       "accountsAffectedShare": "of accounts with content affected",
-      "distributionFor": "Show distribution for"
+      "distributionFor": "Show distribution for",
+      "resourceNames": {
+        "projects": "Projects",
+        "shares": "Share links",
+        "presets": "Presets"
+      },
+      "resourceSingular": {
+        "projects": "project",
+        "shares": "share-link",
+        "presets": "preset"
+      },
+      "controlLabels": {
+        "projects": "Projects per account",
+        "shares": "Active share links",
+        "presets": "Layout presets"
+      },
+      "impactTitle": "Impact of a {limit}-{resource} limit",
+      "distributionCaption": "Accounts by number of {resource}",
+      "costHelp": "Used to estimate a paid-plan price floor below.",
+      "costPerActiveCreator": "cost per active creator",
+      "assumedPaidAdoption": "assumed paid adoption",
+      "priceFloorLabel": "price floor per month, ex. tax"
     },
     "planningPage": {
       "metadataTitle": "Plans and limits",
@@ -1063,46 +1024,79 @@
       "observedBaseline": "Observed planning baseline",
       "activeCreators": "active creators",
       "accountsWithContent": "accounts with content",
-      "observed": "Observed",
-      "activeCreatorsSource": "Source: production activity across projects, shares, presets, events, and API use in the last 30 days.",
-      "accountsSource": "Source: production projects, active shares, and layout presets."
+      "observed": "Observed"
     },
-    "analysis": {
-      "starts": "Editor sessions",
-      "exports": "Completed exports",
-      "views": "Share and embed views",
+    "visuals": {
       "empty": "No recorded activity in this period.",
-      "weeklyTable": "View weekly counts and coverage",
-      "week": "Period (UTC)",
-      "coverage": "Coverage",
-      "unavailable": "Unavailable",
-      "complete": "Complete week",
-      "partial": "Partial week / history",
-      "step": "Step",
-      "continued": "Continued",
-      "notContinued": "No next step observed",
-      "dropoff": "Drop-off",
-      "startToEdit": "Editor opened → meaningful edit",
-      "editToResult": "Meaningful edit → result",
-      "of": "{count} of {total}",
-      "limited": "Limited sample (< 30)",
-      "weeklyJourney": "View progression by start week",
-      "edited": "Edited",
-      "result": "Result after editing",
-      "conversion": "Start → result",
-      "median": "Median time",
-      "p75": "75% completed within",
-      "completedSessions": "Sessions with a result",
-      "minutes": "{value} min",
-      "seconds": "{value} sec",
-      "withoutResult": "Without a result: {count} (excluded)",
-      "noResults": "No completed sessions to calculate a duration.",
-      "format": "Format",
-      "successes": "Successful",
-      "failures": "Failed",
-      "failureRate": "Failure rate",
-      "legacy": "Earlier events (all formats)",
-      "unknownFormat": "Unknown format"
+      "weekShort": "W{week}",
+      "journey": {
+        "steps": {
+          "started": "Opened the editor",
+          "edited": "Made a meaningful edit",
+          "valuable": "Shared, exported, or published"
+        },
+        "drop": "−{rate} drop",
+        "largestDrop": "−{rate} drop · largest"
+      },
+      "timing": {
+        "empty": "No completed sessions to calculate a duration.",
+        "sessions": "Sessions",
+        "median": "Median",
+        "buckets": {
+          "b0": "< 1 min",
+          "b1": "1–3 min",
+          "b2": "3–5 min",
+          "b3": "5–10 min",
+          "b4": "10–30 min",
+          "b5": "30+ min"
+        }
+      },
+      "editor": {
+        "empty": "No editor sessions have been tracked in this period.",
+        "anonymous": "Anonymous",
+        "account": "Signed in",
+        "accountMoreLikely": "Signed-in sessions are {ratio}× more likely to reach a valuable result.",
+        "accountLessLikely": "Anonymous sessions are {ratio}× more likely to reach a valuable result."
+      },
+      "exports": {
+        "format": "Format",
+        "completed": "Completed",
+        "failed": "Failed",
+        "failureRate": "Failure rate",
+        "legacy": "Earlier events (all formats)",
+        "unknownFormat": "Unknown format"
+      },
+      "views": {
+        "empty": "No share views have been tracked in this period.",
+        "total": "Views",
+        "share": "Share pages",
+        "embed": "Embeds"
+      },
+      "retentionTrend": {
+        "empty": "Mature cohorts will appear after the 30-day observation window.",
+        "rate": "30-day return",
+        "cohort": "Cohort of {date}"
+      },
+      "content": {
+        "empty": "No content data yet",
+        "projects": "Projects",
+        "shares": "Shares",
+        "presets": "Presets"
+      },
+      "health": {
+        "activeShares": "Active shares",
+        "expiredShares": "Expired shares",
+        "revokedShares": "Revoked shares",
+        "missingPreview": "Gallery entries without preview"
+      },
+      "embeds": {
+        "empty": "No website hostname has reached the privacy threshold yet.",
+        "label": "Detected embed websites",
+        "website": "Website",
+        "track": "Track",
+        "views": "Views",
+        "belowThreshold": "Other embedded views below the reporting threshold"
+      }
     }
   },
   "users": {

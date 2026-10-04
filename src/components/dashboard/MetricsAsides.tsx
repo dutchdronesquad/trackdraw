@@ -12,7 +12,7 @@ import type {
   ContentGrowthPoint,
   ProductUsageMetrics,
 } from "@/lib/server/metrics";
-import type { LocalizationDemandMetrics } from "@/lib/server/localization-demand";
+import { isoWeekNumber } from "@/components/dashboard/MetricsVisuals";
 
 function useFormats() {
   const locale = useLocale();
@@ -60,12 +60,16 @@ function useFormats() {
   return { t, locale, number, percent, relativeChange, pointChange };
 }
 
+type AsideLink = { label: string; onClick: () => void };
+
 export function GrowthAside({
   growthData,
   growthTimeline,
+  link,
 }: {
   growthData: GrowthData | null;
   growthTimeline: GrowthTimeline;
+  link?: AsideLink;
 }) {
   const { t, number } = useFormats();
   const points = growthData?.userGrowth ?? [];
@@ -92,34 +96,7 @@ export function GrowthAside({
             })
           : null
       }
-    />
-  );
-}
-
-export function WeeklyAside({
-  analysis,
-}: {
-  analysis: ProductActivityAnalysis | undefined;
-}) {
-  const { t, number, percent, relativeChange } = useFormats();
-  const latest = analysis?.weeks.at(-1);
-  if (!latest) return null;
-  const previous = analysis?.weeks.at(-2);
-  return (
-    <MetricsAside
-      value={number.format(latest.started)}
-      label={t("weekly.label")}
-      change={
-        previous
-          ? relativeChange(latest.started, previous.started, t("weekly.ref"))
-          : null
-      }
-      note={t("weekly.note", {
-        valuable: number.format(latest.valuable),
-        rate: latest.started
-          ? percent.format(latest.valuable / latest.started)
-          : "—",
-      })}
+      link={link}
     />
   );
 }
@@ -130,7 +107,13 @@ function latestRow(metric: MetricsExplorerMetric) {
     .sort((left, right) => right.day.localeCompare(left.day))[0];
 }
 
-export function RetentionAside({ metric }: { metric: MetricsExplorerMetric }) {
+export function RetentionAside({
+  metric,
+  link,
+}: {
+  metric: MetricsExplorerMetric;
+  link?: AsideLink;
+}) {
   const { t, number, percent, pointChange } = useFormats();
   const row = latestRow(metric);
   if (!row || row.value === null) return null;
@@ -151,6 +134,7 @@ export function RetentionAside({ metric }: { metric: MetricsExplorerMetric }) {
             })
           : null
       }
+      link={link}
     />
   );
 }
@@ -172,43 +156,6 @@ export function AcquisitionAside({
       value={percent.format(top.value)}
       label={t("acquisition.label", { source: tSources(top.dimension) })}
       note={t("acquisition.note", { count: rows.length })}
-    />
-  );
-}
-
-export function LocalizationAside({
-  metrics,
-}: {
-  metrics: LocalizationDemandMetrics | null | undefined;
-}) {
-  const { t, locale, number, percent } = useFormats();
-  if (!metrics || metrics.totalCreatorSessions === 0) return null;
-  const unsupported = metrics.unsupportedCreatorSessions ?? 0;
-  const candidate = [...metrics.languages]
-    .filter(
-      (language) =>
-        language.supported === false &&
-        language.language !== "other" &&
-        language.language !== "unknown"
-    )
-    .sort((left, right) => right.creatorSessions - left.creatorSessions)[0];
-  const languageName = candidate
-    ? (new Intl.DisplayNames([locale], { type: "language" }).of(
-        candidate.language
-      ) ?? candidate.language)
-    : null;
-  return (
-    <MetricsAside
-      value={percent.format(unsupported / metrics.totalCreatorSessions)}
-      label={t("localization.label")}
-      note={
-        candidate && languageName
-          ? t("localization.note", {
-              language: languageName,
-              sessions: number.format(candidate.creatorSessions),
-            })
-          : t("localization.noCandidate")
-      }
     />
   );
 }
@@ -295,23 +242,49 @@ export function ExportReliabilityAside({
   analysis: ProductActivityAnalysis | undefined;
 }) {
   const { t, number, percent } = useFormats();
+  const formats = useTranslations(
+    "dashboard.metrics.explorer.operations.formats"
+  );
   const rows = analysis?.exportReliability ?? [];
   const successes = rows.reduce((total, row) => total + row.successes, 0);
   const failures = rows.reduce((total, row) => total + row.failures, 0);
   if (successes + failures === 0) return null;
-  const worst = [...rows]
-    .filter((row) => row.failures > 0 && row.failureRate !== null)
+  const comparable = rows.filter((row) => row.failureRate !== null);
+  const worst = [...comparable]
+    .filter((row) => row.failures > 0)
     .sort(
       (left, right) => (right.failureRate ?? 0) - (left.failureRate ?? 0)
     )[0];
+  const others = comparable.filter((row) => row !== worst);
+  const otherAttempts = others.reduce(
+    (total, row) => total + row.successes + row.failures,
+    0
+  );
+  const otherFailures = others.reduce((total, row) => total + row.failures, 0);
+  const otherRate = otherAttempts ? otherFailures / otherAttempts : 0;
+  const ratio =
+    worst?.failureRate && otherRate > 0 ? worst.failureRate / otherRate : null;
+  const formatName = (format: string) =>
+    formats.has(format) ? formats(format) : format.toUpperCase();
   return (
     <MetricsAside
-      value={percent.format(failures / (successes + failures))}
-      label={t("exports.label")}
+      value={number.format(successes)}
+      label={t("exports.completedLabel")}
+      change={
+        worst && ratio !== null && ratio >= 1.5
+          ? {
+              text: t("exports.ratio", {
+                format: formatName(worst.format),
+                ratio: Math.round(ratio),
+              }),
+              tone: "warning",
+            }
+          : null
+      }
       note={
         worst && worst.failureRate !== null
           ? t("exports.worst", {
-              format: worst.format.toUpperCase(),
+              format: formatName(worst.format),
               rate: percent.format(worst.failureRate),
             })
           : t("exports.none", { count: number.format(successes) })
@@ -320,34 +293,102 @@ export function ExportReliabilityAside({
   );
 }
 
-export function EmbedAside({ usage }: { usage: ProductUsageMetrics }) {
-  const { t, number } = useFormats();
-  const summary = usage.embedReferrerSummary;
-  if (summary.views === 0) return null;
+export function ShareReachAside({
+  analysis,
+  usage,
+  link,
+}: {
+  analysis: ProductActivityAnalysis | undefined;
+  usage: ProductUsageMetrics | undefined;
+  link?: AsideLink;
+}) {
+  const { t, number, percent, relativeChange } = useFormats();
+  const weeks = analysis?.weeks ?? [];
+  const latest = weeks.at(-1);
+  if (!latest || !usage) return null;
+  const previous = weeks.at(-2);
+  const totalViews = weeks.reduce((total, week) => total + week.views, 0);
+  const embedViews = weeks.reduce((total, week) => total + week.embedViews, 0);
+  const exportBreakdown = [...usage.exportFormats]
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 4)
+    .map(
+      (row) =>
+        `${row.format.toUpperCase()} ${percent.format(
+          usage.exports ? row.count / usage.exports : 0
+        )}`
+    )
+    .join(", ");
   return (
     <MetricsAside
-      value={number.format(summary.views)}
-      label={t("embeds.label")}
-      note={t("embeds.note", { count: number.format(summary.hostnames) })}
+      value={number.format(latest.views)}
+      label={t("shareReach.label", { week: isoWeekNumber(latest.week) })}
+      change={
+        previous
+          ? relativeChange(
+              latest.views,
+              previous.views,
+              t("shareReach.ref", { week: isoWeekNumber(previous.week) })
+            )
+          : null
+      }
+      note={
+        totalViews > 0
+          ? t("shareReach.note", {
+              share: percent.format(embedViews / totalViews),
+            })
+          : null
+      }
+      detail={
+        usage.exports > 0
+          ? t("shareReach.exports", {
+              count: number.format(usage.exports),
+              breakdown: exportBreakdown,
+            })
+          : null
+      }
+      link={link}
     />
   );
 }
 
-export function ExportUsageAside({ usage }: { usage: ProductUsageMetrics }) {
-  const { t, number, percent } = useFormats();
-  if (usage.exports === 0) return null;
-  const top = [...usage.exportFormats].sort(
-    (left, right) => right.count - left.count
-  )[0];
+export function EmbedShareAside({
+  analysis,
+  usage,
+}: {
+  analysis: ProductActivityAnalysis | undefined;
+  usage: ProductUsageMetrics | undefined;
+}) {
+  const { t, number, percent, pointChange } = useFormats();
+  const weeks = (analysis?.weeks ?? []).filter((week) => week.views > 0);
+  const totalViews = weeks.reduce((total, week) => total + week.views, 0);
+  if (totalViews === 0) return null;
+  const embedViews = weeks.reduce((total, week) => total + week.embedViews, 0);
+  const first = weeks[0];
+  const last = weeks.at(-1)!;
+  const firstShare = first.embedViews / first.views;
+  const lastShare = last.embedViews / last.views;
+  const topSite = usage?.embedReferrers[0];
   return (
     <MetricsAside
-      value={number.format(usage.exports)}
-      label={t("exportUsage.label")}
+      value={percent.format(embedViews / totalViews)}
+      label={t("embedShare.label")}
+      change={
+        weeks.length > 1
+          ? {
+              ...pointChange(lastShare, firstShare),
+              text: t("embedShare.since", {
+                share: percent.format(firstShare),
+                week: isoWeekNumber(first.week),
+              }),
+            }
+          : null
+      }
       note={
-        top
-          ? t("exportUsage.note", {
-              format: top.format.toUpperCase(),
-              share: percent.format(top.count / usage.exports),
+        topSite
+          ? t("embedShare.topSite", {
+              host: topSite.hostname,
+              views: number.format(topSite.views),
             })
           : null
       }
