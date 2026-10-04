@@ -424,8 +424,7 @@ const panelFrameChampionshipGateVisual = {
   },
   textures: {
     left: "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
-    right:
-      "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
+    right: "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
     top: "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
     placement: {
       left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
