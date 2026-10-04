@@ -24,10 +24,10 @@ import {
 import { getShapeTimingMarker } from "@/lib/track/timing";
 
 const START_FINISH_TOP_TEXTURES: Record<string, string> = {
-  "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp":
-    "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-red-50-percent.webp",
-  "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp":
-    "https://obstacles.trackdraw.app/multigp/large-top-red-multigp.webp",
+  "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp":
+    "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-top-red-50-percent.webp",
+  "https://assets.trackdraw.app/multigp/large-top-multigp.webp":
+    "https://assets.trackdraw.app/multigp/large-top-red-multigp.webp",
 };
 
 const START_FINISH_TOP_COLOR = "#8A181B";

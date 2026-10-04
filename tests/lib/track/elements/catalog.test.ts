@@ -276,9 +276,9 @@ describe("track element catalog", () => {
         variant: "arch",
         banner: {
           sideTexture:
-            "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+            "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
           topTexture:
-            "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+            "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
         },
       },
     });
@@ -307,9 +307,9 @@ describe("track element catalog", () => {
         variant: "launch",
         banner: {
           sideTexture:
-            "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+            "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
           topTexture:
-            "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+            "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
         },
       },
     });

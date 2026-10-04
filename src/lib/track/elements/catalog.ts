@@ -402,10 +402,10 @@ const panelFrameGateVisual = {
     diameterMeters: 0.055,
   },
   textures: {
-    left: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
+    left: "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
     right:
-      "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
-    top: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+      "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
+    top: "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
     placement: {
       left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
       right: { source: "right", orientation: { textureTopEdgeFaces: "top" } },
@@ -423,10 +423,10 @@ const panelFrameChampionshipGateVisual = {
     top: { heightMeters: feetToMeters(2), color: "#202e5d" },
   },
   textures: {
-    left: "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+    left: "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
     right:
-      "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
-    top: "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+      "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
+    top: "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
     placement: {
       left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
       right: {
@@ -837,8 +837,8 @@ export const trackElementCatalog = [
       poleColor: "#1c1c1c",
       textures: {
         front:
-          "https://obstacles.trackdraw.app/multigp/feather-banners-cobranded-multigp.webp",
-        back: "https://obstacles.trackdraw.app/multigp/feather-banners-cobranded-multigp-back-double-sided.webp",
+          "https://assets.trackdraw.app/multigp/feather-banners-cobranded-multigp.webp",
+        back: "https://assets.trackdraw.app/multigp/feather-banners-cobranded-multigp-back-double-sided.webp",
       },
     } satisfies FlagVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -983,10 +983,10 @@ export const trackElementCatalog = [
         diameterMeters: 0.055,
       },
       textures: {
-        left: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
+        left: "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
         right:
-          "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
-        top: "https://obstacles.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+          "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
+        top: "https://assets.trackdraw.app/multigp/MultiGP-2017-Airgate-top-regular-50-percent.webp",
         placement: {
           left: {
             source: "left",
@@ -1052,10 +1052,10 @@ export const trackElementCatalog = [
         diameterMeters: 0.055,
       },
       textures: {
-        left: "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        left: "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
         right:
-          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
-        top: "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        top: "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
         placement: {
           left: {
             source: "left",
@@ -1121,10 +1121,10 @@ export const trackElementCatalog = [
         diameterMeters: 0.055,
       },
       textures: {
-        left: "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        left: "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
         right:
-          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
-        top: "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
+        top: "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
         placement: {
           left: {
             source: "left",
@@ -1222,9 +1222,9 @@ export const trackElementCatalog = [
       banner: {
         color: "#202e5d",
         sideTexture:
-          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
         topTexture:
-          "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
       },
     } satisfies DiveGateVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -1279,9 +1279,9 @@ export const trackElementCatalog = [
       banner: {
         color: "#202e5d",
         sideTexture:
-          "https://obstacles.trackdraw.app/multigp/large-side-panel-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-side-panel-multigp.webp",
         topTexture:
-          "https://obstacles.trackdraw.app/multigp/large-top-multigp.webp",
+          "https://assets.trackdraw.app/multigp/large-top-multigp.webp",
         placement: {
           front: {
             source: "top",
@@ -1416,7 +1416,7 @@ export const trackElementCatalog = [
       panel: {
         color: "#1e3a8a",
         texture:
-          "https://obstacles.trackdraw.app/multigp/5x10-hurdle-multigp.webp",
+          "https://assets.trackdraw.app/multigp/5x10-hurdle-multigp.webp",
       },
     } satisfies BarrierVisualSpec,
     exportHints: { simulatorFriendly: false },
