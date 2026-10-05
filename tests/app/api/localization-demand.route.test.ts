@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { supportedLocales } from "@/lib/i18n/locales";
 
 const mocks = vi.hoisted(() => ({
   getCurrentUserFromHeaders: vi.fn(),
@@ -31,6 +32,38 @@ beforeEach(() => {
 });
 
 describe("POST /api/localization-demand", () => {
+  it.each(supportedLocales)(
+    "accepts the configured locale %s",
+    async (servedLocale) => {
+      const response = await POST(
+        new Request("https://trackdraw.app/api/localization-demand", {
+          method: "POST",
+          body: JSON.stringify({ servedLocale }),
+        })
+      );
+
+      expect(response.status).toBe(204);
+      expect(mocks.recordLocalizationDemand).toHaveBeenCalledWith(
+        expect.objectContaining({ servedLocale })
+      );
+    }
+  );
+
+  it.each(["unsupported-locale", "en-US", "", null, 42, undefined])(
+    "rejects an unconfigured or missing served locale %s before persistence",
+    async (servedLocale) => {
+      const response = await POST(
+        new Request("https://trackdraw.app/api/localization-demand", {
+          method: "POST",
+          body: JSON.stringify({ servedLocale }),
+        })
+      );
+
+      expect(response.status).toBe(400);
+      expect(mocks.recordLocalizationDemand).not.toHaveBeenCalled();
+    }
+  );
+
   it("records only normalized request context and the served locale", async () => {
     const response = await POST(
       new Request("https://trackdraw.app/api/localization-demand", {

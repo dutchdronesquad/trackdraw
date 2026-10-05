@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { supportedLocales } from "@/lib/i18n/locales";
+import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
 import {
   createD1AllStatement,
   createD1Statement,
@@ -26,6 +27,45 @@ beforeEach(() => {
 });
 
 describe("localization demand aggregation", () => {
+  it.each(supportedLocales)(
+    "upserts the configured locale %s on the migrated schema",
+    async (servedLocale) => {
+      const sqlite = createMigratedDatabase();
+      mocks.prepare.mockImplementation(sqliteD1(sqlite).prepare);
+      try {
+        const input = {
+          preferredLanguage: "fr" as const,
+          servedLocale,
+          countryCode: "FR",
+        };
+        await recordLocalizationDemand({
+          ...input,
+          now: new Date("2026-10-04T01:00:00.000Z"),
+        });
+        await recordLocalizationDemand({
+          ...input,
+          now: new Date("2026-10-04T02:00:00.000Z"),
+        });
+
+        expect(
+          sqlite.prepare("SELECT * FROM localization_demand_daily").all()
+        ).toEqual([
+          {
+            day_utc: "2026-10-04",
+            preferred_language: "fr",
+            served_locale: servedLocale,
+            country_code: "FR",
+            creator_sessions: 2,
+            created_at: "2026-10-04T01:00:00.000Z",
+            updated_at: "2026-10-04T02:00:00.000Z",
+          },
+        ]);
+      } finally {
+        sqlite.close();
+      }
+    }
+  );
+
   it("changes observed totals between three months and a year using the real aggregate query", async () => {
     const db = new DatabaseSync(":memory:");
     db.exec(`

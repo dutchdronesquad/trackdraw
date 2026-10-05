@@ -289,6 +289,8 @@ Mail rendering and the Plunk client are shared runtime-independent modules. The 
 
 Migration `0024_account_lifecycle_audit.sql` adds durable account lifecycle events to the dashboard audit log. Apply it before deploying the audited warning/deletion owners. Existing attempts and provider acknowledgments are backfilled only when their notice rows still exist, using their original timestamps; previously removed history cannot be reconstructed.
 
+Migration `0025_localization_demand_locale_constraint.sql` rebuilds `localization_demand_daily` without the fixed supported-locale `CHECK`. It preserves existing daily cells, timestamps, indexes, and the `L10N-001` measurement state; `served_locale` remains `TEXT NOT NULL`. The API validates against the shared supported-locale configuration and persistence accepts `SupportedLocale`. Apply this migration before adding a supported language that was absent from migration `0017`; future language additions then need no localization-metrics schema migration.
+
 ### Account retention warnings
 
 The dashboard Email Preview page includes both retention templates, their subjects, and HTML/plain-text previews with fixed sample dates. It uses the same builders as real notices and sends no mail.
