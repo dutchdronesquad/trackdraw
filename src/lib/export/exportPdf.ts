@@ -1,6 +1,6 @@
 import type Konva from "konva";
 import { jsPDF } from "@/lib/vendor/jspdf";
-import type { SupportedLocale } from "@/lib/i18n/locales";
+import { getLocaleDirectory, type SupportedLocale } from "@/lib/i18n/locales";
 import {
   getRequiredInventoryCounts,
   inventoryKinds,
@@ -40,13 +40,7 @@ const BRAND_LOGO_ASPECT = 1027 / 200;
 
 function formatPdfDate(locale: SupportedLocale | undefined) {
   const dateLocale =
-    locale === "zh-CN"
-      ? locale
-      : locale === "nl"
-        ? "nl-NL"
-        : locale === "de"
-          ? "de-DE"
-          : "en-GB";
+    locale && locale !== "en" ? getLocaleDirectory(locale) : "en-GB";
 
   return new Date().toLocaleDateString(dateLocale, {
     day: "2-digit",

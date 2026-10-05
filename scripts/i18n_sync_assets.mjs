@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import {
+  existsSync,
   mkdirSync,
   rmSync,
   copyFileSync,
@@ -51,6 +52,10 @@ function validateLocaleDirectories() {
         `Invalid i18n policy: localeDirectories.${locale} must be a non-empty string.`
       );
     }
+
+    // Crowdin may not have exported a newly supported target locale yet.
+    if (locale !== sourceLocale && !existsSync(join(langDir, directory)))
+      continue;
 
     try {
       if (statSync(join(langDir, directory)).isDirectory()) continue;

@@ -266,6 +266,44 @@ describe("exportPdf", () => {
     );
   });
 
+  it.each([undefined, "en", "nl", "de", "zh-CN", "es"] as const)(
+    "formats PDF dates for locale %s",
+    async (locale) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-07-22T12:00:00.000Z"));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => new Response(new Uint8Array([0, 1, 0, 0])))
+      );
+      await exportPdf(
+        null as never,
+        createDefaultDesign(),
+        "track.pdf",
+        "light",
+        translate,
+        { locale }
+      );
+      const dateLocale =
+        locale === "nl"
+          ? "nl-NL"
+          : locale === "de"
+            ? "de-DE"
+            : locale === "zh-CN"
+              ? "zh-CN"
+              : locale === "es"
+                ? "es-ES"
+                : "en-GB";
+      const date = new Date().toLocaleDateString(dateLocale, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      expect(
+        pdfMock.instances[0].textCalls.some((call) => call.includes(date))
+      ).toBe(true);
+    }
+  );
+
   it("passes dense practical layouts through Race Pack PDF rendering", async () => {
     const design = createDensePracticalDesign();
 

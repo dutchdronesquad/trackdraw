@@ -23,6 +23,7 @@ const titles: Record<SupportedLocale, string> = {
   nl: "TrackDraw API-documentatie",
   de: "TrackDraw API-Dokumentation",
   "zh-CN": "TrackDraw API 文档",
+  es: "Documentación de la API de TrackDraw",
 };
 
 function getLocaleFromRequest(request: Request): SupportedLocale {
