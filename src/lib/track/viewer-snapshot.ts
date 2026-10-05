@@ -1,19 +1,19 @@
-import { getViewerSnapshotId } from "@trackdraw/viewer/snapshot/identity";
+import { getViewerSnapshotId } from "@trackdraw/schema/snapshot/identity";
 import { getDesignShapes } from "@/lib/track/design";
 import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
 import type { Shape, TrackDesign } from "@/lib/types";
-import { getDesignAssetManifest } from "@trackdraw/viewer/assets/manifest";
+import { getDesignAssetManifest } from "@trackdraw/schema/assets/manifest";
 import {
   validateViewerDesignSnapshot,
   viewerShapeSchema,
-} from "@trackdraw/viewer/snapshot/schema";
-import { CURRENT_REQUIRED_VIEWER } from "@trackdraw/viewer/snapshot/version";
+} from "@trackdraw/schema/snapshot/schema";
+import { MIN_RENDERER_VERSION } from "@trackdraw/schema/snapshot/version";
 import {
   VIEWER_SNAPSHOT_SCHEMA,
   type RequiredViewer,
   type ViewerDesignSnapshot,
   type ViewerShape,
-} from "@trackdraw/viewer/snapshot/types";
+} from "@trackdraw/schema/snapshot/types";
 
 /**
  * Maps an app-internal `Shape` to the viewer-safe wire format: identical
@@ -46,7 +46,7 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
 
   return {
     schema: VIEWER_SNAPSHOT_SCHEMA,
-    minRendererVersion: CURRENT_REQUIRED_VIEWER.minRendererVersion,
+    minRendererVersion: MIN_RENDERER_VERSION,
     // Report every capability the design's shapes actually use, not just the
     // ones the current renderer happens to recognize - intersecting with
     // RENDERER_CAPABILITIES here would silently drop the requirement for any

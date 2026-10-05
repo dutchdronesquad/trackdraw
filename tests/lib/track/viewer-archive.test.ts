@@ -10,11 +10,11 @@ import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import {
   readViewerArchive,
   createViewerArchiveWithCurrentAssets,
-} from "@trackdraw/viewer/snapshot/archive";
-import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
+} from "@trackdraw/schema/snapshot/archive";
+import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
 import { toApiViewerSnapshotPackage } from "@/lib/server/api-projects";
-import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/viewer/snapshot/types";
-import { OBSTACLE_ASSETS_URL } from "@trackdraw/viewer/assets/asset-url";
+import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/schema/snapshot/types";
+import { OBSTACLE_ASSETS_URL } from "@trackdraw/schema/assets/asset-url";
 import type { StoredProject } from "@/lib/server/projects";
 
 vi.mock("server-only", () => ({}));

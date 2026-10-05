@@ -1,5 +1,5 @@
-import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
-import { getViewerSnapshotId } from "@trackdraw/viewer/snapshot/identity";
+import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
+import { getViewerSnapshotId } from "@trackdraw/schema/snapshot/identity";
 import { describe, expect, it } from "vitest";
 import { trackdrawOpenApiSchema } from "@/lib/api/openapi";
 
