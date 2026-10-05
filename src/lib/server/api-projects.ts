@@ -13,7 +13,7 @@ import {
 import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import { getDesignTimingMarkers } from "@/lib/track/timing";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
-import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/viewer/snapshot/types";
+import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/schema/snapshot/types";
 import type {
   StoredProject,
   StoredProjectSummary,

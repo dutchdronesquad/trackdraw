@@ -1,5 +1,5 @@
-import { createAssetResolver } from "@trackdraw/viewer/assets/asset-url";
-import { createViewerArchiveWithCurrentAssets } from "@trackdraw/viewer/snapshot/archive";
+import { createAssetResolver } from "@trackdraw/schema/assets/asset-url";
+import { createViewerArchiveWithCurrentAssets } from "@trackdraw/schema/snapshot/archive";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import type { TrackDesign } from "@/lib/types";
 

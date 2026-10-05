@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { viewerSnapshotFromApi } from "@trackdraw/viewer/snapshot/api";
+import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
 import {
   createCatalogShapeDraft,
   MULTIGP_HURDLE_ELEMENT_ID,
