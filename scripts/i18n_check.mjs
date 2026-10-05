@@ -3,7 +3,7 @@
  * Translation integrity audit.
  *
  * 1. Compares every locale's message files against the `en-US` baseline. Missing
- *    target keys are allowed and use the English runtime fallback; extra keys,
+ *    target namespaces and keys use the English runtime fallback; extra keys,
  *    empty values, and placeholder mismatches remain errors.
  * 2. Scans src/** for `useTranslations("namespace")` bindings and the keys
  *    called through them, flagging any key that doesn't resolve in the `en-US`
@@ -12,7 +12,7 @@
  * Usage: node scripts/i18n_check.mjs
  * Exits non-zero if any issue is found, so it can be wired into CI.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -55,6 +55,10 @@ function validateLocaleDirectories() {
       );
     }
 
+    // Crowdin may not have exported a newly supported target locale yet.
+    if (locale !== baseLocale && !existsSync(join(langDir, directory)))
+      continue;
+
     try {
       if (statSync(join(langDir, directory)).isDirectory()) continue;
     } catch {
@@ -76,6 +80,7 @@ function listLocales() {
 }
 
 function listNamespaces(locale) {
+  if (!existsSync(join(langDir, localeDirectories[locale]))) return [];
   return readdirSync(join(langDir, localeDirectories[locale]))
     .filter((name) => name.endsWith(".json"))
     .map((name) => name.replace(/\.json$/, ""));
@@ -143,9 +148,11 @@ function checkLocaleIntegrity() {
     for (const locale of otherLocales) {
       let localeMessages;
       try {
-        localeMessages = flatten(loadNamespace(locale, namespace));
+        localeMessages = listNamespaces(locale).includes(namespace)
+          ? flatten(loadNamespace(locale, namespace))
+          : {};
       } catch {
-        console.log(`\n[${locale}] missing namespace file: ${namespace}.json`);
+        console.log(`\n[${locale}] invalid namespace file: ${namespace}.json`);
         problems += 1;
         continue;
       }

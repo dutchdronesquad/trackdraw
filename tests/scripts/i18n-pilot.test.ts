@@ -81,6 +81,60 @@ describe("Crowdin pilot catalog scripts", () => {
     expect(result.stdout).toContain("2 English fallback(s)");
   });
 
+  it("generates English fallback assets while Spanish catalogs await Crowdin", () => {
+    writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+      localeDirectories: { en: "en-US", nl: "nl-NL", es: "es-ES" },
+      englishOnlyNamespaces: [],
+    });
+
+    const check = runScript("i18n_check.mjs");
+    expect(check.status, check.stdout + check.stderr).toBe(0);
+    const sync = runScript("i18n_sync_assets.mjs");
+    expect(sync.status, sync.stderr).toBe(0);
+    expect(
+      JSON.parse(
+        readFileSync(
+          join(fixtureRoot, "public", "locales", "es-ES", "common.json"),
+          "utf8"
+        )
+      )
+    ).toEqual(
+      JSON.parse(
+        readFileSync(join(fixtureRoot, "lang", "en-US", "common.json"), "utf8")
+      )
+    );
+  });
+
+  it("uses English fallback for missing target namespace files", () => {
+    writeJson(join(fixtureRoot, "lang", "en-US", "editor.json"), {
+      title: "Editor",
+    });
+    const result = runScript("i18n_check.mjs");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("3 English fallback(s)");
+  });
+
+  it("still rejects malformed target namespace files", () => {
+    writeFileSync(join(fixtureRoot, "lang", "nl-NL", "common.json"), "{");
+    const result = runScript("i18n_check.mjs");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("invalid namespace file: common.json");
+  });
+
+  it("validates Spanish translations once Crowdin supplies a namespace", () => {
+    mkdirSync(join(fixtureRoot, "lang", "es-ES"));
+    writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+      localeDirectories: { en: "en-US", nl: "nl-NL", es: "es-ES" },
+      englishOnlyNamespaces: [],
+    });
+    writeJson(join(fixtureRoot, "lang", "es-ES", "common.json"), {
+      greeting: "Missing placeholder",
+    });
+    const result = runScript("i18n_check.mjs");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("greeting has different placeholders");
+  });
+
   it("still rejects placeholder mismatches", () => {
     writeJson(join(fixtureRoot, "lang", "nl-NL", "common.json"), {
       greeting: "Hallo",
@@ -107,13 +161,12 @@ describe("Crowdin pilot catalog scripts", () => {
   );
 
   it.each(["i18n_check.mjs", "i18n_sync_assets.mjs"] as const)(
-    "reports a missing mapped locale directory in %s",
+    "reports a missing mapped English source directory in %s",
     (script) => {
       writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
         localeDirectories: {
-          en: "en-US",
+          en: "missing-source",
           nl: "nl-NL",
-          de: "de-DE",
         },
         englishOnlyNamespaces: [],
       });
@@ -122,7 +175,7 @@ describe("Crowdin pilot catalog scripts", () => {
 
       expect(result.status).toBe(1);
       expect(result.stderr).toContain(
-        'directory "de-DE" for locale "de" does not exist'
+        'directory "missing-source" for locale "en" does not exist'
       );
     }
   );

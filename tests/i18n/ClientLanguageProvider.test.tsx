@@ -125,4 +125,23 @@ describe("ClientLanguageProvider", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith("/locales/nl-NL/common.json");
   });
+
+  it("keeps Spanish active when its generated messages fall back to English", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(Response.json(initialMessages.common));
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <ClientLanguageProvider
+        namespaces={["common"]}
+        initialMessages={initialMessages}
+      >
+        <TranslatedLabel />
+      </ClientLanguageProvider>
+    );
+    act(() => useLocaleStore.getState().setLocale("es"));
+    await waitFor(() => expect(document.documentElement.lang).toBe("es"));
+    expect(screen.getByText("Language")).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledWith("/locales/es-ES/common.json");
+  });
 });

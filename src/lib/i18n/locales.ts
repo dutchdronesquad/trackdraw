@@ -1,6 +1,6 @@
 import i18nPolicy from "@lang/i18n-policy.json";
 
-export const supportedLocales = ["en", "nl", "de", "zh-CN"] as const;
+export const supportedLocales = ["en", "nl", "de", "zh-CN", "es"] as const;
 export type SupportedLocale = (typeof supportedLocales)[number];
 
 export const defaultLocale: SupportedLocale = "en";
@@ -27,7 +27,12 @@ export function resolveSupportedLocale(
   if (!tag) return undefined;
 
   const language = tag.split("-")[0];
-  if (language === "en" || language === "nl" || language === "de") {
+  if (
+    language === "en" ||
+    language === "nl" ||
+    language === "de" ||
+    language === "es"
+  ) {
     return language;
   }
 

@@ -241,7 +241,7 @@ describe("localization demand aggregation", () => {
       quality: "healthy",
       comparisonReady: true,
       totalCreatorSessions: 32,
-      unsupportedCreatorSessions: 12,
+      unsupportedCreatorSessions: 8,
     });
     expect(
       metrics.languages.map((row) => ({

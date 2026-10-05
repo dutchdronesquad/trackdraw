@@ -24,6 +24,7 @@ const localeConfig: Record<SupportedLocale, { label: string; abbr: string }> = {
   nl: { label: "Nederlands", abbr: "NL" },
   de: { label: "Deutsch", abbr: "DE" },
   "zh-CN": { label: "简体中文", abbr: "ZH" },
+  es: { label: "Español", abbr: "ES" },
 };
 
 function LocaleBadge({ abbr }: { abbr: string }) {

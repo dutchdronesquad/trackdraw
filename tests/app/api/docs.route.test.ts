@@ -7,6 +7,7 @@ const expectedTitles: Record<SupportedLocale, string> = {
   nl: "TrackDraw API-documentatie",
   de: "TrackDraw API-Dokumentation",
   "zh-CN": "TrackDraw API 文档",
+  es: "Documentación de la API de TrackDraw",
 };
 
 describe("GET /api/docs", () => {
@@ -51,6 +52,20 @@ describe("GET /api/docs", () => {
     expect(html).toContain('<html lang="zh-CN">');
     expect(html).toContain("<title>TrackDraw API 文档</title>");
   });
+
+  it.each(["es", "es-ES", "es-MX", "es-AR"])(
+    "uses Spanish API documentation for browser preference %s",
+    async (tag) => {
+      const response = GET(
+        new Request("https://trackdraw.test/api/docs", {
+          headers: { "accept-language": `fr-FR, ${tag};q=0.9, en;q=0.8` },
+        })
+      );
+      const html = await response.text();
+      expect(html).toContain('<html lang="es">');
+      expect(html).toContain(`<title>${expectedTitles.es}</title>`);
+    }
+  );
 
   it("falls back to English for unsupported locale preferences", async () => {
     const response = GET(

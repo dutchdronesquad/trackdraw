@@ -6,7 +6,7 @@ Pilot window: 2026-08-10 through 2026-11-10. If the GitHub integration is activa
 
 ## Goal
 
-Use Crowdin as the only target editing and review surface for Dutch, German, and Simplified Chinese long enough to judge contributor usability, Translation Memory reuse, maintenance effort, quota pressure, and pull-request noise. English source copy remains owned by normal TrackDraw feature pull requests. Crowdin may apply previously approved perfect Translation Memory matches, while contributors or reviewable maintainer-seeded batches supply the remaining target copy. Missing messages stay untranslated in Crowdin and use TrackDraw's tested English runtime fallback until target copy is accepted.
+Use Crowdin as the only target editing and review surface for Dutch, German, Simplified Chinese, and Spanish long enough to judge contributor usability, Translation Memory reuse, maintenance effort, quota pressure, and pull-request noise. English source copy remains owned by normal TrackDraw feature pull requests. Crowdin may apply previously approved perfect Translation Memory matches, while contributors or reviewable maintainer-seeded batches supply the remaining target copy. Missing messages stay untranslated in Crowdin and use TrackDraw's tested English runtime fallback until target copy is accepted.
 
 The pilot stays reversible. Translation JSON remains versioned in Git, production continues to load generated Cloudflare Static Assets, and TrackDraw has no runtime dependency on Crowdin.
 
@@ -23,7 +23,7 @@ Do not edit target-language JSON directly during the pilot, except for a product
 
 ## Initial Crowdin setup
 
-1. Create a public, file-based project with English as source and Dutch, German, and Chinese Simplified (`zh-CN`) as targets.
+1. Create a public, file-based project with English as source and Dutch, German, Chinese Simplified (`zh-CN`), and Spanish (`es-ES`) as targets. Spanish starts without target catalogs and uses English runtime fallback; enable the Spanish target in Crowdin before its first translation export.
 2. On the ordinary Free plan, keep moderated joining and project-enforced 2FA disabled because those controls are unavailable. Ask maintainers to enable account-level 2FA voluntarily; enable the project controls if the open-source request is approved.
 3. Add `CROWDIN_PROJECT_ID` and `CROWDIN_PERSONAL_TOKEN` as GitHub Actions repository secrets. Give the Crowdin token read access to projects and translation status plus read/write access to source files, strings, and translations.
 4. In GitHub under **Settings > Actions > General**, allow GitHub Actions to create pull requests. The workflow uses the repository-scoped `GITHUB_TOKEN`; no personal GitHub token is required.
@@ -34,7 +34,7 @@ Do not edit target-language JSON directly during the pilot, except for a product
 9. Pause the native Crowdin GitHub integration by clearing its sync schedule before merging the Action workflow. Keep the connection available for rollback until the first Action-generated pull request succeeds.
 10. Under **Settings > Auto-Translate**, enable only **TM Auto-Translate** for new content. Use **Perfect match** and approve only perfect matches that were approved previously. Keep TM auto-substitution disabled so near-matches cannot be promoted into automatic target copy.
 11. Keep **MT Auto-Translate** and **AI Auto-Translate** disabled. Do not add Crowdin Credits or configure a paid provider API key for translation generation.
-12. Confirm the project default Translation Memory is assigned to Dutch, German, and Simplified Chinese. Keep the glossary and source-matching option available for intentional FPV and product terms, but let every non-perfect match remain untranslated for contributor review.
+12. Confirm the project default Translation Memory is assigned to Dutch, German, Simplified Chinese, and Spanish. Keep the glossary and source-matching option available for intentional FPV and product terms, but let every non-perfect match remain untranslated for contributor review.
 
 Auto-Translate is a Crowdin project setting, not a repository setting. The repository cannot confirm its state from `crowdin.yml` or the GitHub Action. The no-cost configuration is therefore an explicit operator responsibility: TM Perfect matches only, with MT and AI disabled.
 
@@ -64,7 +64,7 @@ An `ISSUES FOUND` or `Spellcheck failed` language indicator means at least one s
 ## Normal update cycle
 
 1. A feature pull request changes English source messages and application code.
-2. CI validates English key usage, catalog integrity, and hardcoded-copy rules. Target catalogs may temporarily omit new keys.
+2. CI validates English key usage, catalog integrity, and hardcoded-copy rules. Target catalogs may temporarily omit namespaces or new keys while awaiting Crowdin exports.
 3. After merge, the `Crowdin` GitHub Action uploads changed English source files to Crowdin.
 4. Crowdin applies only previously approved perfect Translation Memory matches. It leaves every other newly uploaded string untranslated.
 5. Human contributors suggest or translate the remaining strings. When contributor coverage is not yet available, a maintainer may seed the missing keys through the separate no-cost assisted-import flow below. Neither path blocks a product release because TrackDraw uses the tested English fallback for missing target keys.
@@ -108,7 +108,7 @@ If a normal feature branch already contains useful agent-generated target transl
 
 ## Runtime fallback
 
-Target catalogs are allowed to lag behind English. Server-side development catalogs and generated `public/locales/**` assets recursively merge the target catalog over English. Existing translations win; missing or empty values use English. Arrays such as landing-page bullets and FAQ entries are merged by position.
+Target catalogs are allowed to lag behind English. Server-side development catalogs and generated `public/locales/**` assets recursively merge the target catalog over English. Existing translations win; missing namespaces, missing keys, or empty values use English. Arrays such as landing-page bullets and FAQ entries are merged by position.
 
 Extra target keys are ignored at runtime and rejected by CI. Placeholder changes are also rejected so a translated message cannot silently drop required values.
 

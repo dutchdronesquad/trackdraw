@@ -1,13 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getLocaleDirectory,
+  getLocaleFromBrowser,
   getLocaleFromAcceptLanguage,
+  isValidLocale,
   normalizeLocale,
   resolveSupportedLocale,
   supportedLocales,
 } from "@/lib/i18n/locales";
 
 describe("locale resolution", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("uses Spanish browser preferences", () => {
+    vi.stubGlobal("navigator", { languages: ["fr-FR", "es-MX", "en-GB"] });
+    expect(getLocaleFromBrowser()).toBe("es");
+  });
+
   it("maps product locales to regional locale directories", () => {
     expect(
       Object.fromEntries(
@@ -18,12 +27,35 @@ describe("locale resolution", () => {
       nl: "nl-NL",
       de: "de-DE",
       "zh-CN": "zh-CN",
+      es: "es-ES",
     });
   });
 
   it("uses zh-CN as the canonical Simplified Chinese locale", () => {
     expect(supportedLocales).toContain("zh-CN");
     expect(supportedLocales).not.toContain("zh");
+  });
+
+  it.each([
+    "es",
+    "es-ES",
+    "es-MX",
+    "es-AR",
+    "es-419",
+    "es_ES",
+    "ES-mx",
+    "es-ES-u-nu-latn",
+  ])("resolves the Spanish language tag %s", (locale) => {
+    expect(resolveSupportedLocale(locale)).toBe("es");
+    expect(normalizeLocale(locale)).toBe("es");
+    expect(
+      getLocaleFromAcceptLanguage(`fr-FR, ${locale};q=0.9, en;q=0.8`)
+    ).toBe("es");
+  });
+
+  it("accepts the canonical Spanish product locale", () => {
+    expect(isValidLocale("es")).toBe(true);
+    expect(isValidLocale("es-ES")).toBe(false);
   });
 
   it.each([

@@ -33,4 +33,25 @@ describe("locale store migration", () => {
     expect(useLocaleStore.getState().locale).toBe("zh-CN");
     expect(document.cookie).toContain("trackdraw-locale=zh-CN");
   });
+
+  it("persists and rehydrates the Spanish preference and cookie", async () => {
+    const storage = createMemoryStorage();
+    restoreStorage = installWindowStorage(storage);
+    const { useLocaleStore } = await import("@/store/locale");
+
+    useLocaleStore.getState().setLocale("es");
+    expect(
+      JSON.parse(storage.getItem("trackdraw.locale") ?? "null")
+    ).toMatchObject({
+      state: { locale: "es" },
+    });
+    expect(document.cookie).toContain("trackdraw-locale=es");
+
+    vi.resetModules();
+    document.cookie = "trackdraw-locale=; Max-Age=0; Path=/";
+    const { useLocaleStore: reloadedStore } = await import("@/store/locale");
+    await reloadedStore.persist.rehydrate();
+    expect(reloadedStore.getState().locale).toBe("es");
+    expect(document.cookie).toContain("trackdraw-locale=es");
+  });
 });

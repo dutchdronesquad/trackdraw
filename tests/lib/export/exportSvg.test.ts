@@ -132,6 +132,21 @@ describe("exportSvg", () => {
     expect(withoutNumbers).not.toContain(`font-weight="700" fill="#f8fafc"`);
   });
 
+  it("formats Spanish export dates while retaining the English title fallback", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-22T12:00:00.000Z"));
+    const design = createDesign();
+    design.title = "";
+    const svg = designToSvg(design, "light", { locale: "es" });
+    const date = new Intl.DateTimeFormat("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+    expect(svg).toContain(date);
+    expect(svg).toContain("Untitled Track");
+  });
+
   it("keeps very fine grid exports bounded for large layout stability", () => {
     const design = normalizeDesign({
       id: "design-svg-dense-grid",
