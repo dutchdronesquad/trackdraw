@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "Iniciar sesión",
+    "description": "Inicia sesión en TrackDraw con un enlace de acceso de un solo uso."
+  },
+  "goHome": "Ir a la página de inicio",
+  "backToStudio": "Volver a Studio",
+  "pageTitle": "Cuenta de TrackDraw",
+  "heading": "Retoma tu trabajo en TrackDraw estés donde estés.",
+  "description": "Accede a tus diseños desde distintos dispositivos, mantén las pistas compartidas vinculadas a tu cuenta y vuelve a trabajar con un simple enlace por correo.",
+  "featureDevices": {
+    "title": "En distintos dispositivos",
+    "description": "Retoma el trabajo en otro dispositivo sin cambiar el flujo del editor."
+  },
+  "featureOwnership": {
+    "title": "Propiedad",
+    "description": "Da un lugar propio a tus diseños compartidos y a las futuras funciones de cuenta."
+  },
+  "featureMagicLink": {
+    "title": "Enlace de acceso alternativo",
+    "description": "Usa una clave de acceso si está disponible o, como alternativa, un enlace de inicio de sesión enviado a tu correo."
+  },
+  "signIn": {
+    "title": "Iniciar sesión",
+    "description": "Inicia sesión con una clave de acceso en este dispositivo o recibe por correo un enlace de acceso sin contraseña.",
+    "checkInboxTitle": "Revisa tu bandeja de entrada",
+    "checkInboxBody": "Hemos enviado tu enlace de inicio de sesión de un solo uso a {email}. Ábrelo en este dispositivo o en otro para continuar. Si no llega pronto, revisa la carpeta de correo no deseado.",
+    "howItWorksTitle": "Cómo funciona el inicio de sesión por enlace",
+    "howItWorksBody": "Cada correo contiene un enlace de inicio de sesión de un solo uso. No necesitas configurar una contraseña: abre el enlace y TrackDraw iniciará tu sesión.",
+    "useDifferentEmail": "Usar otro correo electrónico",
+    "openingPasskey": "Abriendo clave de acceso…",
+    "signInPasskey": "Iniciar sesión con clave de acceso",
+    "or": "o",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "you@example.com",
+    "sendingLink": "Enviando enlace…",
+    "sendLink": "Enviarme un enlace de inicio de sesión",
+    "noPasskeySupport": "Este navegador no admite actualmente claves de acceso aquí. Usa el enlace de acceso por correo como alternativa.",
+    "passkeyNotFound": "No hemos podido asociar esa clave de acceso a tu cuenta de TrackDraw. Prueba con otra clave o usa el enlace de inicio de sesión por correo.",
+    "passkeyFailed": "No se ha podido iniciar sesión con la clave de acceso.",
+    "checkEmail": "Revisa tu correo para encontrar el enlace de inicio de sesión."
+  },
+  "magicLinkVerify": {
+    "eyebrow": "Inicio de sesión seguro",
+    "secureSession": "Acceso protegido mediante enlace",
+    "needsNewLink": "Se necesita un enlace nuevo",
+    "autoTitle": "Iniciando sesión",
+    "autoDescription": "TrackDraw está abriendo tu espacio de trabajo con el enlace de inicio de sesión de tu correo.",
+    "title": "Abrir TrackDraw",
+    "description": "Continúa desde este navegador para terminar de iniciar sesión. Así se protege tu enlace de un solo uso frente a las comprobaciones automáticas de seguridad del correo.",
+    "statusEmail": "Enlace de correo recibido",
+    "statusVerify": "Verificando tu enlace de inicio de sesión",
+    "statusStudio": "Abriendo tu espacio de trabajo",
+    "continue": "Continuar a TrackDraw",
+    "continuing": "Continuando...",
+    "requestNewLink": "Solicitar un enlace nuevo",
+    "backToLogin": "Volver al inicio de sesión",
+    "invalidTitle": "Este enlace de inicio de sesión está incompleto",
+    "invalidDescription": "Solicita un enlace nuevo y ábrelo desde el último correo de TrackDraw.",
+    "failed": "No se ha podido utilizar este enlace de inicio de sesión. Solicita uno nuevo y vuelve a intentarlo."
+  }
+}

@@ -18,6 +18,12 @@
     "step1": "Deze TrackDraw-embed hoort niet bij een actieve gepubliceerde accountlink.",
     "step2": "Vraag om een JSON-export als de lay-out een langduriger overdracht nodig heeft."
   },
+  "revoked": {
+    "heading": "Deze deellink is ingetrokken",
+    "description": "De eigenaar van deze track heeft deze deellink ingetrokken, waardoor je die niet meer kunt openen. Vraag de eigenaar om een nieuwe link als je deze lay-out nog nodig hebt.",
+    "step1": "Vraag de eigenaar om de track opnieuw te delen voor een nieuwe link.",
+    "step2": "Of vraag om een <strong>JSON-export</strong>, die je in Studio kunt openen met Importeren."
+  },
   "notFound": {
     "heading": "Deze gedeelde track kon niet worden geopend",
     "description": "De deellink kan zijn ingetrokken door de eigenaar, of verouderd, onvolledig of verkeerd gekopieerd zijn. Vraag de verzender om te bevestigen dat de link nog actief is of een nieuwe link te publiceren. Als de track erg groot is, is een JSON-export een betrouwbaarder alternatief voor een deellink.",
@@ -30,13 +36,20 @@
     "sharedByReadOnly": "Gedeeld door {author}. Alleen-lezen, wijzigingen worden niet opgeslagen. Wissel naar {view} of maak je eigen bewerkbare kopie in Studio.",
     "readOnlyNoAuthor": "Alleen-lezen, wijzigingen worden niet opgeslagen. Wissel naar {view} of maak je eigen bewerkbare kopie in Studio.",
     "openView": "{view} openen",
-    "makeEditableCopy": "Bewerkbare kopie maken"
+    "makeEditableCopy": "Bewerkbare kopie maken",
+    "loading": "Gedeelde track laden…"
+  },
+  "fallback": {
+    "untitled": "Track zonder titel",
+    "readOnlyDescription": "Alleen-lezen TrackDraw-plan voor {title}."
   },
   "metadata": {
     "title": "Track bekijken",
     "description": "Bekijk deze FPV-racetrack die met TrackDraw is ontworpen.",
     "expiredTitle": "Verlopen trackshare",
     "expiredDescription": "Deze TrackDraw-deellink is verlopen. Vraag de verzender om een nieuwe link te publiceren.",
+    "revokedTitle": "Ingetrokken trackshare",
+    "revokedDescription": "De eigenaar heeft deze TrackDraw-deellink ingetrokken. Vraag de eigenaar om een nieuwe link.",
     "retiredTitle": "Niet-ondersteunde trackshare",
     "retiredDescription": "Dit oudere TrackDraw-shareformaat wordt niet meer ondersteund. Vraag de verzender om een nieuwe link te publiceren.",
     "embedTitle": "Track embed",

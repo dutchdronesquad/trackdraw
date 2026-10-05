@@ -18,6 +18,12 @@
     "step1": "请让发送者重新发布这个赛道，或发送一个账户发布链接来提供更长期的只读访问。",
     "step2": "如果需要更长期的交接方式，请让对方发送 JSON 导出。"
   },
+  "revoked": {
+    "heading": "这个共享链接已撤销",
+    "description": "这条赛道的所有者已撤销此共享链接，因此无法再打开。如果你仍需要这个布局，请向所有者索取新的链接。",
+    "step1": "请让所有者重新分享这条赛道，以获取新的链接。",
+    "step2": "或者请对方提供 <strong>JSON 导出</strong>，你可以在 Studio 中通过“导入”打开它。"
+  },
   "notFound": {
     "heading": "无法打开这个共享赛道",
     "description": "这个共享链接可能已被所有者撤销，也可能已经过时、不完整，或者复制时出错。请让发送者确认链接仍然有效，或重新发布一个新的链接。如果赛道特别大，JSON 导出会比共享链接更稳妥。",
@@ -30,13 +36,20 @@
     "sharedByReadOnly": "由 {author} 分享。当前为只读模式，不会保存修改。可切换到 {view}，或在 Studio 中另存为可编辑副本。",
     "readOnlyNoAuthor": "当前为只读模式，不会保存修改。可切换到 {view}，或在 Studio 中另存为可编辑副本。",
     "openView": "打开 {view}",
-    "makeEditableCopy": "创建可编辑副本"
+    "makeEditableCopy": "创建可编辑副本",
+    "loading": "正在加载共享赛道…"
+  },
+  "fallback": {
+    "untitled": "未命名赛道",
+    "readOnlyDescription": "“{title}”的 TrackDraw 只读赛道图。"
   },
   "metadata": {
     "title": "查看赛道",
     "description": "查看这条用 TrackDraw 设计的 FPV 赛道。",
     "expiredTitle": "赛道共享已过期",
     "expiredDescription": "这个 TrackDraw 共享链接已过期。请让发送者重新发布一个新的链接。",
+    "revokedTitle": "赛道共享已撤销",
+    "revokedDescription": "这个 TrackDraw 共享链接已被所有者撤销。请向所有者索取新的链接。",
     "retiredTitle": "旧版赛道共享不再受支持",
     "retiredDescription": "旧版 TrackDraw 共享格式已不再受支持。请让发送者重新发布一个新的链接。",
     "embedTitle": "赛道嵌入",

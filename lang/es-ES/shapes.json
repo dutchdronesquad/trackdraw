@@ -1,0 +1,150 @@
+{
+  "kindLabels": {
+    "gate": "Puerta",
+    "tower": "Torre",
+    "flag": "Bandera",
+    "cone": "Cono",
+    "label": "Etiqueta",
+    "polyline": "Trazada",
+    "startfinish": "Salida / Meta",
+    "ladder": "Escalera",
+    "divegate": "Puerta de descenso",
+    "barrier": "Barrera"
+  },
+  "toolLabels": {
+    "select": "Seleccionar",
+    "grab": "Mover vista",
+    "preset": "Preajustes",
+    "gate": "Puerta",
+    "tower": "Torre",
+    "flag": "Bandera",
+    "cone": "Cono",
+    "label": "Etiqueta",
+    "polyline": "Recorrido",
+    "startfinish": "Plataformas de salida",
+    "ladder": "Escalera",
+    "divegate": "Puerta de descenso",
+    "barrier": "Barrera"
+  },
+  "toolGroups": {
+    "track": "Pista",
+    "extra": "Extra"
+  },
+  "toolMobileLabels": {
+    "startfinish": "Salida",
+    "divegate": "Descenso",
+    "barrier": "Barrera"
+  },
+  "mobileStatus": {
+    "multiSelect": "Múltiple",
+    "tool": "Herramienta",
+    "itemsCount": "{count} elementos"
+  },
+  "canvas": {
+    "selectionCount": "{count} elementos",
+    "selectionFallback": "Selección",
+    "frontLabel": "Frente"
+  },
+  "catalogEntries": {
+    "trackdraw-generic-gate": {
+      "name": "Puerta TrackDraw",
+      "size": "2 x 2 m"
+    },
+    "multigp-standard-gate-5x5": {
+      "name": "Puerta estándar MultiGP 5x5",
+      "size": "5 ft x 5 ft"
+    },
+    "multigp-championship-gate-7x6": {
+      "name": "Puerta de campeonato MultiGP 7x6",
+      "size": "7 ft x 6 ft"
+    },
+    "racegow-gate": {
+      "name": "Puerta RaceGOW",
+      "size": "24 in x 24 in"
+    },
+    "trackdraw-generic-tower": {
+      "name": "Torre TrackDraw",
+      "size": "2 x 2 m, elevada"
+    },
+    "multigp-tower-5x5": {
+      "name": "Torre MultiGP 5x5",
+      "size": "5 ft x 5 ft, elevada 5 ft"
+    },
+    "multigp-tower-7x6": {
+      "name": "Torre MultiGP 7x6",
+      "size": "7 ft x 6 ft, elevada 6 ft"
+    },
+    "multigp-double-gate-tower-5x5": {
+      "name": "Torre de puerta doble MultiGP 5x5",
+      "size": "5 ft de ancho, 2 aberturas de 5 ft"
+    },
+    "multigp-double-gate-tower-7x6": {
+      "name": "Torre de puerta doble MultiGP 7x6",
+      "size": "7 ft de ancho, 2 aberturas de 6 ft"
+    },
+    "trackdraw-generic-flag": {
+      "name": "Bandera TrackDraw",
+      "size": "0.25 m de radio, mástil de 3.5 m"
+    },
+    "multigp-corner-flag": {
+      "name": "Bandera de esquina MultiGP",
+      "size": "10 ft"
+    },
+    "trackdraw-generic-cone": {
+      "name": "Cono TrackDraw",
+      "size": "0.2 m de radio"
+    },
+    "trackdraw-generic-label": {
+      "name": "Etiqueta TrackDraw",
+      "size": "Etiqueta de texto"
+    },
+    "trackdraw-generic-start-finish": {
+      "name": "Salida / Meta TrackDraw",
+      "size": "3 m de ancho"
+    },
+    "trackdraw-generic-ladder": {
+      "name": "Escalera TrackDraw",
+      "size": "2 x 6 m, 3 peldaños"
+    },
+    "multigp-standard-ladder-5x5": {
+      "name": "Escalera estándar MultiGP 5x5",
+      "size": "5 ft de ancho, 3 secciones de 5 ft"
+    },
+    "multigp-championship-ladder-7x6": {
+      "name": "Escalera de campeonato MultiGP 7x6",
+      "size": "7 ft de ancho, 3 aberturas de 6 ft"
+    },
+    "multigp-topless-ladder-7x6": {
+      "name": "Escalera MultiGP 7x6 sin travesaño superior",
+      "size": "7 ft de ancho, 3 x 6 ft sin travesaño superior"
+    },
+    "trackdraw-generic-dive-gate": {
+      "name": "Puerta de descenso TrackDraw",
+      "size": "Cuadrado de 2.8 m"
+    },
+    "multigp-dive-gate-7x6": {
+      "name": "Puerta de descenso MultiGP 7x6",
+      "size": "7 ft x 6 ft"
+    },
+    "multigp-launch-gate-7x6": {
+      "name": "Puerta de lanzamiento MultiGP 7x6",
+      "size": "7 ft x 6 ft"
+    },
+    "trackdraw-generic-banner": {
+      "name": "Pancarta TrackDraw",
+      "size": "3 × 2 m"
+    },
+    "trackdraw-generic-fence": {
+      "name": "Valla TrackDraw",
+      "size": "3 × 1.2 m"
+    },
+    "trackdraw-generic-net": {
+      "name": "Red TrackDraw",
+      "size": "3 × 2 m"
+    },
+    "multigp-hurdle": {
+      "name": "Valla de salto MultiGP",
+      "size": "10 ft de ancho, 5 ft de alto"
+    }
+  }
+}

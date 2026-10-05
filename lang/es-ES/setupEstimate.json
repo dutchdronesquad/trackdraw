@@ -1,0 +1,48 @@
+{
+  "complexity": {
+    "light": "Claro",
+    "standard": "Estándar",
+    "heavy": "Alta"
+  },
+  "kinds": {
+    "trackGroup": "Grupo de pista",
+    "crew": "Equipo de montaje"
+  },
+  "flagsFinalPass": {
+    "label": "Colocación final de banderas",
+    "note": "Termina de marcar el terreno con banderas y comprueba la visibilidad cuando la línea principal de obstáculos numerados esté montada."
+  },
+  "conesTrackWalk": {
+    "label": "Colocación de conos durante el reconocimiento de la pista (opcional)",
+    "note": "Los conos se pueden colocar durante el reconocimiento de los pilotos para evitar otra pasada. Si prefieres colocarlos antes, reserva algo más de tiempo en el terreno."
+  },
+  "crewUnloadStage": {
+    "label": "Descargar y organizar el material",
+    "note": "Descarga el vehículo, clasifica los anclajes y las piezas y distribuye el material para que la preparación de los marcos no bloquee después la colocación en el terreno."
+  },
+  "crewPreassemble": {
+    "label": "Premontar los marcos y los elementos textiles",
+    "noteWithSoftGoods": "Prepara los marcos de PVC de las puertas y las banderas tipo vela antes de llevarlos al terreno para poder centrar la colocación en las distancias.",
+    "noteWithoutSoftGoods": "Prepara los marcos de PVC de las puertas antes de llevarlos al terreno para poder centrar la colocación en las distancias."
+  },
+  "crewRiggingCheck": {
+    "label": "Revisar la suspensión y los anclajes",
+    "note": "Confirma los puntos de anclaje, los cables elevados y el plan de distancias de seguridad antes de elevar o suspender estructuras más pesadas."
+  },
+  "obstacleNoteWithNumber": "{note} Usa el obstáculo #{number} del mapa como referencia para colocarlo.",
+  "summaryHeavy": "{count, plural, one {Hay que colocar y asegurar 1 estructura de mayor complejidad antes de colocar las puertas estándar.} other {Hay que colocar y asegurar {count} estructuras de mayor complejidad antes de colocar las puertas estándar.}} La estimación supone un equipo habitual de 2-3 personas y puede aumentar si hay estructuras suspendidas o distancias largas de transporte.",
+  "summaryLight": "La mayor parte del tiempo de montaje se dedica a descargar, premontar los marcos y colocar correctamente la línea de obstáculos numerados con un equipo de 2-3 personas.",
+  "crewAssumption": "La estimación se basa en un equipo habitual de 2-3 personas y una preparación típica de club: descargar, organizar, premontar y, después, colocar y asegurar.",
+  "obstacleNotes": {
+    "gate": "Coloca y alinea esta puerta una vez instaladas las estructuras de referencia.",
+    "tower": "Coloca y asegura este elemento junto con las otras estructuras de mayor complejidad. Las torres necesitan bases estables, buena alineación vertical y espacio suficiente para las aberturas apiladas.",
+    "flag": "Usa las banderas para mejorar la visibilidad y definir los límites cuando los obstáculos principales estén colocados.",
+    "cone": "Usa los conos en la última pasada para marcar los límites y comprobar las distancias.",
+    "label": "Todavía no hay instrucciones de montaje para este elemento.",
+    "polyline": "Todavía no hay instrucciones de montaje para este elemento.",
+    "startfinish": "Coloca este elemento primero para fijar la referencia de salida y meta antes de montar el resto de la pista.",
+    "ladder": "Considera este elemento de mayor complejidad. Reserva más tiempo si necesita suspensión elevada o un punto de suspensión preciso.",
+    "divegate": "Coloca y asegura este elemento al principio. Las puertas de descenso suelen necesitar más alineación y anclajes que las puertas estándar.",
+    "barrier": "Monta las barreras después de colocar las puertas y los obstáculos principales."
+  }
+}

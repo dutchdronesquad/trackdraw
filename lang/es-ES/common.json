@@ -1,0 +1,99 @@
+{
+  "actions": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "copy": "Copiar",
+    "delete": "Eliminar",
+    "duplicate": "Duplicar",
+    "hide": "Ocultar",
+    "lock": "Bloquear",
+    "remove": "Quitar",
+    "rename": "Renombrar",
+    "reset": "Restablecer",
+    "save": "Guardar",
+    "saveChanges": "Guardar cambios",
+    "select": "Seleccionar",
+    "undo": "Deshacer",
+    "unlock": "Desbloquear"
+  },
+  "labels": {
+    "account": "Cuenta",
+    "actions": "Acciones",
+    "dashboard": "Panel de control",
+    "description": "Descripción",
+    "expires": "Caduca",
+    "language": "Idioma",
+    "name": "Nombre",
+    "owner": "Propietario",
+    "profile": "Perfil",
+    "project": "Proyecto",
+    "role": "Rol",
+    "status": "Estado",
+    "theme": "Tema",
+    "title": "Título",
+    "type": "Tipo",
+    "view": "Vista"
+  },
+  "dataTable": {
+    "filterPlaceholder": "Filtrar {title}...",
+    "noResults": "No se han encontrado resultados.",
+    "selectedCount": "{count} seleccionados",
+    "clearFilters": "Borrar filtros",
+    "rowsPerPage": "Filas por página",
+    "page": "Página {current} de {total}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente"
+  },
+  "measurementUnit": {
+    "metric": "Métrico",
+    "imperial": "Imperial",
+    "presetAriaLabel": "Sistema de medidas: {current}. Cambiar a {next}.",
+    "presetLabel": "Sistema de medidas: {current}",
+    "description": "Cambia las distancias mostradas y los campos compatibles."
+  },
+  "themeToggle": {
+    "labels": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "ariaLabel": "Tema: {theme}",
+    "tooltip": "Actual: {current}. Haz clic para cambiar a {next}."
+  },
+  "versionTag": {
+    "tooltip": {
+      "openReleaseNotes": "Abrir las notas de la versión en GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Abrir las notas de la versión en GitHub"
+    }
+  },
+  "runtimeError": {
+    "badge": "Error de ejecución",
+    "title": "TrackDraw ha encontrado un problema.",
+    "description": "La pantalla actual ha dejado de mostrarse. Normalmente, los datos de tu proyecto local siguen guardados en este navegador, pero evita cerrar la pestaña hasta haber intentado recuperarlos.",
+    "tryAgain": "Volver a intentar",
+    "openStudio": "Abrir Studio",
+    "nextStep": "Si el problema persiste, vuelve a abrir Studio y exporta una copia de seguridad en JSON antes de continuar con cambios importantes."
+  },
+  "productAnalytics": {
+    "title": "Analítica del producto",
+    "description": "Controla la medición del uso del producto respetuosa con la privacidad. Al desactivarla, se dejan de registrar eventos futuros y se solicita a TrackDraw que elimine los eventos vinculados a esta sesión del navegador y, si has iniciado sesión, a tu cuenta, proyectos y enlaces compartidos.",
+    "preferenceTitle": "Compartir datos de uso respetuosos con la privacidad",
+    "preferenceDescription": "Ayuda a mejorar los flujos del editor y su fiabilidad. Nunca se incluyen el contenido de las pistas, las URL completas, las direcciones IP ni perfiles publicitarios.",
+    "saving": "Guardando…",
+    "toggleLabel": "Compartir analítica del producto respetuosa con la privacidad",
+    "error": "La recopilación futura está desactivada en este navegador, pero TrackDraw no ha podido confirmar la eliminación de los eventos existentes. Vuelve a intentarlo."
+  },
+  "status": {
+    "active": "Activo",
+    "expired": "Caducado",
+    "featured": "Destacado",
+    "hidden": "Oculto",
+    "listed": "Visible en la galería",
+    "loading": "Cargando",
+    "off": "Desactivado",
+    "on": "Activado",
+    "pending": "Pendiente",
+    "published": "Publicado",
+    "revoked": "Revocado"
+  }
+}

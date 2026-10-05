@@ -1,0 +1,66 @@
+{
+  "renderFailed": "No se ha podido generar el PDF",
+  "untitledTrack": "Pista sin título",
+  "footer": {
+    "brand": "TrackDraw · {pageLabel}",
+    "pageOf": "Página {pageNumber} de {totalPages}",
+    "pageOverview": "Resumen",
+    "pageTrackMap": "Mapa de la pista",
+    "pageBuildSheet": "Hoja de montaje"
+  },
+  "sharedView": {
+    "title": "VISTA COMPARTIDA",
+    "scanToOpen": "Escanea para abrir la pista",
+    "scanDescription": "Abre el enlace compartido canónico de TrackDraw para revisarlo y explicarlo desde el móvil.",
+    "noShare": "No hay ningún enlace publicado vinculado",
+    "noShareDescription": "Publica primero este proyecto si quieres incluir un código escaneable en el Race Pack."
+  },
+  "cover": {
+    "title": "Race Pack",
+    "numberingIncluded": "numeración incluida",
+    "numberingHidden": "numeración oculta",
+    "statusLabel": "Estado",
+    "statusBuildable": "Se puede montar",
+    "statusShort": "Falta material",
+    "missingLabel": "Faltan",
+    "obstaclesLabel": "Obstáculos",
+    "intro": "Este Race Pack está pensado para acompañar al equipo de montaje el día de la carrera. Usa el mapa como referencia de colocación, la lista de materiales para comprobar las existencias y la secuencia de montaje como orden práctico para instalar la pista en el terreno. La estimación del tiempo de montaje se basa en un equipo habitual de 2-3 personas y un flujo típico de club: descargar, organizar, premontar y, después, colocar y asegurar.",
+    "contentsTitle": "Contenido",
+    "contentsItem1": "1. Mapa de la pista y vista general del terreno",
+    "contentsItem2": "2. Lista de materiales, comprobación de existencias y puntos de cronometraje",
+    "contentsItem3": "3. Secuencia de montaje y notas para el día de la carrera",
+    "summaryTitle": "Resumen general",
+    "summaryShortage": "{count, plural, one {Este diseño supera actualmente las existencias disponibles de 1 tipo de obstáculo.} other {Este diseño supera actualmente las existencias disponibles de {count} tipos de obstáculos.}} Resuelve las faltas de material antes de usar este documento como referencia final de montaje.",
+    "summaryBuildable": "Este diseño se puede montar con el perfil de inventario guardado. Usa las páginas siguientes como referencia de montaje y entrega el día de la carrera."
+  },
+  "mapPage": {
+    "title": "Mapa de la pista",
+    "stockShort": "Faltan {count} unidades",
+    "stockBuildable": "Existencias: se puede montar",
+    "numberingShown": "numeración visible",
+    "numberingHidden": "numeración oculta"
+  },
+  "buildSheet": {
+    "title": "Hoja de montaje",
+    "materialListTitle": "Lista de materiales",
+    "obstacleColumn": "Obstáculo",
+    "requiredColumn": "Necesarios",
+    "availableColumn": "Disponibles",
+    "missingColumn": "Faltan",
+    "timingPointsTitle": "Puntos de cronometraje",
+    "noTimingPoints": "Todavía no hay puntos de cronometraje asignados. Marca una puerta como salida/meta o parcial en el inspector antes de entregar el documento para la carrera.",
+    "setupSequenceTitle": "Secuencia de montaje",
+    "setupIntro": "Tiempo estimado de montaje: unos {min}-{max} minutos. Complejidad general: {complexity}. {summary}",
+    "crewStepLabel": "Paso del equipo de montaje",
+    "groupedTaskLabel": "Tarea agrupada de la pista",
+    "obstacleNumberSuffix": "{kind} · Obstáculo #{number}",
+    "minutesSuffix": "{minutes} min",
+    "noSetupSequenceNumbering": "Todavía no hay una secuencia de montaje. Añade un recorrido y coloca algunos obstáculos para generar un documento más útil.",
+    "noSetupSequenceHidden": "La numeración está oculta en esta exportación. Activa los números de los obstáculos para que la secuencia de montaje siga las referencias del recorrido.",
+    "notesTitle": "Notas para el día de la carrera",
+    "note1": "Usa la página del mapa como referencia de colocación durante el montaje y la explicación a los pilotos.",
+    "note2": "Usa la comprobación de existencias como fuente de referencia antes de dar el diseño por listo para el montaje.",
+    "note3": "Instala primero los puntos de anclaje de la pista y asegura después las estructuras de mayor complejidad, como las puertas de descenso y las escaleras, antes de colocar las puertas estándar.",
+    "note4": "Si cambia el recorrido o el número de obstáculos, vuelve a generar el Race Pack para mantener alineados el mapa, la lista de existencias y la secuencia de montaje."
+  }
+}
