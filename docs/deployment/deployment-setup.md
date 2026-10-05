@@ -231,7 +231,9 @@ Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-
 
 During the Crowdin pilot, target catalogs may temporarily omit new English keys. Asset generation recursively merges each target over English, including nested objects and arrays, so missing or empty translations use English until Crowdin returns an approved value. Local server-side catalog reads apply the same fallback before rendering.
 
-OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, and `zh-CN`), while frontend product locale identifiers remain stable. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle.
+OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, and `zh-CN`), while frontend product locale identifiers remain stable. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle. If a static shell is rendered inside a Worker after a cache miss, it falls back to the shared catalog loader and the `ASSETS` binding, where the generated English catalogs remain available.
+
+The static shell cache filter uses OpenNext's route-cache key helper to recognize `/`, `/studio`, `/privacy`, and `/terms` in both legacy and scoped Next.js cache keys. Other routes and fetch entries remain outside this read-only cache.
 
 `dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en-US/`.
 

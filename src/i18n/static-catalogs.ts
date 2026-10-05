@@ -1,6 +1,7 @@
 import "server-only";
 
-import type { MessageNamespace } from "@/i18n/catalogs";
+import { pickCatalogNamespaces, type MessageNamespace } from "@/i18n/catalogs";
+import { defaultLocale } from "@/lib/i18n/locales";
 
 type LandingMetadata = {
   homeTitle: string;
@@ -36,7 +37,9 @@ async function readEnglishNamespace(namespace: MessageNamespace) {
     }
   }
 
-  throw new Error(`Missing static English namespace "${namespace}".`);
+  // Cache misses can render static shells inside a Worker without local files.
+  const messages = await pickCatalogNamespaces(defaultLocale, [namespace]);
+  return messages[namespace];
 }
 
 export async function pickStaticEnglishNamespaces(
