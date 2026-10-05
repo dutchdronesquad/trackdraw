@@ -1,0 +1,968 @@
+{
+  "feedback": {
+    "title": "Enviar comentarios",
+    "subtitle": "Explica un problema, una idea o una pregunta. Revísalo todo antes de que se abra GitHub.",
+    "categoryLabel": "Tipo de comentario",
+    "titleLabel": "Título breve",
+    "detailsLabel": "Detalles",
+    "stepsLabel": "Pasos para reproducirlo (opcional)",
+    "addSteps": "Añadir pasos para reproducirlo",
+    "hideSteps": "Ocultar pasos para reproducirlo",
+    "stepsPlaceholder": "1. Abrir…\n2. Seleccionar…\n3. Aparece el problema…",
+    "contextLabel": "Incluir contexto de la aplicación",
+    "contextDescription": "Solo la versión {version}, {routeFamily}, {browser} y {device}.",
+    "previewLabel": "Previsualizar informe de GitHub",
+    "hidePreview": "Ocultar la vista previa del informe de GitHub",
+    "previewEmpty": "Añade un título y detalles para preparar el informe.",
+    "publicWarning": "Tu informe será público en GitHub. TrackDraw nunca añade datos del proyecto, la cuenta ni el diseño.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copiedStatus": "Informe copiado.",
+    "copyFailed": "No se ha podido copiar. La vista previa está abierta para que puedas copiarlo manualmente.",
+    "openGitHub": "Revisar en GitHub",
+    "categories": {
+      "bug": {
+        "shortTitle": "Problema",
+        "title": "Informar de un problema",
+        "description": "Algo no funciona, resulta confuso o se comporta de forma inesperada.",
+        "titlePlaceholder": "¿Qué ha fallado?",
+        "detailsPlaceholder": "¿Qué esperabas y qué ha ocurrido en su lugar?"
+      },
+      "idea": {
+        "shortTitle": "Idea",
+        "title": "Compartir una idea",
+        "description": "Propón una mejora o una nueva forma en la que TrackDraw podría ayudarte.",
+        "titlePlaceholder": "Resume tu idea",
+        "detailsPlaceholder": "¿Qué problema resolvería y cuándo lo usarías?"
+      },
+      "question": {
+        "shortTitle": "Pregunta",
+        "title": "Hacer una pregunta",
+        "description": "Pregunta por un flujo de trabajo o algo que no encuentras.",
+        "titlePlaceholder": "¿Qué te gustaría saber?",
+        "detailsPlaceholder": "Describe qué intentas hacer y dónde te atascas."
+      }
+    }
+  },
+  "account": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "mobileSubtitle": "Gestiona tu cuenta de TrackDraw."
+    },
+    "nav": {
+      "security": "Seguridad",
+      "privacy": "Privacidad",
+      "apiKeys": "Claves de API",
+      "danger": "Zona de peligro"
+    },
+    "panels": {
+      "profile": {
+        "title": "Tu perfil",
+        "description": "Gestiona el nombre que se muestra en tu cuenta de TrackDraw."
+      },
+      "security": {
+        "title": "Seguridad",
+        "description": "Gestiona los métodos de inicio de sesión, el correo y las claves de acceso de tu cuenta de TrackDraw."
+      },
+      "privacy": {
+        "title": "Privacidad",
+        "description": "Gestiona la analítica opcional del producto para tu cuenta de TrackDraw."
+      },
+      "apiKeys": {
+        "title": "Claves de API",
+        "description": "Crea y revoca claves con caducidad para integraciones externas de TrackDraw."
+      },
+      "danger": {
+        "title": "Zona de peligro",
+        "description": "Acciones de cuenta destructivas e irreversibles."
+      }
+    },
+    "profile": {
+      "displayName": {
+        "label": "Nombre visible",
+        "placeholder": "Tu nombre"
+      },
+      "language": {
+        "description": "Los cambios se aplican al momento"
+      },
+      "status": {
+        "saving": "Guardando..."
+      },
+      "fallback": {
+        "noAccountEmail": "Cuenta de TrackDraw"
+      }
+    },
+    "security": {
+      "email": {
+        "address": "Dirección de correo electrónico",
+        "newEmail": "Nuevo correo electrónico",
+        "placeholder": "name@example.com",
+        "changeDescription": "Después de guardar, enviaremos primero una confirmación a tu dirección de correo actual. Una vez confirmada, verificarás la nueva.",
+        "change": "Cambiar correo electrónico",
+        "saving": "Guardando..."
+      },
+      "passkeys": {
+        "title": "Claves de acceso",
+        "description": "Añade una clave de acceso para iniciar sesión más rápido en dispositivos compatibles.",
+        "add": "Añadir clave de acceso",
+        "adding": "Añadiendo...",
+        "devAuthUnavailable": "Las claves de acceso no están disponibles en `npm run dev`. Usa `npm run preview` para probar localmente el flujo real de autenticación.",
+        "unsupportedBrowser": "Este navegador no ofrece actualmente WebAuthn aquí, por lo que no se pueden configurar claves de acceso en este dispositivo.",
+        "loading": "Cargando claves de acceso...",
+        "addedDate": "Añadido el {date}",
+        "status": {
+          "synced": "sincronizado"
+        },
+        "reauth": {
+          "title": "Vuelve a iniciar sesión para continuar",
+          "description": "Configurar una clave de acceso requiere haber iniciado sesión recientemente. Puedes seguir conectado para trabajar normalmente, pero esta acción de seguridad necesita confirmación.",
+          "action": "Volver a iniciar sesión"
+        },
+        "empty": {
+          "title": "Todavía no hay claves de acceso",
+          "description": "Añade una para iniciar sesión más rápido en tus dispositivos de confianza."
+        },
+        "aria": {
+          "rename": "Renombrar clave de acceso",
+          "removing": "Quitando clave de acceso",
+          "remove": "Quitar clave de acceso"
+        },
+        "actions": {
+          "removing": "Quitando...",
+          "removeTooltip": "Quitar de la cuenta",
+          "saveName": "Guardar nombre"
+        },
+        "fields": {
+          "namePlaceholder": "Nombre de la clave de acceso"
+        },
+        "fallback": {
+          "unnamed": "Clave de acceso sin nombre"
+        },
+        "rename": {
+          "description": "Esto solo cambia la etiqueta de la clave de acceso en tu cuenta de TrackDraw."
+        }
+      }
+    },
+    "apiKeys": {
+      "form": {
+        "keyNameLabel": "Nombre de la clave",
+        "expiryDays": "{days} días",
+        "expiryYear": "1 año",
+        "namePlaceholder": "Integración de superposición",
+        "create": "Crear"
+      },
+      "created": {
+        "title": "Clave de API creada",
+        "description": "Este secreto se muestra una sola vez. Guárdalo antes de cerrar este diálogo."
+      },
+      "active": {
+        "title": "Claves de API activas",
+        "descriptionPrefix": "Claves de solo lectura para integraciones de confianza.",
+        "docsLink": "Documentación de la API",
+        "refreshAriaLabel": "Actualizar claves de API",
+        "loading": "Cargando claves de API..."
+      },
+      "empty": {
+        "title": "Todavía no hay claves de API",
+        "description": "Crea una cuando una integración de confianza necesite acceso de solo lectura a los proyectos de tu cuenta."
+      },
+      "fallback": {
+        "unnamed": "Clave de API sin nombre"
+      },
+      "meta": {
+        "expiresOn": "Caduca el {date}",
+        "lastUsed": "Último uso: {date}"
+      },
+      "revoke": {
+        "confirmTitle": "¿Revocar la clave de API?",
+        "tooltip": "Revocar",
+        "ariaLabel": "Revocar {name}",
+        "warningExpiring": "Esta clave dejará de funcionar.",
+        "warningNonExpiring": "Las integraciones que usan esta clave perderán el acceso de solo lectura.",
+        "revoking": "Revocando...",
+        "action": "Revocar"
+      }
+    },
+    "danger": {
+      "description": "Eliminar tu cuenta borra los proyectos de la cuenta, los enlaces publicados, las claves de API y otros datos vinculados a ella. Exporta los datos de tu cuenta que quieras conservar antes de continuar.",
+      "confirm": {
+        "label": "Escribe DELETE para confirmar",
+        "placeholder": "DELETE"
+      },
+      "actions": {
+        "deleting": "Eliminando...",
+        "deleteAccount": "Eliminar cuenta"
+      }
+    },
+    "shared": {
+      "loading": "Cargando cuenta...",
+      "signInTitle": "Inicia sesión para gestionar tu cuenta",
+      "signInBody": "Usa tu correo para acceder a los ajustes y detalles de perfil de tu cuenta en la nube."
+    },
+    "errors": {
+      "loadPasskeysFailed": "No se han podido cargar las claves de acceso.",
+      "loadApiKeysFailed": "No se han podido cargar las claves de API.",
+      "profileNameRequired": "Introduce el nombre que quieres que muestre TrackDraw.",
+      "profileUpdateFailed": "No se ha podido actualizar tu perfil.",
+      "deleteConfirmRequired": "Escribe DELETE para confirmar la eliminación de la cuenta.",
+      "deleteFailed": "No se ha podido eliminar tu cuenta.",
+      "emailRequired": "Introduce el correo que quieres usar para TrackDraw.",
+      "emailSame": "Introduce una dirección de correo distinta para cambiarla.",
+      "emailChangeFailed": "No se ha podido cambiar tu correo.",
+      "passkeyAddFailed": "No se ha podido añadir la clave de acceso.",
+      "passkeyNameRequired": "Introduce un nombre para la clave de acceso antes de guardar.",
+      "passkeyRenameFailed": "No se ha podido renombrar la clave de acceso.",
+      "passkeyRemoveFailed": "No se ha podido quitar la clave de acceso.",
+      "apiKeyNameRequired": "Introduce un nombre para esta clave de API.",
+      "apiKeyCreateFailed": "No se ha podido crear la clave de API.",
+      "apiKeyRevokeFailed": "No se ha podido revocar la clave de API."
+    },
+    "success": {
+      "profileUpdated": "Perfil actualizado",
+      "passkeyAdded": "Clave de acceso añadida. Puedes renombrarla o quitarla abajo.",
+      "passkeyRenamed": "Clave de acceso renombrada",
+      "apiKeyCreated": "Clave de API creada",
+      "apiKeyCopied": "Clave de API copiada",
+      "apiKeyRevoked": "Clave de API revocada"
+    }
+  },
+  "export": {
+    "dialog": {
+      "title": "Exportar",
+      "subtitle": "Exporta la pista actual como recursos visuales, archivos de proyecto para compartir o archivos preparados para simuladores."
+    },
+    "fields": {
+      "filename": {
+        "label": "Nombre de archivo"
+      }
+    },
+    "theme": {
+      "label": "Tema",
+      "dark": "Oscuro",
+      "light": "Claro"
+    },
+    "routeNumbers": {
+      "label": "Números del recorrido",
+      "hint": "En exportaciones 2D",
+      "enable": "Activar números del recorrido en la exportación",
+      "disable": "Desactivar números del recorrido en la exportación",
+      "enableMobile": "Activar números del recorrido",
+      "disableMobile": "Desactivar números del recorrido"
+    },
+    "actions": {
+      "switchTo3dView": "Cambiar a la vista 3D",
+      "openRequiredView": "Abrir la vista necesaria"
+    },
+    "aria": {
+      "exportFormat": "Exportar {label}"
+    },
+    "messages": {
+      "view3dUnavailable": "Vista 3D no disponible: abre primero la pestaña 3D",
+      "canvasNotReady": "Lienzo no preparado",
+      "exported": "Exportado"
+    },
+    "readiness": {
+      "open3d": "Abre la vista 3D antes de exportar esta imagen.",
+      "canvasNotReady": "El lienzo 2D aún se está cargando; vuelve a intentarlo dentro de un momento.",
+      "emptyRacePack": "Añade al menos un elemento a la pista antes de exportar un Race Pack.",
+      "missingRaceLine": "Añade una trazada antes de exportar un vídeo FPV cinematográfico.",
+      "emptyVelocidrone": "Añade al menos un elemento a la pista antes de exportar un archivo Velocidrone.",
+      "experimentalSimulator": "Algunos elementos de TrackDraw pueden importarse de forma distinta en Velocidrone."
+    },
+    "webm": {
+      "renderingBackground": "El vídeo FPV cinematográfico se está generando en segundo plano…",
+      "renderingProgress": "Generando vídeo FPV cinematográfico… {status}",
+      "ready": "Exportación FPV cinematográfica lista",
+      "progressLabel": "Generando recorrido virtual… vídeo de {duration}"
+    },
+    "categories": {
+      "visuals": {
+        "title": "Recursos visuales"
+      },
+      "raceDay": {
+        "title": "Día de la carrera"
+      },
+      "projectData": {
+        "title": "Datos del proyecto"
+      },
+      "motion": {
+        "title": "Vídeo"
+      },
+      "simulatorLab": {
+        "title": "Experimental"
+      }
+    },
+    "formats": {
+      "image": {
+        "label": "Imagen",
+        "descriptionFull": "Mapa 2D de alta resolución para impresión, diapositivas, chat o revisión rápida.",
+        "descriptionShort": "Mapa 2D de alta resolución para impresión, chat o revisión."
+      },
+      "vector": {
+        "label": "Vector",
+        "descriptionFull": "Gráfico escalable para editar en Illustrator, Figma o Inkscape.",
+        "descriptionShort": "Gráfico escalable para Illustrator, Figma o Inkscape."
+      },
+      "render3d": {
+        "label": "Imagen 3D",
+        "descriptionFull": "Captura de la vista actual de la cámara 3D para revisión visual.",
+        "descriptionShort": "Captura actual de la cámara 3D para revisión visual."
+      },
+      "projectFile": {
+        "label": "Archivo de proyecto",
+        "descriptionFull": "Copia de seguridad editable para volver a abrir, compartir o archivar en TrackDraw.",
+        "descriptionShort": "Copia de seguridad editable para volver a abrir o archivar en TrackDraw."
+      },
+      "viewerSnapshot": {
+        "label": "Instantánea para visor",
+        "descriptionFull": "Pista y texturas necesarias en un único ZIP para verla sin conexión con un visor externo compatible.",
+        "descriptionShort": "Pista y texturas para integraciones con visores sin conexión."
+      },
+      "racePack": {
+        "label": "Race Pack",
+        "descriptionFull": "Documento de montaje para la carrera con mapa, materiales, secuencia y QR.",
+        "descriptionShort": "PDF de montaje con mapa, materiales, secuencia y QR."
+      },
+      "cinematicFpv": {
+        "label": "FPV cinematográfico",
+        "descriptionFull": "Vídeo de una vuelta para revisar la fluidez o compartir el recorrido.",
+        "descriptionShort": "Vídeo de una vuelta para revisar la fluidez."
+      },
+      "velocidrone": {
+        "label": "Velocidrone",
+        "descriptionFull": "Archivo de pista Velocidrone experimental para probar en el simulador; comprueba el diseño después de importarlo.",
+        "descriptionShort": "Archivo experimental para pruebas; compruébalo después de importar."
+      }
+    },
+    "errors": {
+      "exportFailed": "Error de exportación",
+      "exportFailedDescription": "{message} Vuelve a intentarlo, cambia el formato de exportación o exporta el JSON del proyecto como copia de seguridad manual."
+    }
+  },
+  "import": {
+    "dialogTitle": "Abrir proyecto",
+    "dialogSubtitle": "Importa un proyecto de TrackDraw desde un archivo JSON.",
+    "dropFile": "Suelta un archivo aquí",
+    "browseFile": "o haz clic para buscarlo",
+    "errorInvalidJson": "Archivo JSON no válido.",
+    "errorInvalidJsonHelp": "Archivo JSON no válido. Elige una exportación .json completa de TrackDraw y vuelve a intentarlo.",
+    "errorInvalidProject": "Esto no parece un proyecto de TrackDraw.",
+    "errorInvalidProjectHelp": "Esto no parece un proyecto de TrackDraw. Elige un archivo de proyecto JSON exportado desde TrackDraw.",
+    "errorUnsupportedFile": "Solo se admiten archivos de proyecto JSON de TrackDraw.",
+    "errorUnsupportedFileHelp": "Solo se admiten archivos de proyecto JSON de TrackDraw. Elige una copia de seguridad .json exportada desde TrackDraw.",
+    "errorReadFailed": "TrackDraw no ha podido leer este archivo.",
+    "errorReadFailedHelp": "TrackDraw no ha podido leer este archivo. Vuelve a intentarlo o elige otra copia de seguridad.",
+    "toastImportFailed": "Error de importación",
+    "toastUnsupportedFile": "Elige un archivo .json exportado desde TrackDraw.",
+    "toastInvalidJson": "TrackDraw no ha podido leer este archivo JSON. Comprueba el archivo y vuelve a intentarlo.",
+    "toastInvalidProject": "Elige un archivo de proyecto JSON exportado desde TrackDraw.",
+    "toastReadFailed": "TrackDraw no ha podido leer el archivo seleccionado. Vuelve a intentarlo o elige otra copia de seguridad.",
+    "untitledProject": "Proyecto sin título",
+    "objectCount": "{count, plural, one {# objeto} other {# objetos}}",
+    "replaceWarning": "Se sustituirá el proyecto actual. Exporta primero una copia de seguridad JSON si quieres un punto de restauración manual fuera del guardado automático local.",
+    "replaceProject": "Sustituir proyecto",
+    "backupFirst": "Hacer primero una copia del proyecto actual"
+  },
+  "share": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "existingEyebrow": "Pista compartida",
+      "title": "Compartir",
+      "mobileSubtitle": "Comparte un enlace de revisión de solo lectura para esta pista"
+    },
+    "nav": {
+      "shareLink": "Enlace para compartir",
+      "share": "Compartir",
+      "embed": "Incrustar",
+      "gallery": "Galería"
+    },
+    "currentLink": {
+      "title": "Enlace compartido actual",
+      "readOnlyReviewOn": "Revisión de {view} de solo lectura en {hostname}"
+    },
+    "content": {
+      "share": {
+        "title": "Enlace para compartir",
+        "description": {
+          "existing": "Copia o reenvía este enlace publicado de solo lectura, o abre Studio para crear tu propia copia editable.",
+          "account": "Crea o actualiza el enlace duradero de solo lectura de este proyecto de tu cuenta.",
+          "separate": "Crea un enlace duradero de solo lectura independiente para esta copia editable o pista local.",
+          "anonymous": "Crea un enlace temporal a una instantánea de solo lectura y controla cuánto tiempo permanece activo."
+        }
+      },
+      "gallery": {
+        "title": "Visibilidad en la galería",
+        "description": "Gestiona cómo aparece este enlace publicado en la galería pública."
+      },
+      "embed": {
+        "title": "Incrustar",
+        "description": "Copia el código iframe de una pista publicada desde una cuenta que sigue activa hasta su revocación."
+      },
+      "actions": {
+        "descriptionExisting": "Usa el enlace publicado actual en otras aplicaciones o ábrelo en una pestaña nueva.",
+        "description": "Abre, reenvía, revoca o exporta este enlace compartido sin modificar la pista."
+      }
+    },
+    "link": {
+      "expiry": {
+        "days": "{days} días",
+        "label": "El enlace caduca después de",
+        "description": "Las instantáneas temporales permanecen disponibles hasta que caducan."
+      },
+      "titles": {
+        "savedProject": "Enlace del proyecto guardado",
+        "newShare": "Nuevo enlace compartido",
+        "separatePublished": "Enlace publicado independiente",
+        "temporary": "Enlace temporal",
+        "noSavedProject": "Todavía no hay enlace del proyecto guardado",
+        "noSeparate": "Todavía no hay enlace independiente",
+        "noTemporary": "Todavía no hay enlace temporal"
+      },
+      "descriptions": {
+        "savedProject": "Este proyecto guardado en tu cuenta usa un enlace duradero de solo lectura. Al actualizarlo, conserva la misma URL con el diseño más reciente.",
+        "newShare": "Esta copia editable obtiene su propio enlace duradero de solo lectura. No actualizará el enlace publicado de otro proyecto.",
+        "createSavedProject": "Crea una URL duradera para este proyecto de tu cuenta. Las futuras actualizaciones pueden conservar el mismo enlace.",
+        "createSeparate": "Crea una URL duradera para esta copia sin modificar ningún enlace compartido anterior.",
+        "createTemporary": "Elige cuándo caduca y crea una instantánea de solo lectura."
+      },
+      "lifetime": {
+        "published": "Enlace publicado en {hostname}, activo hasta su revocación",
+        "temporary": "Instantánea de solo lectura en {hostname}, caduca en {days} días"
+      },
+      "warnings": {
+        "outdatedDesign": "Este enlace ya no refleja el diseño más reciente.",
+        "outdatedExpiry": "Este enlace ya no refleja el plazo de caducidad seleccionado."
+      }
+    },
+    "embed": {
+      "iframeTitle": "Pista de TrackDraw incrustada",
+      "code": {
+        "title": "Código para incrustar",
+        "description": "Las pistas publicadas desde una cuenta se pueden incrustar en sitios de clubes o eventos.",
+        "label": "Código iframe",
+        "selectedViewDescription": "Incluye la vista inicial seleccionada.",
+        "copy": "Copiar código"
+      },
+      "state": {
+        "loading": "Cargando el estado de la vista incrustada…"
+      },
+      "publish": {
+        "title": "Publica antes de incrustar",
+        "description": "Las vistas incrustadas usan el enlace duradero publicado desde tu cuenta; créalo antes de copiar el código iframe.",
+        "action": "Crear enlace publicado"
+      },
+      "temporary": {
+        "title": "Los enlaces temporales no se pueden incrustar",
+        "description": "Inicia sesión y publica esta pista desde tu cuenta para crear una vista incrustada duradera."
+      },
+      "refresh": {
+        "message": "Actualiza primero el enlace publicado para que la vista incrustada use el diseño más reciente.",
+        "action": "Actualizar enlace"
+      },
+      "initialView": {
+        "label": "Vista inicial",
+        "options": {
+          "layout2d": {
+            "label": "Distribución 2D",
+            "description": "Abrir como plano del terreno"
+          },
+          "preview3d": {
+            "label": "Vista previa en 3D",
+            "description": "Abrir en la vista de revisión orbital"
+          }
+        }
+      }
+    },
+    "gallery": {
+      "status": {
+        "loading": "Cargando estado actual",
+        "featured": "Destacado en la galería",
+        "listed": "Publicado en la galería",
+        "hiddenByModeration": "Oculto por moderación",
+        "linkOnly": "Solo mediante enlace",
+        "noPublishedLink": "Sin enlace publicado",
+        "checking": "Comprobando",
+        "noLink": "Sin enlace",
+        "expiresInDays": "Caduca en {days} días",
+        "noExpiry": "Sin caducidad"
+      },
+      "descriptions": {
+        "checking": "Comprobando el estado actual en la galería.",
+        "featured": "Visible en la galería pública y fijado cerca del principio.",
+        "listed": "Visible en la galería pública.",
+        "hidden": "Oculto por moderación. El enlace directo sigue funcionando hasta que se revoque.",
+        "linkOnly": "Solo mediante enlace compartido. No es visible en la galería pública.",
+        "noLink": "Crea primero un enlace compartido."
+      },
+      "labels": {
+        "visibility": "Visibilidad",
+        "shareLink": "Enlace para compartir",
+        "author": "Autor"
+      },
+      "publishFirst": {
+        "title": "Publica antes de añadir a la galería",
+        "description": "La galería usa la instantánea publicada actual, por lo que se necesita un enlace compartido antes de incluir esta pista.",
+        "action": "Crear primero un enlace compartido"
+      },
+      "moderation": {
+        "title": "Bloqueo por moderación",
+        "description": "Esta pista está oculta en la galería por moderación. El enlace directo puede seguir funcionando hasta que se revoque."
+      },
+      "details": {
+        "title": "Detalles de la galería",
+        "description": "Actualiza el título y la descripción que se muestran en la tarjeta pública de la galería.",
+        "edit": "Editar detalles"
+      },
+      "list": {
+        "title": "Publicar en la galería",
+        "description": "Añade un título, una descripción y una vista previa generada para que se pueda explorar públicamente.",
+        "add": "Añadir a la galería",
+        "readyTitle": "Listo para publicar en la galería",
+        "readyDescription": "Añade esta instantánea publicada a la galería pública con su propio título, descripción y vista previa."
+      },
+      "fields": {
+        "titlePlaceholder": "Título de la pista",
+        "descriptionPlaceholder": "Descripción breve para la tarjeta de la galería"
+      },
+      "validation": {
+        "titleRequired": "Añade un título antes de guardar.",
+        "descriptionLength": "Usa {min}-{max} caracteres en la descripción.",
+        "displayNameRequired": "Define primero un nombre visible en tu cuenta.",
+        "noMetadataChanges": "Modifica el título o la descripción para guardar cambios.",
+        "refreshShareFirst": "Actualiza primero el enlace compartido para que la galería use la instantánea más reciente."
+      },
+      "preview": {
+        "generating": "Generando vista previa...",
+        "ready": "Vista previa lista"
+      },
+      "card": {
+        "title": "Tarjeta de la galería",
+        "description": "Revisa o actualiza el título y la descripción públicos de esta pista.",
+        "untitled": "Sin título",
+        "noDescription": "No hay descripción de galería definida.",
+        "viewGallery": "Ver galería"
+      },
+      "remove": {
+        "confirm": "¿Quitar de la galería pública? El enlace compartido seguirá funcionando hasta que se revoque.",
+        "action": "Quitar de la galería"
+      },
+      "fallback": {
+        "noDisplayName": "sin nombre visible definido"
+      }
+    },
+    "actions": {
+      "primary": {
+        "updateLink": "Actualizar enlace",
+        "copyLink": "Copiar enlace",
+        "createLink": "Crear enlace",
+        "createNewLink": "Crear enlace nuevo"
+      },
+      "copyLink": "Copiar enlace",
+      "revoke": "Revocar",
+      "share": {
+        "existingDescription": "Esta página ya es el enlace publicado de revisión de solo lectura. Compártelo tal cual o abre Studio si quieres una copia editable.",
+        "withPathDescription": "Los enlaces compartidos se abren como páginas de revisión de solo lectura. Este enlace abre directamente la revisión de {view} y el recorrido está listo para el vuelo virtual.",
+        "withoutPathDescription": "Los enlaces compartidos se abren como páginas de revisión de solo lectura. Añade primero un recorrido si quieres que los revisores usen el vuelo virtual y la revisión de alturas."
+      },
+      "nativeShare": {
+        "title": "Compartir mediante...",
+        "description": "Enviar a aplicaciones o contactos"
+      },
+      "openInTab": {
+        "label": "Abrir en una pestaña",
+        "reopenCurrent": "Volver a abrir el enlace compartido actual en una pestaña nueva",
+        "previewLink": "Previsualizar el enlace compartido en una ventana nueva"
+      },
+      "exportJson": {
+        "label": "Exportar JSON como alternativa",
+        "description": "Copia de seguridad editable para volver a abrir en TrackDraw"
+      }
+    },
+    "errors": {
+      "createFailed": "No se ha podido crear el enlace compartido",
+      "createFailedDescription": "TrackDraw no ha podido publicar la instantánea actual. Comprueba la conexión y vuelve a intentarlo; exporta JSON si necesitas compartirla ahora.",
+      "copyFailed": "No se ha podido copiar el enlace",
+      "copyFailedDescription": "El enlace puede seguir disponible en el campo. Selecciónalo y cópialo manualmente si el navegador bloquea el acceso al portapapeles.",
+      "nativeShareFailed": "No se ha podido abrir la función de compartir",
+      "nativeShareFailedDescription": "Este navegador no ha podido abrir el panel de compartir del sistema. Copia el enlace como alternativa.",
+      "revokeFailed": "No se ha podido revocar el enlace",
+      "revokeFailedDescription": "El enlace puede seguir activo. Vuelve a intentarlo desde este diálogo o desde la pestaña de enlaces compartidos del gestor de proyectos.",
+      "embedCopyFailed": "No se ha podido copiar el código para incrustar",
+      "embedCopyFailedDescription": "El código para incrustar sigue visible. Selecciónalo y cópialo manualmente si el navegador bloquea el acceso al portapapeles.",
+      "galleryListFailed": "No se ha podido publicar en la galería",
+      "galleryListFailedDescription": "El enlace compartido no se ha añadido a la galería pública. Comprueba el título, la descripción, la vista previa y la conexión antes de volver a intentarlo.",
+      "galleryRemoveFailed": "No se ha podido quitar de la galería",
+      "galleryRemoveFailedDescription": "La entrada de la galería puede seguir visible. Vuelve a intentarlo o revoca el enlace compartido si debe dejar de ser accesible.",
+      "galleryUpdateFailed": "No se han podido actualizar los detalles de la galería",
+      "galleryUpdateFailedDescription": "La tarjeta publicada de la galería no se ha modificado. Comprueba el título y la descripción y vuelve a intentarlo.",
+      "unableToReadLink": "No se puede leer el enlace compartido actual",
+      "unableToReadLinkDescription": "Recarga esta página compartida o abre el enlace desde el gestor de proyectos si se ha publicado desde una cuenta."
+    },
+    "success": {
+      "linkUpdated": "Enlace actualizado",
+      "linkCreated": "Enlace creado",
+      "linkCopied": "Enlace copiado",
+      "embedCopied": "Código para incrustar copiado",
+      "galleryListed": "Pista publicada en la galería",
+      "galleryUpdated": "Detalles de la galería actualizados",
+      "linkRevoked": "Enlace revocado"
+    }
+  },
+  "projectManager": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "title": "Proyectos",
+      "mobileSubtitle": "Abre, renombra, sincroniza o restaura."
+    },
+    "nav": {
+      "thisDevice": "Este dispositivo",
+      "shares": "Enlaces compartidos",
+      "snapshots": "Instantáneas"
+    },
+    "panels": {
+      "device": {
+        "label": "En este dispositivo",
+        "description": "Copias locales guardadas en este dispositivo. Los proyectos sincronizados también pueden aparecer en Cuenta."
+      },
+      "account": {
+        "label": "Proyectos de la cuenta",
+        "description": "Copias de la cuenta disponibles en los dispositivos donde has iniciado sesión. Abre una aquí para actualizar este navegador."
+      },
+      "snapshots": {
+        "label": "Instantáneas",
+        "description": "Estados anteriores guardados del proyecto actual. Restaura cualquier punto para deshacer cambios."
+      },
+      "shares": {
+        "label": "Enlaces compartidos publicados",
+        "description": "Enlaces compartidos activos publicados desde tu cuenta. Cópialos, ábrelos o revócalos aquí."
+      }
+    },
+    "shared": {
+      "currentBadge": "actual",
+      "itemCount": "{count, plural, one {# elemento} other {# elementos}}",
+      "relativeTime": {
+        "justNow": "ahora mismo",
+        "minutes": "hace {count} min",
+        "hours": "hace {count} h",
+        "days": "hace {count} d"
+      }
+    },
+    "device": {
+      "sync": {
+        "resolveConflict": "Resolver conflicto de sincronización",
+        "retry": "Reintentar sincronización",
+        "updateAccountCopy": "Actualizar copia de la cuenta",
+        "syncToAccount": "Sincronizar con la cuenta",
+        "conflictDescription": "Este proyecto ha cambiado en otro dispositivo. Revisa la versión antes de continuar.",
+        "failedDescription": "La última sincronización ha fallado. Intenta enviar de nuevo la versión local más reciente.",
+        "pendingDescription": "Envía los cambios locales más recientes a tu cuenta.",
+        "updateDescription": "Sustituye la copia sincronizada de la cuenta por la versión de este dispositivo.",
+        "description": "Haz que este proyecto esté disponible en los dispositivos donde has iniciado sesión.",
+        "localChangesWaiting": "Hay cambios locales pendientes de sincronizar",
+        "latestLocalCopySaved": "Última copia local guardada {relativeTime}",
+        "changedOnAnotherDevice": "Este proyecto ha cambiado en otro dispositivo",
+        "couldNotSyncProject": "No se ha podido sincronizar este proyecto",
+        "resolveVersionConflict": "Resolver conflicto de versiones"
+      },
+      "status": {
+        "syncing": "Sincronizando",
+        "reviewNeeded": "Revisión necesaria",
+        "failed": "Error de sincronización",
+        "synced": "Sincronizado",
+        "localOnly": "Solo local"
+      },
+      "meta": {
+        "localCopyWaitingToSync": "{itemLabel} · copia local pendiente de sincronizar",
+        "localCopySynced": "{itemLabel} · copia local sincronizada {relativeTime}",
+        "localCopy": "{itemLabel} · copia local",
+        "onlyOnThisDevice": "{itemLabel} · solo en este dispositivo · {relativeTime}",
+        "onThisDeviceSubtitle": "{itemLabel} en este dispositivo"
+      },
+      "aria": {
+        "resolveVersionConflictFor": "Resolver conflicto de versiones de {title}",
+        "retrySyncFor": "Reintentar sincronización de {title}",
+        "updateAccountCopyFor": "Actualizar la copia de {title} en la cuenta",
+        "syncProjectToAccount": "Sincronizar {title} con la cuenta",
+        "exportProjectAsJson": "Exportar {title} como JSON",
+        "manageProject": "Gestionar {title}",
+        "renameProject": "Renombrar {title}",
+        "duplicateProjectFor": "Duplicar {title}",
+        "deleteProject": "Eliminar {title}"
+      },
+      "actions": {
+        "confirmRenameTitle": "Confirmar cambio de nombre",
+        "more": "Más acciones",
+        "newProject": "Nuevo proyecto",
+        "newProjectDescription": "Empieza una pista nueva o usa un diseño inicial.",
+        "cleanUpLocal": "Limpiar copias locales",
+        "cleanUpLocalDescription": "Quita las copias antiguas solo de este dispositivo.",
+        "renameDescription": "Dale a este proyecto un nombre más claro.",
+        "duplicateProject": "Duplicar proyecto",
+        "duplicateProjectDescription": "Crea una copia independiente para explorar una variante.",
+        "openBadge": "abrir"
+      },
+      "export": {
+        "json": "Exportar JSON",
+        "jsonDescription": "Descarga este proyecto como un archivo de TrackDraw reutilizable."
+      },
+      "delete": {
+        "localProject": "¿Eliminar el proyecto local?",
+        "localProjectDescription": "Elimina esta copia local.",
+        "permanently": "¿Eliminar permanentemente?",
+        "permanentlyDescription": "Esto solo elimina el proyecto local de este navegador.",
+        "localProjectActionDescription": "Quita este proyecto local del dispositivo.",
+        "removeLocalProjectsTitle": "¿Quitar {count, plural, one {# proyecto local} other {# proyectos locales}}?",
+        "accountSyncedCopiesStayAvailable": "Las copias sincronizadas con la cuenta siguen disponibles en ella."
+      },
+      "groups": {
+        "localCopiesLinkedToAccount": "Copias locales vinculadas a la cuenta",
+        "onlyOnThisDevice": "Solo en este dispositivo"
+      },
+      "empty": {
+        "noProjects": "No hay proyectos guardados",
+        "noProjectsDescription": "Los proyectos que guardes aparecerán aquí."
+      },
+      "fallback": {
+        "project": "proyecto",
+        "untitled": "Sin título"
+      }
+    },
+    "account": {
+      "aria": {
+        "resolveVersionConflictFor": "Resolver conflicto de versiones de {title}",
+        "retrySyncFor": "Reintentar sincronización de {title}",
+        "syncPendingChangesFor": "Sincronizar los cambios pendientes de {title}",
+        "duplicateProjectFor": "Duplicar {title}"
+      },
+      "meta": {
+        "accountCopyWaitingToSync": "{itemLabel} · copia de la cuenta pendiente de sincronizar",
+        "accountCopySynced": "{itemLabel} · copia de la cuenta sincronizada {relativeTime}"
+      },
+      "status": {
+        "loadingProjects": "Cargando proyectos de la cuenta...",
+        "syncing": "Sincronizando",
+        "reviewNeeded": "Revisión necesaria",
+        "failed": "Error de sincronización",
+        "synced": "Sincronizado"
+      },
+      "empty": {
+        "noProjects": "No hay proyectos de cuenta",
+        "description": "Sincroniza un proyecto para que esté disponible entre dispositivos."
+      },
+      "messages": {
+        "loadFailed": "No se han podido cargar los proyectos de la cuenta",
+        "loadFailedDescription": "Los proyectos locales de este dispositivo siguen disponibles. Comprueba tu conexión o vuelve a iniciar sesión y abre de nuevo el gestor de proyectos.",
+        "conflictWarning": "Este proyecto ha cambiado en otro dispositivo mientras no tenías la sesión iniciada",
+        "syncError": "No se han podido sincronizar los últimos cambios",
+        "localCopySavedAfterFailure": "Última copia local guardada {relativeTime}",
+        "resolveConflictFirst": "Resuelve primero el conflicto de versiones"
+      },
+      "actions": {
+        "retrySync": "Reintentar sincronización",
+        "syncPendingChanges": "Sincronizar cambios pendientes",
+        "duplicateProject": "Duplicar proyecto"
+      },
+      "fallback": {
+        "untitled": "Sin título"
+      }
+    },
+    "restore": {
+      "empty": {
+        "noSnapshots": "Todavía no hay instantáneas",
+        "description": "Las instantáneas se crean automáticamente al abrir o sustituir un proyecto.",
+        "desktopDescription": "Pulsa <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> o usa el botón de guardar de la cabecera."
+      },
+      "actions": {
+        "restoreTitle": "Restaurar esta instantánea",
+        "deleteTitle": "Eliminar instantánea",
+        "restore": "Restaurar"
+      },
+      "aria": {
+        "restoreSnapshot": "Restaurar {title}",
+        "deleteSnapshot": "Eliminar {title}"
+      },
+      "confirm": {
+        "restoreSnapshot": "¿Restaurar esta instantánea?"
+      },
+      "status": {
+        "active": "activo"
+      },
+      "fallback": {
+        "snapshot": "instantánea",
+        "untitled": "Sin título"
+      }
+    },
+    "shares": {
+      "status": {
+        "loadingPublishedShares": "Cargando enlaces compartidos publicados...",
+        "published": "publicado",
+        "expired": "caducado",
+        "expiresInDays": "{days, plural, one {Queda 1 día} other {Quedan # días}}"
+      },
+      "messages": {
+        "readOnlyReviewLinks": "Los enlaces compartidos son enlaces de revisión de solo lectura. Exporta JSON si alguien necesita una copia de seguridad editable de TrackDraw."
+      },
+      "empty": {
+        "noShares": "No hay enlaces compartidos activos",
+        "description": "Los enlaces publicados desde una cuenta siguen activos hasta que se revoquen. Los enlaces anónimos temporales caducan automáticamente y no se gestionan aquí."
+      },
+      "lifetime": {
+        "published": "enlace publicado de solo lectura, activo hasta su revocación",
+        "temporary": "enlace temporal de solo lectura, {expiresIn}"
+      },
+      "referrers": {
+        "label": "Sitios con vistas incrustadas detectados · últimos 30 días",
+        "item": "{hostname} ({views})"
+      },
+      "actions": {
+        "copyLink": "Copiar enlace",
+        "openTab": "Abrir en una pestaña nueva",
+        "revokeLink": "Revocar enlace"
+      },
+      "aria": {
+        "copyLink": "Copiar enlace compartido",
+        "openTab": "Abrir enlace compartido",
+        "revokeLink": "Revocar enlace compartido"
+      },
+      "confirm": {
+        "revokeLink": "¿Revocar este enlace?"
+      }
+    },
+    "projectIdCopy": {
+      "success": "ID del proyecto copiado",
+      "failed": "No se ha podido copiar el ID del proyecto desde este navegador.",
+      "label": "ID del proyecto para la API",
+      "ariaLabel": "Copiar ID del proyecto para la API",
+      "action": "Copiar"
+    }
+  },
+  "completeProfile": {
+    "title": "Añade tu nombre",
+    "subtitle": "Dale a tu cuenta un nombre visible claro para los proyectos en la nube y el uso compartido.",
+    "displayNameLabel": "Nombre visible",
+    "namePlaceholder": "Tu nombre",
+    "description": "Este es el nombre que TrackDraw mostrará en los proyectos en la nube y en los diseños compartidos.",
+    "descriptionWithEmail": "Este es el nombre que TrackDraw mostrará en los proyectos en la nube y en los diseños compartidos de {email}.",
+    "skip": "Omitir",
+    "save": "Guardar nombre",
+    "saving": "Guardando…",
+    "nameRequired": "Introduce el nombre que quieres que muestre TrackDraw.",
+    "updateFailed": "No se ha podido actualizar el nombre de tu cuenta.",
+    "success": "Perfil actualizado"
+  },
+  "newProject": {
+    "title": "Nuevo proyecto",
+    "closeAriaLabel": "Cerrar",
+    "subtitle": "Empieza con un lienzo vacío o elige un diseño inicial como base.",
+    "desktopSubtitle": "Empieza con un lienzo vacío o elige un diseño inicial como base.",
+    "studioLabel": "Studio",
+    "blankCanvasLabel": "Lienzo vacío",
+    "starterLayoutsLabel": "Diseños iniciales",
+    "saveWarningTitle": "Guarda primero tu pista actual",
+    "saveWarningBody": "Empezar un proyecto nuevo sustituye lo que hay en el lienzo. Exporta o haz una copia de seguridad primero si quieres conservarlo.",
+    "startFreshTitle": "Empezar con un lienzo vacío",
+    "startFreshBody": "Vacía el terreno y crea tu pista desde cero.",
+    "exportFirstTitle": "Hacer una copia del proyecto actual",
+    "exportFirstBody": "Guarda una copia de la pista actual antes de empezar una nueva."
+  },
+  "keyboardShortcuts": {
+    "dialogTitle": "Atajos de teclado",
+    "dialogSubtitle": "Encuentra el atajo que necesitas y vuela más rápido.",
+    "sectionTools": "Herramientas",
+    "sectionSelection": "Selección",
+    "sectionPathEditing": "Edición del recorrido",
+    "sectionCanvas": "Lienzo",
+    "systemLayoutHint": "Los atajos siguen la distribución de tu sistema (Cmd en Mac, Ctrl en Windows y Linux).",
+    "categories": {
+      "label": "Categorías de atajos",
+      "essentials": "Esenciales",
+      "tools": "Herramientas",
+      "edit": "Editar",
+      "canvas": "Lienzo"
+    },
+    "search": {
+      "label": "Buscar atajos de teclado",
+      "placeholder": "Buscar atajos…",
+      "results": "{count, plural, =0 {Sin resultados} =1 {1 resultado} other {# resultados}}",
+      "emptyTitle": "No se han encontrado atajos",
+      "emptyBody": "Prueba con una acción, herramienta o combinación de teclas."
+    },
+    "table": {
+      "description": "Qué hace",
+      "shortcut": "Atajo"
+    },
+    "keys": {
+      "or": "o"
+    },
+    "shortcuts": {
+      "undo": "Deshacer",
+      "redo": "Rehacer",
+      "duplicateItems": "Duplicar elementos seleccionados",
+      "copyItems": "Copiar elementos seleccionados",
+      "pasteItems": "Pegar elementos copiados",
+      "rotateLeft": "Girar los elementos seleccionados a la izquierda",
+      "rotateRight": "Girar los elementos seleccionados a la derecha",
+      "rotateLeftSmall": "Girar a la izquierda con precisión",
+      "rotateRightSmall": "Girar a la derecha con precisión",
+      "mouseRotateSnap": "Girar con ajuste usando el ratón",
+      "mouseRotateFine": "Giro preciso con el ratón",
+      "keyRotateFine": "Giro preciso con el teclado",
+      "deleteItems": "Eliminar elementos seleccionados",
+      "nudgeItems": "Desplazar elementos seleccionados",
+      "fineNudge": "Desplazamiento preciso",
+      "finishPath": "Terminar recorrido",
+      "removeLastPoint": "Quitar el último punto del borrador",
+      "deletePathPoint": "Eliminar el punto seleccionado del recorrido",
+      "cancelDraft": "Cancelar el borrador actual",
+      "fitView": "Ajustar la vista al terreno",
+      "clearSelection": "Borrar selección",
+      "panView": "Desplazar vista",
+      "bypassSnap": "Omitir el ajuste temporalmente",
+      "zoom": "Zoom",
+      "toggleSidebar": "Alternar barra lateral",
+      "openCommandPalette": "Abrir paleta de comandos",
+      "saveSnapshot": "Guardar instantánea"
+    },
+    "descriptions": {
+      "activateTool": "Activar la herramienta {tool}",
+      "undo": "Deshacer la última acción",
+      "redo": "Rehacer la última acción deshecha",
+      "duplicateItems": "Duplicar elementos seleccionados",
+      "copyItems": "Copiar elementos seleccionados",
+      "pasteItems": "Pegar elementos copiados",
+      "rotateLeft": "Girar la selección en sentido antihorario",
+      "rotateRight": "Girar la selección en sentido horario",
+      "rotateLeftSmall": "Girar en sentido antihorario con pasos más pequeños",
+      "rotateRightSmall": "Girar en sentido horario con pasos más pequeños",
+      "mouseRotateSnap": "Girar arrastrando con el ajuste activado",
+      "mouseRotateFine": "Girar libremente al arrastrar",
+      "keyRotateFine": "Girar en pasos de un grado",
+      "deleteItems": "Eliminar los elementos seleccionados",
+      "nudgeItems": "Mover la selección un paso de la cuadrícula",
+      "fineNudge": "Mover la selección en pasos pequeños",
+      "finishPath": "Terminar el recorrido que se está dibujando",
+      "removeLastPoint": "Quitar el último punto del recorrido en borrador",
+      "deletePathPoint": "Eliminar el punto del recorrido seleccionado",
+      "cancelDraft": "Cancelar el borrador del recorrido actual",
+      "fitView": "Ajustar todo el terreno a la vista",
+      "clearSelection": "Borrar la selección y volver a la herramienta Seleccionar",
+      "panView": "Desplazar el lienzo con el ratón",
+      "bypassSnap": "Desactivar el ajuste temporalmente",
+      "zoom": "Acercar o alejar el lienzo",
+      "toggleSidebar": "Mostrar u ocultar la barra lateral del editor",
+      "openCommandPalette": "Buscar comandos y acciones",
+      "saveSnapshot": "Guardar una instantánea del proyecto"
+    }
+  },
+  "versionConflict": {
+    "title": "Elige una versión del proyecto",
+    "subtitle": "Elige la versión que quieres seguir usando en este dispositivo.",
+    "thisProject": "Este proyecto",
+    "body": "ha cambiado en otro dispositivo mientras no tenías la sesión iniciada. Elige qué versión quieres seguir usando en este dispositivo.",
+    "localVersion": "Versión de este dispositivo",
+    "cloudVersion": "Versión de la cuenta",
+    "lastChanged": "Último cambio: {date}",
+    "keepLocal": "Conservar la versión de este dispositivo",
+    "useCloud": "Usar la versión de la cuenta"
+  }
+}

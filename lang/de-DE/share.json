@@ -18,6 +18,12 @@
     "step1": "Bitte den Absender, den Track erneut zu veröffentlichen oder einen über ein Konto veröffentlichten Link für längerfristigen schreibgeschützten Zugriff zu senden.",
     "step2": "Bitte um einen JSON-Export, wenn das Layout längerfristig übergeben werden muss."
   },
+  "revoked": {
+    "heading": "Dieser Share-Link wurde widerrufen",
+    "description": "Der Besitzer dieses Tracks hat diesen Share-Link widerrufen, daher kann er nicht mehr geöffnet werden. Bitte ihn um einen neuen Link, wenn du dieses Layout noch brauchst.",
+    "step1": "Bitte den Besitzer, den Track erneut zu teilen, um einen neuen Link zu erhalten.",
+    "step2": "Oder bitte ihn um einen <strong>JSON-Export</strong>, den du im Studio über Importieren öffnen kannst."
+  },
   "notFound": {
     "heading": "Dieser geteilte Track konnte nicht geöffnet werden",
     "description": "Der Share-Link wurde möglicherweise vom Besitzer widerrufen oder ist veraltet, unvollständig oder falsch kopiert. Bitte den Absender, zu bestätigen, dass der Link noch aktiv ist, oder einen neuen Link zu veröffentlichen. Wenn der Track sehr groß ist, ist ein JSON-Export zuverlässiger als ein Share-Link.",
@@ -30,13 +36,20 @@
     "sharedByReadOnly": "Geteilt von {author}. Schreibgeschützt, Änderungen werden nicht gespeichert. Wechsle zu {view} oder erstelle im Studio deine eigene bearbeitbare Kopie.",
     "readOnlyNoAuthor": "Schreibgeschützt, Änderungen werden nicht gespeichert. Wechsle zu {view} oder erstelle im Studio deine eigene bearbeitbare Kopie.",
     "openView": "{view} öffnen",
-    "makeEditableCopy": "Bearbeitbare Kopie erstellen"
+    "makeEditableCopy": "Bearbeitbare Kopie erstellen",
+    "loading": "Geteilten Track laden…"
+  },
+  "fallback": {
+    "untitled": "Track ohne Titel",
+    "readOnlyDescription": "Schreibgeschützter TrackDraw-Plan für {title}."
   },
   "metadata": {
     "title": "Track ansehen",
     "description": "Sieh dir diesen mit TrackDraw entworfenen FPV-Racetrack an.",
     "expiredTitle": "Abgelaufene Track-Freigabe",
     "expiredDescription": "Dieser TrackDraw-Share-Link ist abgelaufen. Bitte den Absender, einen neuen Link zu veröffentlichen.",
+    "revokedTitle": "Widerrufene Track-Freigabe",
+    "revokedDescription": "Der Besitzer hat diesen TrackDraw-Share-Link widerrufen. Bitte ihn um einen neuen Link.",
     "retiredTitle": "Nicht unterstützte Track-Freigabe",
     "retiredDescription": "Dieses ältere TrackDraw-Share-Format wird nicht mehr unterstützt. Bitte den Absender, einen neuen Link zu veröffentlichen.",
     "embedTitle": "Track-Embed",

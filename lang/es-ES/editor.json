@@ -1,0 +1,622 @@
+{
+  "toolbar": {
+    "homepageLabel": "Ir a la página de inicio",
+    "projects": "Proyectos",
+    "projectsTooltip": "Gestionar proyectos",
+    "import": "Importar",
+    "importTooltip": "Importar JSON",
+    "export": "Exportar",
+    "exportTooltip": "Exportar pista",
+    "feedbackSupport": "Comentarios"
+  },
+  "contextMenu": {
+    "quickActions": "Acciones rápidas",
+    "selectedCount": "{count, plural, one {1 seleccionado} other {{count} seleccionados}}",
+    "segmentSelected": "Tramo seleccionado",
+    "waypointSelected": "Punto del recorrido seleccionado",
+    "addWaypoint": "Añadir punto del recorrido",
+    "deleteWaypoint": "Eliminar punto del recorrido",
+    "arrange": "Organizar",
+    "bringForward": "Traer hacia delante",
+    "sendBackward": "Enviar hacia atrás",
+    "rotate": "Girar",
+    "rotateLeft": "Girar a la izquierda",
+    "rotateRight": "Girar a la derecha"
+  },
+  "canvasOverlay": {
+    "pathEditing": "Edición del recorrido",
+    "addPoints": "Añadir puntos",
+    "finish": "terminar",
+    "cancel": "cancelar",
+    "connectEnds": "Haz clic para conectar los extremos",
+    "grid": "Cuadrícula {grid}",
+    "snapOn": "Ajuste activado: cuadrícula, objetos y rutas",
+    "snapOff": "Ajuste desactivado: colocación libre",
+    "midClick": "Clic central",
+    "rightClick": "Clic derecho",
+    "pan": "desplazar vista",
+    "menu": "menú",
+    "bypass": "omitir ajuste",
+    "fitToWindow": "Ajustar a la ventana",
+    "viewerPanZoom": "Arrastra para desplazar la vista y usa la rueda para cambiar el zoom"
+  },
+  "preview3dOverlay": {
+    "pause": "Pausar",
+    "play": "Reproducir",
+    "speed": "Velocidad",
+    "toggleFpv": "Alternar el comportamiento de la cámara FPV",
+    "on": "Activado",
+    "off": "Desactivado",
+    "exit": "Salir",
+    "flyThrough": "Recorrido virtual",
+    "dragWaypointMobile": "Arrastra el control de un punto hacia arriba o abajo para ajustar su altura",
+    "dragWaypointDesktop": "Arrastra los controles de los puntos hacia arriba o abajo para ajustar su altura",
+    "dragDiveGateMobile": "Arrastra el anillo para girar · el control naranja para inclinar",
+    "dragDiveGateDesktop": "Arrastra el anillo para girar · arrastra el control naranja para inclinar",
+    "dragRing": "Arrastra el anillo para girar",
+    "orbitHint": "Orbita para inspeccionar · usa la rueda para el zoom · arrastra con el botón central para desplazar la vista",
+    "drawRoute": "Dibuja el recorrido en 2D para activar el recorrido virtual"
+  },
+  "statusBar": {
+    "snapActive": "Ajuste",
+    "snapOn": "Ajuste activado",
+    "snapOff": "Ajuste desactivado",
+    "snapIsOn": "El ajuste está activado",
+    "snapIsOff": "El ajuste está desactivado",
+    "snapOnDescription": "Los puntos y los elementos que arrastras se ajustan a posiciones cercanas de la cuadrícula, objetos y puntos del recorrido. Mantén Alt al colocar o arrastrar para omitir el ajuste una vez.",
+    "snapOffDescription": "La colocación y el arrastre permanecen libres hasta que vuelvas a activar el ajuste.",
+    "selected": "{count} seleccionados",
+    "grouped": "Agrupados",
+    "groupNamed": "Grupo: {name}",
+    "groups": "{count} grupos",
+    "devOn": "Desarrollo activado",
+    "dev": "Desarrollo"
+  },
+  "accountMenu": {
+    "checkingAuth": "Comprobando autenticación…",
+    "signIn": "Iniciar sesión",
+    "signedIn": "Sesión iniciada",
+    "noDisplayName": "Sin nombre visible definido",
+    "trackdrawAccount": "Cuenta de TrackDraw",
+    "profile": "Perfil",
+    "dashboard": "Panel de control",
+    "signOut": "Cerrar sesión",
+    "signingOut": "Cerrando sesión…"
+  },
+  "common": {
+    "canvas2d": "Lienzo 2D",
+    "preview3d": "Vista previa en 3D"
+  },
+  "commandPalette": {
+    "title": "Paleta de comandos",
+    "description": "Busca y ejecuta acciones de TrackDraw",
+    "placeholder": "Buscar acciones…",
+    "searchLabel": "Buscar comandos",
+    "resultsLabel": "Comandos disponibles",
+    "empty": "No hay acciones coincidentes",
+    "escapeKey": "Esc",
+    "hintNavigate": "↑↓ Navegar",
+    "hintRun": "Enter Ejecutar",
+    "groups": {
+      "navigate": "Navegar",
+      "view": "Vista",
+      "transfer": "Compartir y transferir",
+      "support": "Apoyo"
+    },
+    "actions": {
+      "projects": {
+        "label": "Gestor de proyectos",
+        "description": "Abrir y gestionar proyectos guardados"
+      },
+      "accountSettings": {
+        "label": "Ajustes de cuenta",
+        "description": "Gestionar perfil, seguridad y claves de API"
+      },
+      "shortcuts": {
+        "label": "Atajos de teclado",
+        "description": "Consultar teclas y atajos del editor"
+      },
+      "view2d": {
+        "label": "Abrir lienzo 2D",
+        "description": "Cambiar a la vista cenital editable",
+        "alreadyActive": "Ya estás viendo el lienzo 2D"
+      },
+      "view3d": {
+        "label": "Abrir vista previa 3D",
+        "description": "Revisar la pista en tres dimensiones",
+        "alreadyActive": "Ya estás viendo la vista previa 3D"
+      },
+      "flyThrough": {
+        "label": "Iniciar recorrido virtual",
+        "description": "Previsualizar la trazada desde la vista del piloto",
+        "noPathReason": "Dibuja primero un recorrido para activar el recorrido virtual"
+      },
+      "share": {
+        "label": "Compartir",
+        "description": "Publicar un enlace de solo lectura para esta pista"
+      },
+      "export": {
+        "label": "Exportar",
+        "description": "Descargar PNG, PDF, SVG o JSON"
+      },
+      "import": {
+        "label": "Importar",
+        "description": "Cargar un archivo de proyecto JSON"
+      },
+      "feedback": {
+        "label": "Comentarios",
+        "description": "Informar de un problema, compartir una idea o hacer una pregunta"
+      }
+    }
+  },
+  "elementPlacementControl": {
+    "official": "Oficial",
+    "typeLabel": "Tipo de {tool}"
+  },
+  "header": {
+    "untitledTitle": "Sin título",
+    "statusFailed": "Error",
+    "statusPending": "Pendiente",
+    "statusSyncing": "Sincronizando",
+    "statusSynced": "Sincronizado",
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Contraer barra lateral",
+    "sharedReviewBadge": "Revisión compartida",
+    "makeEditableCopy": "Crear una copia editable",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "saveSnapshot": "Guardar instantánea",
+    "keyboardShortcuts": "Atajos de teclado",
+    "retrySync": "Reintentar sincronización de cuenta ({status})",
+    "share": "Compartir",
+    "export": "Exportar",
+    "feedbackSupport": "Comentarios",
+    "openAppMenu": "Abrir menú de la aplicación",
+    "hideObstacleNumbers": "Ocultar números de obstáculos",
+    "showObstacleNumbers": "Mostrar números de obstáculos"
+  },
+  "sharedHeader": {
+    "embedLabel": "Incrustar",
+    "sharedPreviewLabel": "Vista previa compartida"
+  },
+  "mobileAppMenu": {
+    "openAppMenu": "Abrir menú de la aplicación",
+    "title": "TrackDraw",
+    "subtitle": "Proyectos, uso compartido, cuenta y ajustes de la aplicación",
+    "signIn": "Iniciar sesión",
+    "yourAccount": "Tu cuenta de TrackDraw",
+    "trackdrawAccount": "Cuenta de TrackDraw",
+    "projectsSection": "Proyectos",
+    "projectsLabel": "Proyectos",
+    "projectsDescription": "Abrir y gestionar proyectos guardados",
+    "accountSection": "Cuenta",
+    "profileLabel": "Perfil",
+    "profileDescription": "Gestionar perfil, seguridad y claves de API",
+    "dashboardLabel": "Panel de control",
+    "dashboardDescription": "Abrir herramientas de moderación y administración",
+    "shareSection": "Compartir y transferir",
+    "shareLabel": "Compartir",
+    "shareDescription": "Publicar un enlace de solo lectura para esta pista",
+    "importLabel": "Importar",
+    "importDescription": "Cargar un archivo de proyecto JSON",
+    "exportLabel": "Exportar",
+    "exportDescription": "Descargar PNG, PDF, SVG o JSON",
+    "supportSection": "Apoyo",
+    "feedbackLabel": "Comentarios",
+    "feedbackDescription": "Informar de un problema, compartir una idea o hacer una pregunta",
+    "themeLabel": "Tema",
+    "themeDescription": "Cambiar entre claro, oscuro y sistema",
+    "signOut": "Cerrar sesión",
+    "signingOut": "Cerrando sesión…"
+  },
+  "layoutPresetPicker": {
+    "itemsCount": "{count} elementos",
+    "renamePresetTooltip": "Renombrar preajuste",
+    "deletePresetTooltip": "Eliminar preajuste",
+    "signInTitle": "Inicia sesión para usar preajustes",
+    "signInDescription": "Los preajustes se guardan en tu cuenta para que estén siempre disponibles en todos tus dispositivos.",
+    "noPresetsTitle": "Todavía no hay preajustes",
+    "noPresetsDescription": "Selecciona varias formas en el lienzo y usa <strong>Guardar preajuste</strong> en el inspector para añadir aquí tu primer preajuste.",
+    "comingSoonTitle": "Próximamente",
+    "comingSoonDescription": "Aquí aparecerán los preajustes compartidos por la comunidad. Guarda tus propios preajustes y compártelos con la comunidad de TrackDraw.",
+    "myPresetsNav": "Mis preajustes",
+    "storeNav": "Tienda",
+    "soonBadge": "Pronto",
+    "mobileTitle": "Preajustes",
+    "mobileSubtitle": "Elige un preajuste y toca una vez el lienzo para colocarlo.",
+    "placeFlowTitle": "Cómo colocar",
+    "placeFlowDescription": "Selecciona aquí un preajuste y toca después el lienzo. El resultado se convierte al instante en formas editables normales.",
+    "desktopTitle": "Preajustes de diseño",
+    "desktopSubtitle": "Elige un preajuste, colócalo en el lienzo y edita después las formas insertadas con normalidad.",
+    "tipText": "Selecciona formas en el lienzo y usa <strong>Guardar preajuste</strong> en el inspector para añadir el tuyo."
+  },
+  "starterOverlay": {
+    "dialog": {
+      "title": "Bienvenido a TrackDraw",
+      "mobileSubtitle": "Coloca algunas puertas, dibuja el recorrido, compruébalo en 3D y compártelo cuando la pista esté lista.",
+      "studioEyebrow": "Studio",
+      "desktopDescription": "Diseña la distribución en 2D, revisa las alturas en 3D y comparte un enlace de solo lectura cuando la pista esté lista.",
+      "dismissAria": "Cerrar el diálogo de inicio"
+    },
+    "hints": {
+      "gate": {
+        "badge": "Guiado",
+        "title": "Coloca tu primera puerta",
+        "description": "Toca o haz clic en el lienzo para colocar la primera puerta. Añade algunas puertas antes de cambiar a Recorrido.",
+        "action": "Entendido",
+        "dismiss": "Cerrar la ayuda de colocación de puertas"
+      },
+      "path": {
+        "badge": "Guiado",
+        "title": "Ahora dibuja el recorrido",
+        "description": "Coloca primero algunas puertas, cambia a Recorrido y dibuja la vuelta pasando por ellas. Termina el recorrido antes de comprobarlo en 3D.",
+        "action": "Iniciar recorrido",
+        "dismiss": "Cerrar la ayuda inicial del recorrido"
+      },
+      "preview3d": {
+        "badge": "Vista previa",
+        "title": "El 3D funciona mejor después de dibujar el recorrido",
+        "description": "La colocación de obstáculos ya se muestra aquí, pero el recorrido es lo que hace útil revisar la altura y el vuelo virtual.",
+        "action": "Dibujar recorrido en 2D",
+        "dismiss": "Cerrar la ayuda inicial de la vista previa 3D"
+      },
+      "review3d": {
+        "badge": "Guiado",
+        "title": "Ahora revísalo en 3D",
+        "description": "Orbita alrededor del recorrido, comprueba las alturas y las distancias y comparte o exporta el diseño cuando esté a tu gusto.",
+        "action": "Después, comparte o exporta",
+        "dismiss": "Cerrar la ayuda de revisión 3D"
+      },
+      "postPath": {
+        "badge": "Siguiente paso",
+        "title": "Recorrido listo: compruébalo en 3D",
+        "description": "Cambia ahora a la pestaña 3D para revisar el recorrido antes de seguir afinando la colocación de obstáculos.",
+        "action": "Cambiar a 3D",
+        "dismiss": "Cerrar el aviso de revisión 3D tras dibujar el recorrido"
+      }
+    }
+  },
+  "starterFlow": {
+    "intro": {
+      "goodFirstSteps": "Buenos primeros pasos"
+    },
+    "steps": {
+      "step1": {
+        "title": "Coloca algunas puertas y obstáculos",
+        "description": "Empieza con pocos elementos para definir rápidamente la estructura de la pista."
+      },
+      "step2": {
+        "title": "Dibuja el recorrido de carrera pasando por ellos",
+        "description": "Dibujar el recorrido suele ayudar a entender el diseño más rápido que ajustar solo los obstáculos."
+      },
+      "step3": {
+        "title": "Comprueba el 3D y, después, exporta o comparte",
+        "description": "Revisa pronto el recorrido y envía un enlace de solo lectura cuando esté listo."
+      }
+    },
+    "starterLayouts": {
+      "label": "Diseños iniciales",
+      "layouts": {
+        "open-practice": {
+          "name": "Entrenamiento abierto",
+          "title": "Diseño de entrenamiento abierto",
+          "description": "Recorrido abierto con una zona de salida y espacio para crear tu propia vuelta."
+        },
+        "compact-race-start": {
+          "name": "Salida de carrera compacta",
+          "title": "Salida de carrera compacta",
+          "description": "Inicio cerrado con una línea de puertas inmediata y un giro temprano."
+        },
+        "technical-ladder-line": {
+          "name": "Línea técnica de escaleras",
+          "title": "Línea técnica de escaleras",
+          "description": "Una primera puerta, dos escaleras y otra puerta después para un ritmo rápido."
+        }
+      }
+    },
+    "guided": {
+      "label": "Inicio guiado",
+      "title": "Empezar con ayuda",
+      "descriptionDesktop": "Abre un terreno vacío con `Puerta` seleccionada para empezar definiendo la pista. Dibuja el recorrido una vez colocados los primeros obstáculos.",
+      "descriptionMobile": "Abre un terreno vacío con Puerta seleccionada. Dibuja el recorrido una vez colocados los primeros obstáculos."
+    },
+    "empty": {
+      "label": "Inicio vacío",
+      "continue": "Continuar con el lienzo vacío",
+      "description": "Omite el inicio guiado y abre Studio vacío."
+    },
+    "shortcuts": {
+      "gate": "coloca puertas",
+      "path": "inicia el recorrido",
+      "finish": "termina el recorrido"
+    }
+  },
+  "saveAsPresetDialog": {
+    "title": "Guardar como preajuste",
+    "subtitle": "Dale un nombre a tu selección para volver a colocarla desde el selector de preajustes.",
+    "shapeCount": "{count, plural, one {# forma} other {# formas}}",
+    "pathsExcluded": "{count, plural, one {Se excluirá 1 recorrido} other {Se excluirán # recorridos}}: los preajustes solo guardan formas que no sean recorridos.",
+    "presetNameLabel": "Nombre del preajuste",
+    "presetNamePlaceholder": "p. ej., Puerta de cronometraje",
+    "savePreset": "Guardar preajuste"
+  },
+  "mobilePanels": {
+    "viewControls": {
+      "mode": {
+        "current": "Modo actual",
+        "viewModeLabel": "Modo de vista"
+      },
+      "controls": {
+        "fitToField": {
+          "label": "Ajustar al terreno",
+          "description": "Centrar el diseño actual en la vista"
+        },
+        "snap": {
+          "label": "Ajuste",
+          "description": "Ajustar a posiciones cercanas de la cuadrícula y a objetos"
+        },
+        "rulers": {
+          "label": "Reglas",
+          "description": "Mostrar las guías superior e izquierda en el móvil"
+        },
+        "obstacleNumbers": {
+          "label": "Números de obstáculos",
+          "description": "Mostrar los números del recorrido en sus obstáculos"
+        },
+        "flyThrough": {
+          "label": "Vuelo virtual",
+          "descriptions": {
+            "available": "Iniciar la cámara de vista previa de la trazada",
+            "readOnly": "Esta pista compartida no tiene recorrido",
+            "draw": "Dibuja primero un recorrido en 2D para activar esta función"
+          }
+        },
+        "gizmo": {
+          "label": "Gizmo",
+          "description": "Mostrar la guía de ejes en la vista previa 3D"
+        }
+      },
+      "readOnly": {
+        "review3dWithPath": "Revisión 3D de solo lectura con recorrido virtual disponible para esta pista compartida.",
+        "review3dNoPath": "Revisión 3D de solo lectura de esta pista compartida. No hay recorrido disponible para el vuelo virtual.",
+        "review2dWithPath": "Revisión 2D de solo lectura de esta pista compartida. Cambia a 3D para usar el recorrido virtual.",
+        "review2dNoPath": "Revisión 2D de solo lectura de esta pista compartida."
+      },
+      "share": {
+        "sectionLabel": "Compartir",
+        "editableCopy": "Copia editable",
+        "shareButton": "Compartir"
+      },
+      "support": {
+        "sectionLabel": "Apoyo",
+        "label": "Comentarios",
+        "description": "Informar de un problema, compartir una idea o hacer una pregunta"
+      }
+    },
+    "multiSelect": {
+      "header": {
+        "title": "Selección múltiple",
+        "lockedHint": "Selección bloqueada. Desbloquéala antes de moverla o cambiar su tamaño.",
+        "tapHint": "Toca los elementos para añadirlos o quitarlos."
+      },
+      "fields": {
+        "groupNamePlaceholder": "Nombre del grupo"
+      },
+      "actions": {
+        "duplicate": "Duplicar",
+        "lock": "Bloquear",
+        "unlock": "Desbloquear",
+        "delete": "Eliminar",
+        "ungroup": "Desagrupar",
+        "group": "Agrupar"
+      }
+    },
+    "pathBuilder": {
+      "header": {
+        "title": "Constructor de recorridos"
+      },
+      "status": {
+        "loopConnected": "Bucle conectado · {count} puntos · {length}",
+        "pointsCount": "{count} puntos · {length}",
+        "tapToStart": "Toca el lienzo para colocar el primer punto"
+      },
+      "actions": {
+        "undo": "Deshacer",
+        "connectEnds": "Conectar extremos",
+        "finish": "Terminar",
+        "cancel": "Cancelar"
+      }
+    },
+    "editorPanels": {
+      "quickActions": {
+        "title": "Acciones rápidas",
+        "adjustTitle": "Ajustar",
+        "hints": {
+          "addPoint": "Añadir un punto en el tramo seleccionado",
+          "deleteWaypoint": "Eliminar el punto seleccionado",
+          "resume": "Continuar o ajustar este recorrido",
+          "selectionStep": "{label} · paso de {step}",
+          "selectionFallback": "Selección"
+        },
+        "actions": {
+          "addPoint": "Añadir punto",
+          "editPath": "Editar recorrido",
+          "duplicate": "Duplicar",
+          "lock": "Bloquear",
+          "unlock": "Desbloquear",
+          "delete": "Eliminar",
+          "deletePoint": "Eliminar punto",
+          "adjust": "Ajustar",
+          "back": "Volver"
+        },
+        "adjust": {
+          "step": "Paso",
+          "left": "Izquierda",
+          "up": "Arriba",
+          "down": "Abajo",
+          "right": "Derecha"
+        }
+      },
+      "nav": {
+        "exit": "Salir",
+        "select": "Seleccionar",
+        "tools": "Herramientas",
+        "inspect": "Inspeccionar",
+        "view": "Vista",
+        "review": "Revisar",
+        "share": "Compartir",
+        "feedback": "Comentarios",
+        "editCopy": "Editar copia",
+        "preview": "Vista previa"
+      },
+      "inspector": {
+        "designSettingsHint": "Ajustes del diseño",
+        "title": "Inspector",
+        "subtitles": {
+          "empty": "Ajustes del diseño y elementos colocados",
+          "selected": "Propiedades y edición de la selección"
+        }
+      },
+      "tools": {
+        "title": "Herramientas",
+        "sections": {
+          "items": "Elementos de pista",
+          "tools": "Herramientas del lienzo"
+        },
+        "toolDescriptions": {
+          "startfinish": "Marcar plataformas de salida o cronometraje",
+          "cone": "Colocar marcadores de pista",
+          "label": "Añadir notas al lienzo",
+          "polyline": "Dibujar o editar la trazada"
+        },
+        "subtitles": {
+          "preview3d": "Acciones del proyecto para la sesión 3D actual",
+          "canvas2d": "Herramientas de dibujo y edición"
+        }
+      },
+      "view": {
+        "title": "Vista",
+        "subtitle": "Modo del lienzo, guías y controles de la vista"
+      }
+    }
+  },
+  "viewModeSwitch": {
+    "ariaLabel": "Modo de vista",
+    "canvas2dShort": "2D",
+    "preview3dShort": "3D",
+    "canvas2dDrawer": "Lienzo 2D",
+    "preview3dDrawer": "Vista previa 3D"
+  },
+  "desktopInspectorPanel": {
+    "ariaLabel": "Inspector",
+    "expandTooltip": "Expandir inspector",
+    "collapseTooltip": "Contraer inspector",
+    "verticalLabel": "Inspector"
+  },
+  "accountProjectSync": {
+    "cloudUnavailableDev": "Los proyectos en la nube no están disponibles en `npm run dev`. Usa `npm run preview` para probar la sincronización con cuentas.",
+    "syncedToAccountAt": "Sincronizado con la cuenta a las {time}",
+    "projectSynced": "Proyecto sincronizado",
+    "projectSyncedDescription": "«{title}» ya está disponible en tu cuenta.",
+    "untitled": "Sin título",
+    "signInToSync": "Inicia sesión para sincronizar este proyecto",
+    "cloudSyncUnavailable": "Sincronización en la nube no disponible",
+    "localProjectLoadFailed": "No se ha podido cargar el proyecto local",
+    "localProjectLoadFailedDescription": "TrackDraw no ha podido leer la copia guardada en este dispositivo. Prueba a abrir otro proyecto local o exporta una copia de seguridad JSON del lienzo actual.",
+    "reviewProjectVersion": "Revisar la versión del proyecto",
+    "accountCopyChangedDescription": "La copia de la cuenta ha cambiado antes de que este dispositivo pudiera sincronizarse.",
+    "accountSyncFailed": "Error de sincronización con la cuenta",
+    "accountSyncFailedDescription": "Se ha guardado una copia local en este dispositivo. Reintenta la sincronización cuando la conexión o el servicio de cuentas estén disponibles, o exporta JSON si necesitas una copia de seguridad manual.",
+    "accountSyncFailedSavedLocally": "Error de sincronización con la cuenta; guardado localmente",
+    "autosyncFailedDescription": "TrackDraw ha guardado la copia más reciente en este dispositivo, pero no ha podido actualizar la copia de la cuenta. Reintenta la sincronización cuando vuelva la conexión.",
+    "autoPromoteFailedDescription": "TrackDraw ha guardado este proyecto nuevo en este dispositivo, pero aún no ha podido crear la copia de la cuenta. Reintenta la sincronización cuando vuelva la conexión.",
+    "retry": "Reintentar",
+    "signInToOpen": "Inicia sesión para abrir proyectos de tu cuenta",
+    "cloudProjectsUnavailable": "Proyectos en la nube no disponibles",
+    "projectOpenedFromAccount": "Proyecto abierto desde la cuenta",
+    "openProjectFailed": "No se ha podido abrir el proyecto",
+    "openProjectFailedDescription": "TrackDraw no ha podido cargar la copia de la cuenta. Vuelve a intentarlo o sigue trabajando en el proyecto local si hay uno disponible.",
+    "signInToDuplicate": "Inicia sesión para duplicar proyectos de tu cuenta",
+    "projectDuplicated": "Proyecto duplicado",
+    "projectDuplicatedDescription": "«{title}» se ha guardado en este dispositivo como un proyecto nuevo.",
+    "duplicateProjectFailed": "No se ha podido duplicar el proyecto",
+    "duplicateProjectFailedDescription": "TrackDraw no ha podido cargar la copia de la cuenta para duplicarla. Vuelve a intentarlo.",
+    "keptAsLocalCopy": "Conservado como copia local",
+    "localCopyKept": "Copia local conservada",
+    "localCopyKeptDescription": "«{title}» se conserva ahora en este dispositivo como un proyecto independiente.",
+    "status": {
+      "readOnlySharedView": "Vista compartida de solo lectura",
+      "syncFailed": "Error de sincronización",
+      "reviewNeeded": "Revisión necesaria",
+      "syncing": "Sincronizando…",
+      "changesPending": "Cambios pendientes",
+      "syncedAt": "Sincronizado a las {time}",
+      "syncedProject": "Proyecto sincronizado con la cuenta"
+    }
+  },
+  "shell": {
+    "untitledTrack": "Pista sin título",
+    "untitledFallback": "Sin título",
+    "untitledTrackCopy": "Copia de pista sin título",
+    "copyOfTitle": "Copia de {title}",
+    "savingLocally": "Guardando localmente…",
+    "savedLocallyAt": "Guardado localmente a las {time}",
+    "localAutosaveFailed": "Error de guardado automático local",
+    "localAutosaveFailedDescription": "Los últimos cambios siguen en el lienzo, pero TrackDraw no ha podido guardar una copia local. Reinténtalo ahora o exporta una copia de seguridad JSON antes de salir de este navegador.",
+    "retry": "Reintentar",
+    "localAutosaveRecovered": "Guardado automático local recuperado",
+    "latestLocalCopySaved": "Se ha guardado la copia local más reciente.",
+    "localAutosaveStillFailing": "El guardado automático local sigue fallando",
+    "localAutosaveStillFailingDescription": "Exporta una copia de seguridad JSON antes de hacer más cambios si el almacenamiento del navegador sigue fallando.",
+    "editableCopyCreated": "Copia editable creada",
+    "restoredFromLocalDraft": "Restaurado desde el borrador local",
+    "freshLocalProject": "Proyecto local nuevo",
+    "editing": "Editando…",
+    "snapshotSaved": "Instantánea guardada",
+    "snapshotSavedAt": "Instantánea guardada a las {time}",
+    "restorePointCreatedAt": "Punto de restauración creado a las {time}",
+    "projectOpened": "Proyecto abierto",
+    "restoredFromSnapshot": "Restaurado desde una instantánea",
+    "projectDuplicated": "Proyecto duplicado",
+    "projectDuplicatedDescription": "«{title}» se ha guardado en este dispositivo como un proyecto nuevo e independiente.",
+    "duplicateProjectFailed": "No se ha podido duplicar el proyecto",
+    "exportFailed": "Error de exportación",
+    "exportFailedDescription": "{message} Vuelve a intentarlo o abre Exportar y descarga desde allí una copia de seguridad JSON del proyecto.",
+    "exportFailedNoProjectDescription": "TrackDraw no ha podido cargar este proyecto local. Ábrelo primero o elige otro proyecto guardado.",
+    "exportSuccess": "JSON del proyecto exportado",
+    "embeddedTrack": "Pista incrustada en la página",
+    "sharedPreview": "Vista previa compartida",
+    "loading3d": "Cargando 3D…",
+    "portraitOnlyEyebrow": "Editor móvil",
+    "portraitOnlyTitle": "Pon el teléfono en vertical",
+    "portraitOnlyDescription": "El editor de TrackDraw está diseñado para usarse en vertical en el móvil. Gira el teléfono para seguir editando."
+  },
+  "languagePicker": {
+    "ariaLabel": "Idioma"
+  },
+  "performanceHud": {
+    "title": "HUD de desarrollo",
+    "summary": "Herramienta {tool} · {count} seleccionados",
+    "reset": "Restablecer",
+    "close": "Cerrar",
+    "metrics": {
+      "canvas2d": "Lienzo 2D",
+      "preview3d": "Vista 3D",
+      "inspector": "Inspector",
+      "autosave": "Guardado automático"
+    },
+    "levels": {
+      "noData": "Sin datos",
+      "heavy": "Alta",
+      "busy": "Ocupado",
+      "ok": "OK"
+    }
+  },
+  "textureDebug": {
+    "title": "Depuración de texturas",
+    "copyConfig": "Copiar configuración",
+    "copied": "Copiado",
+    "noPanels": "Todavía no hay paneles registrados",
+    "flip": "invertir"
+  }
+}

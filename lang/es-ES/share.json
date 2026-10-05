@@ -1,0 +1,74 @@
+{
+  "badge": "Vista compartida",
+  "backToHome": "Volver al inicio",
+  "whatToTry": "Qué puedes probar",
+  "openStudio": "Abrir Studio",
+  "error": {
+    "heading": "Este enlace compartido está desactualizado",
+    "description": "Este enlace se creó con una versión anterior de TrackDraw y ya no se puede abrir.",
+    "whatToDo": "Qué puedes hacer",
+    "step1": "Pide al remitente que vuelva a compartir la pista desde <strong>Studio</strong> para obtener un enlace nuevo.",
+    "step2": "O pídele una <strong>exportación JSON</strong>, que puedes abrir en Studio con Importar.",
+    "step3": "Los enlaces que se compartan desde TrackDraw a partir de hoy seguirán funcionando.",
+    "openStudioToImport": "Abrir Studio para importar"
+  },
+  "expired": {
+    "heading": "Este enlace compartido ha caducado",
+    "description": "Los enlaces compartidos temporales de TrackDraw caducan al finalizar el plazo elegido al crearlos. Los enlaces de proyectos publicados desde una cuenta siguen activos hasta que su propietario los revoca. Pide al remitente que publique un enlace nuevo si aún necesitas este diseño.",
+    "step1": "Pide al remitente que vuelva a publicar la pista o que envíe un enlace publicado desde su cuenta para disponer de acceso de solo lectura más duradero.",
+    "step2": "Pide una exportación JSON si necesitas conservar el diseño durante más tiempo."
+  },
+  "revoked": {
+    "heading": "Este enlace compartido se ha revocado",
+    "description": "El propietario de esta pista ha revocado el enlace compartido, por lo que ya no se puede abrir. Pídele un enlace nuevo si aún necesitas este diseño.",
+    "step1": "Pide al propietario que vuelva a compartir la pista para obtener un enlace nuevo.",
+    "step2": "O pídele una <strong>exportación JSON</strong>, que puedes abrir en Studio con Importar."
+  },
+  "notFound": {
+    "heading": "No se ha podido abrir esta pista compartida",
+    "description": "El propietario puede haber revocado el enlace, o puede estar desactualizado, incompleto o mal copiado. Pide al remitente que confirme que sigue activo o que publique uno nuevo. Si la pista es muy grande, una exportación JSON es una alternativa más fiable al enlace compartido.",
+    "step1": "Pide al remitente que confirme que el enlace sigue activo y que copie de nuevo el enlace compartido más reciente.",
+    "step2": "Abre el enlace directamente desde el mensaje en el que lo recibiste.",
+    "step3": "Pide una exportación JSON si la pista es muy grande: los archivos JSON no están sujetos a los límites de tamaño de las URL."
+  },
+  "viewer": {
+    "dismissIntro": "Cerrar la introducción de la pista compartida",
+    "sharedByReadOnly": "Compartido por {author}. Solo lectura; no se guarda ningún cambio. Cambia a {view} o crea tu propia copia editable en Studio.",
+    "readOnlyNoAuthor": "Solo lectura; no se guarda ningún cambio. Cambia a {view} o crea tu propia copia editable en Studio.",
+    "openView": "Abrir {view}",
+    "makeEditableCopy": "Crear una copia editable",
+    "loading": "Cargando pista compartida…"
+  },
+  "fallback": {
+    "untitled": "Pista sin título",
+    "readOnlyDescription": "Plano de TrackDraw de solo lectura para {title}."
+  },
+  "metadata": {
+    "title": "Ver pista",
+    "description": "Consulta esta pista de carreras FPV diseñada con TrackDraw.",
+    "expiredTitle": "Enlace de pista caducado",
+    "expiredDescription": "Este enlace compartido de TrackDraw ha caducado. Pide al remitente que publique uno nuevo.",
+    "revokedTitle": "Enlace de pista revocado",
+    "revokedDescription": "El propietario ha revocado este enlace compartido de TrackDraw. Pídele uno nuevo.",
+    "retiredTitle": "Enlace de pista desactualizado",
+    "retiredDescription": "Este enlace compartido de TrackDraw está desactualizado. Pide al remitente que vuelva a compartir la pista.",
+    "embedTitle": "Pista incrustada",
+    "embedDescription": "Vista incrustada de TrackDraw de solo lectura."
+  },
+  "embed": {
+    "privacy": "Política de privacidad"
+  },
+  "embedUnavailable": {
+    "temporaryTitle": "Vista incrustada no disponible",
+    "temporaryDescription": "Las vistas incrustadas están disponibles para enlaces publicados desde una cuenta. Abre el enlace compartido o inicia sesión para publicar una vista incrustada duradera.",
+    "expiredTitle": "Esta vista incrustada ha caducado",
+    "expiredDescription": "Este enlace compartido temporal de TrackDraw ya no está activo. Pide al propietario que publique un enlace duradero desde su cuenta.",
+    "revokedTitle": "Esta vista incrustada se ha revocado",
+    "revokedDescription": "El propietario ha revocado este enlace compartido de TrackDraw, por lo que la pista incrustada ya no está disponible.",
+    "missingTitle": "Pista no encontrada",
+    "missingDescription": "Esta vista incrustada de TrackDraw no corresponde a ningún enlace publicado desde una cuenta que esté activo.",
+    "openShareLink": "Abrir enlace compartido",
+    "signIn": "Iniciar sesión",
+    "brand": "TrackDraw"
+  }
+}
