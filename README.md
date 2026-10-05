@@ -56,7 +56,7 @@ TrackDraw keeps the full race-planning workflow in one design:
 
 Open the Studio and work immediately. Projects are stored in the browser, can be restored to earlier versions, and can be imported, exported, and temporarily shared without signing in. An account adds cross-device sync, durable published links, gallery publishing, embeds, and share management.
 
-TrackDraw supports English, Dutch, German, Simplified Chinese, and Spanish, with an independent choice of Metric or Imperial units. Spanish currently uses English copy until translations are reviewed in Crowdin. The editor supports desktop and mobile, while shared designs open in a dedicated read-only view.
+TrackDraw supports English, Dutch, German, Simplified Chinese, and Spanish, with an independent choice of Metric or Imperial units. Untranslated messages use English until reviewed translations arrive through Crowdin. The editor supports desktop and mobile, while shared designs open in a dedicated read-only view.
 
 TrackDraw is actively developed. See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for current priorities and progress.
 

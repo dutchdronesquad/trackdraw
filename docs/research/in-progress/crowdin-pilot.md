@@ -23,7 +23,7 @@ Do not edit target-language JSON directly during the pilot, except for a product
 
 ## Initial Crowdin setup
 
-1. Create a public, file-based project with English as source and Dutch, German, Chinese Simplified (`zh-CN`), and Spanish (`es-ES`) as targets. Spanish starts without target catalogs and uses English runtime fallback; enable the Spanish target in Crowdin before its first translation export.
+1. Create a public, file-based project with English as source and Dutch, German, Chinese Simplified (`zh-CN`), and Spanish (`es-ES`) as targets. Enable each target in Crowdin before its first translation export. Target catalog directories and namespace files are supplied by Crowdin; missing catalogs use English runtime fallback for every supported locale.
 2. On the ordinary Free plan, keep moderated joining and project-enforced 2FA disabled because those controls are unavailable. Ask maintainers to enable account-level 2FA voluntarily; enable the project controls if the open-source request is approved.
 3. Add `CROWDIN_PROJECT_ID` and `CROWDIN_PERSONAL_TOKEN` as GitHub Actions repository secrets. Give the Crowdin token read access to projects and translation status plus read/write access to source files, strings, and translations.
 4. In GitHub under **Settings > Actions > General**, allow GitHub Actions to create pull requests. The workflow uses the repository-scoped `GITHUB_TOKEN`; no personal GitHub token is required.
@@ -108,7 +108,7 @@ If a normal feature branch already contains useful agent-generated target transl
 
 ## Runtime fallback
 
-Target catalogs are allowed to lag behind English. Server-side development catalogs and generated `public/locales/**` assets recursively merge the target catalog over English. Existing translations win; missing namespaces, missing keys, or empty values use English. Arrays such as landing-page bullets and FAQ entries are merged by position.
+Target catalogs are allowed to lag behind English. Server-side development catalogs and generated `public/locales/**` assets recursively merge the target catalog over English. Existing translations win; missing catalog directories, missing namespaces, missing keys, or empty values use English for every supported locale. Arrays such as landing-page bullets and FAQ entries are merged by position.
 
 Extra target keys are ignored at runtime and rejected by CI. Placeholder changes are also rejected so a translated message cannot silently drop required values.
 
