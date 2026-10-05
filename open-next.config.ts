@@ -1,5 +1,6 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
+import { getPathFromRouteCacheKey } from "@opennextjs/aws/utils/routeCacheKey.js";
 import type {
   CacheEntryType,
   CacheValue,
@@ -21,7 +22,7 @@ const staticShellCache = {
   ) {
     if (
       (cacheType === undefined || cacheType === "cache") &&
-      staticShellCacheKeys.has(key)
+      staticShellCacheKeys.has(getPathFromRouteCacheKey(key))
     ) {
       return staticAssetsIncrementalCache.get(key, cacheType);
     }
