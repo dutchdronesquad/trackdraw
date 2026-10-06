@@ -1,14 +1,14 @@
 # Translation management: Crowdin versus Weblate
 
-TrackDraw ships English, Dutch, German, and Simplified Chinese. Editing nested JSON by hand no longer scales well: every language increases stale-key risk, terminology drift, review work, and the onboarding burden for non-technical translators.
+TrackDraw ships English, Dutch, German, Simplified Chinese, and Spanish. Editing nested JSON by hand no longer scales well: every language increases stale-key risk, terminology drift, review work, and the onboarding burden for non-technical translators.
 
 This document records the current comparison, but deliberately does not make an irreversible platform choice. The recommended next step is a hosted Crowdin pilot while retaining self-hosted Weblate as the fallback if hosted limits, licensing, or workflow control become a problem.
 
 ## Current repository scope
 
-The source remains `lang/en-US/{namespace}.json`. The ten translatable namespaces are `common`, `dialogs`, `editor`, `exportPdf`, `inspector`, `landing`, `login`, `setupEstimate`, `shapes`, and `share`. Target catalogs and generated locale assets use Crowdin-compatible regional directories: `nl-NL`, `de-DE`, and `zh-CN`. Frontend product locale identifiers remain `en`, `nl`, `de`, and `zh-CN`. `dashboard` and `legal` remain English-only.
+The source remains `lang/en-US/{namespace}.json`. The ten translatable namespaces are `common`, `dialogs`, `editor`, `exportPdf`, `inspector`, `landing`, `login`, `setupEstimate`, `shapes`, and `share`. Target catalogs and generated locale assets use Crowdin-compatible regional directories: `nl-NL`, `de-DE`, `zh-CN`, and `es-ES`. Frontend product locale identifiers remain `en`, `nl`, `de`, `zh-CN`, and `es`; the shared i18n policy maps Spanish product locale `es` to catalog directory `es-ES`. `dashboard` and `legal` remain English-only.
 
-Measured on 2026-08-09, those ten namespaces contain:
+The historical measurement on 2026-08-09, before Spanish was added, recorded:
 
 - 1,627 source strings;
 - approximately 8,577 English source words;
@@ -20,7 +20,7 @@ Excluding `dashboard` and `legal` saves approximately 3,177 source words, or 9,5
 
 Crowdin is the preferred pilot because it provides a mature contributor UI without adding servers, databases, backups, email delivery, monitoring, or upgrades to TrackDraw's operational workload.
 
-Recent Crowdin support guidance states that the ordinary Free plan includes 60,000 hosted words. At TrackDraw's current source size this gives the following planning envelope:
+Recent Crowdin support guidance states that the ordinary Free plan includes 60,000 hosted words. Using the 2026-08-09 source-word baseline gives the following planning envelope; the current pilot has four target languages, and live Crowdin usage remains authoritative:
 
 | Target languages | Estimated hosted words | Fits within 60,000 |
 | ---------------: | ---------------------: | :----------------: |
@@ -111,7 +111,7 @@ If a contributor leaves, remove them from platform teams or disable the account.
 
 ## Selected pilot
 
-TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns `nl`, `de`, and `zh-CN` target editing during the pilot; English remains in GitHub. The no-cost workflow reuses only previously approved perfect Translation Memory matches and relies on human contributions or separately reviewed maintainer-seeded batches for remaining target copy. Missing messages use TrackDraw's tested English fallback. The repository retains all catalogs and production keeps using generated Static Assets.
+TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns Dutch (`lang/nl-NL/**`), German (`lang/de-DE/**`), Simplified Chinese (`lang/zh-CN/**`), and Spanish (`lang/es-ES/**`) target editing during the pilot; English remains in GitHub. The no-cost workflow reuses only previously approved perfect Translation Memory matches and relies on human contributions or separately reviewed maintainer-seeded batches for remaining target copy. Missing messages use TrackDraw's tested English fallback. The repository retains all catalogs and production keeps using generated Static Assets.
 
 The setup, update cycle, evaluation criteria, and rollback are documented in `docs/research/in-progress/crowdin-pilot.md`. The initial repository round trip exposed two integration concerns: native synchronization attributed commits to the authorizing maintainer and exported untranslated ICU messages as English target text. The repository-owned GitHub Action avoids personal commit attribution and skips untranslated target strings so the existing runtime fallback remains responsible for temporary English copy.
 

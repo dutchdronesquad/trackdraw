@@ -17,7 +17,7 @@ TrackDraw is now strong in these areas:
 - Account-backed REST API with API key management and a live race overlay data endpoint
 - Catalog-backed official MultiGP obstacles including gates, ladders, flags, dive gate, launch gate, and a barrier category for hurdles, banners, fencing, and nets
 - Account-backed user presets where users save and reuse named canvas selections across devices
-- English, Dutch, German, and Simplified Chinese multilingual product experience with explicit language choice, route-scoped message loading, generated locale assets, English fallback for temporarily incomplete Crowdin catalogs, and CI checks for catalog integrity and new hardcoded UI copy
+- English, Dutch, German, Simplified Chinese, and Spanish multilingual product experience with explicit language choice, route-scoped message loading, generated locale assets, English fallback for temporarily incomplete Crowdin catalogs, and CI checks for catalog integrity and new hardcoded UI copy
 - Protected magic-link account handoff that avoids automatic email scanner sign-ins while keeping the sign-in flow simple
 - Optional generated race-line drafting from ordered obstacles, with warnings for layouts that need manual attention
 - Interactive elevation profile review with waypoint, obstacle, timing, and warning markers linked back to the canvas
@@ -265,18 +265,18 @@ Current shipped foundation:
 
 - `next-intl` is integrated without locale routing, preserving existing `/studio`, `/gallery`, `/share/[token]`, and `/embed/[token]` URLs
 - Browser language provides the first-run default when no saved language preference exists, while manual language choice remains separate from measurement units
-- English, Dutch, German, and Simplified Chinese catalogs cover the public site, editor, share/embed/gallery surfaces, dialogs, inspector, exported handoff copy, and shared product vocabulary
+- English, Dutch, German, Simplified Chinese, and Spanish catalogs cover the public site, editor, share/embed/gallery surfaces, dialogs, inspector, exported handoff copy, and shared product vocabulary
 - Dashboard and legal surfaces remain English-only
 - English remains the stable fallback baseline, with route-scoped message loading and a centralized i18n catalog policy
 - Locale JSON is generated into OpenNext static assets for production builds so additional languages do not become full static catalog imports in the Cloudflare Worker script
 - Catalog-integrity/unresolved-key validation and hardcoded-copy scanning run in CI so new UI copy is intentionally cataloged or explicitly allowlisted; missing Crowdin target keys use the tested English fallback
-- PNG/SVG footer dates and untitled-track fallbacks, public-gallery dates, and API Docs titles/document language follow all four supported locales
+- PNG/SVG footer dates and untitled-track fallbacks, public-gallery dates, and API Docs titles/document language follow all five supported locales
 
 Maintenance focus:
 
 - Keep new product copy behind typed message catalogs instead of reopening hardcoded-copy debt
-- Treat translation management and Worker package size as a near-term operational track now that TrackDraw has four shipped languages and additional contributor languages are expected
-- Pilot Crowdin Free before selecting a platform; the current ten namespaces and three target languages are estimated at 25,731 hosted words, while Weblate remains the self-hosted fallback
+- Treat translation management and Worker package size as a near-term operational track now that TrackDraw has five shipped languages and additional contributor languages are expected
+- Pilot Crowdin Free before selecting a platform, with Weblate as the self-hosted fallback. The ten translatable namespaces now have four target languages (Dutch, German, Simplified Chinese, and Spanish); monitor hosted-word usage in the Crowdin workspace as source copy grows
 - Keep the pilot cost-free: automatically reuse only previously approved perfect Translation Memory matches, leave paid Crowdin AI and machine translation disabled, and use contributors, reviewable maintainer-seeded Crowdin imports, plus English fallback for remaining strings
 - Do not depend on Crowdin's open-source grant: confirm the actual workspace quota and reassess licensing if TrackDraw introduces related paid products or services
 - If Weblate becomes necessary, use an ephemeral pilot before operating a separate production stack; a permanent ACC environment is not initially required
