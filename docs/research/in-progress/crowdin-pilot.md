@@ -12,12 +12,14 @@ The pilot stays reversible. Translation JSON remains versioned in Git, productio
 
 ## Ownership during the pilot
 
-| Content                                              | Source of truth                                     |
-| ---------------------------------------------------- | --------------------------------------------------- |
-| `lang/en-US/**` product source copy                  | GitHub feature pull requests                        |
-| `lang/nl-NL/**`, `lang/de-DE/**`, `lang/zh-CN/**`    | Crowdin                                             |
-| `lang/en-US/dashboard.json`, `lang/en-US/legal.json` | GitHub; excluded from Crowdin                       |
-| Production locale assets                             | Generated from the merged Git catalogs during build |
+| Content                                                            | Source of truth                                     |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| `lang/en-US/**` product source copy                                | GitHub feature pull requests                        |
+| `lang/nl-NL/**`, `lang/de-DE/**`, `lang/zh-CN/**`, `lang/es-ES/**` | Crowdin                                             |
+| `lang/en-US/dashboard.json`, `lang/en-US/legal.json`               | GitHub; excluded from Crowdin                       |
+| Production locale assets                                           | Generated from the merged Git catalogs during build |
+
+The shared i18n policy maps product locale identifiers to regional catalog directories: Spanish uses `es` in the frontend and `es-ES` in Crowdin, `lang/es-ES/**`, and generated `public/locales/es-ES/**` assets.
 
 Do not edit target-language JSON directly during the pilot, except for a production emergency that is immediately reconciled back into Crowdin.
 

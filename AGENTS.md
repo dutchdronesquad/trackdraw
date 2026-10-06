@@ -43,7 +43,7 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 ## Localization And Crowdin
 
 - English product copy in `lang/en-US/**` is the source of truth and belongs in normal feature pull requests.
-- Do not edit `lang/nl-NL/**`, `lang/de-DE/**`, or `lang/zh-CN/**` in a feature pull request, even when you can generate plausible translations. Crowdin owns those target catalogs.
+- Do not edit `lang/nl-NL/**`, `lang/de-DE/**`, `lang/zh-CN/**`, or `lang/es-ES/**` in a feature pull request, even when you can generate plausible translations. Crowdin owns those target catalogs.
 - Do not copy new English keys into target catalogs as placeholders. Missing target keys intentionally use the tested English runtime fallback.
 - After English reaches `main`, the Crowdin workflow uploads it automatically. Crowdin may reuse previously approved perfect Translation Memory matches, while contributors create or improve the remaining translations in Crowdin; accepted target updates return through the `l10n_crowdin` localization pull request.
 - Paid Crowdin AI and machine translation are disabled. Missing translations intentionally use the tested English fallback until Crowdin receives reviewed target copy.
@@ -51,7 +51,7 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 - Human translations and corrections in Crowdin take precedence over Translation Memory suggestions. Do not overwrite them from the repository.
 - Direct target-catalog edits are allowed only in a production emergency or an explicitly requested one-time reconciliation. Reconcile such changes back into Crowdin immediately instead of creating a second source of truth.
 - If a working tree already contains agent-generated target translations, do not silently keep, discard, or regenerate them. Flag them for reconciliation through the same Crowdin import-and-review flow and keep subsequent feature work English-only.
-- A new English key does not require target-key parity, but every translatable namespace file must still exist for every supported target locale.
+- A new English key does not require target-key parity. Missing target catalog directories, namespace files, and keys use the tested English fallback; exported target catalogs must pass the normal integrity checks.
 - Run `npm run i18n:check` and `npm run i18n:scan-hardcoded` when changing product copy. See `CONTRIBUTING.md` and `docs/research/in-progress/crowdin-pilot.md` for the synchronization and review workflow.
 
 ## Ownership Map
