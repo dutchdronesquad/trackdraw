@@ -205,10 +205,28 @@
       "integration": "Integration"
     }
   },
+  "relatedTools": {
+    "eyebrow": "More from TrackDraw",
+    "heading": "Tools for your club and website.",
+    "description": "Create obstacle artwork for your organization, or bring interactive track layouts to your own website.",
+    "artwork": {
+      "title": "Artwork Designer",
+      "description": "Design gate and flag artwork with your club's logos and colours, then preview it in 3D. Download an editable SVG sheet, or submit your artwork for review and inclusion in the shared collections.",
+      "action": "Open artwork designer",
+      "collections": "Explore artwork collections"
+    },
+    "viewer": {
+      "title": "TrackDraw Viewer",
+      "description": "Display TrackDraw layouts in an interactive 2D and 3D viewer on your club or event website. Use the standalone viewer package to build your own integration, with support for offline track archives.",
+      "action": "Explore the viewer"
+    }
+  },
   "footer": {
     "tagline": "Browser-based track designer for FPV race directors. Draw to scale, preview in 3D, share a read-only link, and keep quick edits moving on mobile.",
     "productTitle": "Product",
     "openStudio": "Open Studio",
+    "artworkDesigner": "Artwork designer",
+    "viewer": "TrackDraw Viewer",
     "releaseNotes": "Release notes",
     "legalTitle": "Legal",
     "privacy": "Privacy Policy",

@@ -32,6 +32,7 @@ import {
 import { Screenshot } from "@/components/landing/Screenshot";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { RelatedToolsSection } from "@/components/landing/RelatedToolsSection";
 import {
   Reveal,
   RevealStagger,
@@ -544,6 +545,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <RelatedToolsSection />
 
         <PricingSection />
 
