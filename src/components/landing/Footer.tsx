@@ -5,9 +5,11 @@ import Image from "next/image";
 import {
   Bug,
   Coffee,
+  CodeXml,
   FileText,
   Heart,
   Languages,
+  Palette,
   Pencil,
   ScrollText,
   ShieldCheck,
@@ -106,6 +108,28 @@ export function Footer() {
                     <Pencil className="size-4 shrink-0" />
                     {t("footer.openStudio")}
                   </Link>
+                </li>
+                <li>
+                  <a
+                    href="https://designer.trackdraw.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Palette aria-hidden="true" className="size-4 shrink-0" />
+                    {t("footer.artworkDesigner")}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/dutchdronesquad/track-viewer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <CodeXml aria-hidden="true" className="size-4 shrink-0" />
+                    {t("footer.viewer")}
+                  </a>
                 </li>
                 <li>
                   <a
