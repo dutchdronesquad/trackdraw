@@ -1,6 +1,6 @@
 # Obstacle appearances
 
-Compatible MultiGP Standard Gate 5×5 obstacles offer an **Appearance → Artwork** selector in the desktop and mobile inspector. Published artwork is discovered from `https://assets.trackdraw.app/collections.json`; DDS is the first end-to-end pilot. Original artwork remains the default. No account is required.
+Compatible MultiGP Standard Gate 5×5 obstacles offer an **Appearance → Artwork** selector in the desktop and mobile inspector. Published artwork is discovered from `https://assets.trackdraw.app/collections.json`; DDS is the first end-to-end pilot. A MultiGP gate directly loads the published MultiGP Standard gate artwork through the same registry pipeline as DDS. Start/finish gates use the MultiGP red variant unless artwork was explicitly selected. The selector lists concrete artwork sets without an extra original/default option. No account is required.
 
 Editable designs store only `appearance: { source, collectionId, textureId, templateId }`. These references travel through autosave, project JSON, undo/redo, shared designs and viewer snapshots. Changing to an incompatible catalog type keeps the requested reference and renders the original geometry; returning to the standard gate makes that selection usable again. Unknown sources and template versions are retained with a fallback.
 

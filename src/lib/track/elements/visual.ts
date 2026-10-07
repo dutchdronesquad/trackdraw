@@ -27,6 +27,7 @@ import {
   type LadderVisualSpec,
   type TrackElementVisualSpec,
 } from "@/lib/track/elements/catalog";
+import { getShapeArtworkReference } from "@/lib/track/appearance";
 import { getShapeTimingMarker } from "@/lib/track/timing";
 
 const START_FINISH_TOP_TEXTURES: Record<string, string> = {
@@ -80,7 +81,7 @@ export function getGateVisualSpec(shape: GateShape): GateVisualSpec {
   const visual = getTrackElementVisualSpec(shape);
   const base =
     visual?.kind === "gate" ? visual : getFallbackGateVisualSpec(shape);
-  const appearance = getResolvedAppearance(shape.appearance);
+  const appearance = getResolvedAppearance(getShapeArtworkReference(shape));
   if (
     base.variant === "panel-frame" &&
     appearance &&

@@ -1,3 +1,4 @@
+import { getShapeArtworkReference } from "@/lib/track/appearance";
 import { loadAppearance } from "@trackdraw/schema/appearance/registry";
 import * as THREE from "three";
 import {
@@ -247,8 +248,8 @@ export async function addGateSceneShapes(
   shape: GateShape,
   scene: THREE.Scene
 ): Promise<void> {
-  if (shape.appearance)
-    await loadAppearance(shape.appearance).catch(() => undefined);
+  const artwork = getShapeArtworkReference(shape);
+  if (artwork) await loadAppearance(artwork).catch(() => undefined);
   const visual = getGateVisualSpec(shape);
   if (visual.variant === "panel-frame") {
     scene.add(await createOfficialGateGroup(shape, visual));

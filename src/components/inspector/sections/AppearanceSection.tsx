@@ -8,6 +8,7 @@ import {
   getAppearanceTemplate,
   type AppearanceChoice,
 } from "@trackdraw/schema/appearance/registry";
+import { getShapeArtworkReference } from "@/lib/track/appearance";
 import { useShapeAppearance } from "@/hooks/useShapeAppearance";
 import { Section, Row } from "@/components/inspector/shared";
 import {
@@ -51,9 +52,8 @@ export function AppearanceSection({
       active = false;
     };
   }, [template, attempt]);
-  const selected = shape.appearance
-    ? appearanceKey(shape.appearance)
-    : "default";
+  const reference = getShapeArtworkReference(shape);
+  const selected = reference ? appearanceKey(reference) : "";
   const available = choices.filter(
     (choice) => choice.reference.templateId === template
   );
@@ -68,13 +68,12 @@ export function AppearanceSection({
             const choice = available.find(
               (entry) => appearanceKey(entry.reference) === value
             );
-            updateShape(shape.id, { appearance: choice?.reference });
-            if (choice) {
-              setStatus("loading");
-              void loadAppearance(choice.reference)
-                .then(() => setStatus("ready"))
-                .catch(() => setStatus("failed"));
-            }
+            if (!choice) return;
+            updateShape(shape.id, { appearance: choice.reference });
+            setStatus("loading");
+            void loadAppearance(choice.reference)
+              .then(() => setStatus("ready"))
+              .catch(() => setStatus("failed"));
           }}
         >
           <SelectTrigger
@@ -84,14 +83,13 @@ export function AppearanceSection({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="default">{t("default")}</SelectItem>
-            {shape.appearance &&
+            {reference &&
             !available.some(
               (entry) => appearanceKey(entry.reference) === selected
             ) ? (
               <SelectItem value={selected}>
                 {resolved?.collectionName ??
-                  shape.appearance.collectionId ??
+                  reference.collectionId ??
                   t("saved")}
               </SelectItem>
             ) : null}
@@ -107,7 +105,7 @@ export function AppearanceSection({
         </Select>
       </Row>
       <p className="text-muted-foreground text-[11px]" role="status">
-        {!template || (shape.appearance && !resolved && status === "ready")
+        {!template || (reference && !resolved && status === "ready")
           ? t("unavailable")
           : status === "loading"
             ? t("loading")
@@ -119,16 +117,15 @@ export function AppearanceSection({
                   ? t("hint")
                   : t("empty")}
       </p>
-      {status === "failed" ||
-      (shape.appearance && !resolved && status === "ready") ? (
+      {status === "failed" || (reference && !resolved && status === "ready") ? (
         <button
           type="button"
           className="text-foreground min-h-9 text-xs underline"
           onClick={() => {
             setStatus("loading");
             setAttempt(attempt + 1);
-            if (shape.appearance)
-              void loadAppearance(shape.appearance)
+            if (reference)
+              void loadAppearance(reference)
                 .then(() => setStatus("ready"))
                 .catch(() => setStatus("failed"));
           }}
