@@ -202,7 +202,10 @@ export function AppearanceSection(props: AppearanceSectionProps) {
                 className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-8 items-center gap-1.5 rounded-sm text-[13px] transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 {t("automaticTiming")}
-                <Info aria-hidden="true" className="size-3.5 shrink-0 opacity-60" />
+                <Info
+                  aria-hidden="true"
+                  className="size-3.5 shrink-0 opacity-60"
+                />
               </button>
             </PopoverTrigger>
             <PopoverContent

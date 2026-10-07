@@ -86,9 +86,8 @@ describe("Spanish catalogs", () => {
     getCloudflareContext.mockResolvedValue({
       env: { ASSETS: { fetch: fetchAsset } },
     });
-    const { getCatalogForLocale, pickCatalogNamespaces } = await import(
-      "@/i18n/catalogs"
-    );
+    const { getCatalogForLocale, pickCatalogNamespaces } =
+      await import("@/i18n/catalogs");
     await getCatalogForLocale("nl");
     writeNamespace("en-US", "inspector", {
       appearance: {
