@@ -60,7 +60,7 @@ export function PanelHeader({
 }) {
   return (
     <div className="border-border/60 bg-card/95 supports-backdrop-filter:bg-card/90 sticky top-0 z-10 flex h-11 shrink-0 items-center justify-between border-b px-4 backdrop-blur lg:h-9 lg:px-3">
-      <span className="text-foreground/80 text-xs font-medium tracking-widest uppercase lg:text-[11px]">
+      <span className="text-foreground/80 text-xs font-medium tracking-widest uppercase lg:text-[13px]">
         {title}
       </span>
       {actions && <div className="flex gap-1 lg:gap-0.5">{actions}</div>}
@@ -81,7 +81,7 @@ export function Row({
     <div className="flex min-h-9 items-center gap-3 py-1 lg:min-h-8 lg:py-0.5">
       <span
         id={labelId}
-        className="text-muted-foreground/85 w-19.5 shrink-0 text-[11px] tracking-[0.02em] lg:w-22"
+        className="text-muted-foreground/85 w-19.5 shrink-0 text-[13px] tracking-[0.02em] lg:w-22"
       >
         {label}
       </span>
@@ -129,7 +129,7 @@ export function Section({
           onClick={() => setOpenState({ defaultOpen, open: !open })}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="text-muted-foreground/75 hover:text-foreground focus-visible:ring-ring/40 mb-2 flex min-h-9 w-full shrink-0 items-center justify-between gap-3 rounded-sm text-left text-[11px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:min-h-6"
+          className="text-muted-foreground/75 hover:text-foreground focus-visible:ring-ring/40 mb-2 flex min-h-9 w-full shrink-0 items-center justify-between gap-3 rounded-sm text-left text-[13px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:min-h-8"
         >
           <span>{title}</span>
           <ChevronDown
@@ -140,7 +140,7 @@ export function Section({
           />
         </button>
       ) : (
-        <p className="text-muted-foreground/75 mb-2 shrink-0 text-[11px] font-medium tracking-[0.12em] uppercase">
+        <p className="text-muted-foreground/75 mb-2 shrink-0 text-[13px] font-medium tracking-[0.12em] uppercase">
           {title}
         </p>
       )}
@@ -192,7 +192,7 @@ export function Num({
         }
       }}
       onChange={(event) => onChange(+event.target.value)}
-      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
+      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[13px] shadow-none focus-visible:ring-2 lg:h-9 lg:px-2"
     />
   );
 }
@@ -256,7 +256,7 @@ export function MeasurementNum({
         }
       }}
       onChange={(event) => setDraft(event.target.value)}
-      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
+      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[13px] shadow-none focus-visible:ring-2 lg:h-9 lg:px-2"
     />
   );
 }
@@ -280,7 +280,7 @@ export function IconBtn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`focus-visible:ring-ring/40 inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-7 lg:px-2 ${
+      className={`focus-visible:ring-ring/40 inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2.5 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-9 lg:px-2 ${
         danger
           ? "border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12"
           : "border-border/50 bg-background text-foreground/82 hover:bg-muted/35"
@@ -291,3 +291,7 @@ export function IconBtn({
     </button>
   );
 }
+
+export const inspectorSelectTriggerClass =
+  "border-border/45 bg-muted/30 hover:bg-muted/50 focus:ring-ring/35 h-10 w-full rounded-lg px-3 text-[13px] shadow-none transition-colors lg:h-9";
+export const inspectorSelectItemClass = "text-[13px]";

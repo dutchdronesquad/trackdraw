@@ -1,5 +1,10 @@
 "use client";
+import {
+  inspectorSelectTriggerClass,
+  inspectorSelectItemClass,
+} from "@/components/inspector/shared";
 
+import { AppearanceSection } from "@/components/inspector/sections/AppearanceSection";
 import { type Dispatch, type SetStateAction } from "react";
 import { Input } from "@/components/ui/input";
 import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
@@ -68,6 +73,7 @@ export interface MultiInspectorViewProps {
     ids: string[],
     entryId: TrackElementCatalogId
   ) => void;
+  updateShapes?: (ids: string[], patch: Partial<Shape>) => void;
   arrangeShapes: (ids: string[], mode: ArrangeShapesMode) => void;
   onSaveAsPreset?: () => void;
   mobileInline?: boolean;
@@ -120,6 +126,7 @@ export function MultiInspectorView({
   setSelection,
   ungroupSelection,
   updateShapesCatalogType,
+  updateShapes,
   arrangeShapes,
   onSaveAsPreset,
   mobileInline = false,
@@ -213,6 +220,12 @@ export function MultiInspectorView({
       ? editableCatalogIds[0]
       : undefined;
   const meta = [
+    ...Object.entries(kinds)
+      .filter(([, count]) => count > 0)
+      .map(
+        ([kind, count]) =>
+          `${count} × ${getShapeKindLabel(kind as Shape["kind"], tShapes)}`
+      ),
     ...(groupCount > 0
       ? [t("multiSelection.groupCountMeta", { count: groupCount })]
       : []),
@@ -227,7 +240,6 @@ export function MultiInspectorView({
             title={t("multiSelection.titleSelected", {
               count: selectedShapes.length,
             })}
-            subtitle={t("multiSelection.subtitle")}
             meta={meta.length > 0 ? meta : undefined}
           />
           <div className="space-y-1.5">
@@ -316,23 +328,53 @@ export function MultiInspectorView({
               </div>
             )}
           </div>
-          <Section title={t("multiSelection.sectionTitle")} collapsible={false}>
-            <div className="grid grid-cols-2 gap-2 lg:gap-1">
-              {Object.entries(kinds)
-                .filter(([, count]) => count > 0)
-                .map(([kind, count]) => (
-                  <div
-                    key={kind}
-                    className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
+          {batchCatalogEntries ? (
+            <Section title={t("catalog.sectionTitle")} defaultOpen>
+              <div>
+                <Select
+                  value={activeBatchCatalogId}
+                  disabled={editableCatalogSelectionCount === 0}
+                  onValueChange={(value) =>
+                    updateShapesCatalogType(
+                      selection,
+                      value as TrackElementCatalogId
+                    )
+                  }
+                >
+                  <SelectTrigger
+                    aria-label={tCommon("labels.type")}
+                    className={inspectorSelectTriggerClass}
                   >
-                    <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
-                      {getShapeKindLabel(kind as Shape["kind"], tShapes)}
-                    </p>
-                    <p className="text-sm font-semibold">{count}×</p>
-                  </div>
-                ))}
-            </div>
-          </Section>
+                    <SelectValue
+                      placeholder={t("multiSelection.mixedTypesPlaceholder")}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batchCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className={inspectorSelectItemClass}
+                      >
+                        {getTrackElementCatalogName(entry, tShapes)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {editableCatalogSelectionCount < selectedShapes.length ? (
+                <p className="text-muted-foreground px-0.5 text-[12px] leading-relaxed">
+                  {t("multiSelection.lockedItemsNote")}
+                </p>
+              ) : null}
+            </Section>
+          ) : null}
+          {updateShapes ? (
+            <AppearanceSection
+              shapes={selectedShapes}
+              updateShapes={updateShapes}
+            />
+          ) : null}
           {placeableCount >= 2 ? (
             <Section
               title={t("multiSelection.arrange.sectionTitle")}
@@ -352,7 +394,7 @@ export function MultiInspectorView({
                           onClick={() => arrangeShapes(selection, mode)}
                           aria-label={label}
                           disabled={editablePlaceableCount < minimum}
-                          className="text-muted-foreground hover:bg-background/90 hover:text-foreground focus-visible:ring-ring/40 flex h-8 w-full items-center justify-center rounded-md transition-[color,background-color,box-shadow] hover:shadow-xs focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:shadow-none lg:h-7"
+                          className="text-muted-foreground hover:bg-background/90 hover:text-foreground focus-visible:ring-ring/40 flex h-8 w-full items-center justify-center rounded-md transition-[color,background-color,box-shadow] hover:shadow-xs focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:shadow-none lg:h-9"
                         >
                           <Icon className="size-4 shrink-0" />
                         </button>
@@ -365,45 +407,7 @@ export function MultiInspectorView({
                 ))}
               </div>
               {hasLockedSelection ? (
-                <p className="text-muted-foreground px-0.5 text-[10px] leading-relaxed">
-                  {t("multiSelection.lockedItemsNote")}
-                </p>
-              ) : null}
-            </Section>
-          ) : null}
-          {batchCatalogEntries ? (
-            <Section title={t("catalog.sectionTitle")} defaultOpen>
-              <Row label={tCommon("labels.type")}>
-                <Select
-                  value={activeBatchCatalogId}
-                  disabled={editableCatalogSelectionCount === 0}
-                  onValueChange={(value) =>
-                    updateShapesCatalogType(
-                      selection,
-                      value as TrackElementCatalogId
-                    )
-                  }
-                >
-                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
-                    <SelectValue
-                      placeholder={t("multiSelection.mixedTypesPlaceholder")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {batchCatalogEntries.map((entry) => (
-                      <SelectItem
-                        key={entry.id}
-                        value={entry.id}
-                        className="text-xs lg:text-[11px]"
-                      >
-                        {getTrackElementCatalogName(entry, tShapes)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Row>
-              {editableCatalogSelectionCount < selectedShapes.length ? (
-                <p className="text-muted-foreground px-0.5 text-[10px] leading-relaxed">
+                <p className="text-muted-foreground px-0.5 text-[12px] leading-relaxed">
                   {t("multiSelection.lockedItemsNote")}
                 </p>
               ) : null}
@@ -428,7 +432,7 @@ export function MultiInspectorView({
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+                  className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[13px] shadow-none focus-visible:ring-0 lg:h-9 lg:px-2"
                 />
               </Row>
             </Section>

@@ -334,7 +334,7 @@ export function SingleInspectorView({
               </div>
             ) : null}
             {shape.locked ? (
-              <p className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <p className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-[13px] leading-relaxed text-amber-700 dark:text-amber-300">
                 {t("hints.locked")}
               </p>
             ) : null}
@@ -361,7 +361,7 @@ export function SingleInspectorView({
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+                  className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[13px] shadow-none focus-visible:ring-0 lg:h-9 lg:px-2"
                 />
               </Row>
               <div className="pt-1">
@@ -424,7 +424,7 @@ export function SingleInspectorView({
                                 : undefined,
                           });
                         }}
-                        className={`min-h-9 rounded-[5px] px-2 text-[11px] font-semibold transition-colors lg:min-h-7 ${
+                        className={`min-h-9 rounded-[5px] px-2 text-[13px] font-semibold transition-colors lg:min-h-9 ${
                           active
                             ? "bg-foreground text-background shadow-xs"
                             : "text-muted-foreground hover:bg-muted/55 hover:text-foreground"
@@ -454,7 +454,7 @@ export function SingleInspectorView({
                       })
                     }
                     placeholder={t("raceTiming.splitIdPlaceholder")}
-                    className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                    className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[13px] focus-visible:ring-1 lg:h-9 lg:px-2"
                   />
                 </Row>
               ) : null}
@@ -480,13 +480,13 @@ export function SingleInspectorView({
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
+                className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 text-[13px] shadow-none focus-visible:ring-2 lg:h-9 lg:px-2"
               />
             </Row>
             <Row label={t("transform.positionLabel")}>
               <div className="grid grid-cols-2 gap-2">
                 <label className="min-w-0">
-                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                  <span className="text-muted-foreground/65 mb-1 block text-[12px] font-semibold tracking-[0.12em] uppercase">
                     X ({unitLabel})
                   </span>
                   <MeasurementNum
@@ -497,7 +497,7 @@ export function SingleInspectorView({
                   />
                 </label>
                 <label className="min-w-0">
-                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                  <span className="text-muted-foreground/65 mb-1 block text-[12px] font-semibold tracking-[0.12em] uppercase">
                     Y ({unitLabel})
                   </span>
                   <MeasurementNum
@@ -543,7 +543,7 @@ export function SingleInspectorView({
                       aria-label={t("transform.pickColorAriaLabel")}
                     />
                   </label>
-                  <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
+                  <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[13px] lg:h-9">
                     {defaultColor}
                   </span>
                 </div>

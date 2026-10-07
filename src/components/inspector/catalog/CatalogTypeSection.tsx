@@ -1,5 +1,10 @@
 "use client";
+import {
+  inspectorSelectTriggerClass,
+  inspectorSelectItemClass,
+} from "@/components/inspector/shared";
 
+import { ExternalLink } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,7 +19,7 @@ import {
   type TrackElementCatalogId,
   type TrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
-import { Row, Section } from "@/components/inspector/shared";
+import { Section } from "@/components/inspector/shared";
 import { useTranslations } from "next-intl";
 import type { Translate } from "@/lib/track/items/registry";
 
@@ -40,13 +45,16 @@ export function CatalogTypeSection({
   const tShapes = useTranslations("shapes") as unknown as Translate;
   return (
     <Section title={t("catalog.sectionTitle")} defaultOpen>
-      <Row label={tCommon("labels.type")}>
+      <div>
         <Select
           value={activeEntryId}
           disabled={disabled}
           onValueChange={(value) => onChange(value as TrackElementCatalogId)}
         >
-          <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+          <SelectTrigger
+            aria-label={tCommon("labels.type")}
+            className={inspectorSelectTriggerClass}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -54,41 +62,38 @@ export function CatalogTypeSection({
               <SelectItem
                 key={entry.id}
                 value={entry.id}
-                className="text-xs lg:text-[11px]"
+                className={inspectorSelectItemClass}
               >
                 {getTrackElementCatalogName(entry, tShapes)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </Row>
-      {catalogIdentity?.snapshot.organization ? (
-        <Row label={t("catalog.sourceLabel")}>
-          {catalogEntry?.sources?.[0]?.url ? (
-            <a
-              href={catalogEntry.sources[0].url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground hover:text-foreground/70 text-[12px] underline underline-offset-2 transition-colors"
-            >
-              {catalogIdentity.snapshot.organization}
-            </a>
-          ) : (
-            <span className="text-foreground text-[12px]">
-              {catalogIdentity.snapshot.organization}
-            </span>
-          )}
-        </Row>
-      ) : null}
+      </div>
       {catalogIdentity ? (
-        <Row label={t("catalog.sizeLabel")}>
-          <span className="text-foreground text-[12px]">
+        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px]">
+          <span aria-label={t("catalog.sizeLabel")}>
             {getTrackElementCatalogDimensionsLabel(
               catalogIdentity.elementId,
               tShapes
             )}
           </span>
-        </Row>
+          {catalogIdentity.snapshot.organization ? (
+            catalogEntry?.sources?.[0]?.url ? (
+              <a
+                href={catalogEntry.sources[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground focus-visible:ring-ring inline-flex min-h-8 items-center gap-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              >
+                {catalogIdentity.snapshot.organization}
+                <ExternalLink className="size-3" />
+              </a>
+            ) : (
+              <span>{catalogIdentity.snapshot.organization}</span>
+            )
+          ) : null}
+        </div>
       ) : null}
     </Section>
   );

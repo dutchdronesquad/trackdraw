@@ -52,6 +52,8 @@ TrackDraw keeps the full race-planning workflow in one design:
 - **Validate before race day.** Review an editable race line in 2D, 3D, elevation, and FPV fly-through views, and catch route or inventory problems before loading the van.
 - **Hand off one clear plan.** Publish a read-only link or export a Race Pack with the course map, obstacle numbering, material requirements, stock status, and setup guidance.
 
+The inspector separates obstacle type and dimensions from appearance. Select multiple compatible obstacles to change their artwork together; locked items keep their current appearance. MultiGP artwork follows Race Timing, including the red start/finish gate. Switching to an obstacle type without a compatible artwork template restores its original catalog artwork.
+
 ## Start without an account
 
 Open the Studio and work immediately. Projects are stored in the browser, can be restored to earlier versions, and can be imported, exported, and temporarily shared without signing in. An account adds cross-device sync, durable published links, gallery publishing, embeds, and share management.

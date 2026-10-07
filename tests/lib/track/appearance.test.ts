@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { saveLocalDraft, loadLocalDraft } from "@/lib/projects";
-import { buildCatalogTypePatch } from "@/lib/editor/catalog-type-patch";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useEditor } from "@/store/editor";
 import {
@@ -11,7 +10,7 @@ import {
 import {
   createCatalogShapeDraft,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
-  TRACKDRAW_GATE_ELEMENT_ID,
+  MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import {
   serializeDesign,
@@ -19,6 +18,7 @@ import {
   parseDesign,
 } from "@/lib/track/design";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
+import { getShapeArtworkReference } from "@/lib/track/appearance";
 import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import type { GateShape } from "@/lib/types";
 
@@ -87,7 +87,7 @@ it("keeps missing and unsupported references while retaining the original visual
     expect(shape.appearance).toEqual(appearance);
   }
 });
-it("keeps a requested appearance through incompatible type changes and returning to the standard gate", () => {
+it("resets incompatible artwork when switching to 7x6, with undo restoring the club artwork", () => {
   const id = useEditor.getState().addShape(
     createCatalogShapeDraft(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID, {
       x: 0,
@@ -96,18 +96,88 @@ it("keeps a requested appearance through incompatible type changes and returning
     })
   );
   useEditor.getState().updateShape(id, { appearance: reference });
-  const gate = useEditor.getState().track.design.shapeById[id];
-  const patch = buildCatalogTypePatch(gate, TRACKDRAW_GATE_ELEMENT_ID)!;
-  useEditor.getState().updateShape(id, patch);
+  useEditor.getState().clearHistory();
+  setEditorTestTime("2026-04-13T10:00:01.000Z");
+  useEditor
+    .getState()
+    .updateShapesCatalogType([id], MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID);
+  const changed = useEditor.getState().track.design.shapeById[id] as GateShape;
+  expect(changed.appearance).toBeUndefined();
+  expect(getGateVisualSpec(changed)).toMatchObject({
+    textures: { top: expect.stringContaining("large-top-multigp.webp") },
+  });
+  runHistoryStep(useEditor.temporal.getState().undo);
   expect(useEditor.getState().track.design.shapeById[id].appearance).toEqual(
     reference
   );
-  const restore = buildCatalogTypePatch(
-    useEditor.getState().track.design.shapeById[id],
-    MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
-  )!;
-  useEditor.getState().updateShape(id, restore);
-  expect(useEditor.getState().track.design.shapeById[id].appearance).toEqual(
-    reference
+  runHistoryStep(useEditor.temporal.getState().redo);
+  setEditorTestTime("2026-04-13T10:00:02.000Z");
+  useEditor
+    .getState()
+    .updateShapesCatalogType([id], MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+  expect(
+    useEditor.getState().track.design.shapeById[id].appearance
+  ).toBeUndefined();
+  expect(
+    getShapeArtworkReference(useEditor.getState().track.design.shapeById[id])
+      ?.collectionId
+  ).toBe("multigp");
+});
+
+it("ignores stale incompatible artwork and keeps 7x6 timing artwork", () => {
+  const gate = {
+    ...createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }),
+    id: "gate",
+    appearance: reference,
+  } as GateShape;
+  expect(getShapeArtworkReference(gate)).toBeUndefined();
+  expect(getGateVisualSpec(gate)).toMatchObject({
+    textures: { top: expect.stringContaining("large-top-multigp.webp") },
+  });
+  gate.meta = { ...gate.meta, timing: { role: "start_finish" } };
+  expect(getGateVisualSpec(gate)).toMatchObject({
+    textures: { top: expect.stringContaining("large-top-red-multigp.webp") },
+  });
+});
+
+it("changes batch artwork in one undo step, skips locked items, and restores Race Timing artwork", () => {
+  const ids = [0, 1, 2].map((x) =>
+    useEditor.getState().addShape(
+      createCatalogShapeDraft(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID, {
+        x,
+        y: 0,
+        includeCatalogMetadata: true,
+      })
+    )
   );
+  useEditor.getState().setShapesLocked([ids[2]], true);
+  useEditor.getState().clearHistory();
+  setEditorTestTime("2026-04-13T10:00:01.000Z");
+  useEditor.getState().updateShapes(ids, { appearance: reference });
+  expect(
+    useEditor.getState().track.design.shapeById[ids[0]].appearance
+  ).toEqual(reference);
+  expect(
+    useEditor.getState().track.design.shapeById[ids[1]].appearance
+  ).toEqual(reference);
+  expect(
+    useEditor.getState().track.design.shapeById[ids[2]].appearance
+  ).toBeUndefined();
+  runHistoryStep(useEditor.temporal.getState().undo);
+  expect(
+    useEditor.getState().track.design.shapeById[ids[0]].appearance
+  ).toBeUndefined();
+  expect(
+    useEditor.getState().track.design.shapeById[ids[1]].appearance
+  ).toBeUndefined();
+  runHistoryStep(useEditor.temporal.getState().redo);
+  setEditorTestTime("2026-04-13T10:00:02.000Z");
+  useEditor.getState().updateShapes(ids, { appearance: undefined });
+  expect(
+    useEditor.getState().track.design.shapeById[ids[0]].appearance
+  ).toBeUndefined();
 });

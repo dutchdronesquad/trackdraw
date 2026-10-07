@@ -74,7 +74,7 @@ export function PolylineSection({
               updateShape(shape.id, { showArrows: checked })
             }
           />
-          <span className="text-muted-foreground text-[11px]">
+          <span className="text-muted-foreground text-[13px]">
             {shape.showArrows ? "visible" : "hidden"}
           </span>
         </label>
@@ -92,7 +92,7 @@ export function PolylineSection({
                 }));
               }}
             />
-            <span className="text-muted-foreground text-[11px]">
+            <span className="text-muted-foreground text-[13px]">
               {directionReversed ? "reversed" : "default"}
             </span>
           </div>
