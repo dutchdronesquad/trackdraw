@@ -189,15 +189,13 @@ it("changes batch artwork in one undo step, skips locked items, and restores Rac
 });
 
 it("preserves compatible Championship artwork through snapshots and resets it on a standard gate", () => {
-  const id = useEditor
-    .getState()
-    .addShape(
-      createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
-        x: 0,
-        y: 0,
-        includeCatalogMetadata: true,
-      })
-    );
+  const id = useEditor.getState().addShape(
+    createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    })
+  );
   const appearance = {
     ...reference,
     textureId: "championship-gate",
