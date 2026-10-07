@@ -1,5 +1,6 @@
 "use client";
 
+import { AppearanceSection } from "@/components/inspector/sections/AppearanceSection";
 import { CatalogTypeSection } from "@/components/inspector/catalog/CatalogTypeSection";
 import { BarrierDimensionFields } from "@/components/inspector/sections/BarrierSection";
 import { ConeDimensionFields } from "@/components/inspector/sections/ConeDimensionFields";
@@ -387,6 +388,8 @@ export function SingleInspectorView({
               }}
             />
           ) : null}
+
+          <AppearanceSection shape={shape} updateShape={updateShape} />
 
           {canSetTimingMarker && (
             <Section

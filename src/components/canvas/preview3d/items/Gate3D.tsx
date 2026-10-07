@@ -1,4 +1,5 @@
 "use client";
+import { PanelTextureBoundary } from "./PanelTextureBoundary";
 
 import { useTexture } from "@react-three/drei";
 import {
@@ -15,6 +16,7 @@ import {
   resolvePanelFrameTextureMapping,
 } from "@/lib/track/render3d-layout";
 import { PvcSetGate3D } from "@/components/canvas/preview3d/items/PvcSetGate3D";
+import { useShapeAppearance } from "@/hooks/useShapeAppearance";
 import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import type {
@@ -333,21 +335,23 @@ function PanelFrameGate3D({
         />
       </mesh>
 
-      <Suspense fallback={null}>
-        <PanelFrameGateTexturePlanes
-          catalogId={catalogId}
-          frontZ={frontZ}
-          h={h}
-          leftPanelWidth={leftPanelWidth}
-          leftPanelX={leftPanelX}
-          rightPanelWidth={rightPanelWidth}
-          rightPanelX={rightPanelX}
-          textures={visual.textures}
-          topPanelHeight={topPanelHeight}
-          topPanelW={topPanelW}
-          topPanelY={topPanelY}
-        />
-      </Suspense>
+      <PanelTextureBoundary key={JSON.stringify(visual.textures)}>
+        <Suspense fallback={null}>
+          <PanelFrameGateTexturePlanes
+            catalogId={catalogId}
+            frontZ={frontZ}
+            h={h}
+            leftPanelWidth={leftPanelWidth}
+            leftPanelX={leftPanelX}
+            rightPanelWidth={rightPanelWidth}
+            rightPanelX={rightPanelX}
+            textures={visual.textures}
+            topPanelHeight={topPanelHeight}
+            topPanelW={topPanelW}
+            topPanelY={topPanelY}
+          />
+        </Suspense>
+      </PanelTextureBoundary>
 
       <mesh position={[0, h / 2, -panelDepth / 2 - 0.004]}>
         <planeGeometry args={[w, h]} />
@@ -375,6 +379,7 @@ export function Gate3D({
   const color = marker
     ? getTimingMarkerColor(marker)
     : (shape.color ?? "#3b82f6");
+  useShapeAppearance(shape);
   const visual = getGateVisualSpec(shape);
   const rot: [number, number, number] = [
     0,

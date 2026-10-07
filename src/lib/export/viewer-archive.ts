@@ -1,3 +1,5 @@
+import { loadAppearance } from "@trackdraw/schema/appearance/registry";
+import { getDesignShapes } from "@/lib/track/design";
 import { createAssetResolver } from "@trackdraw/schema/assets/asset-url";
 import { createViewerArchiveWithCurrentAssets } from "@trackdraw/schema/snapshot/archive";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
@@ -8,6 +10,13 @@ export async function buildViewerArchive(
   design: TrackDesign,
   fetchAsset: typeof fetch = fetch
 ) {
+  await Promise.all(
+    getDesignShapes(design).map((shape) =>
+      shape.appearance
+        ? loadAppearance(shape.appearance, fetchAsset)
+        : undefined
+    )
+  );
   return createViewerArchiveWithCurrentAssets(
     toViewerDesignSnapshot(design),
     async (asset) => {
