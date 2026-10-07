@@ -1083,7 +1083,13 @@ export const trackdrawOpenApiSchema = {
                 type: "array",
                 items: { type: "object", additionalProperties: true },
                 description:
-                  "Render-fidelity shape geometry. shape.meta is narrowed to catalog provenance only.",
+                  "Render-fidelity shape geometry, including optional source-aware appearance references. shape.meta is narrowed to catalog provenance only.",
+              },
+              appearances: {
+                type: "array",
+                items: { type: "object", additionalProperties: true },
+                description:
+                  "Optional resolved registry panel mappings, attribution and usage terms. Shapes retain stable source/collection/texture/template IDs; online viewers can resolve metadata when this field is absent.",
               },
               updated_at: { type: "string", format: "date-time" },
             },

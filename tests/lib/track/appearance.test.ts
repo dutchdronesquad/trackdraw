@@ -13,7 +13,11 @@ import {
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
-import { serializeDesign, parseDesign } from "@/lib/track/design";
+import {
+  serializeDesign,
+  serializeDesignForShare,
+  parseDesign,
+} from "@/lib/track/design";
 import { toViewerDesignSnapshot } from "@/lib/track/viewer-snapshot";
 import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import type { GateShape } from "@/lib/types";
@@ -51,6 +55,9 @@ it("preserves selection through history, editable export/import and published vi
     )
   )!;
   expect(restored.shapeById[id].appearance).toEqual(reference);
+  expect(
+    parseDesign(serializeDesignForShare(restored))?.shapeById[id].appearance
+  ).toEqual(reference);
   expect(saveLocalDraft(restored).ok).toBe(true);
   expect(loadLocalDraft()?.shapeById[id].appearance).toEqual(reference);
   const snapshot = toViewerDesignSnapshot(restored);

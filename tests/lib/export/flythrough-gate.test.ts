@@ -1,18 +1,24 @@
+import * as shared from "@/lib/export/flythrough/shared";
 import * as THREE from "three";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { addGateSceneShapes } from "@/lib/export/flythrough/gate";
 import {
   createCatalogShapeDraft,
   RACEGOW_GATE_ELEMENT_ID,
+  MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type { GateShape } from "@/lib/types";
 
 function createRaceGowGate(meta?: Record<string, unknown>): GateShape {
-  const draft = createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
-    x: 4,
-    y: 6,
-    includeCatalogMetadata: true,
-  });
+  const draft = createCatalogShapeDraft(
+    RACEGOW_GATE_ELEMENT_ID,
+    MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+    {
+      x: 4,
+      y: 6,
+      includeCatalogMetadata: true,
+    }
+  );
   return {
     ...draft,
     id: "racegow-1",
@@ -29,6 +35,7 @@ function countMeshes(object: THREE.Object3D) {
 }
 
 describe("flythrough gate scene", () => {
+  afterEach(() => vi.restoreAllMocks());
   it("builds the RaceGOW gate from PVC tubes and modelled fittings", async () => {
     const scene = new THREE.Scene();
     await addGateSceneShapes(createRaceGowGate(), scene);
@@ -62,4 +69,30 @@ describe("flythrough gate scene", () => {
     expect(material.transparent).toBe(true);
     expect(material.opacity).toBeCloseTo(0.35);
   });
+});
+
+it("retains solid gate geometry when requested artwork and panel decoding are unavailable", async () => {
+  vi.spyOn(shared, "loadPanelTextures").mockRejectedValueOnce(
+    new Error("Offline")
+  );
+  const draft = createCatalogShapeDraft(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID, {
+    x: 2,
+    y: 3,
+    includeCatalogMetadata: true,
+  });
+  const shape = {
+    ...draft,
+    id: "unavailable-gate",
+    appearance: {
+      source: "registry",
+      collectionId: "dds",
+      textureId: "standard-gate",
+      templateId: "gate-standard-v2",
+    },
+  } as GateShape;
+  const scene = new THREE.Scene();
+  await addGateSceneShapes(shape, scene);
+  expect(scene.children).toHaveLength(1);
+  expect(countMeshes(scene.children[0]!)).toBe(8);
+  expect(shape.appearance?.templateId).toBe("gate-standard-v2");
 });
