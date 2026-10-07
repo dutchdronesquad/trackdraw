@@ -6,6 +6,11 @@
   },
   "packageRules": [
     {
+      "description": "Keep Next.js below 16.4 until OpenNext ships preview-props.json support (opennextjs/opennextjs-cloudflare#1356).",
+      "matchPackageNames": ["next"],
+      "allowedVersions": "<16.4.0"
+    },
+    {
       "groupName": "Radix UI",
       "groupSlug": "radix-ui",
       "matchPackageNames": ["@radix-ui/{/,}**"],
