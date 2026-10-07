@@ -157,7 +157,8 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
             minX = c.width,
             maxX = 0,
             minY = c.height,
-            maxY = 0;
+            maxY = 0,
+            partial = -1;
           for (let i = 0; i < data.length; i += 4) {
             const a = data[i + 3];
             if (
@@ -180,15 +181,14 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
               minY = Math.min(minY, Math.floor(pixel / c.width));
               maxY = Math.max(maxY, Math.floor(pixel / c.width));
               if (a === 255) opaque++;
-              else edge++;
+              else {
+                edge++;
+                if (partial < 0) partial = i;
+              }
             }
           }
           // Source-over compositing must preserve the page outside the plate and
           // blend partially transparent boundary pixels on both host backgrounds.
-          const partial =
-            Array.from({ length: data.length / 4 }, (_, i) => i).find(
-              (i) => data[i * 4 + 3] > 0 && data[i * 4 + 3] < 255
-            ) * 4;
           for (const background of [0, 255]) {
             ctx.fillStyle = background === 0 ? "#000" : "#fff";
             ctx.fillRect(0, 0, c.width, c.height);
@@ -226,6 +226,8 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
       );
       delete result.url;
       if (
+        result.width !== 3200 ||
+        result.height !== 2400 ||
         !result.clear ||
         !result.opaque ||
         !result.edge ||
@@ -263,6 +265,8 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
   });
   assert.equal(custom.unchanged, true);
   assert.equal(custom.different, true);
+  assert.equal(custom.width, 3200);
+  assert.equal(custom.height, 1600);
   assert.equal(custom.width / custom.height, 2);
   await page.evaluate(() => {
     const original = HTMLCanvasElement.prototype.getContext;

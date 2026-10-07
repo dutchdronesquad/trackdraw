@@ -165,8 +165,9 @@ export async function renderTransparent3dPng(
   }
   const host = document.createElement("div");
   const aspect = currentCamera?.aspect ?? 4 / 3;
-  const width = aspect >= 1 ? 1600 : Math.round(1600 * aspect);
-  const height = aspect >= 1 ? Math.round(1600 / aspect) : 1600;
+  const longestEdge = 3200;
+  const width = aspect >= 1 ? longestEdge : Math.round(longestEdge * aspect);
+  const height = aspect >= 1 ? Math.round(longestEdge / aspect) : longestEdge;
   Object.assign(host.style, {
     position: "fixed",
     left: "-10000px",
