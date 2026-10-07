@@ -10,15 +10,11 @@ import {
 import type { GateShape } from "@/lib/types";
 
 function createRaceGowGate(meta?: Record<string, unknown>): GateShape {
-  const draft = createCatalogShapeDraft(
-    RACEGOW_GATE_ELEMENT_ID,
-    MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
-    {
-      x: 4,
-      y: 6,
-      includeCatalogMetadata: true,
-    }
-  );
+  const draft = createCatalogShapeDraft(RACEGOW_GATE_ELEMENT_ID, {
+    x: 4,
+    y: 6,
+    includeCatalogMetadata: true,
+  });
   return {
     ...draft,
     id: "racegow-1",

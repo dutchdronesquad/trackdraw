@@ -391,7 +391,7 @@
   "appearance": {
     "title": "Appearance",
     "label": "Artwork",
-    "default": "Original artwork",
+    "default": "Default artwork",
     "saved": "Saved artwork",
     "loading": "Loading artwork…",
     "unavailable": "This artwork is unavailable or incompatible. Your selection is kept; a safe fallback is shown.",
