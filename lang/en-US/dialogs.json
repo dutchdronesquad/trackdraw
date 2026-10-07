@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "3D view not available — open the 3D tab first",
       "canvasNotReady": "Canvas not ready",
-      "exported": "Exported"
+      "exported": "Exported",
+      "presentationUnavailable": "Could not render the 3D overview. Check that WebGL is available and artwork can load, then try again."
     },
     "readiness": {
       "open3d": "Open the 3D view before exporting this render.",
@@ -305,7 +306,7 @@
       },
       "render3d": {
         "label": "3D Render",
-        "descriptionFull": "Screenshot of the current 3D camera view for visual review.",
+        "descriptionFull": "A transparent 3D track overview for websites, slides, or posters. You can also export the current scene as a normal screenshot.",
         "descriptionShort": "Current 3D camera screenshot for visual review."
       },
       "projectFile": {
@@ -337,6 +338,11 @@
     "errors": {
       "exportFailed": "Export failed",
       "exportFailedDescription": "{message} Try again, switch export format, or export the project JSON as a manual backup."
+    },
+    "presentation": {
+      "transparent": "Transparent track overview",
+      "currentCamera": "Use current camera view",
+      "description": "Keep the bounded floor plate and make the surrounding image transparent. By default, a fixed elevated overview fits the entire course."
     }
   },
   "import": {

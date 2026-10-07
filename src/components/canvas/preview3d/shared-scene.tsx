@@ -127,10 +127,12 @@ export function TrackSurface3D({
   field,
   onGroundClick,
   theme,
+  bounded = false,
 }: {
   field: { width: number; height: number; gridStep: number };
   onGroundClick?: (event: ThreeEvent<MouseEvent>) => void;
   theme: Scene3DTheme;
+  bounded?: boolean;
 }) {
   const { width, height, gridStep } = field;
   const cx = width / 2;
@@ -188,14 +190,16 @@ export function TrackSurface3D({
 
   return (
     <group>
-      <mesh
-        geometry={terrainGeometry}
-        position={[cx, -0.075, cz]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        onClick={onGroundClick}
-      >
-        <meshBasicMaterial color={theme.terrainColor} />
-      </mesh>
+      {!bounded && (
+        <mesh
+          geometry={terrainGeometry}
+          position={[cx, -0.075, cz]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          onClick={onGroundClick}
+        >
+          <meshBasicMaterial color={theme.terrainColor} />
+        </mesh>
+      )}
 
       <mesh
         geometry={borderGeometry}

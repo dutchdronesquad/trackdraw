@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 
 import React from "react";
+import * as THREE from "three";
+import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
@@ -15,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   exportFlythrough: vi.fn(),
   exportPdf: vi.fn(),
   exportPng: vi.fn(),
+  renderTransparent3dPng: vi.fn(),
   exportSvg: vi.fn(),
   toastError: vi.fn(),
   toastLoading: vi.fn(),
@@ -76,6 +79,10 @@ vi.mock("@/lib/export/exportPdf", () => ({
 
 vi.mock("@/lib/export/exportPng", () => ({
   exportPng: mocks.exportPng,
+}));
+
+vi.mock("@/lib/export/export3dPng", () => ({
+  renderTransparent3dPng: mocks.renderTransparent3dPng,
 }));
 
 vi.mock("@/lib/export/exportSvg", () => ({
@@ -159,6 +166,9 @@ describe("ExportDialog mobile workflow", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: "Transparent track overview" })
+    );
 
     expect(
       await screen.findByText("Open the 3D view before exporting this render.")
@@ -173,6 +183,146 @@ describe("ExportDialog mobile workflow", () => {
     await user.click(switchTo3D);
 
     expect(onRequest3DView).toHaveBeenCalledOnce();
+  });
+
+  it("exports the default transparent overview from 2D without requesting an editor camera", async () => {
+    const user = userEvent.setup();
+    const onRequest3DView = vi.fn();
+    mocks.renderTransparent3dPng.mockResolvedValue(
+      "data:image/png;base64,test"
+    );
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(
+      <ExportDialog
+        activeTab="2d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        onRequest3DView={onRequest3DView}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    expect(
+      (
+        screen.getByRole("checkbox", {
+          name: "Transparent track overview",
+        }) as HTMLInputElement
+      ).checked
+    ).toBe(true);
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    await waitFor(() =>
+      expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
+        useEditor.getState().track.design,
+        "dark",
+        undefined
+      )
+    );
+    expect(onRequest3DView).not.toHaveBeenCalled();
+  });
+
+  it("requires the editor 3D view when requesting the current camera", async () => {
+    const user = userEvent.setup();
+    const onRequest3DView = vi.fn();
+    render(
+      <ExportDialog
+        activeTab="2d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        onRequest3DView={onRequest3DView}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: "Use current camera view" })
+    );
+    await user.click(screen.getByRole("button", { name: "Switch to 3D view" }));
+    expect(onRequest3DView).toHaveBeenCalledOnce();
+  });
+
+  it("shows an actionable error when transparent rendering fails", async () => {
+    const user = userEvent.setup();
+    mocks.renderTransparent3dPng.mockRejectedValue(
+      new Error("WebGL unavailable")
+    );
+    render(
+      <ExportDialog
+        activeTab="2d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalled());
+    expect(JSON.stringify(mocks.toastError.mock.calls)).toContain(
+      "Check that WebGL is available and artwork can load"
+    );
+  });
+
+  it("passes the selected camera to transparent rendering", async () => {
+    const user = userEvent.setup();
+    const camera = new THREE.PerspectiveCamera();
+    const handle: TrackPreview3DHandle = {
+      screenshot: vi.fn(),
+      getCameraView: vi.fn(() => camera),
+      startFlyThrough: vi.fn(),
+      stopFlyThrough: vi.fn(),
+    };
+    mocks.renderTransparent3dPng.mockResolvedValue(
+      "data:image/png;base64,test"
+    );
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        preview3DRef={{ current: handle }}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: "Use current camera view" })
+    );
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    await waitFor(() =>
+      expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
+        useEditor.getState().track.design,
+        "dark",
+        camera
+      )
+    );
+    expect(handle.screenshot).not.toHaveBeenCalled();
+  });
+
+  it("retains the normal 3D screenshot when transparency is disabled", async () => {
+    const user = userEvent.setup();
+    const handle: TrackPreview3DHandle = {
+      screenshot: vi.fn(() => "data:image/png;base64,test"),
+      getCameraView: vi.fn(),
+      startFlyThrough: vi.fn(),
+      stopFlyThrough: vi.fn(),
+    };
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        preview3DRef={{ current: handle }}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: "Transparent track overview" })
+    );
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    await waitFor(() => expect(handle.screenshot).toHaveBeenCalledOnce());
+    expect(mocks.renderTransparent3dPng).not.toHaveBeenCalled();
   });
 
   it("labels mobile export rows by their action", async () => {

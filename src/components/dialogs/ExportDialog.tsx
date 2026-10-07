@@ -240,6 +240,7 @@ function ExportSettingsPanel({
   webmProgress,
   webmStartedAt,
   showHeader = true,
+  render3dOptions,
   t,
 }: {
   format: ExportFormat;
@@ -256,6 +257,7 @@ function ExportSettingsPanel({
   webmProgress: FlythroughProgress | null;
   webmStartedAt: number | null;
   showHeader?: boolean;
+  render3dOptions?: React.ReactNode;
   t: ReturnType<typeof useTranslations>;
 }) {
   const isBusy = busy === format.busyId;
@@ -322,6 +324,8 @@ function ExportSettingsPanel({
             </span>
           </div>
         </div>
+
+        {format.id === "render3d" ? render3dOptions : null}
 
         {hasOptions ? (
           <ExportOptionsStrip
@@ -534,6 +538,8 @@ export default function ExportDialog({
   );
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [transparent3d, setTransparent3d] = useState(true);
+  const [useCurrentCamera, setUseCurrentCamera] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -830,8 +836,26 @@ export default function ExportDialog({
       case "render3d":
         return run(
           "3d",
-          () => {
-            const dataUrl = preview3DRef?.current?.screenshot();
+          async () => {
+            let dataUrl: string | undefined;
+            if (transparent3d) {
+              const camera = useCurrentCamera
+                ? preview3DRef?.current?.getCameraView()
+                : undefined;
+              if (useCurrentCamera && !camera)
+                throw new Error(t("export.messages.view3dUnavailable"));
+              try {
+                const { renderTransparent3dPng } =
+                  await import("@/lib/export/export3dPng");
+                dataUrl = await renderTransparent3dPng(
+                  design,
+                  exportTheme,
+                  camera ?? undefined
+                );
+              } catch {
+                throw new Error(t("export.messages.presentationUnavailable"));
+              }
+            } else dataUrl = preview3DRef?.current?.screenshot();
             if (!dataUrl)
               throw new Error(t("export.messages.view3dUnavailable"));
             const a = document.createElement("a");
@@ -981,7 +1005,10 @@ export default function ExportDialog({
     activeFormats[0] ??
     exportFormats[0];
   const selectedLockedAction =
-    selectedFormat?.id === "render3d" && activeTab !== "3d" && onRequest3DView
+    selectedFormat?.id === "render3d" &&
+    (!transparent3d || useCurrentCamera) &&
+    activeTab !== "3d" &&
+    onRequest3DView
       ? {
           label: t("export.actions.switchTo3dView"),
           onClick: onRequest3DView,
@@ -993,7 +1020,8 @@ export default function ExportDialog({
   ): ExportReadiness | undefined {
     switch (format.id) {
       case "render3d":
-        if (activeTab === "3d") return undefined;
+        if ((transparent3d && !useCurrentCamera) || activeTab === "3d")
+          return undefined;
         return {
           status: "blocked",
           message: t("export.readiness.open3d"),
@@ -1073,6 +1101,45 @@ export default function ExportDialog({
           }
           exportTheme={exportTheme}
           includeObstacleNumbers={includeObstacleNumbers}
+          render3dOptions={
+            <div className="space-y-3 text-sm">
+              <label className="flex min-h-10 cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={transparent3d}
+                  disabled={busy !== null}
+                  onChange={(event) => setTransparent3d(event.target.checked)}
+                />
+                {t("export.presentation.transparent")}
+              </label>
+              {transparent3d && (
+                <>
+                  <label className="flex min-h-10 cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={useCurrentCamera}
+                      disabled={busy !== null}
+                      onChange={(event) =>
+                        setUseCurrentCamera(event.target.checked)
+                      }
+                    />
+                    {t("export.presentation.currentCamera")}
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {t("export.presentation.description")}
+                  </p>
+                  <ExportOptionsStrip
+                    exportTheme={exportTheme}
+                    includeObstacleNumbers={false}
+                    showTheme
+                    onThemeChange={setExportTheme}
+                    onIncludeObstacleNumbersChange={setIncludeObstacleNumbers}
+                    t={t}
+                  />
+                </>
+              )}
+            </div>
+          }
           onFilenameStemChange={(value) =>
             setFilenameByFormat((current) => ({
               ...current,

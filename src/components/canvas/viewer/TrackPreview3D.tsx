@@ -93,6 +93,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
+      getCameraView: () =>
+        orbitControlsRef.current?.object instanceof THREE.PerspectiveCamera
+          ? orbitControlsRef.current.object.clone()
+          : null,
       startFlyThrough: () => {
         if (!hasPath) return;
         setFlyMode(true);
