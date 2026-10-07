@@ -49,6 +49,7 @@ function Inspector({
   const selection = useEditor((state) => state.session.selection);
   const {
     updateShape,
+    updateShapes,
     updateShapesCatalogType,
     setShapesLocked,
     updatePolylinePoint,
@@ -209,6 +210,7 @@ function Inspector({
         setGroupName={setGroupName}
         setSelection={selectAndOpenSelectionPanel}
         ungroupSelection={ungroupSelection}
+        updateShapes={updateShapes}
         updateShapesCatalogType={updateShapesCatalogType}
         arrangeShapes={arrangeShapes}
         onSaveAsPreset={

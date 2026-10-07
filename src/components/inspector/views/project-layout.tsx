@@ -72,9 +72,9 @@ function MapReferenceSection({
   const [dialogOpen, setDialogOpen] = useState(false);
   const reference = design.mapReference ?? null;
   const actionBtnClass =
-    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-xs font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
+    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-xs font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[13px]";
   const actionBtnPrimaryClass =
-    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
+    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[13px]";
 
   return (
     <Section title={t("layout.mapReference.title")}>
@@ -95,7 +95,7 @@ function MapReferenceSection({
                   }
                   className="h-3 min-w-0 flex-1 accent-neutral-800 lg:h-2 dark:accent-neutral-200"
                 />
-                <span className="text-muted-foreground/70 w-9 text-right text-[10px] font-medium tabular-nums">
+                <span className="text-muted-foreground/70 w-9 text-right text-[12px] font-medium tabular-nums">
                   {Math.round(reference.opacity * 100)}%
                 </span>
               </div>
@@ -290,7 +290,7 @@ function RouteNumberingOverview({
         type="button"
         onClick={handleGenerateRaceLine}
         className={cn(
-          "focus-visible:ring-ring/40 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-8 lg:text-[11px]",
+          "focus-visible:ring-ring/40 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-8 lg:text-[13px]",
           hasWarnings
             ? "border-amber-500/25 bg-amber-500/10 text-amber-700 hover:bg-amber-500/16 dark:text-amber-400"
             : "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 hover:bg-emerald-500/14 dark:text-emerald-400"
@@ -382,7 +382,7 @@ export function ProjectLayoutInspectorView({
   const inventoryContent = (
     <Section title={t("layout.sections.inventory")}>
       <div className="space-y-3">
-        <p className="text-muted-foreground/70 text-[11px] leading-relaxed">
+        <p className="text-muted-foreground/70 text-[13px] leading-relaxed">
           {t("layout.inventory.description")}
         </p>
         <div className="space-y-1">
@@ -402,7 +402,7 @@ export function ProjectLayoutInspectorView({
                       min={0}
                     />
                   </div>
-                  <span className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase">
+                  <span className="text-muted-foreground/65 shrink-0 text-[12px] font-medium tracking-[0.08em] uppercase">
                     {t("layout.inventory.needCountSuffix", {
                       count: comparison?.required ?? 0,
                     })}
@@ -410,10 +410,10 @@ export function ProjectLayoutInspectorView({
                   <span
                     className={
                       missing > 0
-                        ? "shrink-0 rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[10px] font-medium text-amber-500"
+                        ? "shrink-0 rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[12px] font-medium text-amber-500"
                         : inventoryActive
-                          ? "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[10px] font-medium text-emerald-500"
-                          : "border-border/35 bg-muted/25 text-muted-foreground/55 shrink-0 rounded-md border px-2 py-1 font-mono text-[10px] font-medium"
+                          ? "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[12px] font-medium text-emerald-500"
+                          : "border-border/35 bg-muted/25 text-muted-foreground/55 shrink-0 rounded-md border px-2 py-1 font-mono text-[12px] font-medium"
                     }
                   >
                     {missing > 0
@@ -434,7 +434,7 @@ export function ProjectLayoutInspectorView({
   const projectContent = (
     <>
       <div>
-        <p className="text-muted-foreground/70 mb-1.5 text-[11px] font-medium tracking-[0.08em] uppercase">
+        <p className="text-muted-foreground/70 mb-1.5 text-[13px] font-medium tracking-[0.08em] uppercase">
           {tCommon("labels.title")}
         </p>
         <Input
@@ -496,7 +496,7 @@ export function ProjectLayoutInspectorView({
               />
             </div>
             <span
-              className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase"
+              className="text-muted-foreground/65 shrink-0 text-[12px] font-medium tracking-[0.08em] uppercase"
               aria-label={t("layout.field.pxPerMeterAriaLabel")}
             >
               px/m
@@ -543,10 +543,10 @@ export function ProjectLayoutInspectorView({
           />
         ) : (
           <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
-            <p className="text-foreground/75 text-[11px] font-medium">
+            <p className="text-foreground/75 text-[13px] font-medium">
               {t("layout.overview.emptyTitle")}
             </p>
-            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
+            <p className="text-muted-foreground/70 mt-1 text-[13px] leading-relaxed">
               {t("layout.overview.emptyDescription")}
             </p>
           </div>

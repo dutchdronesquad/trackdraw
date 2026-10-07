@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Obstacle artwork
+
+Change artwork for multiple compatible obstacles together, with consistent inspector dropdowns and clearer artwork credits. Choose a club collection by name or use MultiGP artwork that follows Race Timing automatically.
+
 ### Account retention
 
 Accounts inactive for twelve months are permanently removed with their cloud data after advance email notices. Signing in and using TrackDraw keeps the account and restarts the inactivity period.

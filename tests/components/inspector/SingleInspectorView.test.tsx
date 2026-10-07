@@ -114,7 +114,7 @@ describe("SingleInspectorView race timing controls", () => {
     ).toContain("min-h-9");
     expect(
       screen.getByRole("button", { name: "Transform" }).className
-    ).toContain("lg:min-h-6");
+    ).toContain("lg:min-h-8");
     expect(
       screen
         .getByRole("button", { name: "Transform" })

@@ -50,22 +50,22 @@ export function PolylineWaypointList({
         title={t("waypointsTitle")}
         subtitle={t("waypointsSubtitle")}
         meta={
-          <span className="text-muted-foreground/65 text-[11px]">
+          <span className="text-muted-foreground/65 text-[13px]">
             {shape.points.length}
           </span>
         }
       >
         <div className="border-border/15 grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b px-3 py-1.5">
-          <span className="text-muted-foreground/65 text-[11px] font-medium tracking-[0.08em] uppercase">
+          <span className="text-muted-foreground/65 text-[13px] font-medium tracking-[0.08em] uppercase">
             #
           </span>
-          <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">
+          <span className="text-muted-foreground/40 text-[11px] font-semibold tracking-wider uppercase">
             x, y
           </span>
-          <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
+          <span className="text-muted-foreground/40 text-right text-[11px] font-semibold tracking-wider uppercase">
             {t("elevationColumn")}
           </span>
-          <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
+          <span className="text-muted-foreground/40 text-right text-[11px] font-semibold tracking-wider uppercase">
             {t("editColumn")}
           </span>
         </div>
@@ -80,11 +80,11 @@ export function PolylineWaypointList({
               onMouseLeave={() => setHoveredWaypoint(null)}
             >
               <span className="bg-border absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
-              <span className="border-border/30 bg-muted/45 text-foreground/75 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[10px] tabular-nums">
+              <span className="border-border/30 bg-muted/45 text-foreground/75 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[12px] tabular-nums">
                 {index}
               </span>
               <div className="min-w-0">
-                <span className="text-foreground/85 block font-mono text-[11px] leading-none tabular-nums">
+                <span className="text-foreground/85 block font-mono text-[13px] leading-none tabular-nums">
                   {formatMeasurement(point.x, unitSystem, { precision: 1 })},{" "}
                   {formatMeasurement(point.y, unitSystem, { precision: 1 })}
                 </span>
@@ -138,7 +138,7 @@ export function PolylineWaypointList({
         </div>
 
         <button
-          className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-auto lg:text-[11px]"
+          className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-auto lg:text-[13px]"
           disabled={shape.locked}
           onClick={() => {
             appendPolylinePoint(

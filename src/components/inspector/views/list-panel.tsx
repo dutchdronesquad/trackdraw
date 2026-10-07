@@ -56,13 +56,13 @@ export function ListPanel({
       <div className="flex shrink-0 items-center gap-3 px-3 py-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
-            <span className="text-foreground/80 text-[11px] font-medium">
+            <span className="text-foreground/80 text-[13px] font-medium">
               {title}
             </span>
             {meta ? <div className="shrink-0">{meta}</div> : null}
           </div>
           {subtitle ? (
-            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
+            <p className="text-muted-foreground/70 mt-1 text-[13px] leading-relaxed">
               {subtitle}
             </p>
           ) : null}
@@ -163,7 +163,7 @@ function ItemRow({
       <div className="flex min-w-0 items-center">
         <span
           className={cn(
-            "border-border/30 bg-muted/35 text-muted-foreground/85 flex h-5 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]",
+            "border-border/30 bg-muted/35 text-muted-foreground/85 flex h-5 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[12px]",
             isDraggable && "cursor-grab touch-none active:cursor-grabbing"
           )}
           onPointerDown={
@@ -180,27 +180,27 @@ function ItemRow({
       </div>
       <div className="flex min-w-0 items-center">
         <div className="min-w-0">
-          <p className="text-foreground truncate text-[11px] font-medium">
+          <p className="text-foreground truncate text-[13px] font-medium">
             {displayName}
           </p>
-          <p className="text-muted-foreground/60 truncate text-[10px] tracking-[0.06em] uppercase">
+          <p className="text-muted-foreground/60 truncate text-[12px] tracking-[0.06em] uppercase">
             {kindLabel}
           </p>
         </div>
       </div>
       {typeof pathNumber === "number" ? (
-        <span className="border-brand-primary/20 bg-brand-primary/8 text-brand-primary flex h-5 w-12 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]">
+        <span className="border-brand-primary/20 bg-brand-primary/8 text-brand-primary flex h-5 w-12 shrink-0 items-center justify-center rounded-md border font-mono text-[12px]">
           #{pathNumber}
         </span>
       ) : isUnmapped ? (
         <span
           title={routeStatusOff}
-          className="flex h-5 w-12 shrink-0 items-center justify-center truncate rounded-md border border-amber-500/25 bg-amber-500/10 px-1 font-mono text-[10px] font-medium text-amber-500"
+          className="flex h-5 w-12 shrink-0 items-center justify-center truncate rounded-md border border-amber-500/25 bg-amber-500/10 px-1 font-mono text-[12px] font-medium text-amber-500"
         >
           {routeStatusOff}
         </span>
       ) : (
-        <span className="text-muted-foreground/30 flex h-5 w-12 shrink-0 items-center justify-center font-mono text-[10px]">
+        <span className="text-muted-foreground/30 flex h-5 w-12 shrink-0 items-center justify-center font-mono text-[12px]">
           –
         </span>
       )}
@@ -383,7 +383,7 @@ export function ItemOverviewList({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("listPanel.filterPlaceholder")}
-                className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-1 lg:h-7 lg:px-2"
+                className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[13px] shadow-none focus-visible:ring-1 lg:h-9 lg:px-2"
               />
               <MetaPill>
                 {filteredShapes.length}/{listShapes.length}
@@ -400,7 +400,7 @@ export function ItemOverviewList({
                     type="button"
                     onClick={() => setViewFilter(value)}
                     className={cn(
-                      "focus-visible:ring-ring/40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden",
+                      "focus-visible:ring-ring/40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden",
                       viewFilter === value
                         ? "bg-brand-primary/12 text-brand-primary"
                         : "text-muted-foreground/65 hover:text-foreground/80 hover:bg-muted/40"
@@ -409,7 +409,7 @@ export function ItemOverviewList({
                     {label}
                     <span
                       className={cn(
-                        "rounded px-1 font-mono text-[10px]",
+                        "rounded px-1 font-mono text-[12px]",
                         viewFilter === value
                           ? "bg-brand-primary/15 text-brand-primary"
                           : "bg-muted/60 text-muted-foreground/55"
@@ -431,13 +431,13 @@ export function ItemOverviewList({
           )}
         >
           <div className="border-border/15 grid shrink-0 grid-cols-[32px_minmax(0,1fr)_48px_28px] items-center gap-3 border-b px-3 py-1.5">
-            <span className="text-muted-foreground/55 text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground/55 text-[12px] font-medium tracking-[0.08em] uppercase">
               #
             </span>
-            <span className="text-muted-foreground/55 text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground/55 text-[12px] font-medium tracking-[0.08em] uppercase">
               {t("listPanel.itemColumn")}
             </span>
-            <span className="text-muted-foreground/55 text-right text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground/55 text-right text-[12px] font-medium tracking-[0.08em] uppercase">
               {t("listPanel.pathColumn")}
             </span>
             <span aria-hidden="true" />
@@ -505,7 +505,7 @@ export function ItemOverviewList({
               )
             ) : (
               <div className="px-3 py-4 text-center">
-                <p className="text-muted-foreground/55 text-[11px]">
+                <p className="text-muted-foreground/55 text-[13px]">
                   {t("listPanel.noItemsMatchFilter")}
                 </p>
               </div>

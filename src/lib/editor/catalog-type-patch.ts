@@ -1,3 +1,4 @@
+import { getAppearanceTemplate } from "@trackdraw/schema/appearance/registry";
 import {
   createCatalogShapeDraft,
   createTrackElementCatalogIdentity,
@@ -57,7 +58,15 @@ function buildCatalogTypePatchInner<S extends CatalogPatchShape>(
       ? { ...strippedMeta, catalog: newCatalogIdentity }
       : undefined;
 
-  return { ...draft, meta: newMeta } as unknown as Partial<S>;
+  const nextShape = { ...shape, ...draft, meta: newMeta } as Shape;
+  const resetAppearance =
+    shape.appearance &&
+    getAppearanceTemplate(nextShape) !== shape.appearance.templateId;
+  return {
+    ...draft,
+    meta: newMeta,
+    ...(resetAppearance ? { appearance: undefined } : {}),
+  } as unknown as Partial<S>;
 }
 
 function preserveDiveGateTopY(

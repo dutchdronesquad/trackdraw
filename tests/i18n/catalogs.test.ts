@@ -66,9 +66,49 @@ describe("Spanish catalogs", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
     if (fixtureRoot) rmSync(fixtureRoot, { recursive: true, force: true });
     fixtureRoot = "";
+  });
+
+  it("uses current English fallback copy in development despite stale Worker assets and earlier reads", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    writeNamespace("nl-NL", "inspector", {
+      appearance: { title: "Uiterlijk" },
+    });
+    writeNamespace("en-US", "inspector", {
+      appearance: { title: "Appearance" },
+    });
+    const fetchAsset = vi.fn(async (_request: Request) =>
+      Response.json({ appearance: { title: "Old artwork" } })
+    );
+    getCloudflareContext.mockResolvedValue({
+      env: { ASSETS: { fetch: fetchAsset } },
+    });
+    const { getCatalogForLocale, pickCatalogNamespaces } = await import(
+      "@/i18n/catalogs"
+    );
+    await getCatalogForLocale("nl");
+    writeNamespace("en-US", "inspector", {
+      appearance: {
+        title: "Appearance",
+        unavailableTitle: "Artwork unavailable",
+      },
+    });
+    const expected = {
+      appearance: {
+        title: "Uiterlijk",
+        unavailableTitle: "Artwork unavailable",
+      },
+    };
+    expect((await getCatalogForLocale("nl")).inspector).toEqual(expected);
+    expect(await pickCatalogNamespaces("nl", ["inspector"])).toEqual({
+      inspector: expected,
+    });
+    expect(
+      fetchAsset.mock.calls.map(([request]) => new URL(request.url).pathname)
+    ).not.toContain("/locales/nl-NL/inspector.json");
   });
 
   it.each([

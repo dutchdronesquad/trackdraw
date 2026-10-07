@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MetaPill({ children }: { children: ReactNode }) {
   return (
-    <span className="bg-muted/25 text-muted-foreground/85 rounded-full px-2 py-0.5 text-[10px] font-medium">
+    <span className="bg-muted/25 text-muted-foreground/85 rounded-full px-2 py-0.5 text-[12px] font-medium">
       {children}
     </span>
   );
@@ -23,11 +23,11 @@ export function InspectorLead({
   return (
     <div className="border-border/30 space-y-2.5 border-b pb-3">
       <div className="min-w-0">
-        <p className="text-foreground text-[17px] leading-none font-semibold tracking-[-0.02em] lg:text-[15px]">
+        <p className="text-foreground text-[17px] leading-none font-semibold tracking-[-0.02em] lg:text-[17px]">
           {title}
         </p>
         {subtitle ? (
-          <p className="text-muted-foreground/72 mt-2 text-[12px] leading-relaxed lg:text-[11px]">
+          <p className="text-muted-foreground/72 mt-2 text-[12px] leading-relaxed lg:text-[13px]">
             {subtitle}
           </p>
         ) : null}

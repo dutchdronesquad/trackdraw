@@ -128,6 +128,12 @@ async function readNamespaceAsset(
   locale: SupportedLocale,
   namespace: MessageNamespace
 ) {
+  // Development assets may predate copy edits made after the server started.
+  if (process.env.NODE_ENV === "development") {
+    const sourceMessages = await readNamespaceFromSourceFile(locale, namespace);
+    if (sourceMessages !== undefined) return sourceMessages;
+  }
+
   const assetPath = `locales/${getLocaleDirectory(locale)}/${namespace}.json`;
   return (
     (await readNamespaceFromCloudflareAssets(assetPath)) ??
@@ -143,6 +149,9 @@ function getNamespaceMessages(
   const resolvedLocale = englishOnlyNamespaceSet.has(namespace)
     ? defaultLocale
     : locale;
+  if (process.env.NODE_ENV === "development") {
+    return readNamespaceWithFallback(resolvedLocale, namespace);
+  }
   const cacheKey = `${resolvedLocale}:${namespace}`;
 
   let namespacePromise = namespaceCache.get(cacheKey);
@@ -171,7 +180,8 @@ async function readNamespaceWithFallback(
 }
 
 export function getCatalogForLocale(locale: SupportedLocale) {
-  const cachedCatalog = catalogCache.get(locale);
+  const useCache = process.env.NODE_ENV !== "development";
+  const cachedCatalog = useCache ? catalogCache.get(locale) : undefined;
   if (cachedCatalog) {
     return cachedCatalog;
   }
@@ -185,7 +195,7 @@ export function getCatalogForLocale(locale: SupportedLocale) {
     (entries) =>
       Object.fromEntries(entries) as Record<MessageNamespace, unknown>
   );
-  catalogCache.set(locale, catalog);
+  if (useCache) catalogCache.set(locale, catalog);
   return catalog;
 }
 

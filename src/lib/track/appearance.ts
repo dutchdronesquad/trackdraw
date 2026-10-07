@@ -20,8 +20,9 @@ const multigpStartFinish: AppearanceReference = {
 export function getShapeArtworkReference(
   shape: Shape
 ): AppearanceReference | undefined {
-  if (shape.appearance) return shape.appearance;
-  if (!getAppearanceTemplate(shape)) return undefined;
+  const template = getAppearanceTemplate(shape);
+  if (!template) return undefined;
+  if (shape.appearance?.templateId === template) return shape.appearance;
   return getShapeTimingMarker(shape)?.role === "start_finish"
     ? multigpStartFinish
     : multigpStandard;

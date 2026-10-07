@@ -168,11 +168,11 @@ export function PreflightSummary({
             >
               {title}
             </span>
-            <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground/65 text-[12px] font-medium tracking-[0.08em] uppercase">
               {t("preflight.title")}
             </span>
           </span>
-          <span className="text-muted-foreground/78 mt-0.5 block text-[11px] leading-snug">
+          <span className="text-muted-foreground/78 mt-0.5 block text-[13px] leading-snug">
             {description}
           </span>
         </span>
@@ -194,7 +194,7 @@ export function PreflightSummary({
           {report.checks.map((check) => (
             <span
               key={check.category}
-              className="text-muted-foreground text-[10px] font-medium"
+              className="text-muted-foreground text-[12px] font-medium"
             >
               {t(`preflight.categories.${check.category}`)} ·{" "}
               {check.active ? check.issueCount : t("preflight.checkInactive")}
@@ -213,7 +213,7 @@ export function PreflightSummary({
                   type="button"
                   disabled={!actionable}
                   onClick={() => handleIssueClick(issue)}
-                  className="hover:bg-muted/30 focus-visible:bg-muted/30 focus-visible:ring-ring/40 flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-[11px] transition-colors focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-default disabled:hover:bg-transparent"
+                  className="hover:bg-muted/30 focus-visible:bg-muted/30 focus-visible:ring-ring/40 flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-default disabled:hover:bg-transparent"
                 >
                   <AlertTriangle
                     aria-hidden="true"
@@ -223,7 +223,7 @@ export function PreflightSummary({
                     {getIssueLabel(issue, shapesById, t, tShapes)}
                   </span>
                   {actionable ? (
-                    <span className="text-muted-foreground/60 text-[10px]">
+                    <span className="text-muted-foreground/60 text-[12px]">
                       {t("preflight.openIssue")}
                     </span>
                   ) : null}
@@ -232,7 +232,7 @@ export function PreflightSummary({
             })}
           </div>
         ) : (
-          <p className="text-muted-foreground px-3 py-3 text-[11px]">
+          <p className="text-muted-foreground px-3 py-3 text-[13px]">
             {report.status === "incomplete"
               ? t("preflight.emptyDetails")
               : t("preflight.noIssues")}
