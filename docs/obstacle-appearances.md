@@ -18,6 +18,6 @@ Existing MultiGP catalog entries, historical URLs and saved designs without an a
 
 ## Delivery and verification
 
-The matching `track-viewer` change must ship `@trackdraw/schema` and `@trackdraw/viewer` before the TrackDraw dependency can be upgraded to the released version. Local integration checks use a built package in an isolated dependency directory; no source aliases, private artwork uploads or artwork redistributions are added to the application repository.
+The shared appearance contract shipped in `@trackdraw/schema` and `@trackdraw/viewer` 1.0.3. TrackDraw depends on the published schema package, with its registry integrity recorded in the lockfile. No source aliases, private artwork uploads or artwork redistributions are added to the application repository.
 
-Issue #886 remains open until the released dependency, exact-head CI and deployed sharing/flythrough/visual acceptance are verified. Verify panel orientation and the solid back in the editor, shared/read-only viewer and standalone viewer, and export/import plus a cold offline `.tdviewer.zip` load. Package builds and unit tests do not replace those runtime checks.
+Issue #886 remains open until exact-head CI and deployed sharing/flythrough/visual acceptance are verified. Verify panel orientation and the solid back in the editor, shared/read-only viewer and standalone viewer, and export/import plus a cold offline `.tdviewer.zip` load. Package builds and unit tests do not replace those runtime checks.
