@@ -293,3 +293,5 @@ For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `
 ## Studio integration links
 
 See [Studio dialog links](docs/studio-dialog-links.md) for supported dialog and account-section URLs, sign-in return behavior, and DDS rollout guidance.
+
+See [Obstacle appearances](docs/obstacle-appearances.md) for registry selection, stable references, portable artwork terms and the shared package release dependency.

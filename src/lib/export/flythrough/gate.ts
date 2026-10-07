@@ -1,3 +1,4 @@
+import { loadAppearance } from "@trackdraw/schema/appearance/registry";
 import * as THREE from "three";
 import {
   PVC_SET_MARKER_OPACITY,
@@ -30,7 +31,9 @@ async function createOfficialGateGroup(
   visual: PanelFrameGateVisualSpec
 ): Promise<THREE.Group> {
   const { panels } = visual;
-  const panelTextures = await loadPanelTextures(visual.textures);
+  const panelTextures = await loadPanelTextures(visual.textures).catch(
+    () => null
+  );
   const {
     frameTube,
     frameZ,
@@ -49,11 +52,13 @@ async function createOfficialGateGroup(
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const textureMapping = resolvePanelFrameTextureMapping(visual.textures, {
-    left: panelTextures.left,
-    right: panelTextures.right,
-    top: panelTextures.top,
-  });
+  const textureMapping = panelTextures
+    ? resolvePanelFrameTextureMapping(visual.textures, {
+        left: panelTextures.left,
+        right: panelTextures.right,
+        top: panelTextures.top,
+      })
+    : null;
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -137,25 +142,27 @@ async function createOfficialGateGroup(
     topMat
   );
 
-  addPanelTexturePlane(
-    group,
-    cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
-    [leftPanelWidth, h],
-    [leftPanelX, h / 2, frontZ]
-  );
-  addPanelTexturePlane(
-    group,
-    cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
-    [rightPanelWidth, h],
-    [rightPanelX, h / 2, frontZ]
-  );
-  if (textureMapping.top) {
+  if (textureMapping) {
     addPanelTexturePlane(
       group,
-      cloneTextureForPanel(textureMapping.top.texture, textureMapping.top),
-      [topPanelW, topPanelHeight],
-      [0, topPanelY, frontZ]
+      cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
+      [leftPanelWidth, h],
+      [leftPanelX, h / 2, frontZ]
     );
+    addPanelTexturePlane(
+      group,
+      cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
+      [rightPanelWidth, h],
+      [rightPanelX, h / 2, frontZ]
+    );
+    if (textureMapping.top) {
+      addPanelTexturePlane(
+        group,
+        cloneTextureForPanel(textureMapping.top.texture, textureMapping.top),
+        [topPanelW, topPanelHeight],
+        [0, topPanelY, frontZ]
+      );
+    }
   }
 
   return group;
@@ -240,6 +247,8 @@ export async function addGateSceneShapes(
   shape: GateShape,
   scene: THREE.Scene
 ): Promise<void> {
+  if (shape.appearance)
+    await loadAppearance(shape.appearance).catch(() => undefined);
   const visual = getGateVisualSpec(shape);
   if (visual.variant === "panel-frame") {
     scene.add(await createOfficialGateGroup(shape, visual));

@@ -1,3 +1,8 @@
+import {
+  getResolvedAppearance,
+  findShapeAppearance,
+  appearanceKey,
+} from "@trackdraw/schema/appearance/registry";
 import { getViewerSnapshotId } from "@trackdraw/schema/snapshot/identity";
 import { getDesignShapes } from "@/lib/track/design";
 import { getTrackElementCatalogIdentity } from "@/lib/track/elements/catalog";
@@ -38,6 +43,13 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
   const used = new Set<string>();
   for (const shape of shapes) {
     used.add(shapeCapability(shape));
+    if (
+      shape.appearance?.source === "registry" &&
+      shape.appearance.templateId === "gate-standard-v1"
+    )
+      used.add(
+        `appearance:${shape.appearance.source}:${shape.appearance.templateId}`
+      );
     const catalog = getTrackElementCatalogIdentity(shape.meta);
     if (catalog?.snapshot.organization) {
       used.add(`catalog:${catalog.snapshot.organization.toLowerCase()}`);
@@ -70,6 +82,15 @@ export function toViewerDesignSnapshot(
   design: TrackDesign
 ): ViewerDesignSnapshot {
   const shapes = getDesignShapes(design);
+  const resolved = shapes.flatMap((shape) => {
+    const entry = getResolvedAppearance(shape.appearance);
+    return entry && findShapeAppearance(shape, [entry]) ? [entry] : [];
+  });
+  const appearances = [
+    ...new Map(
+      resolved.map((entry) => [appearanceKey(entry.reference), entry])
+    ).values(),
+  ];
   const snapshot = {
     schema: VIEWER_SNAPSHOT_SCHEMA,
     snapshotId: "pending",
@@ -79,9 +100,10 @@ export function toViewerDesignSnapshot(
       title: design.title,
       field: design.field,
       shapes: shapes.map(toViewerShape),
+      ...(appearances.length ? { appearances } : {}),
       updatedAt: design.updatedAt,
     },
-    assets: getDesignAssetManifest(shapes),
+    assets: getDesignAssetManifest(shapes, appearances),
   };
   const validated = validateViewerDesignSnapshot(snapshot);
   return { ...validated, snapshotId: getViewerSnapshotId(validated) };

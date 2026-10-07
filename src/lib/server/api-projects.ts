@@ -347,6 +347,9 @@ export function toApiViewerSnapshotPackage(project: StoredProject) {
       title: snapshot.design.title,
       field: toSnakeCaseValue(snapshot.design.field),
       shapes: snapshot.design.shapes.map(toSnakeCaseValue),
+      ...(snapshot.design.appearances
+        ? { appearances: toSnakeCaseValue(snapshot.design.appearances) }
+        : {}),
       updated_at: snapshot.design.updatedAt,
     },
     assets: snapshot.assets.map(toSnakeCaseValue),

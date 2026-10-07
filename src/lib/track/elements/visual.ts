@@ -1,3 +1,9 @@
+import {
+  applyGateAppearance,
+  getResolvedAppearance,
+  getAppearanceTemplate,
+} from "@trackdraw/schema/appearance/registry";
+import { createAssetResolver } from "@trackdraw/schema/assets/asset-url";
 import type {
   BarrierShape,
   TowerShape,
@@ -74,6 +80,13 @@ export function getGateVisualSpec(shape: GateShape): GateVisualSpec {
   const visual = getTrackElementVisualSpec(shape);
   const base =
     visual?.kind === "gate" ? visual : getFallbackGateVisualSpec(shape);
+  const appearance = getResolvedAppearance(shape.appearance);
+  if (
+    base.variant === "panel-frame" &&
+    appearance &&
+    getAppearanceTemplate(shape) === appearance.reference.templateId
+  )
+    return applyGateAppearance(base, appearance, createAssetResolver());
   const timing = getShapeTimingMarker(shape);
   return timing?.role === "start_finish"
     ? withStartFinishTopTexture(base)

@@ -1,3 +1,4 @@
+import type { AppearanceReference } from "@trackdraw/schema/appearance/registry";
 export type UUID = string;
 
 export type ShapeKind =
@@ -20,6 +21,7 @@ export type InventoryShapeKind = Extract<
 export type InventoryProfile = Record<InventoryShapeKind, number>;
 
 export interface BaseShape {
+  appearance?: AppearanceReference;
   id: UUID;
   kind: ShapeKind;
   name?: string;
