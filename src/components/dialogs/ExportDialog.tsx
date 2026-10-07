@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   SidebarDialog,
   type SidebarDialogNavItem,
@@ -195,7 +195,7 @@ function ExportFormatChoice({
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        "flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl px-2 py-3 text-center transition-colors",
+        "flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center transition-colors",
         "md:min-h-14 md:flex-row md:items-center md:gap-3 md:px-3 md:py-2.5 md:text-left",
         selected ? "bg-muted/60" : "hover:bg-muted/30"
       )}
@@ -380,7 +380,7 @@ function ExportSettingsPanel({
           aria-label={actionLabel}
           onClick={lockedAction?.onClick ?? onExport}
           className={cn(
-            "bg-foreground text-background hover:bg-foreground/90 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors",
+            "bg-foreground text-background hover:bg-foreground/90 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors md:min-h-9",
             (isBusy || isBlocked) && "cursor-not-allowed opacity-65"
           )}
         >
@@ -405,10 +405,12 @@ function ExportOptionsStrip({
   onThemeChange,
   onIncludeObstacleNumbersChange,
   t,
+  fullWidth = false,
 }: {
   exportTheme: Theme;
   includeObstacleNumbers: boolean;
   showTheme?: boolean;
+  fullWidth?: boolean;
   showRouteNumbers?: boolean;
   onThemeChange: (theme: Theme) => void;
   onIncludeObstacleNumbersChange: (value: boolean) => void;
@@ -420,9 +422,14 @@ function ExportOptionsStrip({
     "text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none";
 
   return (
-    <div className="flex flex-wrap items-end gap-3 pt-1">
+    <div
+      className={cn(
+        "flex flex-wrap items-end gap-3",
+        fullWidth ? "w-full" : "pt-1"
+      )}
+    >
       {showTheme ? (
-        <div className="w-32">
+        <div className={fullWidth ? "w-full" : "w-32"}>
           <p className={labelClassName}>{t("export.theme.label")}</p>
           <div className="border-border/60 bg-muted/50 mt-1.5 grid grid-cols-2 gap-1 rounded-lg border p-1">
             <button
@@ -430,7 +437,8 @@ function ExportOptionsStrip({
               onClick={() => onThemeChange("dark")}
               aria-pressed={exportTheme === "dark"}
               className={cn(
-                "flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                fullWidth ? "min-h-11 md:min-h-10" : "h-7",
                 exportTheme === "dark"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -444,7 +452,8 @@ function ExportOptionsStrip({
               onClick={() => onThemeChange("light")}
               aria-pressed={exportTheme === "light"}
               className={cn(
-                "flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                "flex cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                fullWidth ? "min-h-11 md:min-h-10" : "h-7",
                 exportTheme === "light"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -492,6 +501,120 @@ function ExportOptionsStrip({
           </button>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function Export3dOptions({
+  transparent,
+  useCurrentCamera,
+  disabled,
+  onTransparentChange,
+  onCurrentCameraChange,
+  children,
+  t,
+}: {
+  transparent: boolean;
+  useCurrentCamera: boolean;
+  disabled: boolean;
+  onTransparentChange: (value: boolean) => void;
+  onCurrentCameraChange: (value: boolean) => void;
+  children: React.ReactNode;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const hintId = useId();
+  const legendClassName =
+    "text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none";
+  const groupClassName =
+    "border-border/60 bg-muted/50 mt-1.5 grid grid-cols-2 gap-1 rounded-lg border p-1";
+  const choiceClassName =
+    "peer-checked:bg-background peer-checked:text-foreground peer-checked:shadow-xs peer-focus-visible:ring-ring/60 text-muted-foreground hover:text-foreground flex min-h-11 items-center justify-center rounded-md px-2 text-center text-xs font-medium transition-colors peer-focus-visible:ring-2 md:min-h-10";
+
+  return (
+    <div className="space-y-3">
+      <div className={cn(transparent && "grid grid-cols-2 items-start gap-3")}>
+        <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
+          <legend className={legendClassName}>
+            {t("export.presentation.background")}
+          </legend>
+          <div className={groupClassName}>
+            {[
+              { value: true, label: t("export.presentation.transparent") },
+              { value: false, label: t("export.presentation.scene") },
+            ].map((option) => (
+              <label
+                key={String(option.value)}
+                className={cn("min-w-0", !disabled && "cursor-pointer")}
+              >
+                <input
+                  type="radio"
+                  name="export-3d-background"
+                  aria-describedby={
+                    !transparent && !option.value ? hintId : undefined
+                  }
+                  checked={transparent === option.value}
+                  onChange={() => onTransparentChange(option.value)}
+                  className="peer sr-only"
+                />
+                <span className={choiceClassName}>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        {transparent && (
+          <fieldset
+            disabled={disabled}
+            aria-label={t("export.theme.label")}
+            className="min-w-0 disabled:opacity-60"
+          >
+            {children}
+          </fieldset>
+        )}
+      </div>
+      {transparent && (
+        <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
+          <legend className={legendClassName}>
+            {t("export.presentation.camera")}
+          </legend>
+          <div className={groupClassName}>
+            {[
+              { value: false, label: t("export.presentation.overview") },
+              { value: true, label: t("export.presentation.currentCamera") },
+            ].map((option) => (
+              <label
+                key={String(option.value)}
+                className={cn("min-w-0", !disabled && "cursor-pointer")}
+              >
+                <input
+                  type="radio"
+                  name="export-3d-camera"
+                  aria-describedby={
+                    useCurrentCamera === option.value ? hintId : undefined
+                  }
+                  checked={useCurrentCamera === option.value}
+                  onChange={() => onCurrentCameraChange(option.value)}
+                  className="peer sr-only"
+                />
+                <span className={choiceClassName}>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+      <div className="text-muted-foreground flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs leading-relaxed">
+        <p id={hintId}>
+          {t(
+            !transparent
+              ? "export.presentation.sceneHint"
+              : useCurrentCamera
+                ? "export.presentation.currentCameraHint"
+                : "export.presentation.overviewHint"
+          )}
+        </p>
+        {transparent && (
+          <p className="tabular-nums">{t("export.presentation.resolution")}</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -702,7 +825,7 @@ export default function ExportDialog({
       label: t("export.formats.render3d.label"),
       color: "bg-orange-500/15 text-orange-400",
       icon: <ImageIcon className="size-4" />,
-      description: t("export.formats.render3d.descriptionFull"),
+      description: t("export.presentation.description"),
       busyId: "3d",
     },
     {
@@ -1102,43 +1225,24 @@ export default function ExportDialog({
           exportTheme={exportTheme}
           includeObstacleNumbers={includeObstacleNumbers}
           render3dOptions={
-            <div className="space-y-3 text-sm">
-              <label className="flex min-h-10 cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={transparent3d}
-                  disabled={busy !== null}
-                  onChange={(event) => setTransparent3d(event.target.checked)}
-                />
-                {t("export.presentation.transparent")}
-              </label>
-              {transparent3d && (
-                <>
-                  <label className="flex min-h-10 cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={useCurrentCamera}
-                      disabled={busy !== null}
-                      onChange={(event) =>
-                        setUseCurrentCamera(event.target.checked)
-                      }
-                    />
-                    {t("export.presentation.currentCamera")}
-                  </label>
-                  <p className="text-muted-foreground text-xs">
-                    {t("export.presentation.description")}
-                  </p>
-                  <ExportOptionsStrip
-                    exportTheme={exportTheme}
-                    includeObstacleNumbers={false}
-                    showTheme
-                    onThemeChange={setExportTheme}
-                    onIncludeObstacleNumbersChange={setIncludeObstacleNumbers}
-                    t={t}
-                  />
-                </>
-              )}
-            </div>
+            <Export3dOptions
+              transparent={transparent3d}
+              useCurrentCamera={useCurrentCamera}
+              disabled={busy !== null}
+              onTransparentChange={setTransparent3d}
+              onCurrentCameraChange={setUseCurrentCamera}
+              t={t}
+            >
+              <ExportOptionsStrip
+                exportTheme={exportTheme}
+                includeObstacleNumbers={false}
+                showTheme
+                fullWidth
+                onThemeChange={setExportTheme}
+                onIncludeObstacleNumbersChange={setIncludeObstacleNumbers}
+                t={t}
+              />
+            </Export3dOptions>
           }
           onFilenameStemChange={(value) =>
             setFilenameByFormat((current) => ({

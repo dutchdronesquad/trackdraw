@@ -166,9 +166,7 @@ describe("ExportDialog mobile workflow", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(
-      screen.getByRole("checkbox", { name: "Transparent track overview" })
-    );
+    await user.click(screen.getByRole("radio", { name: "Scene" }));
 
     expect(
       await screen.findByText("Open the 3D view before exporting this render.")
@@ -204,8 +202,8 @@ describe("ExportDialog mobile workflow", () => {
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
     expect(
       (
-        screen.getByRole("checkbox", {
-          name: "Transparent track overview",
+        screen.getByRole("radio", {
+          name: "Transparent",
         }) as HTMLInputElement
       ).checked
     ).toBe(true);
@@ -233,9 +231,7 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(
-      screen.getByRole("checkbox", { name: "Use current camera view" })
-    );
+    await user.click(screen.getByRole("radio", { name: "Current view" }));
     await user.click(screen.getByRole("button", { name: "Switch to 3D view" }));
     expect(onRequest3DView).toHaveBeenCalledOnce();
   });
@@ -284,9 +280,7 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(
-      screen.getByRole("checkbox", { name: "Use current camera view" })
-    );
+    await user.click(screen.getByRole("radio", { name: "Current view" }));
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() =>
       expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
@@ -317,12 +311,53 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(
-      screen.getByRole("checkbox", { name: "Transparent track overview" })
-    );
+    await user.click(screen.getByRole("radio", { name: "Scene" }));
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() => expect(handle.screenshot).toHaveBeenCalledOnce());
     expect(mocks.renderTransparent3dPng).not.toHaveBeenCalled();
+  });
+
+  it("supports keyboard camera selection and explains the selected composition", async () => {
+    const user = userEvent.setup();
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    const overview = screen.getByRole("radio", {
+      name: "Track overview",
+    }) as HTMLInputElement;
+    const current = screen.getByRole("radio", {
+      name: "Current view",
+    }) as HTMLInputElement;
+    expect(overview.checked).toBe(true);
+    expect(
+      document.getElementById(overview.getAttribute("aria-describedby")!)
+        ?.textContent
+    ).toBe("Fits the entire track on a bounded floor plate.");
+    expect(
+      screen.getByText("Fits the entire track on a bounded floor plate.")
+    ).toBeTruthy();
+    await user.click(overview);
+    await user.keyboard("{ArrowRight}");
+    expect(current.checked).toBe(true);
+    expect(
+      document.getElementById(current.getAttribute("aria-describedby")!)
+        ?.textContent
+    ).toBe("Keeps your camera position and framing.");
+    expect(overview.checked).toBe(false);
+    expect(
+      screen.getByText("Keeps your camera position and framing.")
+    ).toBeTruthy();
+    await user.click(screen.getByRole("radio", { name: "Scene" }));
+    expect(screen.queryByRole("radio", { name: "Track overview" })).toBeNull();
+    expect(
+      screen.getByText("Includes the background from your current 3D view.")
+    ).toBeTruthy();
   });
 
   it("labels mobile export rows by their action", async () => {

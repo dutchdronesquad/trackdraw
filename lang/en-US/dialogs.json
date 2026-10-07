@@ -340,9 +340,17 @@
       "exportFailedDescription": "{message} Try again, switch export format, or export the project JSON as a manual backup."
     },
     "presentation": {
-      "transparent": "Transparent track overview",
-      "currentCamera": "Use current camera view",
-      "description": "Keep the bounded floor plate and make the surrounding image transparent. By default, a fixed elevated overview fits the entire course."
+      "background": "Background",
+      "transparent": "Transparent",
+      "scene": "Scene",
+      "camera": "Camera",
+      "overview": "Track overview",
+      "currentCamera": "Current view",
+      "overviewHint": "Fits the entire track on a bounded floor plate.",
+      "currentCameraHint": "Keeps your camera position and framing.",
+      "sceneHint": "Includes the background from your current 3D view.",
+      "resolution": "3200 px longest edge",
+      "description": "Export a high-resolution PNG of your 3D track."
     }
   },
   "import": {
