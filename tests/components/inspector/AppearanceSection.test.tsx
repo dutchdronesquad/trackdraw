@@ -44,6 +44,35 @@ vi.mock("@trackdraw/schema/appearance/registry", async (importOriginal) => ({
       collectionName: "MultiGP",
       name: "Standard Gate Red",
     },
+    {
+      reference: {
+        ...dds,
+        textureId: "championship-gate",
+        templateId: "gate-championship-v1",
+      },
+      collectionName: "DDS Championship",
+      name: "Championship",
+    },
+    {
+      reference: {
+        ...dds,
+        collectionId: "multigp",
+        textureId: "championship-gate",
+        templateId: "gate-championship-v1",
+      },
+      collectionName: "MultiGP",
+      name: "Championship",
+    },
+    {
+      reference: {
+        ...dds,
+        collectionId: "multigp",
+        textureId: "championship-gate-red",
+        templateId: "gate-championship-v1",
+      },
+      collectionName: "MultiGP",
+      name: "Championship red",
+    },
   ]),
   loadAppearance: load,
 }));
@@ -144,7 +173,7 @@ it("uses red MultiGP artwork for start/finish and respects club artwork", () => 
   expect(getShapeArtworkReference(shape)).toEqual(dds);
 });
 
-it("does not offer incompatible artwork for a 7x6 gate, including older saved selections", () => {
+it("does not offer incompatible artwork for a 7x6 gate, including older saved selections", async () => {
   const shape = {
     ...createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
       x: 0,
@@ -155,6 +184,41 @@ it("does not offer incompatible artwork for a 7x6 gate, including older saved se
     appearance: dds,
   } as GateShape;
   render(<AppearanceSection shape={shape} updateShape={vi.fn()} />);
-  expect(screen.queryByRole("combobox")).toBeNull();
-  expect(screen.queryByText("Artwork unavailable")).toBeNull();
+  await userEvent.setup().click(screen.getByRole("combobox"));
+  expect(
+    screen.queryByRole("option", { name: "Dutch Drone Squad" })
+  ).toBeNull();
+});
+
+it("offers Championship artwork and keeps mixed gate sizes compatible", async () => {
+  const championship = {
+    ...createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }),
+    id: "championship",
+  } as GateShape;
+  const updateShapes = vi.fn();
+  render(
+    <AppearanceSection
+      shapes={[championship, gate("standard")]}
+      updateShapes={updateShapes}
+    />
+  );
+  await userEvent.setup().click(screen.getByRole("combobox"));
+  expect(
+    screen.queryByRole("option", { name: "Dutch Drone Squad" })
+  ).toBeNull();
+  expect(screen.getAllByRole("option", { name: "MultiGP" })).toHaveLength(1);
+  await userEvent
+    .setup()
+    .click(await screen.findByRole("option", { name: "DDS Championship" }));
+  expect(updateShapes).toHaveBeenCalledWith(["championship"], {
+    appearance: {
+      ...dds,
+      textureId: "championship-gate",
+      templateId: "gate-championship-v1",
+    },
+  });
 });

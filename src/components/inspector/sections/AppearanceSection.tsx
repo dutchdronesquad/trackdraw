@@ -71,7 +71,9 @@ export function AppearanceSection(props: AppearanceSectionProps) {
   }, [template, attempt]);
   const reference = getShapeArtworkReference(shape);
   const keys = editable.map((item) =>
-    item.appearance ? appearanceKey(item.appearance) : "automatic"
+    item.appearance?.templateId === getAppearanceTemplate(item)
+      ? appearanceKey(item.appearance)
+      : "automatic"
   );
   const mixed = keys.some((key) => key !== keys[0]);
   const selected = mixed
@@ -83,9 +85,12 @@ export function AppearanceSection(props: AppearanceSectionProps) {
       choice.reference.templateId === template &&
       !(
         choice.reference.collectionId === "multigp" &&
-        ["standard-gate", "standard-gate-red"].includes(
-          choice.reference.textureId ?? ""
-        )
+        [
+          "standard-gate",
+          "standard-gate-red",
+          "championship-gate",
+          "championship-gate-red",
+        ].includes(choice.reference.textureId ?? "")
       )
   );
   const unavailable =
@@ -142,7 +147,13 @@ export function AppearanceSection(props: AppearanceSectionProps) {
               props.updateShape(shape.id, { appearance: choice.reference });
             else
               props.updateShapes(
-                editable.map((item) => item.id),
+                editable
+                  .filter(
+                    (item) =>
+                      getAppearanceTemplate(item) ===
+                      choice.reference.templateId
+                  )
+                  .map((item) => item.id),
                 { appearance: choice.reference }
               );
             setStatus("loading");
@@ -166,7 +177,7 @@ export function AppearanceSection(props: AppearanceSectionProps) {
                 {t("automatic")}
               </SelectItem>
             ) : null}
-            {shape.appearance &&
+            {shape.appearance?.templateId === template &&
             !mixed &&
             !available.some(
               (entry) => appearanceKey(entry.reference) === selected
