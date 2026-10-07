@@ -22,4 +22,4 @@ The shared appearance contract shipped in `@trackdraw/schema` and `@trackdraw/vi
 
 Issue #886 remains open until exact-head CI and deployed sharing/flythrough/visual acceptance are verified. Verify panel orientation and the solid back in the editor, shared/read-only viewer and standalone viewer, and export/import plus a cold offline `.tdviewer.zip` load. Package builds and unit tests do not replace those runtime checks.
 
-Championship artwork uses independent left/right panels on the existing 1.5 × 6 ft sides and 10 × 2 ft top. Switching gate types clears incompatible artwork; unavailable artwork keeps the original MultiGP rendering. Race Timing chooses the normal/red MultiGP fallback. Release the companion schema/viewer Championship support before updating the schema dependency and merging this consumer change.
+Championship artwork uses independent left/right panels on the existing 1.5 × 6 ft sides and 10 × 2 ft top. Switching gate types clears incompatible artwork; unavailable artwork keeps the original MultiGP rendering. Race Timing chooses the normal/red MultiGP fallback. Championship registry support requires schema/viewer 1.0.4 or newer.
