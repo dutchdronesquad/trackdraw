@@ -12,6 +12,7 @@ import { downloadJsonFile } from "@/lib/export/download-json";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import {
   AlertTriangle,
@@ -543,12 +544,16 @@ function Export3dOptions({
               !disabled && "cursor-pointer"
             )}
           >
-            <input
-              type="checkbox"
-              aria-describedby={!transparent ? hintId : undefined}
+            <Switch
               checked={transparent}
-              onChange={(event) => onTransparentChange(event.target.checked)}
-              className="accent-foreground size-4 shrink-0"
+              disabled={disabled}
+              onCheckedChange={onTransparentChange}
+              className={cn(
+                "cursor-pointer",
+                transparent ? "bg-foreground/90" : "bg-border/80"
+              )}
+              aria-label={t("export.presentation.transparent")}
+              aria-describedby={!transparent ? hintId : undefined}
             />
             {t("export.presentation.transparent")}
           </label>

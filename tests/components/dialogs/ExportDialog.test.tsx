@@ -167,7 +167,7 @@ describe("ExportDialog mobile workflow", () => {
 
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
     await user.click(
-      screen.getByRole("checkbox", { name: "Transparent background" })
+      screen.getByRole("switch", { name: "Transparent background" })
     );
 
     expect(
@@ -203,12 +203,12 @@ describe("ExportDialog mobile workflow", () => {
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
     expect(
-      (
-        screen.getByRole("checkbox", {
+      screen
+        .getByRole("switch", {
           name: "Transparent background",
-        }) as HTMLInputElement
-      ).checked
-    ).toBe(true);
+        })
+        .getAttribute("aria-checked")
+    ).toBe("true");
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() =>
       expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
@@ -314,7 +314,7 @@ describe("ExportDialog mobile workflow", () => {
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
     await user.click(
-      screen.getByRole("checkbox", { name: "Transparent background" })
+      screen.getByRole("switch", { name: "Transparent background" })
     );
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() => expect(handle.screenshot).toHaveBeenCalledOnce());
@@ -358,7 +358,7 @@ describe("ExportDialog mobile workflow", () => {
       screen.getByText("Keeps your camera position and framing.")
     ).toBeTruthy();
     await user.click(
-      screen.getByRole("checkbox", { name: "Transparent background" })
+      screen.getByRole("switch", { name: "Transparent background" })
     );
     expect(screen.queryByRole("radio", { name: "Track overview" })).toBeNull();
     expect(
