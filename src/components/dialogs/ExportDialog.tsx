@@ -537,29 +537,21 @@ function Export3dOptions({
           <legend className={legendClassName}>
             {t("export.presentation.background")}
           </legend>
-          <div className={groupClassName}>
-            {[
-              { value: true, label: t("export.presentation.transparent") },
-              { value: false, label: t("export.presentation.scene") },
-            ].map((option) => (
-              <label
-                key={String(option.value)}
-                className={cn("min-w-0", !disabled && "cursor-pointer")}
-              >
-                <input
-                  type="radio"
-                  name="export-3d-background"
-                  aria-describedby={
-                    !transparent && !option.value ? hintId : undefined
-                  }
-                  checked={transparent === option.value}
-                  onChange={() => onTransparentChange(option.value)}
-                  className="peer sr-only"
-                />
-                <span className={choiceClassName}>{option.label}</span>
-              </label>
-            ))}
-          </div>
+          <label
+            className={cn(
+              "mt-1.5 flex min-h-13 items-center gap-2 text-xs font-medium md:min-h-12",
+              !disabled && "cursor-pointer"
+            )}
+          >
+            <input
+              type="checkbox"
+              aria-describedby={!transparent ? hintId : undefined}
+              checked={transparent}
+              onChange={(event) => onTransparentChange(event.target.checked)}
+              className="accent-foreground size-4 shrink-0"
+            />
+            {t("export.presentation.transparent")}
+          </label>
         </fieldset>
         {transparent && (
           <fieldset

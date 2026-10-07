@@ -341,7 +341,7 @@
     },
     "presentation": {
       "background": "Background",
-      "transparent": "Transparent",
+      "transparent": "Transparent background",
       "scene": "Scene",
       "camera": "Camera",
       "overview": "Track overview",
