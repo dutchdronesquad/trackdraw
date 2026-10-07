@@ -134,11 +134,17 @@ it("ignores stale incompatible artwork and keeps 7x6 timing artwork", () => {
     id: "gate",
     appearance: reference,
   } as GateShape;
-  expect(getShapeArtworkReference(gate)).toBeUndefined();
+  expect(getShapeArtworkReference(gate)).toMatchObject({
+    templateId: "gate-championship-v1",
+    textureId: "championship-gate",
+  });
   expect(getGateVisualSpec(gate)).toMatchObject({
     textures: { top: expect.stringContaining("large-top-multigp.webp") },
   });
   gate.meta = { ...gate.meta, timing: { role: "start_finish" } };
+  expect(getShapeArtworkReference(gate)?.textureId).toBe(
+    "championship-gate-red"
+  );
   expect(getGateVisualSpec(gate)).toMatchObject({
     textures: { top: expect.stringContaining("large-top-red-multigp.webp") },
   });
@@ -179,5 +185,34 @@ it("changes batch artwork in one undo step, skips locked items, and restores Rac
   useEditor.getState().updateShapes(ids, { appearance: undefined });
   expect(
     useEditor.getState().track.design.shapeById[ids[0]].appearance
+  ).toBeUndefined();
+});
+
+it("preserves compatible Championship artwork through snapshots and resets it on a standard gate", () => {
+  const id = useEditor.getState().addShape(
+    createCatalogShapeDraft(MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    })
+  );
+  const appearance = {
+    ...reference,
+    textureId: "championship-gate",
+    templateId: "gate-championship-v1",
+  };
+  useEditor.getState().updateShape(id, { appearance });
+  const gate = useEditor.getState().track.design.shapeById[id];
+  expect(getShapeArtworkReference(gate)).toEqual(appearance);
+  const snapshot = toViewerDesignSnapshot(useEditor.getState().track.design);
+  expect(snapshot.design.shapes[0].appearance).toEqual(appearance);
+  expect(snapshot.requiredViewer.capabilities).toContain(
+    "appearance:registry:gate-championship-v1"
+  );
+  useEditor
+    .getState()
+    .updateShapesCatalogType([id], MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+  expect(
+    useEditor.getState().track.design.shapeById[id].appearance
   ).toBeUndefined();
 });

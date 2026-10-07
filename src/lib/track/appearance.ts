@@ -11,9 +11,20 @@ const multigpStandard: AppearanceReference = {
   textureId: "standard-gate",
   templateId: "gate-standard-v1",
 };
-const multigpStartFinish: AppearanceReference = {
+const multigpChampionship: AppearanceReference = {
+  source: "registry",
+  collectionId: "multigp",
+  textureId: "championship-gate",
+  templateId: "gate-championship-v1",
+};
+
+const multigpStandardRed: AppearanceReference = {
   ...multigpStandard,
   textureId: "standard-gate-red",
+};
+const multigpChampionshipRed: AppearanceReference = {
+  ...multigpChampionship,
+  textureId: "championship-gate-red",
 };
 
 /** Catalog artwork uses the same registry pipeline as a selected club artwork. */
@@ -23,7 +34,11 @@ export function getShapeArtworkReference(
   const template = getAppearanceTemplate(shape);
   if (!template) return undefined;
   if (shape.appearance?.templateId === template) return shape.appearance;
+  const original =
+    template === "gate-championship-v1" ? multigpChampionship : multigpStandard;
   return getShapeTimingMarker(shape)?.role === "start_finish"
-    ? multigpStartFinish
-    : multigpStandard;
+    ? template === "gate-championship-v1"
+      ? multigpChampionshipRed
+      : multigpStandardRed
+    : original;
 }

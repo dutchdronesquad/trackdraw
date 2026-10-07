@@ -43,10 +43,7 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
   const used = new Set<string>();
   for (const shape of shapes) {
     used.add(shapeCapability(shape));
-    if (
-      shape.appearance?.source === "registry" &&
-      shape.appearance.templateId === "gate-standard-v1"
-    )
+    if (shape.appearance?.source === "registry")
       used.add(
         `appearance:${shape.appearance.source}:${shape.appearance.templateId}`
       );
