@@ -295,3 +295,7 @@ For snapshot/export changes, run `tests/lib/track/viewer-snapshot.test.ts` and `
 See [Studio dialog links](docs/studio-dialog-links.md) for supported dialog and account-section URLs, sign-in return behavior, and DDS rollout guidance.
 
 See [Obstacle appearances](docs/obstacle-appearances.md) for registry selection, stable references, portable artwork terms and the shared package release dependency.
+
+## Transparent 3D PNG export
+
+See [Transparent 3D export](docs/transparent-3d-export.md) for the shared camera/floor conventions and the standalone Chromium check for PNG alpha, texture readiness, compositing and camera preservation.

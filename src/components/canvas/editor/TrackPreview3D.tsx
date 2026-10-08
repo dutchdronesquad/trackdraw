@@ -252,6 +252,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
+  getCameraView: () => THREE.PerspectiveCamera | null;
   startFlyThrough: () => void;
   stopFlyThrough: () => void;
 }
@@ -320,6 +321,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     const {
       containerRef,
+      cameraRef,
       diveGateElevationDrag,
       diveGateElevationDragValueRef,
       dragRotationGroupRef,
@@ -398,6 +400,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
+      getCameraView: () =>
+        cameraRef.current instanceof THREE.PerspectiveCamera
+          ? cameraRef.current.clone()
+          : null,
       startFlyThrough: () => {
         if (!hasPath) return;
         setFlyMode(true);

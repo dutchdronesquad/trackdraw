@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "3D view not available — open the 3D tab first",
       "canvasNotReady": "Canvas not ready",
-      "exported": "Exported"
+      "exported": "Exported",
+      "presentationUnavailable": "Could not render the 3D overview. Check that WebGL is available and artwork can load, then try again."
     },
     "readiness": {
       "open3d": "Open the 3D view before exporting this render.",
@@ -305,7 +306,7 @@
       },
       "render3d": {
         "label": "3D Render",
-        "descriptionFull": "Screenshot of the current 3D camera view for visual review.",
+        "descriptionFull": "A transparent 3D track overview for websites, slides, or posters. You can also export the current scene as a normal screenshot.",
         "descriptionShort": "Current 3D camera screenshot for visual review."
       },
       "projectFile": {
@@ -337,6 +338,27 @@
     "errors": {
       "exportFailed": "Export failed",
       "exportFailedDescription": "{message} Try again, switch export format, or export the project JSON as a manual backup."
+    },
+    "presentation": {
+      "background": "Background",
+      "transparent": "Transparent background",
+      "scene": "Scene",
+      "camera": "View",
+      "overview": "Entire track",
+      "currentCamera": "Current 3D view",
+      "overviewHint": "Fits the entire track on a bounded floor plate.",
+      "currentCameraHint": "Keeps your camera position and framing.",
+      "sceneHint": "Includes the background from your current 3D view.",
+      "resolution": "PNG · 3200 px longest edge",
+      "description": "Choose your view and background, then export as PNG.",
+      "overviewChoice": "Fit the whole course in a clean overview.",
+      "currentChoice": "Keep the angle and framing of your 3D view.",
+      "transparentHint": "Keep the floor plate and remove the surrounding background.",
+      "solidHint": "Keep the floor plate on a solid background matching the theme.",
+      "prepareHint": "Export opens the 3D view automatically before capturing your camera.",
+      "sceneResolution": "PNG · current 3D viewport size",
+      "exporting": "Preparing PNG…",
+      "adjustView": "Adjust view in 3D"
     }
   },
   "import": {
