@@ -122,7 +122,7 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/dutchdronesquad/track-viewer"
+                    href="https://viewer.trackdraw.app"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"

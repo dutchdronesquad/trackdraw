@@ -54,7 +54,7 @@ export function RelatedToolsSection() {
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
               >
-                {t("artwork.collections")}
+                {t("github")}
                 <ArrowUpRight aria-hidden="true" className="size-4" />
               </a>
             </div>
@@ -71,15 +71,26 @@ export function RelatedToolsSection() {
             <p className="text-muted-foreground mt-3 text-sm leading-7">
               {t("viewer.description")}
             </p>
-            <a
-              href="https://github.com/dutchdronesquad/track-viewer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand-secondary hover:text-brand-secondary/85 mt-5 inline-flex items-center gap-2 text-sm font-medium transition-colors"
-            >
-              {t("viewer.action")}
-              <ArrowUpRight aria-hidden="true" className="size-4" />
-            </a>
+            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+              <a
+                href="https://viewer.trackdraw.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-secondary hover:text-brand-secondary/85 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+              >
+                {t("viewer.action")}
+                <ArrowUpRight aria-hidden="true" className="size-4" />
+              </a>
+              <a
+                href="https://github.com/dutchdronesquad/track-viewer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
+              >
+                {t("github")}
+                <ArrowUpRight aria-hidden="true" className="size-4" />
+              </a>
+            </div>
           </Reveal>
         </div>
       </div>
