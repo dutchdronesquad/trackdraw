@@ -284,7 +284,7 @@ Write for end users first:
 
 ## Viewer package integration
 
-The shared snapshot contract lives alongside the renderer in `dutchdronesquad/track-viewer` and is consumed here from npm as `@trackdraw/schema`. Studio uses its own renderers; snapshot/API/export generation does not depend on `@trackdraw/viewer`. Test and release changes in that repository before upgrading the dependency here. Do not restore source aliases into the app.
+The shared snapshot contract lives alongside the renderer in `dutchdronesquad/track-viewer` and is consumed here from npm as `@trackdraw/schema`. Studio uses its own renderers; snapshot/API/export generation does not depend on `@trackdraw/viewer`. Test and release changes in that repository before upgrading the dependency here. Do not restore source aliases into the app. The [viewer demo](https://viewer.trackdraw.app/) shows practical website integrations; its [developer examples](https://viewer.trackdraw.app/develop) include live previews, copyable code and downloadable sample snapshots. Demo examples follow development source and may include options not yet released on npm.
 
 Obstacle artwork and maintenance scripts live in [dutchdronesquad/track-assets](https://github.com/dutchdronesquad/track-assets). TrackDraw and the viewer load stable URLs from `https://assets.trackdraw.app/multigp/`; updates publish automatically from that repository's default branch without asset version bumps. Geometry, dimensions and catalog identities remain in TrackDraw.
 

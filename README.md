@@ -64,7 +64,7 @@ TrackDraw is actively developed. See the [public roadmap discussion](https://git
 
 ## Related repositories
 
-- [TrackDraw Viewer](https://github.com/dutchdronesquad/track-viewer) — the standalone 2D and 3D viewer for embedding TrackDraw tracks in other websites and applications, including offline viewing.
+- [TrackDraw Viewer](https://github.com/dutchdronesquad/track-viewer) — the standalone 2D and 3D viewer for embedding TrackDraw tracks in other websites and applications, including offline viewing. Explore the [live demo](https://viewer.trackdraw.app/) or use the [developer examples](https://viewer.trackdraw.app/develop) for integration code.
 - [Track assets](https://github.com/dutchdronesquad/track-assets) — obstacle artwork collections, editable templates and the shared catalog textures used by TrackDraw and the viewer, with a [browser artwork designer](https://designer.trackdraw.app) for gate and flag sheets.
 
 ## Credits and sources
