@@ -212,14 +212,14 @@
     "artwork": {
       "title": "Artwork Designer",
       "description": "Design gate and flag artwork with your club's logos and colours, then preview it in 3D. Download an editable SVG sheet, or submit your artwork for review and inclusion in the shared collections.",
-      "action": "Open artwork designer",
-      "collections": "Explore artwork collections"
+      "action": "Open artwork designer"
     },
     "viewer": {
       "title": "TrackDraw Viewer",
       "description": "Display TrackDraw layouts in an interactive 2D and 3D viewer on your club or event website. Use the standalone viewer package to build your own integration, with support for offline track archives.",
-      "action": "Explore the viewer"
-    }
+      "action": "Explore viewer demo"
+    },
+    "github": "View on GitHub"
   },
   "footer": {
     "tagline": "Browser-based track designer for FPV race directors. Draw to scale, preview in 3D, share a read-only link, and keep quick edits moving on mobile.",
