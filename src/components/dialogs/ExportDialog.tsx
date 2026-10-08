@@ -16,7 +16,8 @@ import { Switch } from "@/components/ui/switch";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import {
   AlertTriangle,
-  ArrowRight,
+  Camera,
+  Scan,
   Database,
   Download,
   FileText,
@@ -46,7 +47,7 @@ export interface ExportDialogProps {
   canvasRef: React.RefObject<TrackCanvasHandle | null>;
   preview3DRef?: React.RefObject<TrackPreview3DHandle | null>;
   activeTab?: "2d" | "3d";
-  onRequest3DView?: () => void;
+  onRequest3DView?: (options?: { closeExport?: boolean }) => void;
   projectId?: string | null;
 }
 
@@ -229,7 +230,6 @@ function ExportFormatChoice({
 function ExportSettingsPanel({
   format,
   busy,
-  lockedAction,
   readiness,
   filenameStem,
   exportTheme,
@@ -246,7 +246,6 @@ function ExportSettingsPanel({
 }: {
   format: ExportFormat;
   busy: string | null;
-  lockedAction?: { label: string; onClick: () => void };
   readiness?: ExportReadiness;
   filenameStem: string;
   exportTheme: Theme;
@@ -262,11 +261,9 @@ function ExportSettingsPanel({
   t: ReturnType<typeof useTranslations>;
 }) {
   const isBusy = busy === format.busyId;
-  const actionLabel = lockedAction
-    ? lockedAction.label
-    : t("export.aria.exportFormat", { label: format.label });
+  const actionLabel = t("export.aria.exportFormat", { label: format.label });
   const hasOptions = !!format.showTheme || !!format.showRouteNumbers;
-  const isBlocked = readiness?.status === "blocked" && !lockedAction;
+  const isBlocked = readiness?.status === "blocked";
 
   return (
     <div className="space-y-5">
@@ -299,11 +296,11 @@ function ExportSettingsPanel({
             </span>
           </span>
         </div>
-      ) : (
+      ) : format.id !== "render3d" ? (
         <p className="text-muted-foreground text-xs leading-relaxed">
           {format.description}
         </p>
-      )}
+      ) : null}
 
       <div className="space-y-4">
         <div>
@@ -379,7 +376,7 @@ function ExportSettingsPanel({
           type="button"
           disabled={isBusy || isBlocked}
           aria-label={actionLabel}
-          onClick={lockedAction?.onClick ?? onExport}
+          onClick={onExport}
           className={cn(
             "bg-foreground text-background hover:bg-foreground/90 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors md:min-h-9",
             (isBusy || isBlocked) && "cursor-not-allowed opacity-65"
@@ -387,12 +384,12 @@ function ExportSettingsPanel({
         >
           {isBusy ? (
             <Loader2 className="size-4 animate-spin" />
-          ) : lockedAction ? (
-            <ArrowRight className="size-4" />
           ) : (
             <Download className="size-4" />
           )}
-          {actionLabel}
+          {isBusy && format.id === "render3d"
+            ? t("export.presentation.exporting")
+            : actionLabel}
         </button>
       </div>
     </div>
@@ -506,45 +503,109 @@ function ExportOptionsStrip({
   );
 }
 
+type Export3dComposition = "overview" | "current";
+
 function Export3dOptions({
   transparent,
-  useCurrentCamera,
+  composition,
+  activeTab,
   disabled,
   onTransparentChange,
-  onCurrentCameraChange,
+  onCompositionChange,
+  onAdjustView,
   children,
   t,
 }: {
   transparent: boolean;
-  useCurrentCamera: boolean;
+  composition: Export3dComposition;
+  activeTab: "2d" | "3d";
   disabled: boolean;
   onTransparentChange: (value: boolean) => void;
-  onCurrentCameraChange: (value: boolean) => void;
+  onCompositionChange: (value: Export3dComposition) => void;
+  onAdjustView?: () => void;
   children: React.ReactNode;
   t: ReturnType<typeof useTranslations>;
 }) {
   const hintId = useId();
+  const backgroundId = useId();
+  const usesTrackRenderer = composition === "overview" || transparent;
   const legendClassName =
     "text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none";
-  const groupClassName =
-    "border-border/60 bg-muted/50 mt-1.5 grid grid-cols-2 gap-1 rounded-lg border p-1";
-  const choiceClassName =
-    "peer-checked:bg-background peer-checked:text-foreground peer-checked:shadow-xs peer-focus-visible:ring-ring/60 text-muted-foreground hover:text-foreground flex min-h-11 items-center justify-center rounded-md px-2 text-center text-xs font-medium transition-colors peer-focus-visible:ring-2 md:min-h-10";
+  const options = [
+    {
+      value: "overview" as const,
+      title: t("export.presentation.overview"),
+      description: t("export.presentation.overviewChoice"),
+      icon: Scan,
+    },
+    {
+      value: "current" as const,
+      title: t("export.presentation.currentCamera"),
+      description: t("export.presentation.currentChoice"),
+      icon: Camera,
+    },
+  ];
 
   return (
-    <div className="space-y-3">
-      <div className={cn(transparent && "grid grid-cols-2 items-start gap-3")}>
+    <div className="space-y-4">
+      <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
+        <legend className={legendClassName}>
+          {t("export.presentation.camera")}
+        </legend>
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
+          {options.map((option) => (
+            <label
+              key={option.value}
+              className={cn("min-w-0", !disabled && "cursor-pointer")}
+            >
+              <input
+                type="radio"
+                name="export-3d-camera"
+                aria-label={option.title}
+                aria-describedby={`${hintId}-${option.value}`}
+                checked={composition === option.value}
+                onChange={() => onCompositionChange(option.value)}
+                className="peer sr-only"
+              />
+              <span className="border-border/60 peer-checked:border-foreground/35 peer-checked:bg-muted/60 peer-focus-visible:ring-ring/60 flex h-full min-h-18 flex-col gap-1 rounded-lg border px-3 py-2.5 peer-focus-visible:ring-2">
+                <span className="flex items-center gap-2 text-xs font-semibold">
+                  <option.icon className="size-3.5 shrink-0" />
+                  {option.title}
+                </span>
+                <span
+                  id={`${hintId}-${option.value}`}
+                  className="text-muted-foreground text-xs leading-relaxed"
+                >
+                  {option.description}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+        {composition === "current" && onAdjustView && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onAdjustView}
+            className="text-muted-foreground hover:text-foreground flex min-h-11 cursor-pointer items-center gap-2 text-xs underline underline-offset-4 md:min-h-9"
+          >
+            <Camera className="size-3.5" />
+            {t("export.presentation.adjustView")}
+          </button>
+        )}
+      </fieldset>
+      <div
+        className={cn(
+          usesTrackRenderer && "grid grid-cols-2 items-start gap-3"
+        )}
+      >
         <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
           <legend className={legendClassName}>
             {t("export.presentation.background")}
           </legend>
-          <label
-            className={cn(
-              "mt-1.5 flex min-h-13 items-center gap-2 text-xs font-medium md:min-h-12",
-              !disabled && "cursor-pointer"
-            )}
-          >
+          <div className="mt-1.5 flex min-h-13 items-center gap-2 md:min-h-12">
             <Switch
+              id={backgroundId}
               checked={transparent}
               disabled={disabled}
               onCheckedChange={onTransparentChange}
@@ -552,13 +613,20 @@ function Export3dOptions({
                 "cursor-pointer",
                 transparent ? "bg-foreground/90" : "bg-border/80"
               )}
-              aria-label={t("export.presentation.transparent")}
-              aria-describedby={!transparent ? hintId : undefined}
+              aria-describedby={hintId}
             />
-            {t("export.presentation.transparent")}
-          </label>
+            <label
+              htmlFor={backgroundId}
+              className={cn(
+                "text-xs font-medium",
+                !disabled && "cursor-pointer"
+              )}
+            >
+              {t("export.presentation.transparent")}
+            </label>
+          </div>
         </fieldset>
-        {transparent && (
+        {usesTrackRenderer && (
           <fieldset
             disabled={disabled}
             aria-label={t("export.theme.label")}
@@ -568,49 +636,28 @@ function Export3dOptions({
           </fieldset>
         )}
       </div>
-      {transparent && (
-        <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
-          <legend className={legendClassName}>
-            {t("export.presentation.camera")}
-          </legend>
-          <div className={groupClassName}>
-            {[
-              { value: false, label: t("export.presentation.overview") },
-              { value: true, label: t("export.presentation.currentCamera") },
-            ].map((option) => (
-              <label
-                key={String(option.value)}
-                className={cn("min-w-0", !disabled && "cursor-pointer")}
-              >
-                <input
-                  type="radio"
-                  name="export-3d-camera"
-                  aria-describedby={
-                    useCurrentCamera === option.value ? hintId : undefined
-                  }
-                  checked={useCurrentCamera === option.value}
-                  onChange={() => onCurrentCameraChange(option.value)}
-                  className="peer sr-only"
-                />
-                <span className={choiceClassName}>{option.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
-      <div className="text-muted-foreground flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs leading-relaxed">
-        <p id={hintId}>
+      <div className="border-border/50 space-y-1.5 border-t pt-3 text-xs leading-relaxed">
+        <p id={hintId} className="text-muted-foreground">
           {t(
-            !transparent
-              ? "export.presentation.sceneHint"
-              : useCurrentCamera
-                ? "export.presentation.currentCameraHint"
-                : "export.presentation.overviewHint"
+            transparent
+              ? "export.presentation.transparentHint"
+              : composition === "overview"
+                ? "export.presentation.solidHint"
+                : "export.presentation.sceneHint"
           )}
         </p>
-        {transparent && (
-          <p className="tabular-nums">{t("export.presentation.resolution")}</p>
+        {composition === "current" && activeTab === "2d" && (
+          <p className="text-muted-foreground">
+            {t("export.presentation.prepareHint")}
+          </p>
         )}
+        <p className="font-medium tabular-nums">
+          {t(
+            usesTrackRenderer
+              ? "export.presentation.resolution"
+              : "export.presentation.sceneResolution"
+          )}
+        </p>
       </div>
     </div>
   );
@@ -659,7 +706,8 @@ export default function ExportDialog({
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
   const [transparent3d, setTransparent3d] = useState(true);
-  const [useCurrentCamera, setUseCurrentCamera] = useState(false);
+  const [composition3d, setComposition3d] =
+    useState<Export3dComposition>("overview");
 
   useEffect(() => {
     if (!open) return;
@@ -893,7 +941,14 @@ export default function ExportDialog({
       case "svg":
         return [baseName, "2d", exportTheme, dateStamp].join("_");
       case "render3d":
-        return [baseName, "3d", currentTheme, dateStamp].join("_");
+        return [
+          baseName,
+          "3d",
+          composition3d === "current" && !transparent3d
+            ? currentTheme
+            : exportTheme,
+          dateStamp,
+        ].join("_");
       case "racePack":
         return [baseName, "race_pack", exportTheme, dateStamp].join("_");
       case "json":
@@ -957,25 +1012,43 @@ export default function ExportDialog({
         return run(
           "3d",
           async () => {
+            const needsEditorCamera = composition3d === "current";
+            if (needsEditorCamera && activeTab !== "3d") onRequest3DView?.();
+            const waitForView = async <T,>(
+              read: () => T | null | undefined
+            ): Promise<T> => {
+              const deadline = Date.now() + 15000;
+              while (Date.now() < deadline) {
+                const value = read();
+                if (value) return value;
+                await new Promise((resolve) => window.setTimeout(resolve, 100));
+              }
+              throw new Error(t("export.messages.view3dUnavailable"));
+            };
             let dataUrl: string | undefined;
-            if (transparent3d) {
-              const camera = useCurrentCamera
-                ? preview3DRef?.current?.getCameraView()
-                : undefined;
-              if (useCurrentCamera && !camera)
-                throw new Error(t("export.messages.view3dUnavailable"));
+            if (composition3d === "overview" || transparent3d) {
+              const camera =
+                composition3d === "current"
+                  ? await waitForView(() =>
+                      preview3DRef?.current?.getCameraView()
+                    )
+                  : undefined;
               try {
-                const { renderTransparent3dPng } =
+                const { renderTrack3dPng } =
                   await import("@/lib/export/export3dPng");
-                dataUrl = await renderTransparent3dPng(
+                dataUrl = await renderTrack3dPng(
                   design,
                   exportTheme,
-                  camera ?? undefined
+                  camera ?? undefined,
+                  transparent3d
                 );
               } catch {
                 throw new Error(t("export.messages.presentationUnavailable"));
               }
-            } else dataUrl = preview3DRef?.current?.screenshot();
+            } else
+              dataUrl = await waitForView(() =>
+                preview3DRef?.current?.screenshot()
+              );
             if (!dataUrl)
               throw new Error(t("export.messages.view3dUnavailable"));
             const a = document.createElement("a");
@@ -1124,23 +1197,17 @@ export default function ExportDialog({
     ) ??
     activeFormats[0] ??
     exportFormats[0];
-  const selectedLockedAction =
-    selectedFormat?.id === "render3d" &&
-    (!transparent3d || useCurrentCamera) &&
-    activeTab !== "3d" &&
-    onRequest3DView
-      ? {
-          label: t("export.actions.switchTo3dView"),
-          onClick: onRequest3DView,
-        }
-      : undefined;
 
   function getExportReadiness(
     format: ExportFormat
   ): ExportReadiness | undefined {
     switch (format.id) {
       case "render3d":
-        if ((transparent3d && !useCurrentCamera) || activeTab === "3d")
+        if (
+          composition3d === "overview" ||
+          activeTab === "3d" ||
+          onRequest3DView
+        )
           return undefined;
         return {
           status: "blocked",
@@ -1213,7 +1280,6 @@ export default function ExportDialog({
           format={selectedFormat}
           showHeader={!hasMultipleFormats}
           busy={busy}
-          lockedAction={selectedLockedAction}
           readiness={selectedReadiness}
           filenameStem={
             filenameByFormat[selectedFormat.id] ??
@@ -1224,10 +1290,18 @@ export default function ExportDialog({
           render3dOptions={
             <Export3dOptions
               transparent={transparent3d}
-              useCurrentCamera={useCurrentCamera}
+              composition={composition3d}
+              activeTab={activeTab ?? "2d"}
               disabled={busy !== null}
               onTransparentChange={setTransparent3d}
-              onCurrentCameraChange={setUseCurrentCamera}
+              onCompositionChange={setComposition3d}
+              onAdjustView={
+                onRequest3DView
+                  ? () => {
+                      onRequest3DView({ closeExport: true });
+                    }
+                  : undefined
+              }
               t={t}
             >
               <ExportOptionsStrip
@@ -1268,6 +1342,11 @@ export default function ExportDialog({
       navItems={navItems}
       activeItem={activeCategory}
       onItemChange={(id) => setActiveCategory(id as ExportCategoryId)}
+      height={
+        selectedFormat.id === "render3d"
+          ? "h-[44rem] max-h-[calc(100dvh-4rem)]"
+          : undefined
+      }
     >
       {activeContent}
     </SidebarDialog>

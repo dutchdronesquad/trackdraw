@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   exportFlythrough: vi.fn(),
   exportPdf: vi.fn(),
   exportPng: vi.fn(),
-  renderTransparent3dPng: vi.fn(),
+  renderTrack3dPng: vi.fn(),
   exportSvg: vi.fn(),
   toastError: vi.fn(),
   toastLoading: vi.fn(),
@@ -82,7 +82,7 @@ vi.mock("@/lib/export/exportPng", () => ({
 }));
 
 vi.mock("@/lib/export/export3dPng", () => ({
-  renderTransparent3dPng: mocks.renderTransparent3dPng,
+  renderTrack3dPng: mocks.renderTrack3dPng,
 }));
 
 vi.mock("@/lib/export/exportSvg", () => ({
@@ -151,46 +151,54 @@ describe("ExportDialog mobile workflow", () => {
     vi.clearAllMocks();
   });
 
-  it("lets the locked 3D export row switch to the 3D view on mobile", async () => {
+  it("opens 3D and waits for the scene screenshot in one export action", async () => {
     const user = userEvent.setup();
-    const onRequest3DView = vi.fn();
-
+    const preview3DRef: React.RefObject<TrackPreview3DHandle | null> = {
+      current: null,
+    };
+    const handle: TrackPreview3DHandle = {
+      screenshot: vi.fn(() => "data:image/png;base64,scene"),
+      getCameraView: vi.fn(() => null),
+      startFlyThrough: vi.fn(),
+      stopFlyThrough: vi.fn(),
+    };
+    const onRequest3DView = vi.fn(() => {
+      window.setTimeout(() => {
+        preview3DRef.current = handle;
+      }, 100);
+    });
+    const download = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
     render(
       <ExportDialog
         activeTab="2d"
         canvasRef={React.createRef()}
+        preview3DRef={preview3DRef}
         onOpenChange={vi.fn()}
         onRequest3DView={onRequest3DView}
         open
       />
     );
-
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(screen.getByRole("radio", { name: "Current 3D view" }));
     await user.click(
       screen.getByRole("switch", { name: "Transparent background" })
     );
-
     expect(
-      await screen.findByText("Open the 3D view before exporting this render.")
-    ).toBeTruthy();
-
-    const switchTo3D = (await screen.findByRole("button", {
-      name: "Switch to 3D view",
-    })) as HTMLButtonElement;
-
-    expect(switchTo3D.disabled).toBe(false);
-
-    await user.click(switchTo3D);
-
+      screen.queryByText("Open the 3D view before exporting this render.")
+    ).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     expect(onRequest3DView).toHaveBeenCalledOnce();
+    await waitFor(() => expect(download).toHaveBeenCalled());
+    expect(handle.screenshot).toHaveBeenCalledOnce();
+    expect(mocks.renderTrack3dPng).not.toHaveBeenCalled();
   });
 
   it("exports the default transparent overview from 2D without requesting an editor camera", async () => {
     const user = userEvent.setup();
     const onRequest3DView = vi.fn();
-    mocks.renderTransparent3dPng.mockResolvedValue(
-      "data:image/png;base64,test"
-    );
+    mocks.renderTrack3dPng.mockResolvedValue("data:image/png;base64,test");
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     render(
       <ExportDialog
@@ -211,18 +219,64 @@ describe("ExportDialog mobile workflow", () => {
     ).toBe("true");
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() =>
-      expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
+      expect(mocks.renderTrack3dPng).toHaveBeenCalledWith(
         useEditor.getState().track.design,
         "dark",
-        undefined
+        undefined,
+        true
       )
     );
     expect(onRequest3DView).not.toHaveBeenCalled();
   });
 
-  it("requires the editor 3D view when requesting the current camera", async () => {
+  it("opens 3D and waits for the current camera in one export action", async () => {
+    const user = userEvent.setup();
+    const camera = new THREE.PerspectiveCamera();
+    const preview3DRef: React.RefObject<TrackPreview3DHandle | null> = {
+      current: null,
+    };
+    const handle: TrackPreview3DHandle = {
+      screenshot: vi.fn(),
+      getCameraView: vi.fn(() => camera),
+      startFlyThrough: vi.fn(),
+      stopFlyThrough: vi.fn(),
+    };
+    const onRequest3DView = vi.fn(() => {
+      window.setTimeout(() => {
+        preview3DRef.current = handle;
+      }, 100);
+    });
+    mocks.renderTrack3dPng.mockResolvedValue("data:image/png;base64,view");
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(
+      <ExportDialog
+        activeTab="2d"
+        canvasRef={React.createRef()}
+        preview3DRef={preview3DRef}
+        onOpenChange={vi.fn()}
+        onRequest3DView={onRequest3DView}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(screen.getByRole("radio", { name: "Current 3D view" }));
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    expect(onRequest3DView).toHaveBeenCalledOnce();
+    await waitFor(() =>
+      expect(mocks.renderTrack3dPng).toHaveBeenCalledWith(
+        useEditor.getState().track.design,
+        "dark",
+        camera,
+        true
+      )
+    );
+  });
+
+  it("exports an opaque whole-track overview from 2D without switching views", async () => {
     const user = userEvent.setup();
     const onRequest3DView = vi.fn();
+    mocks.renderTrack3dPng.mockResolvedValue("data:image/png;base64,opaque");
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     render(
       <ExportDialog
         activeTab="2d"
@@ -233,16 +287,51 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(screen.getByRole("radio", { name: "Current view" }));
-    await user.click(screen.getByRole("button", { name: "Switch to 3D view" }));
-    expect(onRequest3DView).toHaveBeenCalledOnce();
+    await user.click(
+      screen.getByRole("switch", { name: "Transparent background" })
+    );
+    expect(
+      screen
+        .getByRole("radio", { name: "Entire track" })
+        .getAttribute("aria-describedby")
+    ).toBeTruthy();
+    expect(screen.getByText("PNG · 3200 px longest edge")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
+    await waitFor(() =>
+      expect(mocks.renderTrack3dPng).toHaveBeenCalledWith(
+        useEditor.getState().track.design,
+        "dark",
+        undefined,
+        false
+      )
+    );
+    expect(onRequest3DView).not.toHaveBeenCalled();
+  });
+
+  it("offers camera adjustment without starting an export", async () => {
+    const user = userEvent.setup();
+    const onRequest3DView = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <ExportDialog
+        activeTab="2d"
+        canvasRef={React.createRef()}
+        onOpenChange={onOpenChange}
+        onRequest3DView={onRequest3DView}
+        open
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(screen.getByRole("radio", { name: "Current 3D view" }));
+    await user.click(screen.getByRole("button", { name: "Adjust view in 3D" }));
+    expect(onRequest3DView).toHaveBeenCalledWith({ closeExport: true });
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(mocks.renderTrack3dPng).not.toHaveBeenCalled();
   });
 
   it("shows an actionable error when transparent rendering fails", async () => {
     const user = userEvent.setup();
-    mocks.renderTransparent3dPng.mockRejectedValue(
-      new Error("WebGL unavailable")
-    );
+    mocks.renderTrack3dPng.mockRejectedValue(new Error("WebGL unavailable"));
     render(
       <ExportDialog
         activeTab="2d"
@@ -268,9 +357,7 @@ describe("ExportDialog mobile workflow", () => {
       startFlyThrough: vi.fn(),
       stopFlyThrough: vi.fn(),
     };
-    mocks.renderTransparent3dPng.mockResolvedValue(
-      "data:image/png;base64,test"
-    );
+    mocks.renderTrack3dPng.mockResolvedValue("data:image/png;base64,test");
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     render(
       <ExportDialog
@@ -282,13 +369,14 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
-    await user.click(screen.getByRole("radio", { name: "Current view" }));
+    await user.click(screen.getByRole("radio", { name: "Current 3D view" }));
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() =>
-      expect(mocks.renderTransparent3dPng).toHaveBeenCalledWith(
+      expect(mocks.renderTrack3dPng).toHaveBeenCalledWith(
         useEditor.getState().track.design,
         "dark",
-        camera
+        camera,
+        true
       )
     );
     expect(handle.screenshot).not.toHaveBeenCalled();
@@ -313,12 +401,13 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
+    await user.click(screen.getByRole("radio", { name: "Current 3D view" }));
     await user.click(
       screen.getByRole("switch", { name: "Transparent background" })
     );
     await user.click(screen.getByRole("button", { name: "Export 3D Render" }));
     await waitFor(() => expect(handle.screenshot).toHaveBeenCalledOnce());
-    expect(mocks.renderTransparent3dPng).not.toHaveBeenCalled();
+    expect(mocks.renderTrack3dPng).not.toHaveBeenCalled();
   });
 
   it("supports keyboard camera selection and explains the selected composition", async () => {
@@ -333,18 +422,20 @@ describe("ExportDialog mobile workflow", () => {
     );
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
     const overview = screen.getByRole("radio", {
-      name: "Track overview",
+      name: "Entire track",
     }) as HTMLInputElement;
     const current = screen.getByRole("radio", {
-      name: "Current view",
+      name: "Current 3D view",
     }) as HTMLInputElement;
     expect(overview.checked).toBe(true);
     expect(
       document.getElementById(overview.getAttribute("aria-describedby")!)
         ?.textContent
-    ).toBe("Fits the entire track on a bounded floor plate.");
+    ).toBe("Fit the whole course in a clean overview.");
     expect(
-      screen.getByText("Fits the entire track on a bounded floor plate.")
+      screen.getByText(
+        "Keep the floor plate and remove the surrounding background."
+      )
     ).toBeTruthy();
     await user.click(overview);
     await user.keyboard("{ArrowRight}");
@@ -352,15 +443,18 @@ describe("ExportDialog mobile workflow", () => {
     expect(
       document.getElementById(current.getAttribute("aria-describedby")!)
         ?.textContent
-    ).toBe("Keeps your camera position and framing.");
+    ).toBe("Keep the angle and framing of your 3D view.");
     expect(overview.checked).toBe(false);
     expect(
-      screen.getByText("Keeps your camera position and framing.")
+      screen.getByText(
+        "Keep the floor plate and remove the surrounding background."
+      )
     ).toBeTruthy();
     await user.click(
       screen.getByRole("switch", { name: "Transparent background" })
     );
-    expect(screen.queryByRole("radio", { name: "Track overview" })).toBeNull();
+    expect(screen.getByRole("radio", { name: "Entire track" })).toBeTruthy();
+    expect(current.checked).toBe(true);
     expect(
       screen.getByText("Includes the background from your current 3D view.")
     ).toBeTruthy();

@@ -11,11 +11,11 @@ const artifacts = fs.mkdtempSync(
 const bundle = path.join(artifacts, "render.js");
 esbuild.buildSync({
   stdin: {
-    contents: `import {renderTransparent3dPng} from './src/lib/export/export3dPng';
+    contents: `import {renderTrack3dPng} from './src/lib/export/export3dPng';
 import {normalizeDesign,createDefaultDesign} from './src/lib/track/design';
 import * as THREE from 'three';
 import {createCatalogShapeDraft,MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID} from './src/lib/track/elements/catalog';
-Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign,THREE,createCatalogShapeDraft,MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID});`,
+Object.assign(window,{renderTrack3dPng,normalizeDesign,createDefaultDesign,THREE,createCatalogShapeDraft,MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID});`,
     resolveDir: repo,
     loader: "ts",
   },
@@ -135,9 +135,9 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
             design.shapeById[gate.id] = gate;
           }
           const before = JSON.stringify(design);
-          const url = await renderTransparent3dPng(design, theme);
+          const url = await renderTrack3dPng(design, theme);
           if (name === "rotated" && theme === "light") {
-            const repeat = await renderTransparent3dPng(design, theme);
+            const repeat = await renderTrack3dPng(design, theme);
             if (repeat !== url) throw new Error("Default render changed");
           }
           const img = new Image();
@@ -251,8 +251,8 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
     camera.lookAt(30, 0, 20);
     camera.updateMatrixWorld();
     const before = JSON.stringify(camera.toJSON());
-    const a = await renderTransparent3dPng(design, "light", camera);
-    const b = await renderTransparent3dPng(design, "light");
+    const a = await renderTrack3dPng(design, "light", camera);
+    const b = await renderTrack3dPng(design, "light");
     const image = new Image();
     image.src = a;
     await image.decode();
@@ -268,6 +268,35 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
   assert.equal(custom.width, 3200);
   assert.equal(custom.height, 1600);
   assert.equal(custom.width / custom.height, 2);
+  for (const theme of ["light", "dark"]) {
+    const opaque = await page.evaluate(async (theme) => {
+      const url = await renderTrack3dPng(
+        createDefaultDesign(),
+        theme,
+        undefined,
+        false
+      );
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      ).data;
+      let opaque = true;
+      for (let i = 3; i < pixels.length; i += 4)
+        if (pixels[i] !== 255) opaque = false;
+      return { opaque, width: image.width, height: image.height };
+    }, theme);
+    assert.deepEqual(opaque, { opaque: true, width: 3200, height: 2400 });
+  }
   await page.evaluate(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (type, ...args) {
@@ -277,7 +306,7 @@ Object.assign(window,{renderTransparent3dPng,normalizeDesign,createDefaultDesign
   });
   const failed = await page.evaluate(async () => {
     try {
-      await renderTransparent3dPng(createDefaultDesign(), "light");
+      await renderTrack3dPng(createDefaultDesign(), "light");
       return false;
     } catch {
       return document.querySelectorAll("[aria-hidden=true]").length === 0;

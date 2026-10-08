@@ -377,7 +377,7 @@ export default function EditorShell({
   );
 
   const handleTabChange = useCallback(
-    (nextTab: EditorView) => {
+    (nextTab: EditorView, options?: { closeExport?: boolean }) => {
       if (nextTab === "3d" && tab !== "3d") {
         trackProductEvent(
           "editor.3d_opened",
@@ -391,6 +391,8 @@ export default function EditorShell({
       setTab(nextTab);
       const params = new URLSearchParams(searchParams.toString());
       params.set("view", nextTab);
+      if (options?.closeExport && params.get("dialog") === "export")
+        params.delete("dialog");
       const nextQuery = params.toString();
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
       router.replace(nextUrl, { scroll: false });
@@ -1068,7 +1070,7 @@ export default function EditorShell({
           preview3DRef={preview3DRef}
           activeTab={tab}
           exportProjectId={isAccountProject ? design.id : null}
-          onExportRequest3DView={() => handleTabChange("3d")}
+          onExportRequest3DView={(options) => handleTabChange("3d", options)}
           shortcutsOpen={shortcutsOpen}
           onShortcutsOpenChange={setShortcutsOpen}
           newProjectOpen={newProjectOpen}

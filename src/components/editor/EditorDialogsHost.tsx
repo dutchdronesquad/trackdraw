@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import { useTranslations } from "next-intl";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
@@ -88,7 +88,7 @@ export interface EditorDialogsHostProps {
   preview3DRef: RefObject<TrackPreview3DHandle | null>;
   activeTab: EditorView;
   exportProjectId: string | null;
-  onExportRequest3DView: () => void;
+  onExportRequest3DView: (options?: { closeExport?: boolean }) => void;
 
   // Shortcuts
   shortcutsOpen: boolean;
@@ -228,6 +228,8 @@ export function EditorDialogsHost({
   onKeepLocalConflictCopy,
 }: EditorDialogsHostProps) {
   const t = useTranslations("editor.shell");
+  const [hasOpenedExport, setHasOpenedExport] = useState(exportOpen);
+  if (exportOpen && !hasOpenedExport) setHasOpenedExport(true);
   return (
     <>
       {shareOpen ? (
@@ -251,7 +253,7 @@ export function EditorDialogsHost({
         />
       ) : null}
 
-      {exportOpen ? (
+      {exportOpen || hasOpenedExport ? (
         <ExportDialog
           open={exportOpen}
           onOpenChange={onExportOpenChange}

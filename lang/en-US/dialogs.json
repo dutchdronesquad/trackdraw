@@ -343,14 +343,22 @@
       "background": "Background",
       "transparent": "Transparent background",
       "scene": "Scene",
-      "camera": "Camera",
-      "overview": "Track overview",
-      "currentCamera": "Current view",
+      "camera": "View",
+      "overview": "Entire track",
+      "currentCamera": "Current 3D view",
       "overviewHint": "Fits the entire track on a bounded floor plate.",
       "currentCameraHint": "Keeps your camera position and framing.",
       "sceneHint": "Includes the background from your current 3D view.",
-      "resolution": "3200 px longest edge",
-      "description": "Export a high-resolution PNG of your 3D track."
+      "resolution": "PNG · 3200 px longest edge",
+      "description": "Choose your view and background, then export as PNG.",
+      "overviewChoice": "Fit the whole course in a clean overview.",
+      "currentChoice": "Keep the angle and framing of your 3D view.",
+      "transparentHint": "Keep the floor plate and remove the surrounding background.",
+      "solidHint": "Keep the floor plate on a solid background matching the theme.",
+      "prepareHint": "Export opens the 3D view automatically before capturing your camera.",
+      "sceneResolution": "PNG · current 3D viewport size",
+      "exporting": "Preparing PNG…",
+      "adjustView": "Adjust view in 3D"
     }
   },
   "import": {

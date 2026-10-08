@@ -58,12 +58,14 @@ function PresentationScene({
   design,
   theme,
   currentCamera,
+  transparent,
   onReady,
   onError,
 }: {
   design: TrackDesign;
   theme: "light" | "dark";
   currentCamera?: THREE.PerspectiveCamera;
+  transparent: boolean;
   onReady: (url: string) => void;
   onError: (error: unknown) => void;
 }) {
@@ -93,7 +95,7 @@ function PresentationScene({
           new THREE.Box3().setFromObject(group.current!, true)
         );
       camera.updateMatrixWorld();
-      gl.setClearColor(0x000000, 0);
+      gl.setClearColor(transparent ? 0x000000 : t.bg, transparent ? 0 : 1);
       await gl.compileAsync(scene, camera);
       gl.render(scene, camera);
       onReady(gl.domElement.toDataURL("image/png"));
@@ -137,10 +139,11 @@ function PresentationScene({
 }
 
 /** Render in a separate context so export cannot mutate the editor or its camera. */
-export async function renderTransparent3dPng(
+export async function renderTrack3dPng(
   design: TrackDesign,
   theme: "light" | "dark",
-  currentCamera?: THREE.PerspectiveCamera
+  currentCamera?: THREE.PerspectiveCamera,
+  transparent = true
 ): Promise<string> {
   let artworkTimer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -195,6 +198,7 @@ export async function renderTransparent3dPng(
                 design={design}
                 theme={theme}
                 currentCamera={currentCamera}
+                transparent={transparent}
                 onReady={resolve}
                 onError={reject}
               />
