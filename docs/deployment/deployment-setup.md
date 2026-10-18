@@ -395,20 +395,19 @@ Cloudflare documents scheduled handler testing and cron triggers here:
 - https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/
 - https://developers.cloudflare.com/workers/configuration/cron-triggers/
 
-
 ## Resource efficiency
 
 Keep reads, writes, Worker CPU, requests and storage separate when investigating a Cloudflare warning. D1 counts rows scanned, including indexed reads, rather than just the rows returned. Use `npx wrangler d1 insights trackdraw --sort-by reads --time-period 1d --json` (and the development database separately) to identify expensive query families before changing indexes or caching. Also sort by `writes` and `count` to distinguish repeated work from an expensive individual query. Local D1 does not expose production-equivalent row-read accounting; query counts and local timings are regression signals, not a measured production saving.
 
-| Surface | Resource controls |
-| --- | --- |
-| Public site and Studio shell | Static assets bypass the Worker; hashed `/_next/static/` files use immutable browser caching. Local editing, autosave and restore points stay in the browser. |
-| Dashboard | Product metric series read completed days from stored aggregates. The explorer does not calculate unused live values. The cockpit computes its three visible live metrics together once per request. |
-| Share pages | Metadata and content share request-scoped resolution, gallery lookup and design serialization. Every new request rechecks the current share state; revocation and moderation must not depend on a persistent page-data cache. |
-| Authenticated APIs | Authorization and API-key rate limits remain authoritative on every request. Do not cache account responses or share access decisions publicly to reduce reads. |
-| Telemetry and retention | Browser-session deduplication limits repeat analytics events; account activity writes are throttled to once per 24 hours. Daily cleanup retains bounded event history and metric aggregates. The newly matured retention cohort updates only MTR-005. |
-| Gallery media | Preview lookups use the existing preview-image index. Browser caching reduces repeat downloads; a request reaching the media route must still verify the gallery reference before R2 access. |
-| Viewer and artwork designer | Separate static-asset sites require no database or application Worker for ordinary page/asset delivery. Fingerprinted bundles can be immutable; HTML and unversioned entry points must revalidate. |
-| Obstacle assets | R2 serves stable texture and manifest URLs through its custom domain with the collection's existing five-minute cache contract. Preserve that update contract rather than marking replaceable URLs immutable. |
+| Surface                      | Resource controls                                                                                                                                                                                                                                     |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public site and Studio shell | Static assets bypass the Worker; hashed `/_next/static/` files use immutable browser caching. Local editing, autosave and restore points stay in the browser.                                                                                         |
+| Dashboard                    | Product metric series read completed days from stored aggregates. The explorer does not calculate unused live values. The cockpit computes its three visible live metrics together once per request.                                                  |
+| Share pages                  | Metadata and content share request-scoped resolution, gallery lookup and design serialization. Every new request rechecks the current share state; revocation and moderation must not depend on a persistent page-data cache.                         |
+| Authenticated APIs           | Authorization and API-key rate limits remain authoritative on every request. Do not cache account responses or share access decisions publicly to reduce reads.                                                                                       |
+| Telemetry and retention      | Browser-session deduplication limits repeat analytics events; account activity writes are throttled to once per 24 hours. Daily cleanup retains bounded event history and metric aggregates. The newly matured retention cohort updates only MTR-005. |
+| Gallery media                | Preview lookups use the existing preview-image index. Browser caching reduces repeat downloads; a request reaching the media route must still verify the gallery reference before R2 access.                                                          |
+| Viewer and artwork designer  | Separate static-asset sites require no database or application Worker for ordinary page/asset delivery. Fingerprinted bundles can be immutable; HTML and unversioned entry points must revalidate.                                                    |
+| Obstacle assets              | R2 serves stable texture and manifest URLs through its custom domain with the collection's existing five-minute cache contract. Preserve that update contract rather than marking replaceable URLs immutable.                                         |
 
 Run `npx vitest run tests/lib/server/metrics-read-budget.test.ts` when changing metric consumers. It exercises the actual cockpit/explorer queries against migrated SQLite, enforces one/zero live calculations, and checks historical ranges, dimensions, fresh request data, UTC-day changes and retention-only cohort updates. After deploying, compare D1 Insights over a similar traffic period; a successful build does not establish a production usage reduction.
