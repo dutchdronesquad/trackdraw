@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "Vista 3D no disponible: abre primero la pestaña 3D",
       "canvasNotReady": "Lienzo no preparado",
-      "exported": "Exportado"
+      "exported": "Exportado",
+      "presentationUnavailable": "No se ha podido renderizar la vista general en 3D. Comprueba que WebGL esté disponible y que los diseños gráficos se puedan cargar, y vuelve a intentarlo."
     },
     "readiness": {
       "open3d": "Abre la vista 3D antes de exportar esta imagen.",
@@ -337,6 +338,27 @@
     "errors": {
       "exportFailed": "Error de exportación",
       "exportFailedDescription": "{message} Vuelve a intentarlo, cambia el formato de exportación o exporta el JSON del proyecto como copia de seguridad manual."
+    },
+    "presentation": {
+      "background": "Fondo",
+      "transparent": "Fondo transparente",
+      "scene": "Escena",
+      "camera": "Vista",
+      "overview": "Pista completa",
+      "currentCamera": "Vista 3D actual",
+      "overviewHint": "Ajusta toda la pista a una base de suelo delimitada.",
+      "currentCameraHint": "Mantiene la posición de la cámara y el encuadre.",
+      "sceneHint": "Incluye el fondo de tu vista 3D actual.",
+      "resolution": "PNG · 3200 px en el lado más largo",
+      "description": "Elige la vista y el fondo y exporta como PNG.",
+      "overviewChoice": "Muestra toda la pista en una vista general despejada.",
+      "currentChoice": "Mantén el ángulo y el encuadre de tu vista 3D.",
+      "transparentHint": "Mantiene la base de suelo y elimina el fondo que la rodea.",
+      "solidHint": "Mantiene la base de suelo sobre un fondo liso acorde con el tema.",
+      "prepareHint": "Al exportar, la vista 3D se abre automáticamente antes de capturar la imagen de la cámara.",
+      "sceneResolution": "PNG · tamaño actual de la vista 3D",
+      "exporting": "Preparando PNG…",
+      "adjustView": "Ajustar vista en 3D"
     }
   },
   "import": {

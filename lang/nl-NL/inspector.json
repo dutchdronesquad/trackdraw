@@ -387,5 +387,23 @@
     "locationPermissionDenied": "Locatietoestemming is geweigerd.",
     "locationTimeout": "Locatie-opzoeking is verlopen.",
     "locationError": "Kon je locatie niet bepalen."
+  },
+  "appearance": {
+    "title": "Uiterlijk",
+    "label": "Ontwerp",
+    "saved": "Opgeslagen ontwerp",
+    "loading": "Ontwerp laden…",
+    "unavailable": "Je selectie blijft behouden. Voorlopig wordt het standaardontwerp getoond.",
+    "hint": "Kies een gepubliceerd ontwerp voor dit obstakel.",
+    "retry": "Opnieuw proberen",
+    "empty": "Er is geen geschikt gepubliceerd ontwerp beschikbaar.",
+    "automatic": "MultiGP",
+    "mixed": "Verschillende ontwerpen",
+    "skipped": "Vergrendelde items en obstakels zonder geschikt ontwerp blijven ongewijzigd.",
+    "sourceLink": "Bron van het ontwerp",
+    "automaticTiming": "Kleur volgt Race Timing",
+    "automaticHint": "Het normale en rode ontwerp volgen de rol in Race Timing.",
+    "credits": "Naamsvermelding ontwerp",
+    "unavailableTitle": "Ontwerp niet beschikbaar"
   }
 }

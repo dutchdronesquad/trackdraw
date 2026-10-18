@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "3D 视图不可用——请先打开 3D 标签页",
       "canvasNotReady": "画布尚未就绪",
-      "exported": "已导出"
+      "exported": "已导出",
+      "presentationUnavailable": "无法渲染 3D 总览。请检查 WebGL 是否可用，以及图案是否能正常加载，然后重试。"
     },
     "readiness": {
       "open3d": "导出这个渲染前请先打开 3D 视图。",
@@ -337,6 +338,27 @@
     "errors": {
       "exportFailed": "导出失败",
       "exportFailedDescription": "{message} 请重试、切换导出格式，或导出项目 JSON 作为手动备份。"
+    },
+    "presentation": {
+      "background": "背景",
+      "transparent": "透明背景",
+      "scene": "场景",
+      "camera": "视图",
+      "overview": "整条赛道",
+      "currentCamera": "当前 3D 视图",
+      "overviewHint": "将整条赛道完整放入有边界的地板上。",
+      "currentCameraHint": "保留相机位置和构图。",
+      "sceneHint": "包含当前 3D 视图中的背景。",
+      "resolution": "PNG · 最长边 3200 px",
+      "description": "选择视图和背景，然后导出为 PNG。",
+      "overviewChoice": "以简洁的总览展示整条赛道。",
+      "currentChoice": "保留 3D 视图的角度和构图。",
+      "transparentHint": "保留地板并移除周围的背景。",
+      "solidHint": "保留地板，并使用与主题匹配的纯色背景。",
+      "prepareHint": "导出时会先自动打开 3D 视图，再捕获相机画面。",
+      "sceneResolution": "PNG · 当前 3D 视口尺寸",
+      "exporting": "正在准备 PNG…",
+      "adjustView": "在 3D 中调整视图"
     }
   },
   "import": {

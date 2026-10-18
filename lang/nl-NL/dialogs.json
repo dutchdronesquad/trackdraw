@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "3D-weergave niet beschikbaar — open eerst de 3D-tab",
       "canvasNotReady": "Canvas is nog niet klaar",
-      "exported": "Geëxporteerd"
+      "exported": "Geëxporteerd",
+      "presentationUnavailable": "Het 3D-overzicht kon niet worden gerenderd. Controleer of WebGL beschikbaar is en de ontwerpen kunnen worden geladen, en probeer het opnieuw."
     },
     "readiness": {
       "open3d": "Open de 3D-weergave voordat je deze afbeelding exporteert.",
@@ -337,6 +338,27 @@
     "errors": {
       "exportFailed": "Exporteren mislukt",
       "exportFailedDescription": "{message} Probeer opnieuw, kies een ander exportformaat of exporteer de project-JSON als handmatige back-up."
+    },
+    "presentation": {
+      "background": "Achtergrond",
+      "transparent": "Transparante achtergrond",
+      "scene": "Scène",
+      "camera": "Weergave",
+      "overview": "Volledige track",
+      "currentCamera": "Huidige 3D-weergave",
+      "overviewHint": "Past de volledige track op een begrensde vloerplaat.",
+      "currentCameraHint": "Behoudt je camerapositie en kadrering.",
+      "sceneHint": "Neemt de achtergrond van je huidige 3D-weergave over.",
+      "resolution": "PNG · 3200 px aan de langste zijde",
+      "description": "Kies je weergave en achtergrond en exporteer als PNG.",
+      "overviewChoice": "Breng de hele track in een overzichtelijk beeld.",
+      "currentChoice": "Behoud de hoek en kadrering van je 3D-weergave.",
+      "transparentHint": "Behoud de vloerplaat en verwijder de omringende achtergrond.",
+      "solidHint": "Behoud de vloerplaat op een effen achtergrond die bij het thema past.",
+      "prepareHint": "Bij het exporteren opent de 3D-weergave automatisch voordat je camerabeeld wordt vastgelegd.",
+      "sceneResolution": "PNG · huidige grootte van de 3D-weergave",
+      "exporting": "PNG voorbereiden…",
+      "adjustView": "Weergave aanpassen in 3D"
     }
   },
   "import": {

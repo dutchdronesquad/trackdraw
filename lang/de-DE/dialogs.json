@@ -259,7 +259,8 @@
     "messages": {
       "view3dUnavailable": "3D-Ansicht nicht verfügbar — öffne zuerst den 3D-Tab",
       "canvasNotReady": "Canvas ist nicht bereit",
-      "exported": "Exportiert"
+      "exported": "Exportiert",
+      "presentationUnavailable": "Die 3D-Übersicht konnte nicht gerendert werden. Prüfe, ob WebGL verfügbar ist und die Grafiken geladen werden können, und versuche es erneut."
     },
     "readiness": {
       "open3d": "Öffne die 3D-Ansicht, bevor du diesen Render exportierst.",
@@ -337,6 +338,27 @@
     "errors": {
       "exportFailed": "Export fehlgeschlagen",
       "exportFailedDescription": "{message} Versuche es erneut, wechsle das Exportformat oder exportiere die Projekt-JSON als manuelles Backup."
+    },
+    "presentation": {
+      "background": "Hintergrund",
+      "transparent": "Transparenter Hintergrund",
+      "scene": "Szene",
+      "camera": "Ansicht",
+      "overview": "Gesamte Strecke",
+      "currentCamera": "Aktuelle 3D-Ansicht",
+      "overviewHint": "Passt die gesamte Strecke auf eine begrenzte Bodenplatte ein.",
+      "currentCameraHint": "Behält deine Kameraposition und deinen Bildausschnitt bei.",
+      "sceneHint": "Übernimmt den Hintergrund deiner aktuellen 3D-Ansicht.",
+      "resolution": "PNG · 3200 px an der längsten Seite",
+      "description": "Wähle Ansicht und Hintergrund und exportiere als PNG.",
+      "overviewChoice": "Zeige die gesamte Strecke in einer übersichtlichen Ansicht.",
+      "currentChoice": "Behalte Winkel und Bildausschnitt deiner 3D-Ansicht bei.",
+      "transparentHint": "Behält die Bodenplatte bei und entfernt den umgebenden Hintergrund.",
+      "solidHint": "Behält die Bodenplatte auf einem einfarbigen, zum Design passenden Hintergrund bei.",
+      "prepareHint": "Beim Export wird automatisch die 3D-Ansicht geöffnet, bevor dein Kamerabild aufgenommen wird.",
+      "sceneResolution": "PNG · aktuelle Größe der 3D-Ansicht",
+      "exporting": "PNG wird vorbereitet…",
+      "adjustView": "Ansicht in 3D anpassen"
     }
   },
   "import": {

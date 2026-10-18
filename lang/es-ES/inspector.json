@@ -387,5 +387,23 @@
     "locationPermissionDenied": "Se ha denegado el permiso de ubicación.",
     "locationTimeout": "Se ha agotado el tiempo de búsqueda de la ubicación.",
     "locationError": "No se ha podido determinar tu ubicación."
+  },
+  "appearance": {
+    "title": "Apariencia",
+    "label": "Diseño gráfico",
+    "saved": "Diseño gráfico guardado",
+    "loading": "Cargando diseño gráfico…",
+    "unavailable": "Se mantiene tu selección. Por ahora se muestra el diseño gráfico predeterminado.",
+    "hint": "Elige un diseño gráfico publicado para este obstáculo.",
+    "retry": "Volver a intentarlo",
+    "empty": "No hay diseños gráficos publicados compatibles.",
+    "automatic": "MultiGP",
+    "mixed": "Diseños gráficos diferentes",
+    "skipped": "Los elementos bloqueados y los obstáculos sin diseños gráficos compatibles no se modifican.",
+    "sourceLink": "Origen del diseño gráfico",
+    "automaticTiming": "El color sigue a Race Timing",
+    "automaticHint": "Los diseños gráficos normal y rojo siguen el rol de Race Timing.",
+    "credits": "Créditos del diseño gráfico",
+    "unavailableTitle": "Diseño gráfico no disponible"
   }
 }

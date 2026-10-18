@@ -387,5 +387,23 @@
     "locationPermissionDenied": "定位权限被拒绝。",
     "locationTimeout": "定位超时。",
     "locationError": "无法确定你的位置。"
+  },
+  "appearance": {
+    "title": "外观",
+    "label": "图案",
+    "saved": "已保存的图案",
+    "loading": "正在加载图案…",
+    "unavailable": "已保留你的选择，暂时显示默认图案。",
+    "hint": "为此障碍选择已发布的图案。",
+    "retry": "重试",
+    "empty": "没有可用的兼容已发布图案。",
+    "automatic": "MultiGP",
+    "mixed": "不同图案",
+    "skipped": "已锁定的元素和没有兼容图案的障碍保持不变。",
+    "sourceLink": "图案来源",
+    "automaticTiming": "颜色跟随 Race Timing",
+    "automaticHint": "普通图案和红色图案随 Race Timing 中的角色变化。",
+    "credits": "图案署名",
+    "unavailableTitle": "图案不可用"
   }
 }
