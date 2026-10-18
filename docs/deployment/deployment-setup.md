@@ -25,7 +25,7 @@ Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`.
 
 ## Build dependencies
 
-Next.js is temporarily pinned to 16.3.8 and Renovate is restricted to versions below 16.4. Next.js 16.4 loads `.next/server/preview-props.json` during server initialization, but OpenNext 1.20.9 does not inline it, causing dynamic routes including `/login` to return HTTP 500. Remove the restriction only after [OpenNext's manifest fix](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) ships and a Cloudflare preview verifies login and API routes.
+OpenNext 1.20.12 includes [the manifest fix for Next.js 16.4](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) and supports Next.js 16.4.1 and newer. Renovate can update Next.js beyond 16.3.8 without the former `<16.4.0` restriction. Upgrade Next.js and OpenNext together, and verify login and API routes in a Cloudflare preview before deploying the dependency update.
 
 `npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md).
 
