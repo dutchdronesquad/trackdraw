@@ -144,22 +144,20 @@ export async function getDailyCockpit(
     now.getTime() + UPCOMING_REMOVAL_WINDOW_MS
   ).toISOString();
 
-  const [seriesPairs, states, previewRow, apiKeyRow, removalRow] =
-    await Promise.all([
-      Promise.all(
-        SERIES_RANGES.map(
-          async ({ metricId, historyDays }) =>
-            [
-              metricId,
-              await getProductMetricSeries(
-                db,
-                metricId,
-                addUtcDays(today, -historyDays),
-                toExclusive,
-                now
-              ),
-            ] as const
-        )
+  const [series, states, previewRow, apiKeyRow, removalRow] = await Promise.all(
+    [
+      getProductMetricSeries(
+        db,
+        SERIES_RANGES.map(({ metricId, historyDays }) => ({
+          metricId,
+          fromDay: addUtcDays(today, -historyDays),
+          // Retention and operational failures only use completed days.
+          toDayExclusive:
+            metricId === "MTR-005" || metricId === "MTR-010"
+              ? today
+              : toExclusive,
+        })),
+        now
       ),
       getProductMetricMeasurementStates(db),
       db
@@ -214,11 +212,9 @@ export async function getDailyCockpit(
         )
         .bind(now.toISOString(), removalWindowEnd)
         .first<{ count: number }>(),
-    ]);
+    ]
+  );
 
-  const series = Object.fromEntries(seriesPairs) as Partial<
-    Record<ProductMetricId, ProductMetricDailyRow[]>
-  >;
   const builtHeadlines = buildCockpitHeadlineMetrics(series, now);
   const headlines = builtHeadlines.map((headline) => {
     const state = states.find((entry) => entry.metric_id === headline.id);

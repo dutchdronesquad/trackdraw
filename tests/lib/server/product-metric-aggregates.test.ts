@@ -169,13 +169,17 @@ describe("product metric aggregates", () => {
         ],
       },
     });
-    installD1Statements(prepare, [historical, live]);
+    installD1Statements(prepare, [live, historical]);
 
     const rows = await getProductMetricSeries(
       { prepare } as Parameters<typeof getProductMetricSeries>[0],
-      "MTR-001",
-      "2026-08-13",
-      "2026-08-15",
+      [
+        {
+          metricId: "MTR-001",
+          fromDay: "2026-08-13",
+          toDayExclusive: "2026-08-15",
+        },
+      ],
       new Date("2026-08-14T12:00:00.000Z")
     );
 
@@ -196,6 +200,6 @@ describe("product metric aggregates", () => {
       0,
       "MTR-001"
     );
-    expect(rows.map((row) => row.numerator)).toEqual([4, 2]);
+    expect(rows["MTR-001"]?.map((row) => row.numerator)).toEqual([4, 2]);
   });
 });

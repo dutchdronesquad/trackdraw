@@ -373,7 +373,8 @@ async function refreshCreatorActivations(db: ProductMetricDatabase) {
 async function aggregateDay(
   db: ProductMetricDatabase,
   day: string,
-  updatedAt: string
+  updatedAt: string,
+  metricId?: ProductMetricId
 ) {
   const statement = db.prepare(`
     ${DAILY_METRIC_CTES}
@@ -381,7 +382,7 @@ async function aggregateDay(
       metric_id, day_utc, dimension, window_days, numerator, denominator, sample_size,
       completeness_state, quality_status, updated_at
     )
-    select * from final_rows where true
+    select * from final_rows where ${metricId ? "metric_id = ?" : "true"}
     on conflict(metric_id, day_utc, dimension) do update set
       numerator = excluded.numerator,
       denominator = excluded.denominator,
@@ -395,7 +396,8 @@ async function aggregateDay(
     day,
     `${addUtcDays(day, 1)}T00:00:00.000Z`,
     updatedAt,
-    true
+    true,
+    ...(metricId ? [metricId] : [])
   ).run<{
     meta?: { changes?: number };
   }>();
@@ -496,7 +498,7 @@ export async function runProductMetricMaintenance(
       maturedCohortDay >= addUtcDays(start, dayCount))
   ) {
     aggregateRows += changes(
-      await aggregateDay(db, maturedCohortDay, updatedAt)
+      await aggregateDay(db, maturedCohortDay, updatedAt, "MTR-005")
     );
     aggregatedDays += 1;
   }
@@ -544,44 +546,80 @@ export async function runProductMetricMaintenance(
   };
 }
 
+export type ProductMetricSeriesRange = {
+  metricId: ProductMetricId;
+  fromDay: string;
+  toDayExclusive: string;
+};
+
 export async function getProductMetricSeries(
   db: ProductMetricDatabase,
-  metricId: ProductMetricId,
-  fromDay: string,
-  toDayExclusive: string,
+  ranges: readonly ProductMetricSeriesRange[],
   now = new Date()
-) {
+): Promise<Partial<Record<ProductMetricId, ProductMetricDailyRow[]>>> {
+  if (ranges.length === 0) return {};
+
   const today = utcDay(now);
-  const historicalEnd = toDayExclusive < today ? toDayExclusive : today;
-  const historical = await db
-    .prepare(
-      `select metric_id, day_utc, dimension, window_days, numerator, denominator, sample_size,
-              completeness_state, quality_status, updated_at
-       from product_metric_daily_aggregates
-       where metric_id = ? and day_utc >= ? and day_utc < ?
-       order by day_utc, dimension`
-    )
-    .bind(metricId, fromDay, historicalEnd)
-    .all<ProductMetricDailyRow>();
+  const includesToday = (range: ProductMetricSeriesRange) =>
+    range.fromDay <= today && range.toDayExclusive > today;
 
-  if (fromDay > today || toDayExclusive <= today) {
-    return historical.results;
-  }
+  const liveMetricIds = ranges
+    .filter(includesToday)
+    .map((range) => range.metricId);
 
-  const liveStatement = db.prepare(`
-    ${DAILY_METRIC_CTES}
-    select * from final_rows where metric_id = ? order by dimension
-  `);
-  const live = await bindDailyStatement(
-    liveStatement,
-    today,
-    now.toISOString(),
-    now.toISOString(),
-    false,
-    metricId
-  ).all<ProductMetricDailyRow>();
+  // Each metric reuses overlapping raw-event windows in the same CTE.
+  // Share this work explicitly within this request; never cache a D1 promise
+  // across Worker requests or reuse incomplete rows after the UTC day changes.
+  const livePromise =
+    liveMetricIds.length > 0
+      ? bindDailyStatement(
+          db.prepare(`
+          ${DAILY_METRIC_CTES}
+          select * from final_rows
+          where metric_id in (${liveMetricIds.map(() => "?").join(", ")})
+          order by metric_id, dimension
+        `),
+          today,
+          now.toISOString(),
+          now.toISOString(),
+          false,
+          ...liveMetricIds
+        ).all<ProductMetricDailyRow>()
+      : Promise.resolve({ results: [] as ProductMetricDailyRow[] });
 
-  return [...historical.results, ...live.results];
+  const historicalPromise = Promise.all(
+    ranges.map(async (range) => {
+      const historicalEnd =
+        range.toDayExclusive < today ? range.toDayExclusive : today;
+      const historical = await db
+        .prepare(
+          `select metric_id, day_utc, dimension, window_days, numerator, denominator, sample_size,
+                  completeness_state, quality_status, updated_at
+           from product_metric_daily_aggregates
+           where metric_id = ? and day_utc >= ? and day_utc < ?
+           order by day_utc, dimension`
+        )
+        .bind(range.metricId, range.fromDay, historicalEnd)
+        .all<ProductMetricDailyRow>();
+      return historical.results;
+    })
+  );
+  const [live, historical] = await Promise.all([
+    livePromise,
+    historicalPromise,
+  ]);
+
+  return Object.fromEntries(
+    ranges.map((range, index) => [
+      range.metricId,
+      [
+        ...historical[index],
+        ...(includesToday(range)
+          ? live.results.filter((row) => row.metric_id === range.metricId)
+          : []),
+      ],
+    ])
+  );
 }
 
 export async function getProductMetricMeasurementStates(

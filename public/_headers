@@ -1,0 +1,3 @@
+# Next.js fingerprints these files, so repeat visits need no revalidation.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
