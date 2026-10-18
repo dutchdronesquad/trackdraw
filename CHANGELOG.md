@@ -6,9 +6,21 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-### Obstacle artwork
+## [1.18.0]
 
-Change artwork for multiple compatible obstacles together, with consistent inspector dropdowns and clearer artwork credits. Choose a club collection by name or use MultiGP artwork that follows Race Timing automatically.
+### Custom artwork and companion tools
+
+Choose published artwork for compatible MultiGP Standard and Championship gates, individually or for multiple obstacles at once. Artwork stays with saved and shared designs, flythrough exports, and portable viewer archives when offline use is permitted. MultiGP artwork follows Race Timing automatically.
+
+Create your own gate and flag artwork with a 3D preview in [Artwork Designer](https://designer.trackdraw.app), or display interactive 2D and 3D tracks on your website with [TrackDraw Viewer](https://viewer.trackdraw.app), including support for offline track archives.
+
+### Spanish language support
+
+Spanish is now available in the language picker, including localized PDF and SVG exports. Translation updates come through Crowdin, and text that has not been translated yet falls back to English.
+
+### Clearer shared tracks
+
+Shared tracks now show a loading state while the viewer opens and remember dismissed introductions per link. Desktop viewers can copy or share the current link from the header, and revoked links show a dedicated explanation with guidance for obtaining a new link.
 
 ### Account retention
 
