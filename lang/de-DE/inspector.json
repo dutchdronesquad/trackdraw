@@ -387,5 +387,23 @@
     "locationPermissionDenied": "Standortberechtigung wurde verweigert.",
     "locationTimeout": "Standortsuche hat zu lange gedauert.",
     "locationError": "Dein Standort konnte nicht bestimmt werden."
+  },
+  "appearance": {
+    "title": "Aussehen",
+    "label": "Grafik",
+    "saved": "Gespeicherte Grafik",
+    "loading": "Grafik wird geladen…",
+    "unavailable": "Deine Auswahl bleibt erhalten. Vorerst wird die Standardgrafik angezeigt.",
+    "hint": "Wähle eine veröffentlichte Grafik für dieses Hindernis.",
+    "retry": "Erneut versuchen",
+    "empty": "Keine kompatible veröffentlichte Grafik verfügbar.",
+    "automatic": "MultiGP",
+    "mixed": "Unterschiedliche Grafiken",
+    "skipped": "Gesperrte Elemente und Hindernisse ohne kompatible Grafik bleiben unverändert.",
+    "sourceLink": "Grafikquelle",
+    "automaticTiming": "Farbe folgt Race Timing",
+    "automaticHint": "Die normale und die rote Grafik richten sich nach der Rolle in Race Timing.",
+    "credits": "Grafiknachweise",
+    "unavailableTitle": "Grafik nicht verfügbar"
   }
 }

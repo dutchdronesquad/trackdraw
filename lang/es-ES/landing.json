@@ -205,10 +205,28 @@
       "integration": "Integración"
     }
   },
+  "relatedTools": {
+    "eyebrow": "Más de TrackDraw",
+    "heading": "Herramientas para tu club y tu web.",
+    "description": "Crea diseños gráficos para los obstáculos de tu organización o añade trazados de pista interactivos a tu propia web.",
+    "artwork": {
+      "title": "Artwork Designer",
+      "description": "Diseña gráficos para puertas y banderas con los logotipos y colores de tu club y previsualízalos en 3D. Descarga una plantilla SVG editable o envía tu diseño para que se revise y se incluya en las colecciones compartidas.",
+      "action": "Abrir diseñador gráfico"
+    },
+    "viewer": {
+      "title": "TrackDraw Viewer",
+      "description": "Muestra trazados de TrackDraw en un visor interactivo 2D y 3D en la web de tu club o evento. Usa el paquete de visor independiente para crear tu propia integración, con soporte para archivos de pistas sin conexión.",
+      "action": "Explorar demo del visor"
+    },
+    "github": "Ver en GitHub"
+  },
   "footer": {
     "tagline": "Diseñador de pistas en el navegador para directores de carreras FPV. Dibuja a escala, previsualiza en 3D, comparte un enlace de solo lectura y haz ajustes rápidos desde el móvil.",
     "productTitle": "Producto",
     "openStudio": "Abrir Studio",
+    "artworkDesigner": "Diseñador gráfico",
+    "viewer": "TrackDraw Viewer",
     "releaseNotes": "Notas de la versión",
     "legalTitle": "Información legal",
     "privacy": "Política de privacidad",

@@ -205,10 +205,28 @@
       "integration": "Integration"
     }
   },
+  "relatedTools": {
+    "eyebrow": "Mehr von TrackDraw",
+    "heading": "Tools für deinen Verein und deine Website.",
+    "description": "Erstelle Hindernisgrafiken für deine Organisation oder binde interaktive Streckenlayouts in deine eigene Website ein.",
+    "artwork": {
+      "title": "Artwork Designer",
+      "description": "Gestalte Gate- und Flaggengrafiken mit den Logos und Farben deines Vereins und sieh sie dir in 3D an. Lade eine bearbeitbare SVG-Vorlage herunter oder reiche deine Grafik zur Prüfung und Aufnahme in die gemeinsamen Sammlungen ein.",
+      "action": "Grafikdesigner öffnen"
+    },
+    "viewer": {
+      "title": "TrackDraw Viewer",
+      "description": "Zeige TrackDraw-Layouts in einem interaktiven 2D- und 3D-Viewer auf der Website deines Vereins oder deiner Veranstaltung. Erstelle mit dem eigenständigen Viewer-Paket deine eigene Integration, einschließlich Unterstützung für Offline-Streckenarchive.",
+      "action": "Viewer-Demo ansehen"
+    },
+    "github": "Auf GitHub ansehen"
+  },
   "footer": {
     "tagline": "Browserbasierter Track-Designer für FPV-Rennveranstalter. Maßstabsgetreu zeichnen, in 3D prüfen, Link teilen und mobil schnell ändern.",
     "productTitle": "Produkt",
     "openStudio": "Studio öffnen",
+    "artworkDesigner": "Grafikdesigner",
+    "viewer": "TrackDraw Viewer",
     "releaseNotes": "Release Notes",
     "legalTitle": "Rechtliches",
     "privacy": "Datenschutzerklärung",

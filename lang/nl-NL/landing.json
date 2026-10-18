@@ -205,10 +205,28 @@
       "integration": "Integratie"
     }
   },
+  "relatedTools": {
+    "eyebrow": "Meer van TrackDraw",
+    "heading": "Tools voor je club en website.",
+    "description": "Maak obstakelontwerpen voor je organisatie of voeg interactieve trackindelingen toe aan je eigen website.",
+    "artwork": {
+      "title": "Artwork Designer",
+      "description": "Ontwerp gates en vlaggen met de logo’s en kleuren van je club en bekijk ze in 3D. Download een bewerkbaar SVG-bestand of dien je ontwerp in voor beoordeling en opname in de gedeelde collecties.",
+      "action": "Ontwerper openen"
+    },
+    "viewer": {
+      "title": "TrackDraw Viewer",
+      "description": "Toon TrackDraw-indelingen in een interactieve 2D- en 3D-viewer op de website van je club of evenement. Gebruik het zelfstandige viewerpakket voor je eigen integratie, met ondersteuning voor offline trackarchieven.",
+      "action": "Viewerdemo bekijken"
+    },
+    "github": "Bekijken op GitHub"
+  },
   "footer": {
     "tagline": "Browsergebaseerde track designer voor FPV-raceorganisatoren. Teken op schaal, preview in 3D, deel een alleen-lezen link en bewerk snel op mobiel.",
     "productTitle": "Product",
     "openStudio": "Studio openen",
+    "artworkDesigner": "Ontwerper",
+    "viewer": "TrackDraw Viewer",
     "releaseNotes": "Releasenotes",
     "legalTitle": "Juridisch",
     "privacy": "Privacybeleid",

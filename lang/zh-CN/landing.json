@@ -205,10 +205,28 @@
       "integration": "集成"
     }
   },
+  "relatedTools": {
+    "eyebrow": "更多 TrackDraw 工具",
+    "heading": "为你的俱乐部和网站提供工具。",
+    "description": "为你的组织设计障碍图案，或在自己的网站上展示交互式赛道布局。",
+    "artwork": {
+      "title": "Artwork Designer",
+      "description": "使用俱乐部的标志和配色设计门和旗帜图案，并在 3D 中预览。下载可编辑的 SVG 模板，或提交图案以供审核并收录到共享集合。",
+      "action": "打开图案设计器"
+    },
+    "viewer": {
+      "title": "TrackDraw Viewer",
+      "description": "在俱乐部或赛事网站上，通过交互式 2D 和 3D 查看器展示 TrackDraw 布局。使用独立查看器软件包构建自己的集成方案，并支持离线赛道归档。",
+      "action": "查看查看器演示"
+    },
+    "github": "在 GitHub 上查看"
+  },
   "footer": {
     "tagline": "面向 FPV 赛事组织者的浏览器赛道设计工具。按比例画图，3D 预览，分享只读链接，在移动端也能快速改图。",
     "productTitle": "产品",
     "openStudio": "打开 Studio",
+    "artworkDesigner": "图案设计器",
+    "viewer": "TrackDraw Viewer",
     "releaseNotes": "更新日志",
     "legalTitle": "法律",
     "privacy": "隐私政策",
