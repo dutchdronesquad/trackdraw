@@ -49,44 +49,44 @@ describe("metrics explorer failure attempts", () => {
         last_success_at: "2026-08-15T00:17:00.000Z",
       },
     ]);
-    mocks.getProductMetricSeries.mockImplementation(
-      async (_db: unknown, metricId: string) =>
-        metricId === "MTR-010"
-          ? [
-              {
-                metric_id: "MTR-010",
-                day_utc: "2026-08-14",
-                dimension: "export:rendering",
-                window_days: 7,
-                numerator: 2,
-                denominator: 12,
-                sample_size: 12,
-                completeness_state: "complete",
-                quality_status: "low_volume",
-                updated_at: "2026-08-15T00:17:00.000Z",
-              },
-            ]
-          : []
-    );
+    mocks.getProductMetricSeries.mockResolvedValue({
+      "MTR-010": [
+        {
+          metric_id: "MTR-010",
+          day_utc: "2026-08-14",
+          dimension: "export:rendering",
+          window_days: 7,
+          numerator: 2,
+          denominator: 12,
+          sample_size: 12,
+          completeness_state: "complete",
+          quality_status: "low_volume",
+          updated_at: "2026-08-15T00:17:00.000Z",
+        },
+      ],
+    });
 
     const result = await getMetricsExplorerData(
       new Date("2026-08-15T12:00:00.000Z")
     );
 
     expect(result.failures.rows).toHaveLength(1);
-    expect(
-      mocks.getProductMetricSeries.mock.calls
-        .map((call) => call[1])
-        .sort((left, right) => left.localeCompare(right))
-    ).toEqual([
-      "MTR-002",
-      "MTR-003",
-      "MTR-005",
-      "MTR-007",
-      "MTR-008",
-      "MTR-009",
-      "MTR-010",
-    ]);
+    expect(mocks.getProductMetricSeries).toHaveBeenCalledTimes(1);
+    expect(mocks.getProductMetricSeries.mock.calls[0][1]).toEqual(
+      [
+        "MTR-002",
+        "MTR-003",
+        "MTR-005",
+        "MTR-007",
+        "MTR-008",
+        "MTR-009",
+        "MTR-010",
+      ].map((metricId) => ({
+        metricId,
+        fromDay: "2025-11-08",
+        toDayExclusive: "2026-08-15",
+      }))
+    );
     expect(failures.sql).toContain("event_type = 'export.failed'");
     expect(failures.sql).not.toContain("project_id");
     expect(failures.sql).not.toContain("session_id");

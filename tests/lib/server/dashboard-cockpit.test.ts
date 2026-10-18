@@ -28,7 +28,7 @@ beforeEach(() => {
   mocks.getMeasurementStates.mockReset();
   mocks.getMeasurementStates.mockResolvedValue([]);
   mocks.getMetricSeries.mockReset();
-  mocks.getMetricSeries.mockResolvedValue([]);
+  mocks.getMetricSeries.mockResolvedValue({});
   mocks.statements.length = 0;
   mocks.prepare.mockImplementation((sql: string) => {
     const statement = {

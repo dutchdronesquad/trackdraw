@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
-import {
-  getGalleryEntryByShareToken,
-  isPublicGalleryState,
-} from "@/lib/server/gallery";
-import { resolveShareView } from "@/lib/server/share-resolution";
+import { isPublicGalleryState } from "@/lib/server/gallery";
+import { getSharePageData } from "@/lib/server/share-page-data";
 import {
   SITE_AUTHOR,
   getSiteMediaUrl,
@@ -39,13 +36,9 @@ export default async function ShareTokenPage({
 }: ShareTokenPageProps) {
   const { token } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const resolvedShare = await resolveShareView(token);
+  const { resolvedShare, galleryEntry } = await getSharePageData(token);
 
   if (resolvedShare.status === "available") {
-    const galleryEntry =
-      resolvedShare.source === "stored"
-        ? await getGalleryEntryByShareToken(token)
-        : null;
     const isPublicGalleryShare = isPublicGalleryState(
       galleryEntry?.galleryState
     );

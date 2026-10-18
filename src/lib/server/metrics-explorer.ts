@@ -120,30 +120,21 @@ async function getRecentFailureAttempts(
 export async function getMetricsExplorerData(now = new Date()) {
   const db = await getDatabase();
   const today = utcDay(now);
-  const [seriesPairs, states] = await Promise.all([
-    Promise.all(
-      EXPLORER_METRICS.map(
-        async (metricId) =>
-          [
-            metricId,
-            await getProductMetricSeries(
-              db,
-              metricId,
-              addUtcDays(today, -280),
-              addUtcDays(today, 1),
-              now
-            ),
-          ] as const
-      )
+  const [series, states] = await Promise.all([
+    getProductMetricSeries(
+      db,
+      EXPLORER_METRICS.map((metricId) => ({
+        metricId,
+        fromDay: addUtcDays(today, -280),
+        // Explorer comparisons only use complete daily snapshots.
+        toDayExclusive: today,
+      })),
+      now
     ),
     getProductMetricMeasurementStates(db),
   ]);
 
-  const explorer = buildMetricsExplorerData(
-    Object.fromEntries(seriesPairs),
-    states,
-    now
-  );
+  const explorer = buildMetricsExplorerData(series, states, now);
   const failureWindowEnd = explorer.failures.rows[0]?.day ?? null;
   return {
     ...explorer,

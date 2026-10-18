@@ -5,11 +5,8 @@ import {
   getShareTitle,
   type ShareTextFallbacks,
 } from "@/lib/share";
-import {
-  getGalleryEntryByShareToken,
-  isPublicGalleryState,
-} from "@/lib/server/gallery";
-import { resolveShareView } from "@/lib/server/share-resolution";
+import { isPublicGalleryState } from "@/lib/server/gallery";
+import { getSharePageData } from "@/lib/server/share-page-data";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_SOCIAL_IMAGE,
@@ -59,7 +56,7 @@ export async function generateMetadata({
   const t = await getTranslations("share.metadata");
   const tFallback = await getTranslations("share.fallback");
   const { token } = await params;
-  const resolvedShare = await resolveShareView(token);
+  const { resolvedShare, galleryEntry } = await getSharePageData(token);
 
   if (resolvedShare.status === "expired") {
     return {
@@ -106,10 +103,6 @@ export async function generateMetadata({
   }
 
   const design = resolvedShare.design;
-  const galleryEntry =
-    resolvedShare.source === "stored"
-      ? await getGalleryEntryByShareToken(token)
-      : null;
   const isPublicGalleryShare = isPublicGalleryState(galleryEntry?.galleryState);
 
   const shareTextFallbacks: ShareTextFallbacks = {
