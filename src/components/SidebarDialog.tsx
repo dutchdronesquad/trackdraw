@@ -29,6 +29,7 @@ export interface SidebarDialogProps {
   onItemChange: (id: string) => void;
   contentTitle?: string;
   contentDescription?: string;
+  contentActions?: React.ReactNode;
   children: React.ReactNode;
   sidebarFooter?: React.ReactNode;
   maxWidth?: string;
@@ -203,6 +204,7 @@ export function SidebarDialog({
   onItemChange,
   contentTitle,
   contentDescription,
+  contentActions,
   children,
   sidebarFooter,
   maxWidth = "max-w-4xl",
@@ -353,7 +355,10 @@ export function SidebarDialog({
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div
+          data-slot="sidebar-dialog-content"
+          className="flex min-w-0 flex-1 flex-col overflow-hidden"
+        >
           {!unified && (
             <div
               className={cn(
@@ -382,6 +387,7 @@ export function SidebarDialog({
                 </AnimatePresence>
               </div>
               <div className="flex shrink-0 items-center gap-2">
+                {contentActions}
                 <CloseDialogButton
                   onClick={() => onOpenChange(false)}
                   label={t("actions.close")}
