@@ -28,6 +28,8 @@ Research is grouped by implementation status, assessed against the current repos
 | [Translation management](in-progress/translation-management.md)                   | Comparison completed and Crowdin pilot selected.                                                                                      | Hosted-versus-self-hosted decision after the pilot; Weblate remains the fallback.                                                                         |
 | [Track viewer package](in-progress/track-viewer-package.md)                       | Recommended architecture, license (Apache-2.0), and RotorHazard-ownership decided; see the [PVA](../pva/track-viewer-package-pva.md). | Extraction, packaging, DDS website attachment, then FPVScores/RotorHazard adapters; see the [PVA](../pva/track-viewer-package-pva.md#delivery-checklist). |
 
+The [native RotorHazard event integration contract](in-progress/rotorhazard-event-integration.md) defines the stable-release extension points, required core dependency, event lifecycle, UI placement and shared attachment contract for #887–#892. Plugin implementation and offline host acceptance remain open.
+
 ## Planned or parked
 
 These documents describe directions that are not delivered. Their presence here does not commit them to the build queue.

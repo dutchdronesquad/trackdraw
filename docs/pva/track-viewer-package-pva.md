@@ -204,6 +204,8 @@ Checklist:
 
 ### Phase 5: RotorHazard Local And Cloud Adapter
 
+Implementation follows the [native event integration contract](../research/in-progress/rotorhazard-event-integration.md) for #887–#892: viewer in `/event`, attachment controls in the `/format` Event panel, core-owned event identity/storage and a required RotorHazard core extension. Unmodified v4.4.0 cannot provide this native integration. Both import routes share one complete local attachment and atomic activation pipeline.
+
 Start state: package and API foundation exist (Phase 2 complete); local route does not require Phase 3/4.
 
 Work:
