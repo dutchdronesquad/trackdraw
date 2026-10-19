@@ -1,3 +1,4 @@
+import { apiKeyProjectAccess } from "@/lib/api/project-access";
 import {
   apiListSuccess,
   apiProblem,
@@ -62,7 +63,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const projects = await listProjectSummariesForUser(auth.identity.user.id);
+    const projects = await listProjectSummariesForUser(
+      auth.identity.user.id,
+      apiKeyProjectAccess(auth.identity.key.metadata)
+    );
 
     let startIndex = 0;
     if (cursor.id !== null) {

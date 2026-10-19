@@ -1,3 +1,4 @@
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
 export type AccountDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -16,6 +17,7 @@ export type AccountApiKey = {
   start: string | null;
   enabled: boolean;
   permissions: Record<string, string[]> | null;
+  projectAccess: ApiKeyProjectAccess;
   createdAt: string | null;
   expiresAt: string | null;
   lastRequest: string | null;

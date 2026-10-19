@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
+import { ApiKeyProjectAccessSelector } from "./ApiKeyProjectAccess";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -67,7 +69,7 @@ type ApiKeysViewProps = {
   error: string | null;
   onApiKeyNameChange: (value: string) => void;
   onApiKeyExpiryDaysChange: (value: string) => void;
-  onCreateApiKey: () => void;
+  onCreateApiKey: (projectAccess: ApiKeyProjectAccess) => Promise<void>;
   onCopyApiKey: (key: string) => void;
   onDeleteApiKey: (keyId: string) => void;
   onRefreshApiKeys: () => void;
@@ -92,6 +94,9 @@ export function AccountApiKeysView({
   onDeleteApiKey,
   onRefreshApiKeys,
 }: ApiKeysViewProps) {
+  const [projectAccess, setProjectAccess] = useState<ApiKeyProjectAccess>({
+    mode: "all",
+  });
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const [confirmRevokeKeyId, setConfirmRevokeKeyId] = useState<string | null>(
@@ -169,8 +174,13 @@ export function AccountApiKeysView({
 
           <Button
             type="button"
-            onClick={onCreateApiKey}
-            disabled={creatingApiKey || !apiKeyName.trim()}
+            onClick={() => void onCreateApiKey(projectAccess)}
+            disabled={
+              creatingApiKey ||
+              !apiKeyName.trim() ||
+              (projectAccess.mode === "selected" &&
+                projectAccess.projectIds.length === 0)
+            }
             className={cn(
               "order-5 h-8 rounded-lg px-2.5 sm:order-6 sm:w-auto",
               isMobile && "mt-1 w-full"
@@ -184,6 +194,11 @@ export function AccountApiKeysView({
             {t("account.apiKeys.form.create")}
           </Button>
         </div>
+
+        <ApiKeyProjectAccessSelector
+          value={projectAccess}
+          onChange={setProjectAccess}
+        />
 
         {createdApiKey ? (
           <div className="space-y-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-4">
@@ -296,6 +311,13 @@ export function AccountApiKeysView({
                           <p className="truncate text-sm font-medium">
                             {apiKey.name?.trim() ||
                               t("account.apiKeys.fallback.unnamed")}
+                          </p>
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            {apiKey.projectAccess?.mode === "selected"
+                              ? t("account.apiKeys.access.summary", {
+                                  count: apiKey.projectAccess.projectIds.length,
+                                })
+                              : t("account.apiKeys.access.all")}
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">

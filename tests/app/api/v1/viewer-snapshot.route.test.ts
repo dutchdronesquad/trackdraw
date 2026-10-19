@@ -73,7 +73,9 @@ describe("viewer snapshot API", () => {
     expect(snapshot.design.title).toBe("Baan café");
     expect(snapshot.assets).toHaveLength(1);
     expect(JSON.stringify(snapshot)).not.toContain("user-1");
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
+      mode: "all",
+    });
     expect(getCloudflareContext).not.toHaveBeenCalled();
   });
 

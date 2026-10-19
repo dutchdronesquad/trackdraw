@@ -43,6 +43,7 @@ function renderApiKeysView(
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("AccountApiKeysView", () => {
@@ -83,6 +84,7 @@ describe("AccountApiKeysView", () => {
         enabled: true,
         lastRequest: null,
         permissions: { tracks: ["read"] },
+        projectAccess: { mode: "all" },
       },
     ]);
 
@@ -111,6 +113,7 @@ describe("AccountApiKeysView", () => {
         enabled: true,
         lastRequest: null,
         permissions: { tracks: ["read"] },
+        projectAccess: { mode: "all" },
       },
     ]);
 
@@ -140,6 +143,7 @@ describe("AccountApiKeysView", () => {
           enabled: true,
           lastRequest: null,
           permissions: { tracks: ["read"] },
+          projectAccess: { mode: "all" },
         },
       ],
       { isMobile: true }
@@ -156,4 +160,60 @@ describe("AccountApiKeysView", () => {
       screen.queryByText("Integrations using this key lose read-only access.")
     ).toBeNull();
   });
+});
+
+it("searches and selects projects on mobile, and submits the restricted selection", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      ok: true,
+      projects: [
+        { id: "race", title: "Race night" },
+        { id: "practice", title: "Practice" },
+      ],
+    }),
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  const create = vi.fn(async () => {});
+  renderApiKeysView([], {
+    apiKeyName: "Integration",
+    isMobile: true,
+    onCreateApiKey: create,
+  });
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("radio", { name: "Selected projects" }));
+  expect(
+    screen.getByRole("button", { name: "Create" }).hasAttribute("disabled")
+  ).toBe(true);
+  await screen.findByRole("checkbox", { name: "Race night" });
+  await user.type(
+    screen.getByRole("textbox", { name: "Search projects" }),
+    "Race"
+  );
+  expect(screen.queryByRole("checkbox", { name: "Practice" })).toBeNull();
+  await user.click(screen.getByRole("checkbox", { name: "Race night" }));
+  await user.click(screen.getByRole("button", { name: "Create" }));
+  expect(create).toHaveBeenCalledWith({
+    mode: "selected",
+    projectIds: ["race"],
+  });
+  await user.click(screen.getByRole("radio", { name: "All projects" }));
+  await user.click(screen.getByRole("button", { name: "Create" }));
+  expect(create).toHaveBeenLastCalledWith({ mode: "all" });
+});
+
+it("offers retry when loading projects fails", async () => {
+  const fetchMock = vi
+    .fn()
+    .mockRejectedValueOnce(new Error("offline"))
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, projects: [] }),
+    });
+  vi.stubGlobal("fetch", fetchMock);
+  renderApiKeysView();
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("radio", { name: "Selected projects" }));
+  await user.click(await screen.findByRole("button", { name: "Retry" }));
+  expect(await screen.findByText("No cloud projects available.")).toBeTruthy();
 });

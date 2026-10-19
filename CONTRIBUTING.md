@@ -299,3 +299,5 @@ See [Obstacle appearances](docs/obstacle-appearances.md) for registry selection,
 ## Transparent 3D PNG export
 
 See [Transparent 3D export](docs/transparent-3d-export.md) for the shared camera/floor conventions and the standalone Chromium check for PNG alpha, texture readiness, compositing and camera preservation.
+
+See [API-key project access](docs/api-key-project-access.md) for all-project and selected-project authorization, legacy compatibility and integration behavior.

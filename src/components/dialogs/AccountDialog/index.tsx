@@ -1,5 +1,7 @@
 "use client";
 
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
+
 import { useEffect, useState } from "react";
 import {
   Braces,
@@ -392,7 +394,7 @@ export default function AccountDialog({
     setError(null);
   };
 
-  const handleCreateApiKey = async () => {
+  const handleCreateApiKey = async (projectAccess: ApiKeyProjectAccess) => {
     const name = apiKeyName.trim();
     if (!name) {
       setError(t("account.errors.apiKeyNameRequired"));
@@ -412,6 +414,7 @@ export default function AccountDialog({
         body: JSON.stringify({
           name,
           expiresInDays: Number.parseInt(apiKeyExpiryDays, 10),
+          projectAccess,
         }),
       });
       const payload = (await response.json()) as {

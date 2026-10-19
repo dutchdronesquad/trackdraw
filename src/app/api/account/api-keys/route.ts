@@ -1,3 +1,5 @@
+import { apiKeyProjectAccessSchema } from "@/lib/api/project-access";
+import { listProjectSummariesForUser } from "@/lib/server/projects";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auditEventTypes } from "@/lib/audit-events";
@@ -13,9 +15,10 @@ import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 
-const MAX_BODY_BYTES = 4096;
+const MAX_BODY_BYTES = 16384;
 
 const createApiKeyRequestSchema = z.object({
+  projectAccess: apiKeyProjectAccessSchema.optional(),
   name: z.string().trim().min(1).max(64),
   expiresInDays: z
     .union([
@@ -106,9 +109,23 @@ export async function POST(request: Request) {
     }
 
     const body = parseResult.data;
+    if (body.projectAccess?.mode === "selected") {
+      const ownedProjects = await listProjectSummariesForUser(
+        user.id,
+        body.projectAccess
+      );
+      const ownedIds = new Set(ownedProjects.map((project) => project.id));
+      if (body.projectAccess.projectIds.some((id) => !ownedIds.has(id))) {
+        return NextResponse.json(
+          { ok: false, error: "Invalid project selection" },
+          { status: 400 }
+        );
+      }
+    }
     const apiKey = await createApiKeyForSession({
       headers: request.headers,
       name: body.name,
+      projectAccess: body.projectAccess ?? { mode: "all" },
       expiresInDays: normalizeApiKeyExpiryDays(body.expiresInDays),
     });
     const normalizedApiKey = normalizeCreatedApiKey(apiKey);
@@ -125,6 +142,7 @@ export async function POST(request: Request) {
         start: normalizedApiKey.start,
         expiresAt: normalizedApiKey.expiresAt,
         permissions: normalizedApiKey.permissions,
+        projectAccess: normalizedApiKey.projectAccess,
       },
     });
 

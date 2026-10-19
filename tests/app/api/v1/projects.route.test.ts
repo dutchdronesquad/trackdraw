@@ -143,7 +143,9 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(listProjectSummariesForUser).toHaveBeenCalledWith("user-1");
+    expect(listProjectSummariesForUser).toHaveBeenCalledWith("user-1", {
+      mode: "all",
+    });
     expect(vi.mocked(toApiProjectSummaryLight).mock.calls[0]?.[0]).toBe(
       summary
     );
@@ -279,7 +281,9 @@ describe("v1 project API routes", () => {
       projectContext("project-1")
     );
 
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
+      mode: "all",
+    });
     expect(toApiProjectSummary).toHaveBeenCalledWith(project);
     await expect(response.json()).resolves.toEqual({
       data: {
@@ -315,7 +319,9 @@ describe("v1 project API routes", () => {
       projectContext("project-2")
     );
 
-    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1", {
+      mode: "all",
+    });
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       title: "Not Found",
@@ -338,7 +344,9 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
+      mode: "all",
+    });
     expect(toApiTrackPackage).toHaveBeenCalledWith(project);
     await expect(response.json()).resolves.toEqual({
       data: {
@@ -357,7 +365,9 @@ describe("v1 project API routes", () => {
       projectContext("project-2")
     );
 
-    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1", {
+      mode: "all",
+    });
     expect(response.status).toBe(404);
   });
 
@@ -385,7 +395,9 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
+      mode: "all",
+    });
     expect(toApiOverlayPackage).toHaveBeenCalledWith(project);
     await expect(response.json()).resolves.toEqual({
       data: {
@@ -409,7 +421,9 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
+      mode: "all",
+    });
     expect(toApiViewerSnapshotPackage).toHaveBeenCalledWith(project);
     await expect(response.json()).resolves.toEqual({
       data: {
@@ -439,7 +453,9 @@ describe("v1 project API routes", () => {
       projectContext("project-2")
     );
 
-    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1");
+    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1", {
+      mode: "all",
+    });
     expect(response.status).toBe(404);
   });
 

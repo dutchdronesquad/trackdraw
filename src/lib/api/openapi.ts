@@ -318,7 +318,7 @@ export const trackdrawOpenApiSchema = {
     {
       name: "Projects",
       description:
-        "Bearer-authenticated read endpoints for active projects owned by the API key account. These endpoints require the `tracks:read` permission.",
+        "Bearer-authenticated read endpoints for active projects owned by the API key account. These endpoints require the `tracks:read` permission and respect the key’s project access selection.",
     },
     {
       name: "RotorHazard",
@@ -381,7 +381,7 @@ export const trackdrawOpenApiSchema = {
         operationId: "listProjects",
         summary: "List projects",
         description:
-          "Lists active account-backed projects owned by the API key account. The endpoint does not include archived projects and does not expose projects owned by other accounts.",
+          "Lists active account-backed projects owned by the API key account. Selected-project keys only return their allowed projects; all-project keys also include future projects. The endpoint does not include archived projects and does not expose projects owned by other accounts.",
         security: [{ bearerAuth: [] }],
         parameters: [
           { $ref: "#/components/parameters/Limit" },
@@ -596,7 +596,7 @@ export const trackdrawOpenApiSchema = {
       },
       NotFound: {
         description:
-          "The requested resource does not exist or is not owned by the API key account.",
+          "The requested resource does not exist, is not owned by the API key account, or is outside the key’s project access selection.",
         content: problemContent({
           title: "Not Found",
           status: 404,

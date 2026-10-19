@@ -1,3 +1,4 @@
+import { apiKeyProjectAccess } from "@/lib/api/project-access";
 import {
   apiProblem,
   apiSuccess,
@@ -29,7 +30,11 @@ export async function GET(request: Request, context: ProjectRouteContext) {
     });
   }
 
-  const project = await getProjectForUser(projectId, auth.identity.user.id);
+  const project = await getProjectForUser(
+    projectId,
+    auth.identity.user.id,
+    apiKeyProjectAccess(auth.identity.key.metadata)
+  );
   if (!project) {
     return apiProblem({
       status: 404,

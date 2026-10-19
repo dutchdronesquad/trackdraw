@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
+
 import {
   getDesignShapes,
   normalizeDesign,
@@ -218,8 +220,14 @@ export async function saveProjectForUser(
 
 export async function getProjectForUser(
   projectId: string,
-  ownerUserId: string
+  ownerUserId: string,
+  projectAccess?: ApiKeyProjectAccess
 ) {
+  if (
+    projectAccess?.mode === "selected" &&
+    !projectAccess.projectIds.includes(projectId)
+  )
+    return null;
   const db = await getDatabase();
   const row = await db
     .prepare(
@@ -298,7 +306,8 @@ export type StoredProjectSummary = {
 };
 
 export async function listProjectSummariesForUser(
-  ownerUserId: string
+  ownerUserId: string,
+  projectAccess?: ApiKeyProjectAccess
 ): Promise<StoredProjectSummary[]> {
   const db = await getDatabase();
   const result = await db
@@ -315,10 +324,16 @@ export async function listProjectSummariesForUser(
           updated_at
         from projects
         where owner_user_id = ? and archived_at is null
+          ${projectAccess?.mode === "selected" ? "and id in (select value from json_each(?))" : ""}
         order by updated_at desc, id asc
       `
     )
-    .bind(ownerUserId)
+    .bind(
+      ownerUserId,
+      ...(projectAccess?.mode === "selected"
+        ? [JSON.stringify(projectAccess.projectIds)]
+        : [])
+    )
     .all<ProjectSummaryRow>();
 
   return result.results.map((row) => ({

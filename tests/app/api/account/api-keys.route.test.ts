@@ -21,6 +21,10 @@ vi.mock("@/lib/server/api-keys", () => ({
   normalizeCreatedApiKey: vi.fn((key: unknown) => key),
 }));
 
+vi.mock("@/lib/server/projects", () => ({
+  listProjectSummariesForUser: vi.fn(),
+}));
+
 vi.mock("@/lib/server/audit", () => ({
   recordAuditEvent: vi.fn(),
 }));
@@ -33,6 +37,8 @@ import {
   getApiKeyForSession,
   listApiKeysForSession,
 } from "@/lib/server/api-keys";
+import { listProjectSummariesForUser } from "@/lib/server/projects";
+import { createStoredProjectSummaryFixture } from "../../../helpers/api-routes";
 import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
@@ -52,6 +58,7 @@ const apiKey = {
   start: "td_abc",
   enabled: true,
   permissions: { tracks: ["read"] },
+  projectAccess: { mode: "all" },
   createdAt: "2026-04-20T10:00:00.000Z",
   expiresAt: "2026-07-19T10:00:00.000Z",
   lastRequest: null,
@@ -149,6 +156,7 @@ describe("account API key routes", () => {
       headers: expect.any(Headers),
       name: "Overlay",
       expiresInDays: 30,
+      projectAccess: { mode: "all" },
     });
     expect(recordAuditEvent).toHaveBeenCalledWith({
       actorUserId: user.id,
@@ -162,6 +170,7 @@ describe("account API key routes", () => {
         start: "td_abc",
         expiresAt: "2026-07-19T10:00:00.000Z",
         permissions: { tracks: ["read"] },
+        projectAccess: { mode: "all" },
       },
     });
     expect(recordAuditEvent).not.toHaveBeenCalledWith(
@@ -262,5 +271,63 @@ describe("account API key routes", () => {
     expect(response.status).toBe(401);
     expect(deleteApiKeyForSession).not.toHaveBeenCalled();
     expect(recordAuditEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe("API key project selection", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(isTrustedRequest).mockReturnValue(true);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(createApiKeyForSession).mockResolvedValue(apiKey as never);
+  });
+
+  it("saves a validated owned project selection", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
+      createStoredProjectSummaryFixture(),
+    ]);
+    const projectAccess = { mode: "selected", projectIds: ["project-1"] };
+    const response = await POST(
+      postRequest({ name: "Integration", projectAccess })
+    );
+    expect(response.status).toBe(201);
+    expect(createApiKeyForSession).toHaveBeenCalledWith(
+      expect.objectContaining({ projectAccess })
+    );
+  });
+
+  it("rejects missing, archived and foreign projects before creating a key", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([]);
+    const response = await POST(
+      postRequest({
+        name: "Integration",
+        projectAccess: { mode: "selected", projectIds: ["foreign"] },
+      })
+    );
+    expect(response.status).toBe(400);
+    expect(createApiKeyForSession).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { mode: "selected" },
+    { mode: "unknown" },
+    { mode: "all", projectIds: [] },
+    { mode: "selected", projectIds: Array(101).fill("id") },
+  ])("rejects malformed access %j", async (projectAccess) => {
+    expect(
+      (await POST(postRequest({ name: "Integration", projectAccess }))).status
+    ).toBe(400);
+    expect(createApiKeyForSession).not.toHaveBeenCalled();
+  });
+
+  it("preserves an empty selection as no project access", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([]);
+    const projectAccess = { mode: "selected", projectIds: [] };
+    expect(
+      (await POST(postRequest({ name: "Integration", projectAccess }))).status
+    ).toBe(201);
+    expect(createApiKeyForSession).toHaveBeenCalledWith(
+      expect.objectContaining({ projectAccess })
+    );
   });
 });
