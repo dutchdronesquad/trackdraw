@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AccountDialog from "@/components/dialogs/AccountDialog";
 
@@ -32,7 +33,11 @@ vi.mock("@/components/SidebarDialog", () => ({
     children: ReactNode;
   }) =>
     open ? (
-      <div role="dialog" aria-label={contentTitle}>
+      <div
+        key={state.mobile ? "mobile" : "desktop"}
+        role="dialog"
+        aria-label={contentTitle}
+      >
         {children}
       </div>
     ) : null,
@@ -92,4 +97,48 @@ describe("account deep-link session boundary", () => {
       }
     }
   );
+});
+
+it("keeps restricted project access when the responsive dialog remounts its content", async () => {
+  state.user = {
+    id: "test-user",
+    name: "Test User",
+    email: "test@example.test",
+  };
+  state.mobile = false;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async (url: string) =>
+        new Response(
+          JSON.stringify(
+            url === "/api/projects"
+              ? { ok: true, projects: [{ id: "race", title: "Race night" }] }
+              : { ok: true, apiKeys: [] }
+          )
+        )
+    )
+  );
+  const props = { open: true, onOpenChange: vi.fn(), view: "apiKeys" as const };
+  const { rerender } = render(<AccountDialog {...props} />);
+  const user = userEvent.setup();
+  await user.type(
+    await screen.findByRole("textbox", { name: "Key name" }),
+    "Integration"
+  );
+  await user.click(screen.getByRole("button", { name: "Project access" }));
+  await user.click(screen.getByRole("radio", { name: "Selected" }));
+  await user.click(await screen.findByRole("checkbox", { name: "Race night" }));
+  await user.keyboard("{Escape}");
+  for (const mobile of [true, false]) {
+    state.mobile = mobile;
+    rerender(<AccountDialog {...props} />);
+    expect(
+      screen.getByRole("button", { name: "Project access" }).textContent
+    ).toBe("1 project");
+    expect(
+      (screen.getByRole("textbox", { name: "Key name" }) as HTMLInputElement)
+        .value
+    ).toBe("Integration");
+  }
 });

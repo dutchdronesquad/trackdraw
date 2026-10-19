@@ -301,6 +301,7 @@ export async function getAuth() {
       // Keys are stored hashed (Better Auth default). Never set disableKeyHashing: true.
       apiKey({
         defaultPrefix: "td_",
+        enableMetadata: true,
         requireName: true,
         maximumNameLength: 64,
         keyExpiration: {
@@ -316,8 +317,6 @@ export async function getAuth() {
         permissions: {
           defaultPermissions: {
             tracks: ["read"],
-            exports: ["read"],
-            shares: ["read"],
           },
         },
       }),

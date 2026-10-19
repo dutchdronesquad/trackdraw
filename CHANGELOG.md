@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Project access for integrations
+
+Limit an API key to selected cloud projects, or allow all current and future projects you own. Search for projects when creating a key and see its access level in account settings. Existing keys keep access to all your projects.
+
 ## [1.18.0]
 
 ### Custom artwork and companion tools

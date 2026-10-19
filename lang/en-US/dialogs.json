@@ -70,7 +70,7 @@
       },
       "apiKeys": {
         "title": "API keys",
-        "description": "Create and revoke expiring keys for external TrackDraw integrations."
+        "description": "Read-only access for integrations."
       },
       "danger": {
         "title": "Danger zone",
@@ -148,8 +148,8 @@
         "keyNameLabel": "Key name",
         "expiryDays": "{days} days",
         "expiryYear": "1 year",
-        "namePlaceholder": "Overlay integration",
-        "create": "Create"
+        "namePlaceholder": "Integration name",
+        "create": "Create key"
       },
       "created": {
         "title": "API key created",
@@ -181,7 +181,28 @@
         "warningNonExpiring": "Integrations using this key lose read-only access.",
         "revoking": "Revoking...",
         "action": "Revoke"
-      }
+      },
+      "access": {
+        "label": "Project access",
+        "all": "All projects",
+        "selected": "Selected projects",
+        "allHint": "Includes all current and future projects you own.",
+        "selectedHint": "Only the projects you select. New projects are not included automatically.",
+        "search": "Search projects",
+        "loading": "Loading projects…",
+        "error": "Projects could not be loaded.",
+        "retry": "Retry",
+        "empty": "No cloud projects available.",
+        "count": "{count} of 100 projects selected",
+        "summary": "{count, plural, one {# selected project} other {# selected projects}}",
+        "selectedShort": "Selected",
+        "trigger": "{count, plural, one {# project} other {# projects}}",
+        "selectedCompactHint": "New projects are excluded.",
+        "noMatches": "No matching projects.",
+        "limit": "100 projects selected. New projects are excluded."
+      },
+      "newKey": "New API key",
+      "actionsFor": "Actions for {name}"
     },
     "danger": {
       "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",

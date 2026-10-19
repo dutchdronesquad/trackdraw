@@ -1,25 +1,42 @@
 // @vitest-environment happy-dom
 
 import type React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { useState } from "react";
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TooltipProvider } from "@/components/AppTooltip";
 import { AccountApiKeysView } from "@/components/dialogs/AccountDialog/ApiKeysView";
+import { ApiKeyActions } from "@/components/dialogs/AccountDialog/ApiKeyActions";
 import type { AccountApiKey } from "@/components/dialogs/AccountDialog/types";
 
 const noop = vi.fn();
-
-function renderApiKeysView(
-  apiKeys: AccountApiKey[] = [],
+const key: AccountApiKey = {
+  id: "key-1",
+  name: "RotorHazard",
+  start: "td_live",
+  createdAt: "2026-04-20T10:00:00.000Z",
+  expiresAt: "2026-05-20T10:00:00.000Z",
+  enabled: true,
+  lastRequest: null,
+  permissions: { tracks: ["read"] },
+  projectAccess: { mode: "all" },
+};
+function renderView(
   overrides: Partial<React.ComponentProps<typeof AccountApiKeysView>> = {}
 ) {
-  return render(
-    <TooltipProvider>
+  function Harness() {
+    const [access, setAccess] = useState<ApiKeyProjectAccess>({ mode: "all" });
+    const [draft, setDraft] = useState(true);
+    return (
       <AccountApiKeysView
+        projectAccess={access}
+        onProjectAccessChange={setAccess}
+        draftOpen={draft}
+        onDraftOpenChange={setDraft}
         apiKeyExpiryDays="90"
         apiKeyName=""
-        apiKeys={apiKeys}
+        apiKeys={[key]}
         apiKeysLoading={false}
         createdApiKey={null}
         creatingApiKey={false}
@@ -30,130 +47,231 @@ function renderApiKeysView(
         onApiKeyExpiryDaysChange={noop}
         onApiKeyNameChange={noop}
         onCopyApiKey={noop}
-        onCreateApiKey={noop}
+        onCreateApiKey={vi.fn(async () => true)}
         onDeleteApiKey={noop}
         onRefreshApiKeys={noop}
         user={{ id: "user-1" }}
         {...overrides}
       />
-    </TooltipProvider>
-  );
+    );
+  }
+  return render(<Harness />);
 }
-
+function stubProjects() {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      ok: true,
+      projects: [
+        { id: "race", title: "Race night" },
+        { id: "practice", title: "Practice" },
+      ],
+    }),
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
-describe("AccountApiKeysView", () => {
-  it("keeps API key setup copy minimal and links to API docs", () => {
-    renderApiKeysView();
-
+describe("compact API key settings", () => {
+  it("shows aligned key metadata without exposing key prefixes or permission controls", () => {
+    renderView();
     expect(
-      screen.getByText(/Read-only keys for trusted integrations/i)
+      screen.getByRole("columnheader", { name: "Project access" })
     ).toBeTruthy();
-    expect(
-      screen.getByRole("link", { name: /API docs/i }).getAttribute("href")
-    ).toBe("/api/docs");
-    expect(
-      screen.getByRole("button", { name: "Refresh API keys" })
-    ).toBeTruthy();
-    expect(
-      screen.getByText(/trusted integration needs read-only access/i)
-    ).toBeTruthy();
-  });
-
-  it("gives the mobile create action more room below expiry selection", () => {
-    renderApiKeysView([], { apiKeyName: "RotorHazard", isMobile: true });
-
-    const createButton = screen.getByRole("button", { name: "Create" });
-
-    expect(createButton.className).toContain("mt-1");
-    expect(createButton.className).toContain("w-full");
-  });
-
-  it("keeps revoke action visible and uses compact key metadata", () => {
-    renderApiKeysView([
-      {
-        id: "key-1",
-        name: "RotorHazard",
-        start: "td_live",
-        createdAt: "2026-04-20T10:00:00.000Z",
-        expiresAt: "2026-05-20T10:00:00.000Z",
-        enabled: true,
-        lastRequest: null,
-        permissions: { tracks: ["read"] },
-      },
-    ]);
-
-    const revokeButton = screen.getByRole("button", {
-      name: "Revoke RotorHazard",
-    });
-
-    expect(revokeButton.className).toContain("opacity-100");
-    expect(revokeButton.className).not.toContain("opacity-0");
-    expect(screen.getByText(/^Expires /)).toBeTruthy();
+    expect(screen.getByText("RotorHazard")).toBeTruthy();
     expect(screen.getByText(/^Last used /)).toBeTruthy();
     expect(screen.queryByText("td_live")).toBeNull();
-    expect(screen.queryByText(/Tracks: read/i)).toBeNull();
-  });
-
-  it("explains that revoking an API key stops integration access", async () => {
-    const user = userEvent.setup();
-
-    renderApiKeysView([
-      {
-        id: "key-1",
-        name: "RotorHazard",
-        start: "td_live",
-        createdAt: "2026-04-20T10:00:00.000Z",
-        expiresAt: "2026-05-20T10:00:00.000Z",
-        enabled: true,
-        lastRequest: null,
-        permissions: { tracks: ["read"] },
-      },
-    ]);
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Revoke RotorHazard",
-      })
-    );
-
-    expect(screen.getByText("Revoke API key?")).toBeTruthy();
+    expect(screen.queryByText(/tracks:read/i)).toBeNull();
     expect(
-      screen.getByText("Integrations using this key lose read-only access.")
+      screen.getByRole("button", { name: "Actions for RotorHazard" })
     ).toBeTruthy();
   });
 
-  it("uses shorter revoke confirmation copy on mobile", async () => {
-    const user = userEvent.setup();
-
-    renderApiKeysView(
-      [
-        {
-          id: "key-1",
-          name: "RotorHazard",
-          start: "td_live",
-          createdAt: "2026-04-20T10:00:00.000Z",
-          expiresAt: "2026-05-20T10:00:00.000Z",
-          enabled: true,
-          lastRequest: null,
-          permissions: { tracks: ["read"] },
-        },
-      ],
-      { isMobile: true }
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Revoke RotorHazard",
-      })
-    );
-
-    expect(screen.getByText("This key stops working.")).toBeTruthy();
+  it("keeps API docs and refresh as quiet header actions", async () => {
+    const refresh = vi.fn();
+    render(<ApiKeyActions loading={false} onRefresh={refresh} />);
     expect(
-      screen.queryByText("Integrations using this key lose read-only access.")
-    ).toBeNull();
+      screen.getByRole("link", { name: "API docs" }).getAttribute("href")
+    ).toBe("/api/docs");
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "Refresh API keys" }));
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it.each([false, true])(
+    "requires explicit confirmation to revoke a key (mobile=%s)",
+    async (isMobile) => {
+      const remove = vi.fn();
+      renderView({ isMobile, onDeleteApiKey: remove });
+      const user = userEvent.setup();
+      await user.click(
+        screen.getByRole("button", { name: "Actions for RotorHazard" })
+      );
+      await user.click(
+        screen.getByRole("menuitem", { name: "Revoke RotorHazard" })
+      );
+      expect(remove).not.toHaveBeenCalled();
+      expect(screen.getByText("Revoke API key?")).toBeTruthy();
+      expect(
+        screen.getByText(
+          isMobile
+            ? "This key stops working."
+            : "Integrations using this key lose read-only access."
+        )
+      ).toBeTruthy();
+      await user.click(screen.getByRole("button", { name: "Revoke" }));
+      expect(remove).toHaveBeenCalledWith("key-1");
+    }
+  );
+
+  it("cancels and reopens a fresh draft", async () => {
+    const name = vi.fn();
+    renderView({ apiKeyName: "Draft", onApiKeyNameChange: name });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(name).toHaveBeenCalledWith("");
+    expect(screen.queryByRole("textbox", { name: "Key name" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "New API key" }));
+    expect(screen.getByRole("textbox", { name: "Key name" })).toBeTruthy();
+  });
+
+  it("keeps a failed submission editable, then closes the draft after success", async () => {
+    const create = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    renderView({ apiKeyName: "Integration", onCreateApiKey: create });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Create key" }));
+    expect(screen.getByRole("textbox", { name: "Key name" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Create key" }));
+    expect(
+      await screen.findByRole("button", { name: "New API key" })
+    ).toBeTruthy();
+    expect(create).toHaveBeenLastCalledWith({ mode: "all" });
+  });
+
+  it("keeps the one-time secret visible and copyable after creation", async () => {
+    const copy = vi.fn();
+    renderView({
+      createdApiKey: { ...key, key: "td_once_only" },
+      onCopyApiKey: copy,
+    });
+    expect(
+      screen.getByText(
+        "This secret is shown once. Store it before closing this dialog."
+      )
+    ).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Copy" }));
+    expect(copy).toHaveBeenCalledWith("td_once_only");
+  });
+
+  it("disables fields and duplicate submissions while a key is being created", () => {
+    renderView({ apiKeyName: "Pending", creatingApiKey: true });
+    expect(
+      screen
+        .getByRole("button", { name: "Create key" })
+        .hasAttribute("disabled")
+    ).toBe(true);
+    expect(
+      screen
+        .getByRole("button", { name: "Project access" })
+        .hasAttribute("disabled")
+    ).toBe(true);
+    expect(
+      screen.getByRole("textbox", { name: "Key name" }).hasAttribute("disabled")
+    ).toBe(true);
+  });
+});
+
+describe("project access popover", () => {
+  it.each([false, true])(
+    "searches projects without fetching until needed, and submits the selection (mobile=%s)",
+    async (isMobile) => {
+      const fetchMock = stubProjects();
+      const create = vi.fn(async () => false);
+      renderView({
+        apiKeyName: "Integration",
+        isMobile,
+        onCreateApiKey: create,
+      });
+      const user = userEvent.setup();
+      expect(fetchMock).not.toHaveBeenCalled();
+      await user.click(screen.getByRole("button", { name: "Project access" }));
+      await user.click(screen.getByRole("radio", { name: "Selected" }));
+      expect(
+        screen
+          .getByRole("button", { name: "Create key" })
+          .hasAttribute("disabled")
+      ).toBe(true);
+      await screen.findByRole("checkbox", { name: "Race night" });
+      await user.type(
+        screen.getByRole("textbox", { name: "Search projects" }),
+        "Race"
+      );
+      expect(screen.queryByRole("checkbox", { name: "Practice" })).toBeNull();
+      await user.click(screen.getByRole("checkbox", { name: "Race night" }));
+      await user.keyboard("{Escape}");
+      expect(
+        screen.queryByRole("textbox", { name: "Search projects" })
+      ).toBeNull();
+      await user.click(screen.getByRole("button", { name: "Create key" }));
+      expect(create).toHaveBeenCalledWith({
+        mode: "selected",
+        projectIds: ["race"],
+      });
+      await user.click(screen.getByRole("button", { name: "Project access" }));
+      await user.click(screen.getByRole("radio", { name: "All projects" }));
+      await user.keyboard("{Escape}");
+      await user.click(screen.getByRole("button", { name: "Create key" }));
+      expect(create).toHaveBeenLastCalledWith({ mode: "all" });
+    }
+  );
+
+  it("shows no matches without losing selected projects", async () => {
+    stubProjects();
+    renderView();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Project access" }));
+    await user.click(screen.getByRole("radio", { name: "Selected" }));
+    await user.click(
+      await screen.findByRole("checkbox", { name: "Race night" })
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "Search projects" }),
+      "absent"
+    );
+    expect(screen.getByText("No matching projects.")).toBeTruthy();
+    await user.clear(screen.getByRole("textbox", { name: "Search projects" }));
+    expect(
+      (screen.getByRole("checkbox", { name: "Race night" }) as HTMLInputElement)
+        .checked
+    ).toBe(true);
+  });
+
+  it("offers retry after a failed project request", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, projects: [] }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    renderView();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Project access" }));
+    await user.click(screen.getByRole("radio", { name: "Selected" }));
+    await user.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(
+      await screen.findByText("No cloud projects available.")
+    ).toBeTruthy();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   });
 });

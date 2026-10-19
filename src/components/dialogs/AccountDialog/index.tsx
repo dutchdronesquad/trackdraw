@@ -1,5 +1,7 @@
 "use client";
 
+import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
+
 import { useEffect, useState } from "react";
 import {
   Braces,
@@ -13,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
 import { SidebarDialog } from "@/components/SidebarDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ApiKeyActions } from "./ApiKeyActions";
 import { AccountApiKeysView } from "./ApiKeysView";
 import { AccountDangerView } from "./DangerView";
 import { AccountProfileView } from "./ProfileView";
@@ -66,6 +69,9 @@ export default function AccountDialog({
   const [apiKeysLoaded, setApiKeysLoaded] = useState(false);
   const [apiKeyName, setApiKeyName] = useState("");
   const [apiKeyExpiryDays, setApiKeyExpiryDays] = useState("90");
+  const [apiKeyProjectAccess, setApiKeyProjectAccess] =
+    useState<ApiKeyProjectAccess>({ mode: "all" });
+  const [apiKeyDraftOpen, setApiKeyDraftOpen] = useState(true);
   const [creatingApiKey, setCreatingApiKey] = useState(false);
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
@@ -95,6 +101,8 @@ export default function AccountDialog({
     setApiKeysLoaded(false);
     setApiKeyName("");
     setApiKeyExpiryDays("90");
+    setApiKeyProjectAccess({ mode: "all" });
+    setApiKeyDraftOpen(true);
     setCreatingApiKey(false);
     setCreatedApiKey(null);
     setDeletingApiKeyId(null);
@@ -392,11 +400,11 @@ export default function AccountDialog({
     setError(null);
   };
 
-  const handleCreateApiKey = async () => {
+  const handleCreateApiKey = async (projectAccess: ApiKeyProjectAccess) => {
     const name = apiKeyName.trim();
     if (!name) {
       setError(t("account.errors.apiKeyNameRequired"));
-      return;
+      return false;
     }
 
     setCreatingApiKey(true);
@@ -412,6 +420,7 @@ export default function AccountDialog({
         body: JSON.stringify({
           name,
           expiresInDays: Number.parseInt(apiKeyExpiryDays, 10),
+          projectAccess,
         }),
       });
       const payload = (await response.json()) as {
@@ -431,12 +440,14 @@ export default function AccountDialog({
       setApiKeyName("");
       setApiKeyExpiryDays("90");
       toast.success(t("account.success.apiKeyCreated"));
+      return true;
     } catch (createError) {
       setError(
         createError instanceof Error
           ? createError.message
           : t("account.errors.apiKeyCreateFailed")
       );
+      return false;
     } finally {
       setCreatingApiKey(false);
     }
@@ -561,6 +572,10 @@ export default function AccountDialog({
       apiKeysLoading={apiKeysLoading}
       apiKeyName={apiKeyName}
       apiKeyExpiryDays={apiKeyExpiryDays}
+      projectAccess={apiKeyProjectAccess}
+      onProjectAccessChange={setApiKeyProjectAccess}
+      draftOpen={apiKeyDraftOpen}
+      onDraftOpenChange={setApiKeyDraftOpen}
       creatingApiKey={creatingApiKey}
       createdApiKey={createdApiKey}
       deletingApiKeyId={deletingApiKeyId}
@@ -652,6 +667,11 @@ export default function AccountDialog({
       }}
       contentTitle={current.title}
       contentDescription={current.description}
+      contentActions={
+        view === "apiKeys" && user && !isMobile ? (
+          <ApiKeyActions loading={apiKeysLoading} onRefresh={refreshApiKeys} />
+        ) : undefined
+      }
       maxWidth="max-w-4xl"
     >
       {current.content}

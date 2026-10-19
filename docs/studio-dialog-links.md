@@ -2,7 +2,7 @@
 
 Integrations can link to an existing Studio dialog without creating a separate settings page. Use the same path on `https://trackdraw.app` (production) or `https://dev.trackdraw.app` (development).
 
-For API-key setup, link to `/studio?dialog=account&section=api-keys`. Users create a regular TrackDraw API key using the existing form. Do not instruct them to select a `tracks:read` scope: the profile form does not offer that choice. `/dashboard/api-keys` is an administrative screen and must not be used for personal API-key setup.
+For API-key setup, link to `/studio?dialog=account&section=api-keys`. Users create a regular TrackDraw API key and choose access to all their projects or a searchable selection of projects. Do not instruct them to select a `tracks:read` scope: the profile form does not offer that choice. `/dashboard/api-keys` is an administrative screen and must not be used for personal API-key setup.
 
 ## Supported targets
 

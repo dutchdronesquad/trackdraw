@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  apiKeyProjectAccess,
+  type ApiKeyProjectAccess,
+} from "@/lib/api/project-access";
+
 import { getAuth } from "@/lib/server/auth";
 import { getDatabase } from "@/lib/server/db";
 import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
@@ -83,6 +88,7 @@ export function normalizeApiKeyRecord(key: ApiKeyListItem | VerifiedApiKey) {
     start: key.start,
     enabled: key.enabled,
     permissions: normalizePermissions(key.permissions),
+    projectAccess: apiKeyProjectAccess(key.metadata),
     createdAt: toIsoString(key.createdAt),
     updatedAt: toIsoString(key.updatedAt),
     expiresAt: toIsoString(key.expiresAt),
@@ -133,6 +139,7 @@ export async function createApiKeyForSession(options: {
   headers: Headers;
   name: string;
   expiresInDays: ApiKeyExpiryDays;
+  projectAccess?: ApiKeyProjectAccess;
 }) {
   const auth = await getAuth();
   return auth.api.createApiKey({
@@ -140,6 +147,7 @@ export async function createApiKeyForSession(options: {
     body: {
       name: options.name,
       expiresIn: options.expiresInDays * 24 * 60 * 60,
+      metadata: { projectAccess: options.projectAccess ?? { mode: "all" } },
     },
   });
 }

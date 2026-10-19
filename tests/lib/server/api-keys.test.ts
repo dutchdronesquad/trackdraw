@@ -104,6 +104,7 @@ describe("API key server helpers", () => {
       body: {
         name: "Overlay",
         expiresIn: 30 * 24 * 60 * 60,
+        metadata: { projectAccess: { mode: "all" } },
       },
     });
     expect(deleteApiKey).toHaveBeenCalledWith({
