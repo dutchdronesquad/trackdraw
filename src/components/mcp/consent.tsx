@@ -23,6 +23,7 @@ type ConsentRequest = {
   account: string;
   offlineAccess: boolean;
   projectReadAccess?: boolean;
+  projectCreateAccess?: boolean;
 };
 
 export function McpConsent({ request }: { request: ConsentRequest }) {
@@ -124,20 +125,28 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                 },
                 {
                   icon: ShieldCheck,
-                  title: "readOnlyTitle",
-                  body: request.projectReadAccess
-                    ? "projectPermission"
-                    : "readPermission",
+                  title: request.projectCreateAccess
+                    ? "createPermissionTitle"
+                    : "readOnlyTitle",
+                  body: request.projectCreateAccess
+                    ? "createPermission"
+                    : request.projectReadAccess
+                      ? "projectPermission"
+                      : "readPermission",
                   color: "text-brand-secondary bg-brand-secondary/5",
                 },
                 {
                   icon: LockKeyhole,
-                  title: request.projectReadAccess
-                    ? "noWriteTitle"
-                    : "privateTitle",
-                  body: request.projectReadAccess
-                    ? "noWriteAccess"
-                    : "noProjectAccess",
+                  title: request.projectCreateAccess
+                    ? "createBoundaryTitle"
+                    : request.projectReadAccess
+                      ? "noWriteTitle"
+                      : "privateTitle",
+                  body: request.projectCreateAccess
+                    ? "createBoundary"
+                    : request.projectReadAccess
+                      ? "noWriteAccess"
+                      : "noProjectAccess",
                   color: "text-muted-foreground bg-muted/50",
                 },
               ].map(({ icon: Icon, title, body, color }) => (
@@ -231,6 +240,22 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                   </div>
                 </li>
               )}
+              {request.projectCreateAccess && (
+                <li className="border-border/60 flex items-start gap-4 border-t pt-5">
+                  <span className="bg-brand-primary/5 text-brand-primary flex size-9 shrink-0 items-center justify-center rounded-full sm:size-12">
+                    <Box className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="text-sm sm:text-base">
+                    <p className="font-medium">{t("createPermissionTitle")}</p>
+                    <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                      {t("createPermission")}
+                    </p>
+                    <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                      {t("createBoundary")}
+                    </p>
+                  </div>
+                </li>
+              )}
               {request.offlineAccess && (
                 <li className="border-border/60 flex items-start gap-4 border-t pt-5">
                   <span className="flex size-9 shrink-0 items-center justify-center sm:size-12">
@@ -247,7 +272,11 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
             </ul>
             <p className="text-muted-foreground pb-5 text-xs leading-5 lg:hidden">
               {t(
-                request.projectReadAccess ? "noWriteAccess" : "noProjectAccess"
+                request.projectCreateAccess
+                  ? "createBoundary"
+                  : request.projectReadAccess
+                    ? "noWriteAccess"
+                    : "noProjectAccess"
               )}
             </p>
             <details className="group border-border/60 border-t py-4 text-sm">

@@ -116,6 +116,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
   it("advertises tools only for live project-read consent", async () => {
     expect((await client.listTools()).tools.map((t) => t.name)).toEqual([
       "get_account",
+      "get_track_catalog",
       ...PROJECT_READ_TOOLS,
       ...TRACK_ANALYSIS_TOOLS,
     ]);
@@ -126,6 +127,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     scopes = "mcp:read";
     expect((await client.listTools()).tools.map((t) => t.name)).toEqual([
       "get_account",
+      "get_track_catalog",
     ]);
     expect((await data("get_account")).mcp).toMatchObject({
       project_reads: false,
@@ -225,6 +227,116 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
       (await call("analyze_track", { project_id: "many", metrics: ["safety"] }))
         .isError
     ).toBe(true);
+  });
+  it("requires explicit live create consent and creates new projects idempotently", async () => {
+    const proposal = {
+      version: 2,
+      title: "Practice track",
+      constraints: {
+        field: { width: 30, height: 20 },
+        inventory: {
+          gate: 2,
+          tower: 0,
+          ladder: 0,
+          divegate: 0,
+          startfinish: 0,
+          flag: 0,
+          cone: 0,
+          barrier: 0,
+        },
+      },
+      shapes: [{ ...gate, x: 10, y: 10 }],
+    };
+    const args = { idempotency_key: "request1", proposal };
+    expect((await call("create_track", args)).isError).toBe(true);
+    const catalog = await data("get_track_catalog", { limit: 20 });
+    expect(catalog).toMatchObject({
+      type: "track_catalog",
+      design_version: 2,
+      proposal_schema: { type: "object" },
+    });
+    expect(
+      new TextEncoder().encode(JSON.stringify(catalog)).byteLength
+    ).toBeLessThan(MCP_MAX_RESULT_BYTES);
+    scopes += " projects:create";
+    await expect(client.listTools()).rejects.toThrow();
+    sqlite.exec(
+      `UPDATE oauthConsent SET scopes='["mcp:read","projects:read","projects:create"]'`
+    );
+    expect((await data("get_account")).mcp).toMatchObject({
+      project_creation: true,
+      project_writes: true,
+    });
+    save("existing");
+    const first = await data("create_track", args);
+    expect(first).toMatchObject({
+      type: "project",
+      replayed: false,
+      design_version: 2,
+      studio_url: expect.stringContaining("/studio/open/"),
+    });
+    expect(first.project_id).not.toBe("existing");
+    const [again, concurrent] = await Promise.all([
+      data("create_track", args),
+      data("create_track", args),
+    ]);
+    expect(again.project_id).toBe(first.project_id);
+    expect(concurrent.project_id).toBe(first.project_id);
+    expect(again.replayed).toBe(true);
+    expect(
+      sqlite.prepare("SELECT COUNT(*) AS count FROM projects").get()
+    ).toMatchObject({ count: 2 });
+    const stored = await getProjectForUser(String(first.project_id), "owner");
+    expect(stored?.design.id).toBe(first.project_id);
+    expect(stored?.design.field).toMatchObject({ width: 30, height: 20 });
+    // A later Studio edit must survive an MCP retry.
+    sqlite
+      .prepare("UPDATE projects SET title='Edited' WHERE id=?")
+      .run(String(first.project_id));
+    expect((await data("create_track", args)).title).toBe("Edited");
+    const changed = await call("create_track", {
+      ...args,
+      proposal: { ...proposal, title: "Different" },
+    });
+    expect(changed.structuredContent).toMatchObject({
+      error: { code: "idempotency_conflict" },
+    });
+    const invalid = await call("create_track", {
+      idempotency_key: "invalid",
+      proposal: { ...proposal, shapes: [{ ...gate, x: 0 }] },
+    });
+    expect(invalid.structuredContent).toMatchObject({
+      error: { code: "validation_failed", issues: [{ code: "outside_field" }] },
+    });
+    expect(
+      sqlite.prepare("SELECT COUNT(*) AS count FROM mcp_draft_requests").get()
+    ).toMatchObject({ count: 1 });
+    sqlite
+      .prepare("UPDATE projects SET archived_at='2026-10-20' WHERE id=?")
+      .run(String(first.project_id));
+    expect((await call("create_track", args)).structuredContent).toMatchObject({
+      error: { code: "project_unavailable" },
+    });
+    sqlite
+      .prepare("DELETE FROM projects WHERE id=?")
+      .run(String(first.project_id));
+    expect((await call("create_track", args)).structuredContent).toMatchObject({
+      error: { code: "project_unavailable" },
+    });
+    // Same request key in a different account creates only that account's own project.
+    const { createMcpProjectForUser } = await import("@/lib/server/projects");
+    const foreign = await createMcpProjectForUser(
+      "other",
+      stored!.design,
+      "request1",
+      "other-hash"
+    );
+    expect(foreign.project.ownerUserId).toBe("other");
+    expect(await getProjectForUser(foreign.project.id, "owner")).toBeNull();
+    sqlite.exec(
+      `UPDATE oauthConsent SET scopes='["mcp:read","projects:read"]'`
+    );
+    await expect(client.listTools()).rejects.toThrow();
   });
   it("paginates owned summaries using bounded SQL in REST order", async () => {
     save("b");

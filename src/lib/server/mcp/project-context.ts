@@ -18,7 +18,8 @@ export const MCP_MAX_RESULT_BYTES = 32_768;
 export class ProjectToolError extends Error {
   constructor(
     readonly code: string,
-    message: string
+    message: string,
+    readonly issues?: { path: string; code: string; message: string }[]
   ) {
     super(message);
   }
@@ -45,6 +46,7 @@ export async function execute(run: () => Promise<Record<string, unknown>>) {
       isError: true,
       ...result({
         error: {
+          ...(known && error.issues ? { issues: error.issues } : {}),
           code: known
             ? error.code
             : invalidCursor

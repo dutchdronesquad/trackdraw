@@ -18,7 +18,8 @@ REST API keys remain separate and continue to work on REST. They are not OAuth a
 
 - `mcp:read`: inspect account ID/display name and implemented MCP capabilities. No project access or writes.
 - `offline_access`: optional renewable access. Tokens last 15 minutes; refresh tokens expire after 30 days and rotate with no replay grace period. The resource policy includes this scope to preserve refresh authorization across rotations.
-- `projects:read`: read all owned active cloud projects through shared REST ownership/serialization, after separate consent. Existing registrations/grants/tokens are not upgraded silently. Writes require a future additional scope.
+- `projects:read`: read all owned active cloud projects through shared REST ownership/serialization.
+- `projects:create`: create new track projects. The standard connection requests account access, project reads and project creation in one consent; clients can explicitly request fewer permissions. Tokens and live consent must include the relevant scope.
 - Anonymous/local-only projects are not uploaded or exposed. Sharing, gallery, editor persistence and public viewers remain unchanged.
 - Verify the official SDK 1.32.1 with the MCP 2025-11-25 authorization profile. DCR supports native/public and web clients; CIMD is not advertised because a secure metadata-fetch transport for Workers is not part of this foundation. Do not claim compatibility with clients that require CIMD without a DCR/pre-registration fallback.
 - Client credentials, device grants and OIDC identity scopes are disabled/out of scope. No trusted clients bypass consent.
@@ -86,3 +87,11 @@ Validation: 1,482 tests pass, including old-registration scope rejection and unc
 - Keep stored facts, geometric measurements, setup estimates and unavailable metrics separate. Explicitly selected comparisons return right-minus-left deltas and nulls for unavailable values. Empty tracks have no setup estimate; ambiguous routes are not selected automatically.
 - Use “track” consistently in MCP contracts, descriptions, consent and documentation. Client example: “What materials do we need for my latest track?” uses `list_projects(limit: 1)` followed by `analyze_track(project_id)`.
 - Validate mixed material variants, custom tower/ladder/dive-gate dimensions, closed route parity, stable differences, unavailable metrics, both ownership checks and size bounds through shared-helper and official SDK route tests.
+
+## Track project creation (#998)
+
+- The standard connection requests `projects:create` together with account and project reads in one OAuth consent. Explicitly read-only connections cannot create projects. `get_track_catalog` provides the bounded catalog and current proposal schema without exposing private project data.
+- The assistant proposes the layout and explicit field/inventory constraints. Shared normalization and renderer footprints validate version 2, units, finite geometry, unique IDs, bounds and assembly quantities. Return unvalidated real-world/clearance constraints for user review.
+- Persist an account-scoped request hash/receipt and new project atomically with [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch). Same-key retries return the same project without overwriting later Studio edits. Changed proposals conflict; deleted/archived projects are never resurrected.
+- `/studio/open/[projectId]` checks sign-in/ownership and invokes the established snapshot/open/local persistence flow. Anonymous editing and autosave remain independent.
+- Validate provider scope isolation, malformed/over-budget geometry, simultaneous retries, account isolation, migrations and real Cloudflare preview with desktop/mobile Studio review, reload and export.

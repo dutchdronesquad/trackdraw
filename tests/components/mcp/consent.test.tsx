@@ -37,6 +37,25 @@ describe("MCP consent and connection management", () => {
     ).toBeTruthy();
     expect(fetch).not.toHaveBeenCalled();
   });
+  it("shows create-only boundaries only for explicitly requested project creation", () => {
+    render(
+      <McpConsent
+        request={{
+          ...request,
+          projectReadAccess: true,
+          projectCreateAccess: true,
+        }}
+      />
+    );
+    expect(screen.getAllByText("Create track projects").length).toBeGreaterThan(
+      0
+    );
+    expect(
+      screen.getAllByText(/cannot edit, delete or publish existing projects/)
+        .length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/This connection cannot create/)).toBeNull();
+  });
   it("shows all owned project reads only when explicitly requested", () => {
     render(<McpConsent request={{ ...request, projectReadAccess: true }} />);
     expect(screen.getByText("Read your saved projects")).toBeTruthy();

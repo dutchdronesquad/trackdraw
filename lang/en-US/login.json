@@ -103,6 +103,10 @@
     "projectPermissionTitle": "Read your saved projects",
     "projectPermission": "Read all your current and future saved cloud projects, including track data, overlays and viewer snapshots.",
     "noWriteTitle": "Your projects stay under your control",
-    "noWriteAccess": "This connection cannot create, edit, delete or publish projects. Local-only projects stay on this device."
+    "noWriteAccess": "This connection cannot create, edit, delete or publish projects. Local-only projects stay on this device.",
+    "createPermissionTitle": "Create track projects",
+    "createPermission": "Allow this app to create new track projects using your field dimensions and obstacle inventory.",
+    "createBoundaryTitle": "Open your tracks in Studio",
+    "createBoundary": "Open each new project in Studio to view and adjust it. This permission cannot edit, delete or publish existing projects. Geometry checks do not certify flight safety."
   }
 }

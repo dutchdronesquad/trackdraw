@@ -33,6 +33,7 @@ import {
 import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
 import { useSyncedEditorView } from "@/hooks/editor/useSyncedEditorView";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
+import { useOpenCloudProjectLink } from "./useOpenCloudProjectLink";
 import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { useCompleteProfile } from "@/hooks/account/useCompleteProfile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
@@ -346,6 +347,21 @@ export default function EditorShell({
     setRestorePoints,
     setActiveRestorePointId,
     setSaveStatusLabel,
+  });
+
+  const handleCloudLinkOpened = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("project");
+    router.replace(params.size ? `${pathname}?${params}` : pathname, {
+      scroll: false,
+    });
+  }, [pathname, router, searchParams]);
+  useOpenCloudProjectLink({
+    projectId: readOnly || seedToken ? null : searchParams.get("project"),
+    userId: authUser?.id ?? null,
+    ready: initialized && cloudProjectsAvailable && !accountProjectsLoading,
+    open: handleOpenAccountProject,
+    onOpened: handleCloudLinkOpened,
   });
 
   const currentProjectSyncMeta = projectSyncMetaById[design.id];

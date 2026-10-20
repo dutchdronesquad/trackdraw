@@ -126,12 +126,15 @@ describe("TrackDraw MCP endpoint", () => {
     try {
       expect(client.getServerVersion()).toEqual({
         name: "trackdraw",
-        version: "1.2.0",
+        version: "1.3.0",
       });
       expect(client.getServerCapabilities()?.tools).toBeDefined();
       expect(transport.sessionId).toBeUndefined();
       const { tools } = await client.listTools();
-      expect(tools.map((tool) => tool.name)).toEqual(["get_account"]);
+      expect(tools.map((tool) => tool.name)).toEqual([
+        "get_account",
+        "get_track_catalog",
+      ]);
       expect(tools[0].annotations?.readOnlyHint).toBe(true);
       const result = await client.callTool({
         name: "get_account",
@@ -142,7 +145,7 @@ describe("TrackDraw MCP endpoint", () => {
         account: { id: "user-1", name: "Pilot" },
         permissions: { mcp: ["read"] },
         mcp: {
-          tools: ["get_account"],
+          tools: ["get_account", "get_track_catalog"],
           project_reads: false,
           project_writes: false,
         },
@@ -207,6 +210,9 @@ describe("TrackDraw MCP endpoint", () => {
       expect(response.status).toBe(401);
       expect(response.headers.get("www-authenticate")).toContain(
         'resource_metadata="https://trackdraw.app/.well-known/oauth-protected-resource/api/mcp"'
+      );
+      expect(response.headers.get("www-authenticate")).toContain(
+        'scope="mcp:read projects:read projects:create"'
       );
       expect(verifyAccessToken).not.toHaveBeenCalled();
     }
