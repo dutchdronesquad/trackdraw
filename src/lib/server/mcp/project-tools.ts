@@ -1,12 +1,14 @@
 import "server-only";
 
+import { getDesignShapes } from "@/lib/track/design";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
   toApiOverlayPackage,
   toApiProjectSummary,
   toApiProjectSummaryLight,
-  toApiTrackPackage,
+  toApiTrackHeader,
+  toApiTrackShape,
   toApiViewerSnapshotPackage,
 } from "@/lib/server/api-projects";
 import {
@@ -221,7 +223,8 @@ export function registerProjectReadTools(server: McpServer, userId: string) {
     ({ project_id, shape_id, limit, cursor }) =>
       execute(async () => {
         const project = await ownedProject(project_id, userId),
-          track = toApiTrackPackage(project);
+          track = toApiTrackHeader(project);
+        const trackShapes = getDesignShapes(project.design);
         const base = {
           type: "track_page",
           schema: "trackdraw.mcp.track-page.v1",
@@ -234,23 +237,29 @@ export function registerProjectReadTools(server: McpServer, userId: string) {
           updated_at: track.updated_at,
         };
         if (shape_id) {
-          const shape = track.shapes.find((shape) => shape.id === shape_id);
+          const shape = trackShapes.find((shape) => shape.id === shape_id);
           if (!shape)
             throw new ProjectToolError(
               "not_found",
               "Shape not found in this project. Select shape_id from get_track."
             );
-          const points = Array.isArray(shape.points) ? shape.points : [];
+          const points = shape.kind === "polyline" ? shape.points : [];
           const offset = pageOffset(cursor, project, shape_id, points.length);
           return {
             ...base,
             section: "shape",
             shape: {
-              ...shape,
-              ...(Array.isArray(shape.points)
+              ...toApiTrackShape(
+                shape.kind === "polyline"
+                  ? {
+                      ...shape,
+                      points: shape.points.slice(offset, offset + limit),
+                    }
+                  : shape
+              ),
+              ...(shape.kind === "polyline"
                 ? {
                     point_count: points.length,
-                    points: points.slice(offset, offset + limit),
                   }
                 : {}),
             },
@@ -267,16 +276,19 @@ export function registerProjectReadTools(server: McpServer, userId: string) {
           cursor,
           project,
           undefined,
-          track.shapes.length
+          trackShapes.length
         );
-        const shapes = track.shapes
+        const shapes = trackShapes
           .slice(offset, offset + limit)
           .map((shape) => {
-            if (!Array.isArray(shape.points)) return shape;
-            const { points, ...summary } = shape;
+            if (shape.kind !== "polyline") return toApiTrackShape(shape);
+            const { points: _points, ...summary } = toApiTrackShape({
+              ...shape,
+              points: [],
+            });
             return {
               ...summary,
-              point_count: points.length,
+              point_count: shape.points.length,
               geometry_omitted: true,
             };
           });
@@ -293,7 +305,7 @@ export function registerProjectReadTools(server: McpServer, userId: string) {
             undefined,
             offset,
             limit,
-            track.shapes.length
+            trackShapes.length
           ),
         };
       })
