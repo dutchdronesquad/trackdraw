@@ -234,6 +234,10 @@ REST API changes:
 4. Open `/api/docs` and confirm documented endpoints match shipped routes.
 5. Revoke the key and confirm bearer requests no longer authenticate.
 
+MCP changes:
+
+Follow [MCP connection and validation](docs/mcp.md). Run the official SDK smoke client against local Cloudflare preview with a local-only API key; verify revocation, expiry and request-budget failures. Keep MCP credentials out of logs and distinguish manually configured bearer clients from OAuth-only clients. The implementation decisions are in the [MCP foundation PVA](docs/pva/trackdraw-mcp-pva.md).
+
 Landing page changes:
 
 - Preserve SEO metadata, structured data, and clear routes into `/studio`.

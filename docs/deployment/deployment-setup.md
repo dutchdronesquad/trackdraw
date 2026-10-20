@@ -353,6 +353,18 @@ Recommended local auth test flow:
 6. copy the link from the local server log
 7. confirm Studio shows the signed-in state and authenticated APIs stop returning `401`
 
+## MCP endpoint
+
+`/api/mcp` runs inside the existing OpenNext Worker and uses the same D1/Better Auth bindings as REST. No additional binding, migration, secret or retained transport session is required. Keep it under `/api/*` so page-method guards and public-page rendering rate limits do not block protocol POSTs. Preserve the early `next-action` rejection.
+
+The foundation supports the official TypeScript SDK with a manually configured bearer header; it does not implement OAuth discovery. Every request revalidates the API key through Better Auth and shares its 600 requests/hour budget with REST. Each POST accepts one UTF-8 JSON-RPC message up to 16 KiB. All responses are `no-store`; never cache MCP responses or authorization decisions at the edge. Authenticated GET/DELETE requests return 405 because standalone SSE and session state are disabled.
+
+A supplied Origin must equal `NEXT_PUBLIC_SITE_URL`'s origin. Localhost/127.0.0.1 port 8787 is also accepted outside production; arbitrary browser origins and cross-origin CORS are not enabled. Native clients may omit Origin but still need a bearer key. Avoid exposing a development preview on an untrusted network.
+
+Application logs use `event: "mcp_request"` with only HTTP method, status and duration. Do not add authorization headers, RPC arguments, identity output or raw exceptions to these logs. Endpoint-specific abuse controls can supplement the key budget; public-page WAF rules must not be reused for authenticated API traffic.
+
+Use the [MCP runbook](../mcp.md) and `scripts/mcp_smoke.mjs` against local preview to verify initialization, discovery and `get_account`, then revoke the local key and confirm 401. A successful local check is not evidence of production deployment or compatibility with OAuth-only clients.
+
 ## Retention Cleanup
 
 ### Account activity
