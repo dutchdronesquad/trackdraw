@@ -7,6 +7,13 @@ import { createMigratedDatabase } from "../../helpers/sqlite-d1";
 vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({ getDatabase: vi.fn() }));
 vi.mock("@/lib/server/db", () => ({ getDatabase: mocks.getDatabase }));
+vi.mock("@/lib/server/mcp/oauth-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/lib/server/mcp/oauth-provider")>();
+  return { ...actual, getMcpOAuthPlugins: vi.fn(actual.getMcpOAuthPlugins) };
+});
+import { getMcpOAuthPlugins } from "@/lib/server/mcp/oauth-provider";
+import { getMcpDiscoveryResponse } from "@/lib/server/mcp/oauth-metadata";
 import { getAuth } from "@/lib/server/auth";
 
 let database: DatabaseSync;
@@ -36,6 +43,7 @@ beforeEach(() => {
     database = createMigratedDatabase();
   }
   queries = [];
+  vi.mocked(getMcpOAuthPlugins).mockClear();
   const prepare = database.prepare.bind(database);
   database.prepare = (query) => {
     queries.push(query);
@@ -100,8 +108,94 @@ describe("full auth configuration and database schema", () => {
       "schema-user"
     );
     database.exec("DELETE FROM sessions WHERE id = 'schema-session'");
-    expect(await auth.api.getSession({ headers })).toBeNull();
+    expect(await (await getAuth()).api.getSession({ headers })).toBeNull();
     expect(metadataQueries()).toHaveLength(0);
+  });
+
+  it("initializes auth plugins once across repeated real discovery requests", async () => {
+    for (let index = 0; index < 3; index++) {
+      const auth = await getAuth();
+      const response = await auth.handler(
+        new Request(
+          "https://trackdraw.app/.well-known/oauth-protected-resource/api/mcp"
+        )
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        resource: "https://trackdraw.app/api/mcp",
+      });
+    }
+    expect(getMcpOAuthPlugins).toHaveBeenCalledTimes(1);
+  });
+
+  it("reinitializes when the configured OAuth origin changes", async () => {
+    await (
+      await getAuth()
+    ).$context;
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://dev.trackdraw.app");
+    const response = await (
+      await getAuth()
+    ).handler(
+      new Request(
+        "https://dev.trackdraw.app/.well-known/oauth-protected-resource/api/mcp"
+      )
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      resource: "https://dev.trackdraw.app/api/mcp",
+    });
+    expect(getMcpOAuthPlugins).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["https://trackdraw.app", "https://dev.trackdraw.app"])(
+    "keeps lightweight discovery identical to the provider on %s",
+    async (origin) => {
+      vi.stubEnv("NEXT_PUBLIC_SITE_URL", origin);
+      const auth = await getAuth();
+      for (const path of [
+        "/.well-known/oauth-authorization-server",
+        "/.well-known/oauth-authorization-server/api/auth",
+        "/.well-known/oauth-protected-resource",
+        "/.well-known/oauth-protected-resource/api/mcp",
+      ]) {
+        const request = new Request(origin + path);
+        const expected = await auth.handler(request);
+        const actual = getMcpDiscoveryResponse(request, origin)!;
+        if (expected.status === 200) {
+          expect(actual).not.toBeNull();
+          expect(await actual.json()).toEqual(await expected.json());
+        } else {
+          expect(actual).toBeNull();
+        }
+      }
+    }
+  );
+
+  it("isolates initialized auth engines by database binding", async () => {
+    const first = await getAuth();
+    const secondDatabase = createMigratedDatabase();
+    try {
+      mocks.getDatabase.mockResolvedValue(secondDatabase);
+      const second = await getAuth();
+      expect(second.options.database).toBe(secondDatabase);
+      expect(first.options.database).toBe(database);
+      expect(second).not.toBe(first);
+      mocks.getDatabase.mockResolvedValue(database);
+      expect(await getAuth()).toBe(first);
+    } finally {
+      secondDatabase.close();
+    }
+  });
+
+  it("refreshes initialized configuration after secret rotation", async () => {
+    const first = await getAuth();
+    vi.stubEnv(
+      "BETTER_AUTH_SECRET",
+      "rotated-auth-schema-test-secret-at-least-32-characters"
+    );
+    const second = await getAuth();
+    expect(second).not.toBe(first);
+    expect(second.options.secret).toBe(process.env.BETTER_AUTH_SECRET);
   });
 
   it("does not introspect the database on ordinary auth requests", async () => {

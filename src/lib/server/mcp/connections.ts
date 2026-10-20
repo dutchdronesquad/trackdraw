@@ -11,7 +11,7 @@ import {
   MCP_PROJECT_UPDATE_SCOPE,
   MCP_READ_SCOPE,
   getMcpResource,
-} from "./oauth-provider";
+} from "./oauth-metadata";
 
 export async function getConsentRequest(query: string, headers: Headers) {
   if (query.length > 8192) return null;

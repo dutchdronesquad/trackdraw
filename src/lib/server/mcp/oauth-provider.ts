@@ -4,27 +4,11 @@ import { mcp } from "@better-auth/mcp";
 import { getOAuthProviderApi } from "@better-auth/oauth-provider";
 import { createAuthEndpoint } from "better-auth/api";
 import { z } from "zod";
-import { getSiteUrl } from "@/lib/seo";
-
-export const MCP_READ_SCOPE = "mcp:read";
-export const MCP_PROJECT_READ_SCOPE = "projects:read";
-export const MCP_PROJECT_CREATE_SCOPE = "projects:create";
-export const MCP_PROJECT_UPDATE_SCOPE = "projects:update";
-export const MCP_DEFAULT_SCOPES = [
-  MCP_READ_SCOPE,
-  MCP_PROJECT_READ_SCOPE,
-  MCP_PROJECT_CREATE_SCOPE,
-  MCP_PROJECT_UPDATE_SCOPE,
-];
-export const MCP_OAUTH_SCOPES = [...MCP_DEFAULT_SCOPES, "offline_access"];
-
-export function getMcpResource() {
-  return new URL("/api/mcp", getSiteUrl()).href;
-}
-
-export function getMcpIssuer() {
-  return new URL("/api/auth", getSiteUrl()).href;
-}
+import {
+  getMcpResource,
+  MCP_OAUTH_SCOPES,
+  MCP_DEFAULT_SCOPES,
+} from "./oauth-metadata";
 
 export function getMcpOAuthPlugins() {
   const resource = getMcpResource();

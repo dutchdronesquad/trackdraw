@@ -13,6 +13,12 @@ Record a client version, environment, date and observed OAuth flow before markin
 
 Use the SDK smoke client as a reproducible reference. It does not replace testing the actual assistant a user intends to connect. REST API keys are not an OAuth fallback.
 
+## Development recheck after PR #1007
+
+The merged correction deployed as `668ffd493d6bcdadeb54a7309f3626b187592910` in [run 39475061909](https://github.com/dutchdronesquad/trackdraw/actions/runs/39475061909). Browser consent, creation/retry, preview/apply/conflict/recovery, Studio opening and typical-track analysis/comparison passed. Full acceptance still failed: large-track pagination and, on another run, a typical-track overlay request returned HTTP 503. A later authorization attempt also failed. The reduced unauthenticated discovery loop reproduced Cloudflare error 1102 on two of five calls. The remaining full auth-negative, budget and token-lifecycle checks were not reached on those runs.
+
+All newly generated dev data and exact client registrations were cleaned up and their absence verified. Production MCP/discovery still returned 404. See the [request CPU follow-up](research/in-progress/mcp-request-cpu.md) for the reduced reproduction, evidence limits and the initialized-auth/public-discovery correction. Its local SDK checks pass, but the hosted gate remains pending. Keep #1000 and #994 open until the full deployed recheck passes.
+
 ## Deployment evidence — October 20, 2026
 
 - Development: [deployment run 39430592150](https://github.com/dutchdronesquad/trackdraw/actions/runs/39430592150) succeeded for commit `525cae811cebf54dc68675f8db244a01cca5ffee`, including migrations through `0029_mcp_project_edits.sql` and Worker deployment. This contains all three capability milestones.

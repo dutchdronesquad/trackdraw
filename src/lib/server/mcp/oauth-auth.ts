@@ -14,7 +14,7 @@ import {
   MCP_READ_SCOPE,
   getMcpIssuer,
   getMcpResource,
-} from "./oauth-provider";
+} from "./oauth-metadata";
 
 const BUDGET_WINDOW_MS = 3_600_000;
 const BUDGET_MAX = 600;
