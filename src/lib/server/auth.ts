@@ -85,7 +85,9 @@ function getTrustedOrigins() {
   ].filter((value): value is string => Boolean(value));
 }
 
-export async function getAuth() {
+export async function getAuth({
+  validateSchema = false,
+}: { validateSchema?: boolean } = {}) {
   const database = await getDatabase();
 
   return betterAuth({
@@ -105,6 +107,8 @@ export async function getAuth() {
       modelName: "auth_rate_limit",
     },
     advanced: {
+      // Validate migrations in CI and the target schema before deployment, not on every request.
+      database: { validateSchema },
       useSecureCookies: new URL(getSiteUrl()).protocol === "https:",
       // trustedProxyHeaders and cf-connecting-ip are safe only behind Cloudflare.
       // Do not expose workers directly to the internet without Cloudflare in front.
