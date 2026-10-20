@@ -1,3 +1,4 @@
+import { getMcpDiscoveryResponse } from "./src/lib/server/mcp/oauth-metadata";
 import type { AccountDeletionMediaBucket } from "./src/lib/server/account-deletion";
 import {
   createPlunkMailer,
@@ -27,6 +28,7 @@ type D1Database = {
 type WorkerEnv = PlunkEnvironment & {
   DB: D1Database;
   MEDIA_BUCKET?: AccountDeletionMediaBucket;
+  NEXT_PUBLIC_SITE_URL?: string;
 };
 
 type ScheduledController = {
@@ -44,6 +46,11 @@ const worker = {
   fetch(request: Request, env: WorkerEnv, ctx: WorkerExecutionContext) {
     const earlyResponse = getEarlyWorkerResponse(request);
     if (earlyResponse) return earlyResponse;
+    const discovery = getMcpDiscoveryResponse(
+      request,
+      env.NEXT_PUBLIC_SITE_URL
+    );
+    if (discovery) return discovery;
 
     if (new URL(request.url).pathname === "/api/localization-demand") {
       request = addInternalCountryHeader(request);

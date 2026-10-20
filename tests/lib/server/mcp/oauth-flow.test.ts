@@ -3,11 +3,11 @@ import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { verifyOAuthQueryParams } from "@better-auth/oauth-provider";
 import { createHash, createHmac, randomBytes } from "node:crypto";
+import { getMcpOAuthPlugins } from "@/lib/server/mcp/oauth-provider";
 import {
-  getMcpOAuthPlugins,
   getMcpResource,
   MCP_DEFAULT_SCOPES,
-} from "@/lib/server/mcp/oauth-provider";
+} from "@/lib/server/mcp/oauth-metadata";
 
 vi.mock("server-only", () => ({}));
 const secret = "trackdraw-oauth-test-secret-at-least-32-characters";

@@ -85,11 +85,40 @@ function getTrustedOrigins() {
   ].filter((value): value is string => Boolean(value));
 }
 
+// Reuse the initialized auth engine, never a session, token or permission result.
+const authInstances = new WeakMap<
+  object,
+  { key: string; instance: ReturnType<typeof createAuth> }
+>();
+
 export async function getAuth({
   validateSchema = false,
 }: { validateSchema?: boolean } = {}) {
   const database = await getDatabase();
+  const key = JSON.stringify([
+    getAuthSecret(),
+    getSiteUrl(),
+    process.env.BETTER_AUTH_TRUSTED_ORIGINS,
+    process.env.NEXT_PUBLIC_APP_ENV,
+  ]);
+  const cached = authInstances.get(database);
+  if (!validateSchema && cached?.key === key) return cached.instance;
 
+  const instance = createAuth(database, validateSchema);
+  if (!validateSchema) {
+    authInstances.set(database, { key, instance });
+    void instance.$context.catch(() => {
+      if (authInstances.get(database)?.instance === instance)
+        authInstances.delete(database);
+    });
+  }
+  return instance;
+}
+
+function createAuth(
+  database: Awaited<ReturnType<typeof getDatabase>>,
+  validateSchema: boolean
+) {
   return betterAuth({
     database,
     secret: getAuthSecret() ?? undefined,
