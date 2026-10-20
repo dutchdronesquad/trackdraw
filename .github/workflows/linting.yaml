@@ -72,5 +72,7 @@ jobs:
         run: npm ci
       - name: 🔎 Check Cloudflare build tooling
         run: npx opennextjs-cloudflare build --help
-      - name: 🚀 Run Next.js build
-        run: npm run build
+      - name: 🚀 Run Cloudflare build
+        run: npx opennextjs-cloudflare build
+      - name: Check worker size
+        run: node scripts/check_worker_size.mjs

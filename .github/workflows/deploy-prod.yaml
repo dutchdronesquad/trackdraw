@@ -76,14 +76,7 @@ jobs:
           NEXT_PUBLIC_COMMIT_SHA: "${{ steps.rev.outputs.sha }}"
         run: npx opennextjs-cloudflare build
       - name: Check worker size
-        run: |
-          SIZE=$(wc -c < .open-next/server-functions/default/handler.mjs)
-          LIMIT=$((9 * 1024 * 1024))
-          echo "handler.mjs: $(( SIZE / 1024 / 1024 )).$((SIZE / 1024 % 1024 / 100)) MiB (limit 9 MiB)"
-          if [ "$SIZE" -gt "$LIMIT" ]; then
-            echo "::error::Worker handler exceeds 9 MiB — bundle too large to deploy safely"
-            exit 1
-          fi
+        run: node scripts/check_worker_size.mjs
       - name: Deploy production build
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

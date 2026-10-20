@@ -12,6 +12,23 @@ The [OpenNext troubleshooting page](https://opennext.js.org/cloudflare/troublesh
 
 The clearest reduction candidates are server chunk boundaries and repeated validation code. First repeat the measured Webpack comparison under controlled CI conditions, then address the viewer package's embedded Zod copy. Three.js, media encoding, and charts are obvious large browser libraries, but they do not appear among the largest measured server contributors. A broad frontend rewrite is not justified by this evidence.
 
+## MCP validator reduction — October 20, 2026
+
+The official MCP SDK 1.32.1 statically imports its AJV default validator even when TrackDraw supplies `CfWorkerJsonSchemaValidator`. The server Webpack build now replaces only the SDK's `validation/ajv-provider.js` module with a small export adapter for the existing Cloudflare validator. It does not replace AJV imports in unrelated dependencies or remove schema validation. This uses Webpack's [documented module replacement plugin](https://webpack.js.org/plugins/normal-module-replacement-plugin/); check the match when upgrading the SDK or changing bundlers. Development Turbopack keeps its normal dependency resolution.
+
+The baseline was commit `2575401a`; the candidate changed this validator packaging only for the size comparison. Both artifacts used Next.js 16.4.2, OpenNext's normal Webpack build, and the same local preview origin. Handler gzip below uses Node's default compression; complete-upload totals are Wrangler dry-run output with the production configuration. Neither dry run deploys a Worker.
+
+| Artifact             | Before       | After        | Reduction        |
+| -------------------- | ------------ | ------------ | ---------------- |
+| Handler raw          | 7,922,117 B  | 7,684,230 B  | 237,887 B        |
+| Handler gzip         | 2,036,850 B  | 1,971,825 B  | 65,025 B (3.2%)  |
+| Complete upload raw  | 7,558.23 KiB | 7,331.70 KiB | 226.53 KiB       |
+| Complete upload gzip | 2,076.18 KiB | 2,011.71 KiB | 64.47 KiB (3.1%) |
+
+The candidate no longer contains AJV's `strictTypes` implementation. Both typical (50 gates / 500 route points) and large (2,001 gates / 6,000 route points) official-SDK smoke workflows passed against the rebuilt local Cloudflare preview, including OAuth, pagination, derived-result limits, preview/apply/conflict/recovery, refresh and revocation. MCP route coverage also passes its snapshot through the published `viewerSnapshotFromApi` helper: the server shares the viewer contract via `@trackdraw/schema`, without importing the renderer. No editor/browser renderer code or package dependency was changed.
+
+A shared `scripts/check_worker_size.mjs` now blocks handlers over TrackDraw's 9 MiB raw or 2,200 KiB gzip budget. PR CI builds the OpenNext artifact and checks it before merge; both deployment workflows use the same check. The gzip budget used to be a dev-only warning. These checks deliberately measure the handler and must not be presented as the full upload; repeat the dry run above for packaging changes. Both over-budget paths were checked with generated temporary artifacts.
+
 ## Measurement boundary
 
 Measure the deployed Worker separately from browser assets. TrackDraw's [Wrangler configuration](../../../wrangler.jsonc) starts at [custom-worker.ts](../../../custom-worker.ts), which imports OpenNext and scheduled cleanup. `.open-next/assets` contains separately served browser/static files. The complete bundled upload therefore differs from `.open-next/server-functions/default/handler.mjs` alone.

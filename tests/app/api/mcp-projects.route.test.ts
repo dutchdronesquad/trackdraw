@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
 import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -522,6 +523,13 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     expect(await data("get_viewer_snapshot", { project_id: "track" })).toEqual(
       toApiViewerSnapshotPackage(project)
     );
+    const viewerSnapshot = viewerSnapshotFromApi(
+      await data("get_viewer_snapshot", { project_id: "track" })
+    );
+    expect(viewerSnapshot.design.shapes).toMatchObject([
+      { id: gate.id, kind: "gate", width: gate.width, height: gate.height },
+      { id: route.id, kind: "polyline", points: route.points },
+    ]);
     const shapePage = await data("get_track", {
       project_id: "track",
       limit: 1,
