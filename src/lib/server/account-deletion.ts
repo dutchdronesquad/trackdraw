@@ -35,7 +35,7 @@ class MediaCleanupError extends Error {
 // Both acknowledged notices must belong to the current activity period. A
 // delayed final warning can extend the date but never shorten its seven days.
 function retentionGuard(current: string) {
-  return `NOT EXISTS (
+  return `u.role <> 'admin' AND NOT EXISTS (
     SELECT 1 FROM sessions s WHERE s.userId = u.id
       AND (julianday(s.expiresAt) IS NULL OR julianday(s.expiresAt) > julianday(${current}))
   ) AND EXISTS (

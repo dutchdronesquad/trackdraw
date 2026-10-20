@@ -14,6 +14,8 @@ The Worker selects tasks from the controller expression and scheduled UTC minute
 
 Media cleanup deletes up to 100 R2 keys in one bulk operation, then acknowledges exactly those keys in one D1 statement. A failed operation or ambiguous response retains the durable batch for idempotent retry; concurrently queued keys remain pending. The 100-key bound also respects D1's bound-parameter ceiling.
 
+Admins are excluded from automatic warnings and account deletion; the current role is rechecked before sending and deleting, including promotion during processing. Hourly runs do not create extra warning stages: one first warning and one final warning are recorded per inactivity period. Durable acceptance markers, claims and stable provider idempotency keys protect repeated and concurrent runs.
+
 Authoritative session/activity checks, acknowledged warning requirements, atomic deletion/audit and full response periods remain intact. Warning deadlines are rounded up to UTC midnight. Account cleanup cannot run before a stored deadline, twelve calendar months of inactivity or seven days after final acknowledgment. Existing deadlines containing a time of day are respected by the first eligible hourly run after that time.
 
 ## Evidence

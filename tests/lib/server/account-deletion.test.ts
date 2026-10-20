@@ -135,6 +135,31 @@ describe("account deletion lifecycle", () => {
     expect(exists()).toBe(false);
   });
 
+  it("exempts inactive admins from selection and direct retention deletion", async () => {
+    ownedData();
+    sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
+    expect((await run()).meta.changes).toBe(0);
+    expect(
+      await deleteUserAccount(db(), "pilot", { activityAt, now: clock })
+    ).toBe(false);
+    expect(exists()).toBe(true);
+    expect(sqlite.prepare("SELECT id FROM projects").all()).toHaveLength(1);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT id FROM audit_events WHERE event_type = 'account.deleted'"
+        )
+        .all()
+    ).toHaveLength(0);
+    expect(bucket.delete).not.toHaveBeenCalled();
+  });
+
+  it("keeps moderators subject to normal inactivity cleanup", async () => {
+    sqlite.exec("UPDATE users SET role = 'moderator' WHERE id = 'pilot'");
+    expect((await run()).meta.changes).toBe(1);
+    expect(exists()).toBe(false);
+  });
+
   it("preserves other accounts' content and unrelated anonymous shares", async () => {
     ownedData();
     user("survivor", "2026-10-01");
@@ -299,7 +324,7 @@ describe("account deletion lifecycle", () => {
       sqlite.prepare("SELECT * FROM account_retention_notices").all()
     ).toEqual([]);
   });
-  it.each(["activity", "session"])(
+  it.each(["activity", "session", "admin promotion"])(
     "rechecks %s immediately before the destructive statement",
     async (change) => {
       ownedData();
@@ -310,6 +335,8 @@ describe("account deletion lifecycle", () => {
           sqlite.exec(
             "UPDATE users SET last_active_at = '2026-10-03T12:00:00.000Z' WHERE id = 'pilot'"
           );
+        else if (change === "admin promotion")
+          sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
         else
           sqlite.exec(
             "UPDATE sessions SET expiresAt = '2027-01-01' WHERE userId = 'pilot'"

@@ -44,8 +44,8 @@ const CLAIM_MS = 5 * 60 * 1000;
 // Bound SQL statements and outbound mail in the dedicated hourly invocation.
 const BATCH_SIZE = 5;
 
-// Unknown session expiry protects the account just like a valid session.
-const SESSION_GUARD = `NOT EXISTS (
+// Admins are exempt; unknown session expiry also protects the account.
+const RETENTION_GUARD = `u.role <> 'admin' AND NOT EXISTS (
   SELECT 1 FROM sessions s WHERE s.userId = u.id
     AND (julianday(s.expiresAt) IS NULL OR julianday(s.expiresAt) > julianday(?))
 )`;
@@ -87,7 +87,7 @@ export async function sendAccountRetentionNotices(
     FROM users u
     LEFT JOIN account_retention_notices f ON f.user_id = u.id AND f.activity_at = u.last_active_at AND f.stage = 'first'
     LEFT JOIN account_retention_notices r ON r.user_id = u.id AND r.activity_at = u.last_active_at AND r.stage = 'final'
-    WHERE julianday(u.last_active_at) <= julianday(?) AND ${SESSION_GUARD}
+    WHERE julianday(u.last_active_at) <= julianday(?) AND ${RETENTION_GUARD}
       AND (
         f.id IS NULL
         OR (f.sent_at IS NULL AND (f.attempted_at IS NULL OR julianday(f.attempted_at) > julianday(?)) AND (f.claim_until IS NULL OR julianday(f.claim_until) <= julianday(?)))
@@ -141,7 +141,7 @@ export async function sendAccountRetentionNotices(
           `
         INSERT INTO account_retention_notices (id, user_id, activity_at, stage, removal_at)
         SELECT ?, u.id, u.last_active_at, ?, ? FROM users u
-        WHERE u.id = ? AND u.last_active_at = ? AND ${SESSION_GUARD}
+        WHERE u.id = ? AND u.last_active_at = ? AND ${RETENTION_GUARD}
         ON CONFLICT(user_id, activity_at, stage) DO NOTHING
       `
         )
@@ -165,7 +165,7 @@ export async function sendAccountRetentionNotices(
         WHERE user_id = ? AND activity_at = ? AND stage = ? AND sent_at IS NULL
           AND (claim_until IS NULL OR julianday(claim_until) <= julianday(?))
           AND (attempted_at IS NULL OR julianday(attempted_at) > julianday(?))
-          AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_id AND u.last_active_at = activity_at AND ${SESSION_GUARD})
+          AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_id AND u.last_active_at = activity_at AND ${RETENTION_GUARD})
         RETURNING id, stage, removal_at
       `
         )
@@ -187,7 +187,7 @@ export async function sendAccountRetentionNotices(
           `
         UPDATE account_retention_notices SET attempted_at = coalesce(attempted_at, ?)
         WHERE id = ? AND claim_token = ?
-          AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_id AND u.last_active_at = activity_at AND ${SESSION_GUARD})
+          AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_id AND u.last_active_at = activity_at AND ${RETENTION_GUARD})
         RETURNING (SELECT email FROM users WHERE id = user_id) AS email,
           (SELECT lifecycle_audit_ref FROM users WHERE id = user_id) AS audit_ref,
           (SELECT name FROM users WHERE id = user_id) AS name, attempted_at
@@ -265,7 +265,7 @@ export async function sendAccountRetentionNotices(
       `
     SELECT count(*) AS count FROM account_retention_notices n JOIN users u ON u.id = n.user_id
     WHERE n.sent_at IS NULL AND julianday(n.attempted_at) <= julianday(?)
-      AND u.last_active_at = n.activity_at AND ${SESSION_GUARD}
+      AND u.last_active_at = n.activity_at AND ${RETENTION_GUARD}
   `
     )
     .bind(
