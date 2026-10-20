@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
+import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { POST, GET } from "@/app/api/mcp/route";
@@ -68,7 +70,19 @@ function save(
     );
 }
 async function call(name: string, args: Record<string, unknown> = {}) {
-  const response = await client.callTool({ name, arguments: args });
+  const response = CallToolResultSchema.parse(
+    await client.callTool({ name, arguments: args })
+  );
+  if (response.isError && !response.structuredContent) {
+    const text = response.content.find((item) => item.type === "text");
+    return {
+      ...response,
+      structuredContent:
+        text?.type === "text" && text.text.startsWith("{")
+          ? JSON.parse(text.text)
+          : undefined,
+    };
+  }
   return response;
 }
 async function data(name: string, args: Record<string, unknown> = {}) {
@@ -113,6 +127,38 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 describe("owned project MCP tools with real persistence, serializers and SDK", () => {
+  it("keeps tool failures readable after SDK output-schema discovery", async () => {
+    save(
+      "large",
+      "owner",
+      Array.from({ length: 2001 }, (_, i) => ({ ...gate, id: String(i) }))
+    );
+    await client.listTools();
+    for (const [name, args, code] of [
+      ["get_project", { project_id: "missing" }, "not_found"],
+      [
+        "get_track",
+        { project_id: "large", cursor: "invalid" },
+        "invalid_cursor",
+      ],
+      ["analyze_track", { project_id: "large" }, "response_too_large"],
+      ["get_overlay", { project_id: "large" }, "response_too_large"],
+      ["get_viewer_snapshot", { project_id: "large" }, "response_too_large"],
+    ] as const) {
+      const response = CallToolResultSchema.parse(
+        await client.callTool({ name, arguments: args })
+      );
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toBeUndefined();
+      expect(response.content).toEqual([
+        { type: "text", text: expect.any(String) },
+      ]);
+      const text = response.content[0];
+      expect(text.type === "text" && JSON.parse(text.text)).toMatchObject({
+        error: { code },
+      });
+    }
+  });
   it("advertises tools only for live project-read consent", async () => {
     expect((await client.listTools()).tools.map((t) => t.name)).toEqual([
       "get_account",
@@ -477,6 +523,13 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     expect(await data("get_viewer_snapshot", { project_id: "track" })).toEqual(
       toApiViewerSnapshotPackage(project)
     );
+    const viewerSnapshot = viewerSnapshotFromApi(
+      await data("get_viewer_snapshot", { project_id: "track" })
+    );
+    expect(viewerSnapshot.design.shapes).toMatchObject([
+      { id: gate.id, kind: "gate", width: gate.width, height: gate.height },
+      { id: route.id, kind: "polyline", points: route.points },
+    ]);
     const shapePage = await data("get_track", {
       project_id: "track",
       limit: 1,

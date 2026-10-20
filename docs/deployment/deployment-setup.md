@@ -27,7 +27,7 @@ Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`.
 
 OpenNext 1.20.12 includes [the manifest fix for Next.js 16.4](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) and supports Next.js 16.4.1 and newer. Renovate can update Next.js beyond 16.3.8 without the former `<16.4.0` restriction. Upgrade Next.js and OpenNext together, and verify login and API routes in a Cloudflare preview before deploying the dependency update.
 
-`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md).
+`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md). PR build CI now builds the OpenNext artifact as well. `node scripts/check_worker_size.mjs` enforces the same handler budgets in PR CI and both deploys: 9 MiB raw and 2,200 KiB gzip. These are TrackDraw budgets, not platform upload limits; the previous dev-only gzip warning is now a blocking check. Measure the complete upload separately with `wrangler deploy --dry-run` when changing packaging.
 
 Keep `esbuild` as an explicit development dependency: the OpenNext Cloudflare CLI imports it directly, so deployment must not rely on another tool hoisting it into the root dependency tree. The PR build checks `opennextjs-cloudflare build --help` after `npm ci` to catch missing adapter dependencies before merge; deployment still runs the complete OpenNext build.
 
@@ -373,7 +373,7 @@ MCP and OAuth POSTs have a 16 KiB streamed body limit. OAuth provider endpoints 
 
 Application MCP logs contain only `event: "mcp_request"`, method, status and duration. Keep tokens, codes, verifiers, consent queries, private identity output and raw exceptions out of logs. Protect the existing Better Auth secret: it secures signed consent queries and encrypted confidential-client secrets. Public native clients use PKCE without a client secret.
 
-Run local migrations and the official SDK smoke client against Cloudflare preview, then validate browser consent, refresh, expiry, request budgets and owned disconnect. No remote binding is needed. The verified client uses the MCP 2025-11-25 OAuth profile with DCR; CIMD is not advertised. Local validation is not evidence of production availability or compatibility with untested clients.
+Run local migrations and the official SDK smoke client against Cloudflare preview, then validate browser consent, refresh, expiry, request budgets and owned disconnect. No remote binding is needed. The verified client uses the MCP 2025-11-25 OAuth profile with DCR; CIMD is not advertised. Local validation is not evidence of production availability or compatibility with untested clients. Record per-client, per-milestone results using the [MCP validation and release checklist](../mcp-validation.md), including failed checks and the exact deployed commit. The MCP issue and epic can close after their merged code passes the intended development-runtime acceptance; track production availability separately through the normal release process.
 
 ## Retention Cleanup
 
