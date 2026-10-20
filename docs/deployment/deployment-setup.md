@@ -23,6 +23,12 @@ Do not move request-time auth, database, gallery, share, or embed reads into thi
 
 Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the four public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
 
+### Auth schema checks
+
+Better Auth's [runtime schema validation](https://better-auth.com/docs/concepts/database#schema-validation) introspects D1 when each auth adapter is initialized. TrackDraw creates request-scoped auth instances; schema checks therefore run separately from ordinary authentication. CI validates the complete auth/plugin configuration against all repository migrations. After applying migrations, both deployment workflows run `node scripts/check_auth_schema.mjs dev` or `node scripts/check_auth_schema.mjs production` before the deploy job can start.
+
+The script reads only table/index definitions from the selected target's `sqlite_master`, validates a disposable in-memory SQLite copy using the actual auth factory with schema validation enabled, and removes the temporary definitions afterward. It never exports account rows or writes to the target database. Missing schema fails deployment. Normal auth instances skip metadata introspection; session/token checks, scopes, live consent, ownership, revocation and durable rate limits still run normally. Manual schema changes after deployment require rerunning this check; they are no longer diagnosed by per-request schema introspection. See [the resource-efficiency investigation](../research/in-progress/cloudflare-free-efficiency.md) for the measured baseline and remaining work.
+
 ## Build dependencies
 
 OpenNext 1.20.12 includes [the manifest fix for Next.js 16.4](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) and supports Next.js 16.4.1 and newer. Renovate can update Next.js beyond 16.3.8 without the former `<16.4.0` restriction. Upgrade Next.js and OpenNext together, and verify login and API routes in a Cloudflare preview before deploying the dependency update.

@@ -166,6 +166,10 @@ The repository-owned `Crowdin` GitHub Action uploads changed English sources aft
 
 If target catalogs were edited locally by mistake, do not merge them as an independent translation source. Either discard those target-only edits or turn only the missing keys into a temporary Crowdin seed import, review them in Crowdin, and let the localization Action return the accepted translations to Git.
 
+## Auth schema validation
+
+`tests/lib/server/auth-schema.test.ts` validates the actual Better Auth/plugin configuration against the repository migrations and verifies that ordinary auth requests avoid schema introspection while still rejecting revoked sessions. Deployment additionally checks the selected target's schema after migrations with `node scripts/check_auth_schema.mjs dev` or `node scripts/check_auth_schema.mjs production`. These commands require read access to that D1 environment; they inspect definitions only and validate a temporary local copy. Keep this gate when changing auth plugins, migrations or runtime schema-validation settings.
+
 ## Validation
 
 Run these after non-trivial code changes when the environment allows it:
