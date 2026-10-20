@@ -126,6 +126,15 @@ describe("account deletion lifecycle", () => {
     expect((await run()).meta.changes).toBe(1);
   });
 
+  it("respects a time-of-day deadline across hourly runs", async () => {
+    clock = new Date("2026-10-03T11:15:00.000Z");
+    expect((await run()).meta.changes).toBe(0);
+    expect(exists()).toBe(true);
+    clock = new Date("2026-10-03T12:15:00.000Z");
+    expect((await run()).meta.changes).toBe(1);
+    expect(exists()).toBe(false);
+  });
+
   it("preserves other accounts' content and unrelated anonymous shares", async () => {
     ownedData();
     user("survivor", "2026-10-01");

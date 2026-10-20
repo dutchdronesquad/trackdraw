@@ -114,16 +114,33 @@ export class ScheduledCleanupError extends Error {
 }
 
 export function createScheduledCleanupTasks(
+  { cron, scheduledTime }: ScheduledCleanupContext,
   db: CleanupDatabase,
   mailer: TransactionalMailer,
   mediaBucket?: AccountDeletionMediaBucket
 ): ScheduledCleanupTask[] {
+  // Each schedule owns its invocation budget; never fall back to running everything.
+  if (
+    cron === "15,30 * * * *" &&
+    new Date(scheduledTime).getUTCMinutes() === 15
+  ) {
+    return [
+      { name: "accounts", run: () => cleanupInactiveAccounts(db, mediaBucket) },
+    ];
+  }
+  if (
+    cron === "15,30 * * * *" &&
+    new Date(scheduledTime).getUTCMinutes() === 30
+  ) {
+    return [
+      {
+        name: "account_retention_notices",
+        run: () => sendAccountRetentionNotices(db, { mailer }),
+      },
+    ];
+  }
+  if (cron !== "0 0 * * *") throw new Error("Unknown cleanup schedule");
   return [
-    { name: "accounts", run: () => cleanupInactiveAccounts(db, mediaBucket) },
-    {
-      name: "account_retention_notices",
-      run: () => sendAccountRetentionNotices(db, { mailer }),
-    },
     { name: "shares", run: () => cleanupExpiredShares(db) },
     { name: "api_keys", run: () => cleanupExpiredApiKeys(db) },
     { name: "mcp_oauth", run: () => cleanupMcpOauth(db) },

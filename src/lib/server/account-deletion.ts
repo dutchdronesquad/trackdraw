@@ -166,13 +166,13 @@ export async function cleanupInactiveAccounts(
   const cutoff = new Date(
     addUtcCalendarMonths(current, -12).getTime() + 3 * 86400000
   );
-  // Share the Free invocation budget with notices, metrics and the other retention owners.
+  // Keep the dedicated hourly invocation within the Free query/subrequest budget.
   const { results } = await db
     .prepare(
       `SELECT u.id, u.last_active_at AS activity_at
     FROM users u WHERE julianday(u.last_active_at) <= julianday(?2)
       AND ${retentionGuard("?1")}
-    ORDER BY u.last_active_at, u.id LIMIT 2`
+    ORDER BY u.last_active_at, u.id LIMIT 10`
     )
     .bind(current.toISOString(), cutoff.toISOString())
     .all<{ id: string; activity_at: string }>();

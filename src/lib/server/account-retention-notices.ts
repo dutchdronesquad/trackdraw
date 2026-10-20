@@ -41,8 +41,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // after that window; an operator must reconcile it with the provider first.
 const SAFE_RETRY_MS = 23 * 60 * 60 * 1000;
 const CLAIM_MS = 5 * 60 * 1000;
-// Leave room for account/media cleanup and seven days of metric backfill in the shared Cron.
-const BATCH_SIZE = 2;
+// Bound SQL statements and outbound mail in the dedicated hourly invocation.
+const BATCH_SIZE = 5;
 
 // Unknown session expiry protects the account just like a valid session.
 const SESSION_GUARD = `NOT EXISTS (
