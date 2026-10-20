@@ -35,8 +35,6 @@ try {
       join(root, "node_modules/vitest/vitest.mjs"),
       "run",
       "tests/lib/server/auth-schema.test.ts",
-      "--testNamePattern",
-      "validates all configured auth and plugin tables before deployment",
     ],
     {
       cwd: root,
