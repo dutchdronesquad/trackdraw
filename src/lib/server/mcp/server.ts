@@ -3,11 +3,12 @@ import "server-only";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CfWorkerJsonSchemaValidator } from "@modelcontextprotocol/sdk/validation/cfworker";
 import { z } from "zod";
-import { toApiIdentitySummary } from "@/lib/server/api-identity";
-import type { ApiIdentity } from "@/lib/server/api-keys";
+import type { toAccountIdentitySummary } from "@/lib/server/api-identity";
 
 /** A fresh server per authenticated request prevents cross-account state reuse. */
-export function createMcpServer(identity: ApiIdentity) {
+export function createMcpServer(
+  identity: ReturnType<typeof toAccountIdentitySummary>
+) {
   const server = new McpServer(
     { name: "trackdraw", version: "1.0.0" },
     {
@@ -17,14 +18,14 @@ export function createMcpServer(identity: ApiIdentity) {
     }
   );
 
-  // Every verified account key may inspect its own identity, just like GET /me.
-  // Future project tools must enforce their own shared REST permissions/access.
+  // The transport enforces the read scope, resource binding and live consent.
+  // Future project tools need their own explicit scope and ownership checks.
   server.registerTool(
     "get_account",
     {
       title: "Check TrackDraw account",
       description:
-        "Return the account linked to this API key, its granted REST permissions and the capabilities currently available through MCP. Does not return the email address, API key or project contents.",
+        "Return the account authorized by this OAuth connection, its MCP permissions and available capabilities. Does not return the email address, tokens or project contents.",
       inputSchema: z.strictObject({}),
       outputSchema: z.object({
         type: z.literal("api_identity"),
@@ -46,7 +47,7 @@ export function createMcpServer(identity: ApiIdentity) {
     },
     async () => {
       const result = {
-        ...toApiIdentitySummary(identity),
+        ...identity,
         mcp: {
           tools: ["get_account"],
           project_reads: false,

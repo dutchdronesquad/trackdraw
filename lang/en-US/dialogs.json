@@ -90,7 +90,8 @@
       },
       "fallback": {
         "noAccountEmail": "TrackDraw account"
-      }
+      },
+      "connectedApps": "Connected apps"
     },
     "security": {
       "email": {

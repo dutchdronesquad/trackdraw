@@ -1,41 +1,117 @@
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { once } from "node:events";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
 
-const rawUrl = process.env.TRACKDRAW_MCP_URL;
-const key = process.env.TRACKDRAW_API_KEY;
-if (!rawUrl || !key) {
-  console.error(
-    "Set TRACKDRAW_MCP_URL and TRACKDRAW_API_KEY in a protected environment."
-  );
-  process.exit(1);
-}
-let url;
+let endpoint;
 try {
-  url = new URL(rawUrl);
-  assert.equal(url.pathname, "/api/mcp", "Use the /api/mcp endpoint.");
-  assert.equal(url.search, "", "Do not put credentials in the URL.");
+  endpoint = new URL(process.env.TRACKDRAW_MCP_URL);
+  assert.equal(endpoint.pathname, "/api/mcp");
   assert.equal(
-    url.username + url.password + url.hash,
-    "",
-    "Use header-based credentials only."
+    endpoint.search + endpoint.username + endpoint.password + endpoint.hash,
+    ""
   );
   assert.ok(
-    url.protocol === "https:" ||
-      (url.protocol === "http:" &&
-        ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)),
-    "Use HTTPS except for loopback development."
+    endpoint.protocol === "https:" ||
+      (endpoint.protocol === "http:" &&
+        ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname))
   );
 } catch {
   console.error(
-    "Use a valid /api/mcp URL over HTTPS or loopback HTTP without credentials, query or fragment."
+    "Set TRACKDRAW_MCP_URL to an HTTPS /api/mcp endpoint or a loopback HTTP preview URL, without credentials, query or fragment."
   );
   process.exit(1);
 }
 
+// Credentials stay in this process only. The SDK owns discovery, public-client
+// registration, S256 PKCE, resource indicators and authorization-code exchange.
+let registration;
+let tokens;
+let verifier;
+let redirectUrl;
+const state = randomBytes(32).toString("base64url");
+let resolveCallback;
+let rejectCallback;
+const callback = new Promise((resolve, reject) => {
+  resolveCallback = resolve;
+  rejectCallback = reject;
+});
+void callback.catch(() => {});
+const provider = {
+  get redirectUrl() {
+    return redirectUrl;
+  },
+  get clientMetadata() {
+    return {
+      client_name: "TrackDraw MCP connection check",
+      redirect_uris: [redirectUrl],
+      token_endpoint_auth_method: "none",
+      grant_types: ["authorization_code", "refresh_token"],
+      response_types: ["code"],
+      scope: "mcp:read offline_access",
+    };
+  },
+  state: () => state,
+  clientInformation: () => registration,
+  saveClientInformation: (value) => {
+    registration = value;
+  },
+  tokens: () => tokens,
+  saveTokens: (value) => {
+    tokens = value;
+  },
+  saveCodeVerifier: (value) => {
+    verifier = value;
+  },
+  codeVerifier: () => verifier,
+  redirectToAuthorization: (url) => {
+    console.log(`Authorize TrackDraw in your browser: ${url.href}`);
+  },
+};
+const server = createServer((request, response) => {
+  response.setHeader("Cache-Control", "no-store");
+  response.setHeader("Referrer-Policy", "no-referrer");
+  const url = new URL(request.url, redirectUrl);
+  const suppliedState = Buffer.from(url.searchParams.get("state") ?? "");
+  const expectedState = Buffer.from(state);
+  if (
+    request.method !== "GET" ||
+    request.headers.host !== new URL(redirectUrl).host ||
+    url.pathname !== "/callback" ||
+    suppliedState.length !== expectedState.length ||
+    !timingSafeEqual(suppliedState, expectedState) ||
+    !registration?.issuer ||
+    url.searchParams.get("iss") !== registration.issuer
+  ) {
+    response.writeHead(400).end("Invalid authorization callback.");
+    return;
+  }
+  const code = url.searchParams.get("code");
+  if (!code || url.searchParams.has("error")) {
+    response
+      .writeHead(403)
+      .end("TrackDraw connection declined. You can close this window.");
+    rejectCallback(new Error("Authorization declined"));
+    return;
+  }
+  response
+    .writeHead(200, { "Content-Type": "text/plain; charset=utf-8" })
+    .end("TrackDraw connection approved. You can close this window.");
+  resolveCallback(code);
+});
 const client = new Client({ name: "trackdraw-smoke", version: "1.0.0" });
+const timeout = setTimeout(
+  () => rejectCallback(new Error("Authorization timed out")),
+  5 * 60_000
+);
 try {
-  const unauthenticated = await fetch(url, {
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  redirectUrl = `http://127.0.0.1:${server.address().port}/callback`;
+  const unauthenticated = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,12 +122,26 @@ try {
   });
   assert.equal(unauthenticated.status, 401);
   assert.equal(unauthenticated.headers.get("cache-control"), "no-store");
+  assert.match(
+    unauthenticated.headers.get("www-authenticate"),
+    /resource_metadata=/
+  );
   await unauthenticated.body?.cancel();
-
-  const transport = new StreamableHTTPClientTransport(url, {
-    requestInit: { headers: { Authorization: `Bearer ${key}` } },
+  let transport = new StreamableHTTPClientTransport(endpoint, {
+    authProvider: provider,
   });
-  await client.connect(transport);
+  try {
+    await client.connect(transport);
+  } catch (error) {
+    if (!(error instanceof UnauthorizedError)) throw error;
+    const code = await callback;
+    await transport.finishAuth(code);
+    await client.close();
+    transport = new StreamableHTTPClientTransport(endpoint, {
+      authProvider: provider,
+    });
+    await client.connect(transport);
+  }
   assert.equal(client.getServerVersion()?.name, "trackdraw");
   assert.equal(transport.sessionId, undefined);
   const { tools } = await client.listTools();
@@ -64,14 +154,18 @@ try {
   assert.equal(result.structuredContent?.type, "api_identity");
   assert.equal(result.structuredContent?.mcp?.project_writes, false);
   console.log(
-    "MCP smoke passed: initialization, discovery, get_account, no-store and unauthenticated rejection."
+    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization and get_account."
   );
 } catch {
-  // SDK errors may include private response data; do not dump them to logs.
+  // Do not dump SDK errors, callbacks or token responses into logs.
   console.error(
-    "MCP smoke failed. Check the endpoint, key validity and server status logs."
+    "MCP OAuth smoke failed. Check the endpoint, consent and privacy-safe server status logs."
   );
   process.exitCode = 1;
 } finally {
+  clearTimeout(timeout);
   await client.close();
+  server.close();
+  tokens = undefined;
+  verifier = undefined;
 }

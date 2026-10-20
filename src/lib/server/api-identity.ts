@@ -5,18 +5,24 @@ import {
   type ApiIdentity,
 } from "@/lib/server/api-keys";
 
-/** The same minimal account contract is used by REST and MCP. */
-export function toApiIdentitySummary(identity: ApiIdentity) {
+/** Shared minimal account contract; each transport supplies its granted permissions. */
+export function toAccountIdentitySummary(
+  account: { id: string; name: string | null },
+  permissions: Record<string, string[]> | null,
+  expiresAt: Date | string | null
+) {
   return {
     type: "api_identity" as const,
-    account: {
-      id: identity.user.id,
-      name: identity.user.name,
-    },
-    permissions: normalizeApiKeyPermissions(identity.key.permissions),
-    expires_at:
-      identity.key.expiresAt instanceof Date
-        ? identity.key.expiresAt.toISOString()
-        : (identity.key.expiresAt ?? null),
+    account: { id: account.id, name: account.name },
+    permissions,
+    expires_at: expiresAt instanceof Date ? expiresAt.toISOString() : expiresAt,
   };
+}
+
+export function toApiIdentitySummary(identity: ApiIdentity) {
+  return toAccountIdentitySummary(
+    identity.user,
+    normalizeApiKeyPermissions(identity.key.permissions),
+    identity.key.expiresAt ?? null
+  );
 }

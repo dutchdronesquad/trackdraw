@@ -2,8 +2,9 @@ import "server-only";
 
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { getSiteUrl } from "@/lib/seo";
-import { getApiIdentityFromBearerKey } from "@/lib/server/api-keys";
+import { authenticateMcpRequest } from "./oauth-auth";
 import { createMcpServer } from "./server";
+import { readBoundedRequestBody } from "@/lib/server/bounded-request-body";
 
 export const MCP_MAX_BODY_BYTES = 16_384;
 
@@ -31,36 +32,14 @@ function isAllowedOrigin(request: Request) {
 }
 
 async function readMessage(request: Request) {
-  const length = Number(request.headers.get("content-length"));
-  if (length > MCP_MAX_BODY_BYTES) {
-    return { error: mcpError(413, -32000, "MCP request exceeds 16384 bytes.") };
-  }
-  const reader = request.body?.getReader();
-  if (!reader)
-    return { error: mcpError(400, -32700, "A JSON-RPC message is required.") };
   try {
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > MCP_MAX_BODY_BYTES) {
-        await reader.cancel();
-        return {
-          error: mcpError(413, -32000, "MCP request exceeds 16384 bytes."),
-        };
-      }
-      chunks.push(value);
-    }
-    const bytes = new Uint8Array(size);
-    let offset = 0;
-    for (const chunk of chunks) {
-      bytes.set(chunk, offset);
-      offset += chunk.byteLength;
-    }
+    const body = await readBoundedRequestBody(request, MCP_MAX_BODY_BYTES);
+    if (body.tooLarge)
+      return {
+        error: mcpError(413, -32000, "MCP request exceeds 16384 bytes."),
+      };
     const message: unknown = JSON.parse(
-      new TextDecoder("utf-8", { fatal: true }).decode(bytes)
+      new TextDecoder("utf-8", { fatal: true }).decode(body.bytes)
     );
     // One message per budgeted request; JSON-RPC batches are outside MCP v1.
     if (Array.isArray(message) || message === null) {
@@ -71,8 +50,6 @@ async function readMessage(request: Request) {
     return { message };
   } catch {
     return { error: mcpError(400, -32700, "Invalid UTF-8 JSON body.") };
-  } finally {
-    reader.releaseLock();
   }
 }
 
@@ -88,18 +65,11 @@ async function dispatch(request: Request): Promise<Response> {
     );
   }
 
-  // Revalidate each request (including discovery/notifications); no browser
-  // session fallback, retained bearer tokens or in-memory authorization cache.
-  const auth = await getApiIdentityFromBearerKey({ headers: request.headers });
+  // Revalidate OAuth on every request, including discovery and notifications.
+  // Browser sessions and REST API keys do not authorize MCP requests.
+  const auth = await authenticateMcpRequest(request);
   if (!auth.ok) {
-    const headers = new Headers();
-    if (auth.status === 401) {
-      headers.set("WWW-Authenticate", 'Bearer realm="TrackDraw MCP"');
-    }
-    if (auth.status === 429 && auth.retryAfterSeconds) {
-      headers.set("Retry-After", String(auth.retryAfterSeconds));
-    }
-    return mcpError(auth.status, -32000, auth.detail, headers);
+    return mcpError(auth.status, -32000, auth.detail, auth.headers);
   }
 
   if (request.method !== "POST") {

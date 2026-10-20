@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { APIError } from "better-auth/api";
+import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { POST, GET, DELETE, OPTIONS } from "@/app/api/mcp/route";
 import { MCP_MAX_BODY_BYTES } from "@/lib/server/mcp/handler";
 import { getAuth } from "@/lib/server/auth";
 import { getDatabase } from "@/lib/server/db";
-import { toApiIdentitySummary } from "@/lib/server/api-identity";
-import { getApiIdentityFromBearerKey } from "@/lib/server/api-keys";
 import { getEarlyWorkerResponse } from "@/lib/server/request-guards";
 
 vi.mock("server-only", () => ({}));
@@ -17,21 +17,24 @@ vi.mock("@/lib/server/account-activity", () => ({
 }));
 
 const endpoint = "https://trackdraw.app/api/mcp";
-const keyRecord = {
-  id: "key-1",
-  referenceId: "user-1",
-  permissions: { tracks: ["read"] },
-  expiresAt: new Date("2027-01-20T00:00:00.000Z"),
+let sqlite: ReturnType<typeof createMigratedDatabase>;
+const verifyAccessToken = vi.fn();
+const claims = {
+  active: true,
+  iss: "https://trackdraw.app/api/auth",
+  aud: "https://trackdraw.app/api/mcp",
+  sub: "user-1",
+  client_id: "client-1",
+  scope: "mcp:read",
+  exp: Math.floor(Date.now() / 1000) + 3600,
 };
-const verifyApiKey = vi.fn();
-const first = vi.fn();
 
 function rpc(method: string, params?: unknown, init?: RequestInit) {
   return new Request(endpoint, {
     method: "POST",
     ...init,
     headers: {
-      authorization: "Bearer td_test",
+      authorization: "Bearer oauth_test",
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
       "mcp-protocol-version": "2025-11-25",
@@ -46,7 +49,7 @@ function rpc(method: string, params?: unknown, init?: RequestInit) {
   });
 }
 
-async function openClient(key = "td_test") {
+async function openClient(key = "oauth_test") {
   const client = new Client({ name: "trackdraw-test", version: "1.0.0" });
   const transport = new StreamableHTTPClientTransport(new URL(endpoint), {
     requestInit: { headers: { authorization: `Bearer ${key}` } },
@@ -60,35 +63,61 @@ async function openClient(key = "td_test") {
 }
 
 describe("TrackDraw MCP endpoint", () => {
+  afterEach(() => {
+    sqlite?.close();
+    vi.unstubAllEnvs();
+  });
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://trackdraw.app");
     vi.stubEnv("NEXT_PUBLIC_APP_ENV", "production");
     vi.spyOn(console, "info").mockImplementation(() => {});
-    verifyApiKey.mockImplementation(async ({ body }) => ({
-      valid: true,
-      error: null,
-      key: {
-        ...keyRecord,
-        referenceId: body.key === "td_other" ? "user-2" : "user-1",
-      },
-    }));
-    first.mockResolvedValue({
-      id: "user-1",
-      name: "Pilot",
-      email: "private@example.com",
+    sqlite = createMigratedDatabase();
+    const now = new Date().toISOString();
+    for (const id of ["user-1", "user-2"]) {
+      sqlite
+        .prepare(
+          "INSERT INTO users (id,name,email,createdAt,updatedAt,last_active_at) VALUES (?,?,?,?,?,?)"
+        )
+        .run(
+          id,
+          id === "user-1" ? "Pilot" : "Other pilot",
+          id + "@example.invalid",
+          now,
+          now,
+          now
+        );
+    }
+    sqlite.exec(
+      `INSERT INTO oauthClient (id,clientId,name,redirectUris) VALUES ('client-1','client-1','Test client','["http://localhost/callback"]')`
+    );
+    for (const id of ["user-1", "user-2"]) {
+      sqlite
+        .prepare(
+          "INSERT INTO oauthConsent (id,userId,clientId,resources,scopes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?)"
+        )
+        .run(
+          "consent-" + id,
+          id,
+          "client-1",
+          JSON.stringify([claims.aud]),
+          JSON.stringify(["mcp:read"]),
+          now,
+          now
+        );
+    }
+    verifyAccessToken.mockImplementation(async ({ body }) => {
+      if (body.token.startsWith("td_"))
+        throw new APIError("UNAUTHORIZED", { error: "invalid_token" });
+      return {
+        ...claims,
+        sub: body.token === "oauth_other" ? "user-2" : "user-1",
+      };
     });
-    vi.mocked(getAuth).mockResolvedValue({ api: { verifyApiKey } } as never);
-    vi.mocked(getDatabase).mockResolvedValue({
-      prepare: () => ({
-        bind: (id: string) => ({
-          first: () =>
-            id === "user-2"
-              ? { id, name: "Other pilot", email: "other@example.com" }
-              : first(),
-        }),
-      }),
+    vi.mocked(getAuth).mockResolvedValue({
+      api: { verifyMcpAccessToken: verifyAccessToken },
     } as never);
+    vi.mocked(getDatabase).mockResolvedValue(sqliteD1(sqlite));
   });
 
   it("passes the early Worker guard and negotiates MCP using the official client", async () => {
@@ -111,7 +140,7 @@ describe("TrackDraw MCP endpoint", () => {
       expect(result.isError).not.toBe(true);
       expect(result.structuredContent).toMatchObject({
         account: { id: "user-1", name: "Pilot" },
-        permissions: { tracks: ["read"] },
+        permissions: { mcp: ["read"] },
         mcp: {
           tools: ["get_account"],
           project_reads: false,
@@ -119,26 +148,24 @@ describe("TrackDraw MCP endpoint", () => {
         },
       });
       expect(JSON.stringify(result)).not.toMatch(
-        /private@example|td_test|referenceId/
+        /private@example|oauth_test|referenceId/
       );
-      expect(verifyApiKey.mock.calls.length).toBeGreaterThanOrEqual(4);
+      expect(verifyAccessToken.mock.calls.length).toBeGreaterThanOrEqual(4);
     } finally {
       await client.close();
     }
   });
 
-  it("uses the REST identity summary without exposing account email or key metadata", async () => {
-    const auth = await getApiIdentityFromBearerKey({
-      headers: new Headers({ authorization: "Bearer td_test" }),
-    });
-    if (!auth.ok) throw new Error("Expected authenticated test identity");
+  it("returns the authorized account without key material and never caches it", async () => {
     const response = await POST(
       rpc("tools/call", { name: "get_account", arguments: {} })
     );
     expect(await response.json()).toMatchObject({
       result: {
         structuredContent: {
-          ...toApiIdentitySummary(auth.identity),
+          type: "api_identity",
+          account: { id: "user-1", name: "Pilot" },
+          permissions: { mcp: ["read"] },
           mcp: { project_writes: false },
         },
       },
@@ -155,7 +182,7 @@ describe("TrackDraw MCP endpoint", () => {
       rpc(
         "tools/call",
         { name: "get_account" },
-        { headers: { authorization: "Bearer td_other" } }
+        { headers: { authorization: "Bearer oauth_other" } }
       )
     );
     expect(await firstResponse.json()).toMatchObject({
@@ -166,7 +193,7 @@ describe("TrackDraw MCP endpoint", () => {
     });
   });
 
-  it.each([undefined, "", "Basic td_test", "Bearer td_test extra"])(
+  it.each([undefined, "", "Basic oauth_test", "Bearer oauth_test extra"])(
     "requires strict bearer auth: %s",
     async (authorization) => {
       const request = rpc("initialize");
@@ -178,10 +205,10 @@ describe("TrackDraw MCP endpoint", () => {
       );
       const response = await POST(request);
       expect(response.status).toBe(401);
-      expect(response.headers.get("www-authenticate")).toBe(
-        'Bearer realm="TrackDraw MCP"'
+      expect(response.headers.get("www-authenticate")).toContain(
+        'resource_metadata="https://trackdraw.app/.well-known/oauth-protected-resource/api/mcp"'
       );
-      expect(verifyApiKey).not.toHaveBeenCalled();
+      expect(verifyAccessToken).not.toHaveBeenCalled();
     }
   );
 
@@ -190,11 +217,9 @@ describe("TrackDraw MCP endpoint", () => {
     async (code) => {
       const { client } = await openClient();
       try {
-        verifyApiKey.mockResolvedValue({
-          valid: false,
-          error: { code },
-          key: null,
-        });
+        verifyAccessToken.mockRejectedValue(
+          new APIError("UNAUTHORIZED", { error: code })
+        );
         const response = await POST(rpc("tools/list"));
         expect(response.status).toBe(401);
         const call = await POST(rpc("tools/call", { name: "get_account" }));
@@ -206,35 +231,68 @@ describe("TrackDraw MCP endpoint", () => {
   );
 
   it("rejects a key whose account no longer exists", async () => {
-    first.mockResolvedValue(null);
+    sqlite.exec("DELETE FROM users WHERE id = 'user-1'");
     expect((await POST(rpc("tools/list"))).status).toBe(401);
   });
 
   it("applies the shared per-key request budget and retry timing", async () => {
-    verifyApiKey.mockResolvedValue({
-      valid: false,
-      key: null,
-      error: { code: "RATE_LIMITED", details: { tryAgainIn: 1250 } },
-    });
+    sqlite
+      .prepare(
+        "INSERT INTO mcp_oauth_request_budget (user_id,client_id,window_start_ms,request_count) VALUES (?,?,?,600)"
+      )
+      .run("user-1", "client-1", Date.now() - 3_598_500);
     const response = await POST(rpc("ping"));
     expect(response.status).toBe(429);
-    expect(response.headers.get("retry-after")).toBe("2");
+    expect(Number(response.headers.get("retry-after"))).toBeGreaterThan(0);
   });
 
-  it("permits only the identity check for keys with no project permissions", async () => {
-    verifyApiKey.mockResolvedValue({
-      valid: true,
-      error: null,
-      key: { ...keyRecord, permissions: {} },
-    });
-    const list = await POST(rpc("tools/list"));
-    expect(await list.json()).toMatchObject({
-      result: { tools: [{ name: "get_account" }] },
-    });
-    const call = await POST(rpc("tools/call", { name: "get_account" }));
-    expect(await call.json()).toMatchObject({
-      result: { structuredContent: { permissions: {} } },
-    });
+  it("rejects tokens without the required scope for discovery and calls", async () => {
+    verifyAccessToken.mockResolvedValue({ ...claims, scope: "offline_access" });
+    for (const method of ["tools/list", "tools/call"]) {
+      const response = await POST(rpc(method, { name: "get_account" }));
+      expect(response.status).toBe(403);
+      expect(response.headers.get("www-authenticate")).toContain(
+        'error="insufficient_scope"'
+      );
+    }
+  });
+
+  it.each([
+    { aud: "https://other.example/mcp" },
+    { iss: "https://other.example/auth" },
+    { exp: 1 },
+    { exp: NaN },
+    { sub: undefined },
+    { cnf: { jkt: "sender-bound" } },
+  ])(
+    "rejects invalid resource/issuer/expiry/subject or sender-bound token: %j",
+    async (patch) => {
+      verifyAccessToken.mockResolvedValue({ ...claims, ...patch });
+      expect((await POST(rpc("tools/list"))).status).toBe(401);
+    }
+  );
+
+  it("does not accept a REST API key as an OAuth access token", async () => {
+    expect(
+      (
+        await POST(
+          rpc("tools/list", undefined, {
+            headers: { authorization: "Bearer td_rest_key" },
+          })
+        )
+      ).status
+    ).toBe(401);
+  });
+
+  it("requires a live consent and an unbanned account", async () => {
+    sqlite.exec(
+      "UPDATE users SET banned_at = '2026-01-01' WHERE id = 'user-1'"
+    );
+    expect((await POST(rpc("tools/list"))).status).toBe(401);
+    sqlite.exec(
+      "UPDATE users SET banned_at = NULL WHERE id = 'user-1'; DELETE FROM oauthConsent WHERE userId = 'user-1'"
+    );
+    expect((await POST(rpc("tools/list"))).status).toBe(401);
   });
 
   it.each([
@@ -270,7 +328,7 @@ describe("TrackDraw MCP endpoint", () => {
       rpc("ping", undefined, { headers: { origin } })
     );
     expect(response.status).toBe(403);
-    expect(verifyApiKey).not.toHaveBeenCalled();
+    expect(verifyAccessToken).not.toHaveBeenCalled();
   });
 
   it("accepts the configured origin and local preview origins outside production", async () => {
@@ -298,7 +356,7 @@ describe("TrackDraw MCP endpoint", () => {
   it("rejects query-string credentials even if a header is also present", async () => {
     const request = new Request(endpoint + "?key=secret", rpc("ping"));
     expect((await POST(request)).status).toBe(400);
-    expect(verifyApiKey).not.toHaveBeenCalled();
+    expect(verifyAccessToken).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -314,7 +372,7 @@ describe("TrackDraw MCP endpoint", () => {
       const response = await handler(
         new Request(endpoint, {
           method,
-          headers: { authorization: "Bearer td_test" },
+          headers: { authorization: "Bearer oauth_test" },
         })
       );
       expect(response.status).toBe(405);
@@ -396,12 +454,12 @@ describe("TrackDraw MCP endpoint", () => {
 
   it("returns a sanitized failure and logs only an allowlisted operational record", async () => {
     vi.mocked(getAuth).mockRejectedValue(
-      new Error("secret td_test private@example.com track contents")
+      new Error("secret oauth_test private@example.com track contents")
     );
     const response = await POST(rpc("ping"));
     expect(response.status).toBe(500);
     expect(await response.text()).not.toMatch(
-      /td_test|private@example|track contents/
+      /oauth_test|private@example|track contents/
     );
     expect(console.info).toHaveBeenCalledWith(expect.any(String));
     const log = JSON.parse(vi.mocked(console.info).mock.calls.at(-1)![0]);

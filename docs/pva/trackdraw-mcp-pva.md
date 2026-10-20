@@ -6,68 +6,64 @@ Status: implementing [#995](https://github.com/dutchdronesquad/trackdraw/issues/
 
 ## Decision
 
-Host a stateless MCP Streamable HTTP endpoint at `/api/mcp` inside the existing Next.js/OpenNext Worker. Use the official TypeScript SDK's Web Standards transport and its Cloudflare-compatible JSON Schema validator. JSON request/response mode avoids long-lived SSE streams, cross-instance sessions, new storage bindings and background transport state.
+Host stateless MCP Streamable HTTP at `/api/mcp` inside the existing Next.js/OpenNext Worker. Use the official MCP TypeScript SDK's Web Standards transport, JSON responses and Cloudflare-compatible schema validator. No retained transport sessions, standalone SSE stream or additional Worker binding is needed.
 
-The initial supported client is the official MCP TypeScript SDK with an explicitly configured `Authorization: Bearer` header. Provision an ordinary, expiring TrackDraw API key through the existing account settings. Reuse Better Auth verification, revocation, permission semantics, request budgets and account activity tracking on every HTTP request. Browser cookies never substitute for a bearer key.
+OAuth is the connection flow. Better Auth's official MCP/OAuth provider owns discovery, Dynamic Client Registration, authorization codes, S256 PKCE, redirect validation, signed consent requests, token issuance, refresh rotation and revocation. Keep the existing passkey/magic-link login, with a callback that returns to the original authorization request. Add an explicit consent screen and account-owned connected-app management.
 
-This is a deliberately limited, manually provisioned bearer integration. It does not implement the MCP OAuth discovery/authorization flow and must not be advertised as compatible with clients that require OAuth. The HTTP authorization specification recommends OAuth; manual header configuration is a documented interoperability tradeoff for the first supported client. Add OAuth before claiming support for OAuth-only clients, rather than exposing misleading discovery metadata or treating a REST key as an OAuth access token.
+Use opaque, hashed access/refresh tokens with provider-side validation on every MCP request. This supports immediate expiry/revocation checks without a JWKS fetch or accepting a stale signed token. A pathless server-only Better Auth endpoint calls the provider's `requireActiveAccessToken`; it is not exposed as unauthenticated HTTP introspection. The resource handler additionally checks issuer, audience, subject, expiry, scope, live consent and the current unbanned account.
 
-## Tool and permission contract
+REST API keys remain separate and continue to work on REST. They are not OAuth access tokens and are not accepted by MCP. Browser sessions authorize consent and connection management, never MCP calls themselves.
 
-The first tool is `get_account`, with an empty, strict input object. Like REST `/api/v1/me`, every verified account key can inspect its own minimal identity, granted REST permissions and key expiry. The MCP result additionally identifies the tools actually implemented and states that project reads and writes are unavailable. The result excludes email, key material, key metadata and project contents.
+## Scope and compatibility
 
-All current MCP tools are read-only. No write tool is registered, even if a future key contains a write permission. Project tools in #996 must reuse REST permission checks and selected-project restrictions from `src/lib/api/project-access.ts`; account ownership alone does not imply access to every project. Draft creation (#998) and existing-project changes (#999) require separate explicit write capabilities and their own acceptance checks. Never infer write permission from read access or a successful connection.
+- `mcp:read`: inspect account ID/display name and implemented MCP capabilities. No project access or writes.
+- `offline_access`: optional renewable access. Tokens last 15 minutes; refresh tokens expire after 30 days and rotate with no replay grace period. The resource policy includes this scope to preserve refresh authorization across rotations.
+- Future project reads/writes need explicit additional scopes, shared project ownership/access checks and renewed consent. Existing grants must not silently acquire project access.
+- Anonymous/local-only projects are not uploaded or exposed. Sharing, gallery, editor persistence and public viewers remain unchanged.
+- Verify the official SDK 1.32.1 with the MCP 2025-11-25 authorization profile. DCR supports native/public and web clients; CIMD is not advertised because a secure metadata-fetch transport for Workers is not part of this foundation. Do not claim compatibility with clients that require CIMD without a DCR/pre-registration fallback.
+- Client credentials, device grants and OIDC identity scopes are disabled/out of scope. No trusted clients bypass consent.
 
-Account-backed projects are the future MCP data boundary. Anonymous/local-only Studio projects are neither uploaded nor exposed by connecting a client. Share tokens remain distinct from project identifiers. There are no changes to public share/embed routes or editor persistence.
+## Runtime and persistence
 
-## Runtime and protection
-
-- `/api/mcp` remains under `/api/*`, so the existing Worker page-method guard does not block protocol POST requests. Preserve the early server-action guard.
-- Instantiate the server and transport per request, bind the verified identity through a closure, and close them after the JSON response is ready. No module-level account/transport state.
-- Authenticate initialization, discovery, tool calls and notifications independently. Revoking or expiring a key takes effect on subsequent requests without waiting for a connection to close.
-- Share Better Auth's existing 600 requests/hour budget per key across REST and MCP. Initialization, notifications, discovery and failed authenticated requests consume requests too. No extra MCP quota store is introduced.
-- Read at most 16 KiB, checking both declared and actual streamed bytes. Require UTF-8 JSON and one message per request; reject batches so one budgeted request cannot dispatch multiple calls.
-- Require an absent Origin (native client) or the configured site origin. Permit localhost/127.0.0.1 port 8787 only outside production. No wildcard CORS or cookie authorization.
-- Return no-store responses, 401 bearer challenges, 429 with retry timing when provided by Better Auth, and sanitized 500 errors. Authenticated GET/DELETE/other methods return 405; there is no standalone SSE stream or session termination endpoint.
-- Operational logs contain only `event`, HTTP `method`, `status` and `duration_ms`. Do not log tokens, accounts, RPC arguments, response bodies or exception text.
+- Canonical resource: the configured site origin plus `/api/mcp`; issuer: the same origin plus `/api/auth`. Hosted deployments use HTTPS. Local preview must explicitly use the same loopback origin at build and runtime.
+- Forward `/.well-known/*` discovery requests to the auth handler, retaining the original path. Serve both resource-root/path metadata and issuer-path authorization metadata through the official provider.
+- Migration `0026_mcp_oauth.sql` follows the installed provider's schema, references TrackDraw's `users` and `sessions`, and adds durable auth/MCP request counters. Apply it before deploying the plugin.
+- Consent deletion atomically removes its account/client access and refresh tokens. The resource server also requires live consent. User deletion cascades through grants, tokens and budgets, and removes outstanding OAuth authorization codes.
+- The daily `mcp_oauth` cleanup owner removes old expired tokens, assertion/code evidence, stale counters and old unowned clients with no grants or tokens. Other cleanup owners continue independently on failure.
+- The MCP budget is 600 requests/hour per account/client, with an atomic D1 claim. Refreshes and Worker restarts do not reset it. Provider endpoints use durable per-IP limits for authorization, registration, token exchange and revocation.
+- Limit MCP and OAuth POST bodies to 16 KiB using observed streamed bytes as well as Content-Length. Reject JSON-RPC batches. Forward a rebuilt URL-based Request at the Next.js/Worker boundary to avoid mixing Request implementations.
+- Accept absent Origin for native clients or the configured origin; local preview aliases remain limited to development. No wildcard CORS or cookie fallback on the MCP endpoint.
+- Return RFC 9728/RFC 6750 challenges, no-store responses and sanitized failures. Log only allowlisted method/status/duration; never log credentials, codes, verifiers, private account data or bodies.
 
 ## Codebase anchors
 
-- `src/app/api/mcp/route.ts`: route methods and dynamic execution.
-- `src/lib/server/mcp/handler.ts`: request boundary, authorization, limits and transport lifecycle.
-- `src/lib/server/mcp/server.ts`: tool definitions and account-bound handlers.
-- `src/lib/server/api-identity.ts`: minimal identity serialization shared with REST `/me`.
-- `src/lib/server/api-keys.ts` and `auth.ts`: existing key lifecycle, authorization and budgets.
-- `tests/app/api/mcp.route.test.ts`: real SDK protocol/client tests with mocked persistence/auth dependencies.
-- `scripts/mcp_smoke.mjs`: official client check against Cloudflare preview or an explicitly selected deployed environment.
+- `src/lib/server/mcp/oauth-provider.ts`: official provider configuration and server-only token validation endpoint.
+- `src/lib/server/mcp/oauth-auth.ts`: resource/scopes/consent/account validation and durable MCP budget.
+- `src/lib/server/mcp/connections.ts`, `/mcp/consent`, `/mcp/connections` and account connection APIs: signed consent and owned grant lifecycle.
+- `src/lib/mcp/login-continuation.ts`: safe return to authorization after either sign-in method.
+- `src/app/.well-known/[...discovery]/route.ts`: provider discovery forwarding.
+- `src/lib/server/mcp/handler.ts` and `server.ts`: protocol request boundaries and account-bound read-only tool.
+- `src/lib/server/bounded-request-body.ts`: shared bounded reader for the MCP/OAuth transport boundary.
+- `tests/lib/server/mcp`, `tests/app/api/mcp.route.test.ts`, OAuth boundary and component tests: real-provider grant flow, protocol, persistence and explicit consent.
+- `scripts/mcp_smoke.mjs`: official SDK OAuth client with a loopback callback and in-memory credentials.
 
-## Delivery and go/no-go
+## Delivery checks
 
-- [x] Select the supported transport/client and document the manual bearer/OAuth boundary.
-- [x] Add authenticated discovery and the account/capability tool with shared identity serialization.
-- [x] Cover invalid/expired/revoked credentials, cross-account isolation, unknown writes, limits, origin checks and sanitized failures.
-- [x] Run lint, full tests, type checking and production build.
-- [x] Run migrations and Cloudflare preview locally; exercise the documented client with a real local key, then expiration/revocation and request-budget failure paths.
-- [x] Record validation evidence and limitations below and in the delivery PR.
+- [x] Add OAuth discovery, code + S256 PKCE, consent and refresh/revocation through the official provider.
+- [x] Separate scopes, enforce resource binding and require live consent on each MCP call.
+- [x] Add connected-app management, durable budgets and credential lifecycle migration/cleanup.
+- [x] Cover the real provider's successful and rejected authorization flows, protocol boundaries and owner-safe disconnect.
+- [x] Run final lint, tests, types, builds, formatting and English-only i18n checks.
+- [x] Run the official client against local Cloudflare preview with real browser consent on desktop/mobile; verify refresh, expiry, budgets and disconnect.
+- [x] Update PR #1001 with the final OAuth behavior and current-head validation evidence.
 
-Do not claim universal MCP client support, production availability or completion of the parent epic from this foundation. A failed Worker build or failed authenticated preview check is a no-go for marking #995 complete.
+Validation: 1,466 tests pass; lint, types, Next.js/OpenNext builds, formatting and both i18n checks pass. The official SDK and real browser consent/disconnect pass against local Cloudflare preview. Real token lifecycle checks cover refresh rotation, expiry, revocation, account-bound identity, request budgets and REST-key rejection. The selected consent design was compared with its implementation and checked at desktop and 390px mobile.
+
+The parent epic stays open after this foundation. Production deployment and compatibility with additional clients require separate evidence.
 
 ## Sources
 
-- [Official SDK server and transport documentation](https://ts.sdk.modelcontextprotocol.io/server)
-- [SDK Web Standards transport](https://github.com/modelcontextprotocol/typescript-sdk/blob/v1.x/src/server/webStandardStreamableHttp.ts)
-- [MCP Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
-- [MCP HTTP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)
-- [Cloudflare Web Request API](https://developers.cloudflare.com/workers/runtime-apis/request/)
-
-## Local validation evidence
-
-Validated on October 20, 2026 with SDK 1.32.1, OpenNext Cloudflare 1.20.12 and Wrangler 4.151.2:
-
-- Lint and type checking pass; all 1,435 tests pass, including 37 MCP route/protocol checks using the official SDK.
-- The production Next.js build and `npm run preview` Worker build both complete.
-- A temporary local D1 account/session fixture creates a real key through the existing account API; the official smoke client completes initialization, discovery and `get_account` against the local Worker.
-- MCP and REST `/me` return the same identity summary. Unknown write tools fail; disabled, expired, invalid and revoked keys return 401. Forced local quota exhaustion returns 429 with Retry-After. Revocation uses the existing account API. Temporary fixture rows are removed afterward.
-- English-only legal updates pass i18n integrity and hardcoded-copy checks; existing target-catalog fallbacks remain unchanged.
-
-No production deployment or browser OAuth onboarding was exercised. The supported client evidence covers the official SDK with manual bearer configuration; additional clients remain unverified.
+- [Better Auth MCP provider](https://better-auth.com/docs/plugins/mcp)
+- [Better Auth OAuth provider](https://better-auth.com/docs/plugins/oauth-provider)
+- [MCP HTTP authorization profile](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)
+- [Official SDK server](https://ts.sdk.modelcontextprotocol.io/server) and [client](https://ts.sdk.modelcontextprotocol.io/client)

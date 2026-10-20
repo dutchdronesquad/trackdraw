@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getMcpLoginContinuation } from "@/lib/mcp/login-continuation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +31,9 @@ function getLoginCallbackURL() {
   if (typeof window === "undefined") {
     return "/studio";
   }
+
+  const oauthContinuation = getMcpLoginContinuation(window.location.search);
+  if (oauthContinuation) return oauthContinuation;
 
   const callbackURL = new URLSearchParams(window.location.search).get(
     "callbackURL"

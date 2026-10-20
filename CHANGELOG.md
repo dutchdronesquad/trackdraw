@@ -8,7 +8,7 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ### MCP connection foundation
 
-Connect a supported MCP client using an expiring API key and verify the linked TrackDraw account. This first version supports manually configured bearer authentication and an account check; project reads and editing follow separately. See the [connection guide](docs/mcp.md).
+Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. This first version checks your account and available capabilities; project reads and editing follow separately. See the [connection guide](docs/mcp.md).
 
 ### Project access for integrations
 

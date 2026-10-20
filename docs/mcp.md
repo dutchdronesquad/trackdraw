@@ -1,76 +1,64 @@
 # Connecting to TrackDraw MCP
 
-TrackDraw's initial MCP endpoint supports an account connection check. Project reads, course analysis, creating drafts and editing projects are tracked separately in [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
+TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. The initial tool is `get_account`: it checks the authorized account and available capabilities. Project reads, course analysis, drafts and editing are separate milestones in [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
 
-## Supported client and authentication
+## Connect and disconnect
 
-Use the official MCP TypeScript SDK's `StreamableHTTPClientTransport` with an explicitly configured bearer header. The endpoint uses standard Streamable HTTP with JSON responses and no retained MCP session. It does not provide OAuth discovery or an interactive OAuth sign-in flow. Clients that require OAuth are not supported by this version; compatibility with other clients needs an actual connection test.
+1. Add the TrackDraw environment's `/api/mcp` URL to your MCP client. Use HTTPS for hosted environments; use the explicitly configured loopback origin for local preview.
+2. The client discovers TrackDraw's authorization server and registers itself, or uses its existing registration.
+3. Sign in to TrackDraw with a passkey or magic link. Both methods return you to the original OAuth request.
+4. Review the requesting app, callback host, account and permissions, then allow or decline the connection.
+5. Disconnect an app from **Connected apps** in account settings, or open `/mcp/connections`. Disconnecting removes that account's consent and its access/refresh tokens.
 
-1. Open `/studio?dialog=account&section=api-keys` on the TrackDraw environment you want to connect to and sign in.
-2. Create an expiring key for your integration. The existing form supplies the standard read permissions; there is no separate MCP write toggle or scope selector.
-3. Store the key in your client's protected environment or secret configuration, then configure the `/api/mcp` URL from that same environment.
-4. Connect, discover tools and call `get_account` with `{}`. Check the returned account and capabilities.
-5. Revoke the key in account settings when the connection is no longer needed. Subsequent MCP requests must fail with 401.
+Do not paste a REST API key into an OAuth client. REST keys continue to serve `/api/v1/*`; the MCP endpoint accepts OAuth access tokens issued for its own resource. A browser session alone also does not authorize MCP requests.
 
-An API key can be limited to selected cloud projects. Its project-access settings will remain authoritative when project tools are added. Connecting does not upload local-only or anonymous Studio projects.
+The initial `mcp:read` scope grants access to account ID, display name and MCP capabilities. It does not grant project access. `offline_access` optionally allows refresh tokens so the client can remain connected without signing in for each request. Access tokens last 15 minutes; refresh tokens expire after 30 days and rotate on use. Reusing a rotated refresh token is rejected. A future project scope requires separate consent; adding a tool must not silently expand an existing account-only grant.
 
-Only grant a key to a client you trust. The client receives the tool output and handles it under its own policies. The initial account tool returns account ID/display name, granted REST permissions, expiry and available MCP capabilities. It omits email, credentials and project contents. REST permissions in this response do not imply that equivalent MCP tools have already shipped.
+Choose a client you trust: it handles received information under its own policies. Client names are supplied by the client, so the consent page also displays its identifier and callback host. Connecting does not upload anonymous/local-only Studio projects or allow project creation, editing or publishing.
 
-## Official SDK example
+## Supported protocol and client
 
-After installing this repository's dependencies, set `TRACKDRAW_MCP_URL` and `TRACKDRAW_API_KEY` in a protected shell environment and run:
+The verified client is the official MCP TypeScript SDK 1.32.1 with its OAuth client provider and Streamable HTTP transport, using the MCP 2025-11-25 authorization profile. Discovery uses RFC 9728 protected-resource metadata and RFC 8414 authorization-server metadata. Authorization uses the code flow with S256 PKCE, exact registered redirects (including native loopback redirect rules), resource indicators and user consent.
+
+Dynamic Client Registration is enabled for public/native and web clients with provider endpoint rate limits. Client ID Metadata Documents (CIMD), device authorization, machine credentials and OpenID Connect identity scopes are not advertised by this version. Additional clients require an actual connection test; OAuth support alone does not establish compatibility with every client's registration mechanism.
+
+## Official SDK smoke client
+
+Install repository dependencies and set only the environment URL:
 
 ```bash
-node scripts/mcp_smoke.mjs
+TRACKDRAW_MCP_URL=http://localhost:8790/api/mcp node scripts/mcp_smoke.mjs
 ```
 
-For local preview, use `http://localhost:8787/api/mcp`. For another environment, use its explicit origin followed by `/api/mcp`; this documentation alone does not establish that a release is deployed there. Read secrets through your normal secret manager or an interactive shell prompt rather than placing them in command history.
+The script prints an authorization URL. Open it in a browser, sign in and review the consent page. Its callback listener binds only to `127.0.0.1` on an automatically assigned port and checks callback state and issuer. The SDK handles discovery, registration, PKCE and code exchange. Credentials and code verifiers stay in memory and are never printed or saved.
 
-The script verifies unauthenticated rejection, protocol initialization, tool discovery and an authenticated account/capability check. It prints capability names and success state without printing the key or account identity. Its core connection is:
+A successful run checks unauthenticated rejection, OAuth discovery and code exchange, MCP initialization, tool discovery and `get_account`. It does not publish or modify a project. You can remove the test app from Connected apps afterward. The script times out after five minutes if authorization is not completed.
 
-```js
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-
-const client = new Client({ name: "trackdraw-integration", version: "1.0.0" });
-const transport = new StreamableHTTPClientTransport(
-  new URL(process.env.TRACKDRAW_MCP_URL),
-  {
-    requestInit: {
-      headers: { Authorization: `Bearer ${process.env.TRACKDRAW_API_KEY}` },
-    },
-  }
-);
-
-try {
-  await client.connect(transport);
-  const tools = await client.listTools();
-  const account = await client.callTool({ name: "get_account", arguments: {} });
-  // Consume account output only within your trusted integration.
-} finally {
-  await client.close();
-}
-```
-
-Use HTTPS for hosted connections. Plain HTTP is limited to localhost development. Keep credentials out of URLs, queries, logs and public configuration.
+In your own SDK integration, configure `StreamableHTTPClientTransport` with an `authProvider` implementing `OAuthClientProvider` from `@modelcontextprotocol/sdk/client/auth.js`. Store credentials securely, retain issuer binding with registration/tokens, validate callback state and issuer, and use `finishAuth(code)` before reconnecting after authorization. Do not replace OAuth with a static bearer header. See [the official SDK client documentation](https://ts.sdk.modelcontextprotocol.io/client).
 
 ## Errors and limits
 
-| Response  | Meaning/action                                                                                                                             |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 400       | Invalid JSON-RPC, UTF-8/JSON body, batch, protocol version or query parameters. Send one message to the endpoint without query parameters. |
-| 401       | Missing, invalid, expired, disabled, revoked or orphaned API key. Browser cookies do not authorize MCP.                                    |
-| 403       | A supplied Origin is not allowed. Native clients can omit Origin; browser clients cannot use arbitrary origins.                            |
-| 405       | Use POST. Standalone SSE, retained sessions and session deletion are unavailable.                                                          |
-| 406 / 415 | Accept both `application/json` and `text/event-stream`; send `application/json`. The SDK configures these headers.                         |
-| 413       | Request body exceeds 16 KiB, including streamed bodies without Content-Length.                                                             |
-| 429       | Shared API-key budget exhausted. Observe Retry-After when present and reduce request frequency.                                            |
-| 500       | Temporary server failure. Investigate the privacy-safe operational status logs; do not log secrets while debugging.                        |
+| Response  | Meaning/action                                                                                                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400       | Invalid JSON-RPC, UTF-8/JSON, batch or query parameters. Send one message per request. OAuth endpoints separately return standard OAuth errors.                                   |
+| 401       | Missing, invalid, expired, revoked or wrong-resource token, removed consent or unavailable account. Follow the `WWW-Authenticate` resource-metadata challenge to authorize again. |
+| 403       | Invalid Origin, or a valid token missing `mcp:read`. An insufficient-scope challenge names the required scope.                                                                    |
+| 405       | Use POST. Standalone SSE streams and retained MCP sessions are unavailable.                                                                                                       |
+| 406 / 415 | Accept JSON and SSE; send JSON. The SDK configures these headers.                                                                                                                 |
+| 413       | MCP or OAuth POST body exceeds 16 KiB, including streamed bodies.                                                                                                                 |
+| 429       | Request budget exhausted. Observe Retry-After. Token rotation does not reset the MCP budget.                                                                                      |
+| 500       | Temporary server failure. Check privacy-safe operational status logs.                                                                                                             |
 
-The existing per-key budget is 600 requests per hour, shared with REST calls using the same key. Initialization, notifications and discovery consume requests too. No project writes are exposed; an attempted write tool returns an MCP error and does not change a project.
+Each account/client pair gets 600 MCP HTTP requests per hour in a durable D1 counter. Initialization, discovery and notifications count too. OAuth authorization, registration, token and revocation endpoints have separate durable per-IP rate limits. All MCP responses are `no-store`; logs omit tokens, authorization codes, verifiers, identity output and request/response bodies.
 
-## Contributor validation
+## Local runtime validation
 
-Run `npm run migrate:local` and `npm run preview`, following [local authentication setup](../CONTRIBUTING.md#local-auth). Use a local-only account/key for validation. Run the smoke client, revoke the key and verify another request returns 401. Validate an expired/disabled key and the 429 budget path with local fixtures only. Do not change a real user's key or quota to exercise these cases.
+Apply migrations through `0026_mcp_oauth.sql` before running the new auth configuration. Use [local auth setup](../CONTRIBUTING.md#local-auth) and an explicit canonical loopback origin. For example, after local migrations:
 
-The automated route tests use the real SDK client and server/transport while mocking auth and database dependencies. They establish protocol and boundary behavior; Cloudflare preview with actual D1/Better Auth establishes runtime integration. Neither proves deployment or compatibility with an untested client.
+```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:8790 NEXT_PUBLIC_APP_ENV=development npm run preview -- --port 8790 --var NEXT_PUBLIC_SITE_URL:http://localhost:8790
+```
+
+The build and runtime origin must agree: this determines the OAuth resource, issuer, browser origins and cookie security. Hosted deployments keep their configured HTTPS origin and secure cookies. Do not enable remote bindings for local credential tests.
+
+Validate discovery, login continuation, approval/decline, PKCE and redirect failures, refresh rotation, expiry, wrong audience, insufficient scope, request budgets and user disconnect. Use temporary local accounts; do not alter real users' credentials to exercise failure cases. Automated provider/protocol tests complement the real Cloudflare preview/browser check. Local validation does not establish production deployment.
