@@ -22,6 +22,7 @@ type ConsentRequest = {
   callbackHost: string;
   account: string;
   offlineAccess: boolean;
+  projectReadAccess?: boolean;
 };
 
 export function McpConsent({ request }: { request: ConsentRequest }) {
@@ -124,13 +125,19 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                 {
                   icon: ShieldCheck,
                   title: "readOnlyTitle",
-                  body: "readPermission",
+                  body: request.projectReadAccess
+                    ? "projectPermission"
+                    : "readPermission",
                   color: "text-brand-secondary bg-brand-secondary/5",
                 },
                 {
                   icon: LockKeyhole,
-                  title: "privateTitle",
-                  body: "noProjectAccess",
+                  title: request.projectReadAccess
+                    ? "noWriteTitle"
+                    : "privateTitle",
+                  body: request.projectReadAccess
+                    ? "noWriteAccess"
+                    : "noProjectAccess",
                   color: "text-muted-foreground bg-muted/50",
                 },
               ].map(({ icon: Icon, title, body, color }) => (
@@ -211,6 +218,19 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                   </div>
                 </li>
               ))}
+              {request.projectReadAccess && (
+                <li className="border-border/60 flex items-start gap-4 border-t pt-5">
+                  <span className="bg-brand-primary/5 text-brand-primary flex size-9 shrink-0 items-center justify-center rounded-full sm:size-12">
+                    <ContactRound className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="text-sm sm:text-base">
+                    <p className="font-medium">{t("projectPermissionTitle")}</p>
+                    <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                      {t("projectPermission")}
+                    </p>
+                  </div>
+                </li>
+              )}
               {request.offlineAccess && (
                 <li className="border-border/60 flex items-start gap-4 border-t pt-5">
                   <span className="flex size-9 shrink-0 items-center justify-center sm:size-12">
@@ -226,7 +246,9 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
               )}
             </ul>
             <p className="text-muted-foreground pb-5 text-xs leading-5 lg:hidden">
-              {t("noProjectAccess")}
+              {t(
+                request.projectReadAccess ? "noWriteAccess" : "noProjectAccess"
+              )}
             </p>
             <details className="group border-border/60 border-t py-4 text-sm">
               <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-3 rounded-sm transition-colors">

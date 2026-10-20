@@ -305,11 +305,35 @@ export type StoredProjectSummary = {
   updatedAt: string;
 };
 
+export class ProjectCursorError extends Error {}
+
 export async function listProjectSummariesForUser(
   ownerUserId: string,
-  projectAccess?: ApiKeyProjectAccess
+  projectAccess?: ApiKeyProjectAccess,
+  page?: { afterId?: string; limit: number }
 ): Promise<StoredProjectSummary[]> {
   const db = await getDatabase();
+  if (
+    page &&
+    (!Number.isInteger(page.limit) || page.limit < 1 || page.limit > 101)
+  )
+    throw new Error("Invalid project page size");
+  let after: { id: string; updated_at: string } | null = null;
+  if (page?.afterId) {
+    after = await db
+      .prepare(
+        `SELECT id, updated_at FROM projects WHERE id = ? AND owner_user_id = ? AND archived_at IS NULL ${projectAccess?.mode === "selected" ? "AND id IN (SELECT value FROM json_each(?))" : ""}`
+      )
+      .bind(
+        page.afterId,
+        ownerUserId,
+        ...(projectAccess?.mode === "selected"
+          ? [JSON.stringify(projectAccess.projectIds)]
+          : [])
+      )
+      .first<{ id: string; updated_at: string }>();
+    if (!after) throw new ProjectCursorError();
+  }
   const result = await db
     .prepare(
       `
@@ -325,18 +349,26 @@ export async function listProjectSummariesForUser(
         from projects
         where owner_user_id = ? and archived_at is null
           ${projectAccess?.mode === "selected" ? "and id in (select value from json_each(?))" : ""}
+          ${after ? "and (updated_at < ? or (updated_at = ? and id > ?))" : ""}
         order by updated_at desc, id asc
+        ${page ? "limit ?" : ""}
       `
     )
     .bind(
       ownerUserId,
       ...(projectAccess?.mode === "selected"
         ? [JSON.stringify(projectAccess.projectIds)]
-        : [])
+        : []),
+      ...(after ? [after.updated_at, after.updated_at, after.id] : []),
+      ...(page ? [page.limit] : [])
     )
     .all<ProjectSummaryRow>();
 
-  return result.results.map((row) => ({
+  return result.results.map(mapProjectSummary);
+}
+
+function mapProjectSummary(row: ProjectSummaryRow): StoredProjectSummary {
+  return {
     id: row.id,
     ownerUserId: row.owner_user_id,
     title: row.title,
@@ -351,7 +383,7 @@ export async function listProjectSummariesForUser(
     shapeCount: row.shape_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  }));
+  };
 }
 
 export async function archiveProjectForUser(

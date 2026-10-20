@@ -4,9 +4,15 @@ import { isAPIError } from "better-auth/api";
 import { toAccountIdentitySummary } from "@/lib/server/api-identity";
 import { getAuth } from "@/lib/server/auth";
 import { getDatabase } from "@/lib/server/db";
-import { getBearerApiKey } from "@/lib/server/api-keys";
+import { getBearerApiKey, trackReadPermission } from "@/lib/server/api-keys";
 import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
-import { MCP_READ_SCOPE, getMcpIssuer, getMcpResource } from "./oauth-provider";
+import {
+  MCP_DEFAULT_SCOPES,
+  MCP_PROJECT_READ_SCOPE,
+  MCP_READ_SCOPE,
+  getMcpIssuer,
+  getMcpResource,
+} from "./oauth-provider";
 
 const BUDGET_WINDOW_MS = 3_600_000;
 const BUDGET_MAX = 600;
@@ -16,7 +22,7 @@ export function mcpChallenge(error?: "invalid_token" | "insufficient_scope") {
     "/.well-known/oauth-protected-resource/api/mcp",
     getMcpResource()
   ).href;
-  return `Bearer resource_metadata="${metadata}", scope="${MCP_READ_SCOPE}"${error ? `, error="${error}"` : ""}`;
+  return `Bearer resource_metadata="${metadata}", scope="${MCP_DEFAULT_SCOPES.join(" ")}"${error ? `, error="${error}"` : ""}`;
 }
 
 function failure(
@@ -87,10 +93,16 @@ export async function authenticateMcpRequest(request: Request) {
     FROM users u WHERE u.id = ? AND u.banned_at IS NULL
     AND EXISTS (SELECT 1 FROM oauthConsent c WHERE c.userId = u.id AND c.clientId = ?
       AND EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'mcp:read')
-      AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?))
+      AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)
+      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:read')))
   `
     )
-    .bind(claims.sub, claims.client_id, getMcpResource())
+    .bind(
+      claims.sub,
+      claims.client_id,
+      getMcpResource(),
+      scopes.includes(MCP_PROJECT_READ_SCOPE) ? 1 : 0
+    )
     .first<{ id: string; name: string | null; lastActiveAt: string | null }>();
   if (!user)
     return failure(
@@ -147,7 +159,10 @@ export async function authenticateMcpRequest(request: Request) {
     ok: true as const,
     identity: toAccountIdentitySummary(
       user,
-      { mcp: ["read"] },
+      {
+        mcp: ["read"],
+        ...(scopes.includes(MCP_PROJECT_READ_SCOPE) ? trackReadPermission : {}),
+      },
       new Date(claims.exp * 1000)
     ),
   };

@@ -37,6 +37,19 @@ describe("MCP consent and connection management", () => {
     ).toBeTruthy();
     expect(fetch).not.toHaveBeenCalled();
   });
+  it("shows all owned project reads only when explicitly requested", () => {
+    render(<McpConsent request={{ ...request, projectReadAccess: true }} />);
+    expect(screen.getByText("Read your saved projects")).toBeTruthy();
+    expect(
+      screen.getAllByText(/current and future saved cloud projects/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/cannot create, edit, delete or publish/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.queryByText(/cannot read, create, edit or publish/)
+    ).toBeNull();
+  });
   it.each([
     ["Allow connection", true],
     ["Decline", false],
