@@ -154,6 +154,8 @@ try {
       "get_track",
       "get_overlay",
       "get_viewer_snapshot",
+      "analyze_track",
+      "compare_tracks",
     ]
   );
   const result = await client.callTool({ name: "get_account", arguments: {} });
@@ -163,7 +165,7 @@ try {
   assert.equal(result.structuredContent?.mcp?.project_reads, true);
   const listed = await client.callTool({
     name: "list_projects",
-    arguments: { limit: 2 },
+    arguments: { limit: 1 },
   });
   assert.notEqual(listed.isError, true);
   assert.equal(listed.structuredContent?.type, "project_list");
@@ -184,6 +186,40 @@ try {
     });
     assert.notEqual(track.isError, true);
     assert.equal(track.structuredContent?.source?.id, projectId);
+    const analysis = await client.callTool({
+      name: "analyze_track",
+      arguments: { project_id: projectId },
+    });
+    if (analysis.isError)
+      assert.equal(
+        analysis.structuredContent?.error?.code,
+        "response_too_large"
+      );
+    else {
+      assert.equal(analysis.structuredContent?.source?.id, projectId);
+      assert.ok(Array.isArray(analysis.structuredContent?.facts?.materials));
+      assert.equal(
+        analysis.structuredContent.facts.materials.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        ),
+        analysis.structuredContent.facts.material_item_count
+      );
+    }
+    if (process.env.TRACKDRAW_MCP_COMPARE_PROJECT_ID) {
+      const compared = await client.callTool({
+        name: "compare_tracks",
+        arguments: {
+          left_project_id: projectId,
+          right_project_id: process.env.TRACKDRAW_MCP_COMPARE_PROJECT_ID,
+        },
+      });
+      assert.notEqual(compared.isError, true);
+      assert.equal(
+        compared.structuredContent?.differences?.direction,
+        "right_minus_left"
+      );
+    }
     for (const name of ["get_overlay", "get_viewer_snapshot"]) {
       const derived = await client.callTool({
         name,
@@ -198,7 +234,7 @@ try {
     }
   }
   console.log(
-    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization, get_account and owned project reads."
+    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization, get_account owned project reads and track material analysis."
   );
 } catch {
   // Do not dump SDK errors, callbacks or token responses into logs.

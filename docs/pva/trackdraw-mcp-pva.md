@@ -65,7 +65,7 @@ The parent epic stays open after this foundation. Production deployment and comp
 
 - Reuse `getProjectForUser` and REST serializers for all five project tools; extend the existing summary service with optional bounded SQL pagination. Existing REST/UI callers retain the prior default behavior.
 - Register project tools only for `projects:read`, mapped to the established REST `tracks: ["read"]` identity permission. Verify that scope against live consent on every request. The existing account-only scope retains its meaning.
-- Return metadata before course data. Page shapes and, separately, polyline points; bind track cursors to project/revision/shape. Keep complete overlay/viewer packages unchanged and reject oversized output with actionable errors. Structured JSON is capped at 32 KiB; large designs skip derived generation above 512 KiB or 2,000 shapes.
+- Return metadata before track data. Page shapes and, separately, polyline points; bind track cursors to project/revision/shape. Keep complete overlay/viewer packages unchanged and reject oversized output with actionable errors. Structured JSON is capped at 32 KiB; large designs skip derived generation above 512 KiB or 2,000 shapes.
 - Apply migration 0027 to extend already seeded MCP resource policy without changing client scopes or user consent. The insert-only provider seed does not update existing rows on deployment.
 - Preserve viewer safety: shared snapshot allowlists and published registry assets only, no private artwork fetch or extra authorization path.
 - Validate ownership, archive/delete/missing cases, scope availability/calls, cursor isolation, 6,000-point geometry, REST parity, registry safety, migration upgrade and real OAuth/Cloudflare preview.
@@ -78,3 +78,11 @@ Validation: 1,482 tests pass, including old-registration scope rejection and unc
 - [Better Auth OAuth provider](https://better-auth.com/docs/plugins/oauth-provider)
 - [MCP HTTP authorization profile](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)
 - [Official SDK server](https://ts.sdk.modelcontextprotocol.io/server) and [client](https://ts.sdk.modelcontextprotocol.io/client)
+
+## Track analysis and material summaries (#997)
+
+- Add read-only `analyze_track` and `compare_tracks` under the existing live `projects:read` grant. Keep project ownership/revision and bounded result handling shared with project reads.
+- Reuse item-registry numbering, inventory counts, smoothed overlay geometry and Race Pack setup estimation. Material rows describe placed assemblies grouped by catalog provenance, barrier variant and stored dimensions; tower/ladder constituent parts are not inferred.
+- Keep stored facts, geometric measurements, setup estimates and unavailable metrics separate. Explicitly selected comparisons return right-minus-left deltas and nulls for unavailable values. Empty tracks have no setup estimate; ambiguous routes are not selected automatically.
+- Use “track” consistently in MCP contracts, descriptions, consent and documentation. Client example: “What materials do we need for my latest track?” uses `list_projects(limit: 1)` followed by `analyze_track(project_id)`.
+- Validate mixed material variants, custom tower/ladder/dive-gate dimensions, closed route parity, stable differences, unavailable metrics, both ownership checks and size bounds through shared-helper and official SDK route tests.

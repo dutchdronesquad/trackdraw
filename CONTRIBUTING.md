@@ -236,7 +236,7 @@ REST API changes:
 
 MCP changes:
 
-Follow [MCP connection and validation](docs/mcp.md). Run the official SDK OAuth smoke client against local Cloudflare preview with a temporary account. Verify consent, PKCE, refresh, expiry, disconnect and request-budget failures. For project reads, cover account-only versus `projects:read` consent, ownership/archival isolation, paged shapes/points, result limits and REST serializer parity. Apply migrations through `0027_mcp_project_read_scope.sql` first and use the same canonical origin at build and runtime. Keep credentials out of logs. The implementation decisions are in the [MCP foundation PVA](docs/pva/trackdraw-mcp-pva.md).
+Follow [MCP connection and validation](docs/mcp.md). Run the official SDK OAuth smoke client against local Cloudflare preview with a temporary account. Verify consent, PKCE, refresh, expiry, disconnect and request-budget failures. For project reads, cover account-only versus `projects:read` consent, ownership/archival isolation, paged shapes/points, result limits and REST serializer parity. For track analysis, cover mixed catalog variants/dimensions, shared geometry and setup parity, empty/ambiguous routes and ownership checks for both comparison projects. The SDK smoke client verifies the latest track material workflow; select an explicit second project with `TRACKDRAW_MCP_COMPARE_PROJECT_ID` to check comparison. Apply migrations through `0027_mcp_project_read_scope.sql` first and use the same canonical origin at build and runtime. Keep credentials out of logs. The implementation decisions are in the [MCP foundation PVA](docs/pva/trackdraw-mcp-pva.md).
 
 Landing page changes:
 
