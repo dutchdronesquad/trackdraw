@@ -1,4 +1,5 @@
 import { AccountRetentionNoticeError } from "@/lib/server/account-retention-notices";
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import {
   ScheduledCleanupError,
@@ -168,22 +169,57 @@ describe("scheduled cleanup", () => {
     };
     const prepare = vi.fn(() => statement);
 
-    const tasks = createScheduledCleanupTasks(
-      { prepare, batch: vi.fn(async () => []) } as Parameters<
-        typeof createScheduledCleanupTasks
-      >[0],
-      mailer
+    const db = { prepare, batch: vi.fn(async () => []) } as Parameters<
+      typeof createScheduledCleanupTasks
+    >[1];
+    const schedules: string[] = JSON.parse(
+      readFileSync("wrangler.jsonc", "utf8").match(
+        /"crons"\s*:\s*(\[[^\]]*\])/
+      )![1]
     );
+    expect(schedules).toEqual(["0 0 * * *", "15,30 * * * *"]);
+    const controllers = [
+      { cron: schedules[0], scheduledTime: Date.UTC(2026, 9, 20, 0, 0) },
+      { cron: schedules[1], scheduledTime: Date.UTC(2026, 9, 20, 12, 15) },
+      { cron: schedules[1], scheduledTime: Date.UTC(2026, 9, 20, 12, 30) },
+    ];
+    const groups = controllers.map((controller) =>
+      createScheduledCleanupTasks(controller, db, mailer)
+    );
+    expect(
+      groups.map((tasks: ScheduledCleanupTask[]) =>
+        tasks.map((task) => task.name)
+      )
+    ).toEqual([
+      [
+        "shares",
+        "api_keys",
+        "mcp_oauth",
+        "product_events",
+        "embed_referrers",
+        "localization_demand",
+      ],
+      ["accounts"],
+      ["account_retention_notices"],
+    ]);
+    expect(() =>
+      createScheduledCleanupTasks(
+        { cron: "* * * * *", scheduledTime: 0 },
+        db,
+        mailer
+      )
+    ).toThrow("Unknown cleanup schedule");
+    const tasks: ScheduledCleanupTask[] = groups.flat();
 
     expect(tasks.map((task) => task.name)).toEqual([
-      "accounts",
-      "account_retention_notices",
       "shares",
       "api_keys",
       "mcp_oauth",
       "product_events",
       "embed_referrers",
       "localization_demand",
+      "accounts",
+      "account_retention_notices",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
     expect(run).toHaveBeenCalledTimes(15);
@@ -267,10 +303,11 @@ describe("scheduled cleanup", () => {
       return statement;
     });
     const productEventsTask = createScheduledCleanupTasks(
+      scheduledContext,
       {
         prepare,
         batch: vi.fn(async () => []),
-      } as Parameters<typeof createScheduledCleanupTasks>[0],
+      } as Parameters<typeof createScheduledCleanupTasks>[1],
       mailer
     ).find((task) => task.name === "product_events");
 

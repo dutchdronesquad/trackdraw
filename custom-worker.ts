@@ -55,6 +55,7 @@ const worker = {
     await runScheduledCleanup(
       controller,
       createScheduledCleanupTasks(
+        controller,
         env.DB,
         createPlunkMailer(env),
         env.MEDIA_BUCKET

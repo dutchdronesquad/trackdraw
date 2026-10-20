@@ -12,7 +12,7 @@ import type { PlunkMailOptions } from "@/lib/email/plunk-client";
 let sqlite: DatabaseSync;
 let clock: Date;
 let beforeQuery: ((query: string) => void) | undefined;
-const bucket = { delete: vi.fn(async (_key: string) => {}) };
+const bucket = { delete: vi.fn(async (_key: string | string[]) => {}) };
 const activityAt = "2025-10-03T12:00:00.000Z";
 const due = "2026-10-03T12:00:00.000Z";
 const db = () => sqliteD1(sqlite, beforeQuery);
@@ -126,6 +126,40 @@ describe("account deletion lifecycle", () => {
     expect((await run()).meta.changes).toBe(1);
   });
 
+  it("respects a time-of-day deadline across hourly runs", async () => {
+    clock = new Date("2026-10-03T11:15:00.000Z");
+    expect((await run()).meta.changes).toBe(0);
+    expect(exists()).toBe(true);
+    clock = new Date("2026-10-03T12:15:00.000Z");
+    expect((await run()).meta.changes).toBe(1);
+    expect(exists()).toBe(false);
+  });
+
+  it("exempts inactive admins from selection and direct retention deletion", async () => {
+    ownedData();
+    sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
+    expect((await run()).meta.changes).toBe(0);
+    expect(
+      await deleteUserAccount(db(), "pilot", { activityAt, now: clock })
+    ).toBe(false);
+    expect(exists()).toBe(true);
+    expect(sqlite.prepare("SELECT id FROM projects").all()).toHaveLength(1);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT id FROM audit_events WHERE event_type = 'account.deleted'"
+        )
+        .all()
+    ).toHaveLength(0);
+    expect(bucket.delete).not.toHaveBeenCalled();
+  });
+
+  it("keeps moderators subject to normal inactivity cleanup", async () => {
+    sqlite.exec("UPDATE users SET role = 'moderator' WHERE id = 'pilot'");
+    expect((await run()).meta.changes).toBe(1);
+    expect(exists()).toBe(false);
+  });
+
   it("preserves other accounts' content and unrelated anonymous shares", async () => {
     ownedData();
     user("survivor", "2026-10-01");
@@ -144,7 +178,7 @@ describe("account deletion lifecycle", () => {
       { id: "other-entry" },
     ]);
     expect(bucket.delete).toHaveBeenCalledTimes(1);
-    expect(bucket.delete).toHaveBeenCalledWith("gallery/previews/entry.webp");
+    expect(bucket.delete).toHaveBeenCalledWith(["gallery/previews/entry.webp"]);
   });
   it("refuses deletion when the lifecycle migration is incomplete", async () => {
     sqlite.exec("DROP TRIGGER account_deleted_data");
@@ -220,7 +254,7 @@ describe("account deletion lifecycle", () => {
     expect(sqlite.prepare("SELECT id FROM verifications").all()).toEqual([
       { id: "other-verification" },
     ]);
-    expect(bucket.delete).toHaveBeenCalledWith("gallery/previews/entry.webp");
+    expect(bucket.delete).toHaveBeenCalledWith(["gallery/previews/entry.webp"]);
     expect((await run()).meta.changes).toBe(0);
     expect(bucket.delete).toHaveBeenCalledTimes(1);
   });
@@ -290,7 +324,7 @@ describe("account deletion lifecycle", () => {
       sqlite.prepare("SELECT * FROM account_retention_notices").all()
     ).toEqual([]);
   });
-  it.each(["activity", "session"])(
+  it.each(["activity", "session", "admin promotion"])(
     "rechecks %s immediately before the destructive statement",
     async (change) => {
       ownedData();
@@ -301,6 +335,8 @@ describe("account deletion lifecycle", () => {
           sqlite.exec(
             "UPDATE users SET last_active_at = '2026-10-03T12:00:00.000Z' WHERE id = 'pilot'"
           );
+        else if (change === "admin promotion")
+          sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
         else
           sqlite.exec(
             "UPDATE sessions SET expiresAt = '2027-01-01' WHERE userId = 'pilot'"
@@ -327,6 +363,69 @@ describe("account deletion lifecycle", () => {
       sqlite.prepare("SELECT * FROM account_deletion_media").all()
     ).toHaveLength(0);
     expect(bucket.delete).not.toHaveBeenCalled();
+  });
+  it("deletes a bounded media batch with one R2 call and one acknowledgement", async () => {
+    const keys = Array.from(
+      { length: 101 },
+      (_, index) => `batch/${String(index).padStart(3, "0")}`
+    );
+    const insert = sqlite.prepare(
+      "INSERT INTO account_deletion_media(object_key) VALUES (?)"
+    );
+    for (const key of keys) insert.run(key);
+    bucket.delete.mockImplementationOnce(async () => {
+      insert.run("later/key");
+    });
+    const queries: string[] = [];
+    beforeQuery = (query) => queries.push(query);
+    await cleanupAccountDeletionMedia(db(), bucket);
+    expect(bucket.delete).toHaveBeenCalledExactlyOnceWith(keys.slice(0, 100));
+    expect(queries).toHaveLength(2);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT object_key FROM account_deletion_media ORDER BY object_key"
+        )
+        .all()
+    ).toEqual([{ object_key: keys[100] }, { object_key: "later/key" }]);
+  });
+
+  it("retains a complete media batch when the R2 bulk operation fails", async () => {
+    sqlite.exec(
+      "INSERT INTO account_deletion_media(object_key) VALUES ('a'), ('b')"
+    );
+    bucket.delete.mockRejectedValueOnce(new Error("private provider details"));
+    await expect(cleanupAccountDeletionMedia(db(), bucket)).rejects.toThrow(
+      "2 failed deletions"
+    );
+    expect(
+      sqlite.prepare("SELECT object_key FROM account_deletion_media").all()
+    ).toHaveLength(2);
+    await cleanupAccountDeletionMedia(db(), bucket);
+    expect(
+      sqlite.prepare("SELECT object_key FROM account_deletion_media").all()
+    ).toHaveLength(0);
+  });
+
+  it("retries confirmed R2 deletion if the database acknowledgement fails", async () => {
+    sqlite.exec(
+      "INSERT INTO account_deletion_media(object_key) VALUES ('a'), ('b')"
+    );
+    sqlite.exec(
+      "CREATE TRIGGER fail_media_ack BEFORE DELETE ON account_deletion_media BEGIN SELECT RAISE(ABORT, 'private database details'); END"
+    );
+    await expect(cleanupAccountDeletionMedia(db(), bucket)).rejects.toThrow(
+      "2 failed deletions"
+    );
+    expect(
+      sqlite.prepare("SELECT object_key FROM account_deletion_media").all()
+    ).toHaveLength(2);
+    sqlite.exec("DROP TRIGGER fail_media_ack");
+    await cleanupAccountDeletionMedia(db(), bucket);
+    expect(
+      sqlite.prepare("SELECT object_key FROM account_deletion_media").all()
+    ).toHaveLength(0);
+    expect(bucket.delete).toHaveBeenCalledTimes(2);
   });
   it("retains failed R2 keys for retry without a recoverable account", async () => {
     ownedData();

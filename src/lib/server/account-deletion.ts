@@ -21,7 +21,7 @@ export type AdminAccountDeletionAudit = {
   };
 };
 export type AccountDeletionMediaBucket = {
-  delete(key: string): Promise<unknown>;
+  delete(key: string | string[]): Promise<unknown>;
 };
 type RetentionPeriod = { activityAt: string; now: Date };
 
@@ -35,7 +35,7 @@ class MediaCleanupError extends Error {
 // Both acknowledged notices must belong to the current activity period. A
 // delayed final warning can extend the date but never shorten its seven days.
 function retentionGuard(current: string) {
-  return `NOT EXISTS (
+  return `u.role <> 'admin' AND NOT EXISTS (
     SELECT 1 FROM sessions s WHERE s.userId = u.id
       AND (julianday(s.expiresAt) IS NULL OR julianday(s.expiresAt) > julianday(${current}))
   ) AND EXISTS (
@@ -138,20 +138,21 @@ export async function cleanupAccountDeletionMedia(
       throw new Error("Account media cleanup requires MEDIA_BUCKET");
     return;
   }
-  let failed = 0;
-  for (const row of results) {
-    try {
-      await bucket.delete(row.object_key);
-      await db
-        .prepare("DELETE FROM account_deletion_media WHERE object_key = ?")
-        .bind(row.object_key)
-        .run();
-    } catch {
-      // Keep the key until R2 confirms removal; never log object or account data.
-      failed += 1;
-    }
+  if (!results.length) return;
+  const keys = results.map((row) => row.object_key);
+  try {
+    await bucket.delete(keys);
+    // Only acknowledge the selected keys after R2 confirms the complete batch.
+    await db
+      .prepare(
+        `DELETE FROM account_deletion_media WHERE object_key IN (${keys.map(() => "?").join(", ")})`
+      )
+      .bind(...keys)
+      .run();
+  } catch {
+    // Partial/ambiguous R2 success and failed D1 acknowledgements are safe to retry.
+    throw new MediaCleanupError(keys.length);
   }
-  if (failed) throw new MediaCleanupError(failed);
 }
 
 export async function cleanupInactiveAccounts(
@@ -165,12 +166,13 @@ export async function cleanupInactiveAccounts(
   const cutoff = new Date(
     addUtcCalendarMonths(current, -12).getTime() + 3 * 86400000
   );
+  // Keep the dedicated hourly invocation within the Free query/subrequest budget.
   const { results } = await db
     .prepare(
       `SELECT u.id, u.last_active_at AS activity_at
     FROM users u WHERE julianday(u.last_active_at) <= julianday(?2)
       AND ${retentionGuard("?1")}
-    ORDER BY u.last_active_at, u.id LIMIT 25`
+    ORDER BY u.last_active_at, u.id LIMIT 10`
     )
     .bind(current.toISOString(), cutoff.toISOString())
     .all<{ id: string; activity_at: string }>();

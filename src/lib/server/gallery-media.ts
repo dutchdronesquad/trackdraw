@@ -16,7 +16,7 @@ type R2Bucket = {
       };
     }
   ): Promise<unknown>;
-  delete(key: string): Promise<unknown>;
+  delete(key: string | string[]): Promise<unknown>;
 };
 
 type CloudflareContextWithMediaBucket = {

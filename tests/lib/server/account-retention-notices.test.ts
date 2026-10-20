@@ -131,6 +131,43 @@ describe("account retention notices", () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
+  it("never repeats first or final warnings across every hourly run of their day", async () => {
+    for (const day of ["2026-10-04", "2026-10-29"]) {
+      for (let hour = 0; hour < 24; hour++) {
+        clock = new Date(`${day}T${String(hour).padStart(2, "0")}:30:00.000Z`);
+        await run();
+      }
+      expect(send).toHaveBeenCalledTimes(day === "2026-10-04" ? 1 : 2);
+    }
+    expect(notices()).toHaveLength(2);
+    expect(
+      new Set(send.mock.calls.map(([mail]) => mail.idempotencyKey)).size
+    ).toBe(2);
+  });
+
+  it("does not start warnings for inactive admins", async () => {
+    sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
+    await run();
+    expect(send).not.toHaveBeenCalled();
+    expect(notices()).toEqual([]);
+  });
+
+  it("does not send a final warning after promotion to admin", async () => {
+    await run();
+    sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
+    clock = new Date("2026-10-28T00:30:00.000Z");
+    await run();
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(notices()).toHaveLength(1);
+  });
+
+  it("rechecks admin promotion after claiming a notice", async () => {
+    afterClaim = () =>
+      sqlite.exec("UPDATE users SET role = 'admin' WHERE id = 'pilot'");
+    await run();
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("sends the final notice exactly seven days before removal and never repeats either notice", async () => {
     await run();
     clock = new Date("2026-10-27T23:59:59.999Z");
@@ -320,8 +357,10 @@ describe("account retention notices", () => {
         )
         .run(`pilot-${i}`, `pilot-${i}@example.test`);
     await run();
-    expect(send).toHaveBeenCalledTimes(25);
+    expect(send).toHaveBeenCalledTimes(5);
     await run();
+    expect(send).toHaveBeenCalledTimes(10);
+    for (let i = 0; i < 5; i++) await run();
     expect(send).toHaveBeenCalledTimes(31);
   });
 });
