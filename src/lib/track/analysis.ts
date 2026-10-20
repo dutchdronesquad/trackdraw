@@ -103,7 +103,8 @@ export function analyzeTrack(design: TrackDesign) {
     ? buildSetupPlan(
         design,
         (key) => key,
-        (key) => key
+        (key) => key,
+        { includeObstacleNumbers: false }
       )
     : null;
   const required = getRequiredInventoryCounts(design);
