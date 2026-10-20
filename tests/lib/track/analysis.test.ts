@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as obstacleNumbering from "@/lib/track/obstacleNumbering";
 import { analyzeTrack, compareTracks } from "@/lib/track/analysis";
 import { createDefaultDesign } from "@/lib/track/design";
 import {
@@ -24,6 +25,42 @@ const gate = (id: string): Shape => ({
   id,
 });
 describe("shared track analysis", () => {
+  it("keeps Race Pack estimates without calculating obstacle numbers for analysis", () => {
+    const track = design([
+      gate("a"),
+      gate("b"),
+      { id: "flag", kind: "flag", ...base, radius: 0.5, poleHeight: 3 },
+      { id: "cone", kind: "cone", ...base, radius: 0.2 },
+      { id: "tower", kind: "tower", ...base, width: 2, height: 3, levels: 3 },
+      {
+        id: "route",
+        kind: "polyline",
+        ...base,
+        points: Array.from({ length: 500 }, (_, index) => ({
+          x: index % 100,
+          y: Math.floor(index / 100),
+        })),
+      },
+    ]);
+    const plan = buildSetupPlan(
+      track,
+      (key) => key,
+      (key) => key
+    );
+    const numbering = vi.spyOn(obstacleNumbering, "getObstacleNumberMap");
+    try {
+      const result = analyzeTrack(track);
+      expect(numbering).not.toHaveBeenCalled();
+      expect(result.estimates.setup_elapsed_minutes).toBe(
+        plan.estimatedElapsedMinutes
+      );
+      expect(result.estimates.setup_elapsed_range_minutes).toEqual(
+        plan.estimatedElapsedRange
+      );
+    } finally {
+      numbering.mockRestore();
+    }
+  });
   it("groups repeated variants and stored dimensions, includes towers and excludes annotations", () => {
     const track = design([
       gate("a"),

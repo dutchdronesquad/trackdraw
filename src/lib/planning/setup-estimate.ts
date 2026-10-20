@@ -52,9 +52,13 @@ function getComplexityLabel(totalMinutes: number, t: Translate) {
 export function buildSetupPlan(
   design: TrackDesign,
   t: Translate,
-  tShapes: Translate
+  tShapes: Translate,
+  { includeObstacleNumbers = true }: { includeObstacleNumbers?: boolean } = {}
 ): SetupPlan {
-  const obstacleNumberMap = getObstacleNumberMap(design);
+  // Numeric analysis needs the same estimate, without projecting every obstacle onto the route.
+  const obstacleNumberMap = includeObstacleNumbers
+    ? getObstacleNumberMap(design)
+    : new Map<string, number>();
   const shapes = design.shapeOrder
     .map((id) => design.shapeById[id])
     .filter((shape): shape is Shape => Boolean(shape))
