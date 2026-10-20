@@ -87,6 +87,53 @@ describe("useAccountProjectSync", () => {
     vi.unstubAllGlobals();
   });
 
+  it("coalesces overlapping focus and visibility refreshes and allows the next refresh", async () => {
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    const design = createDefaultDesign();
+    const payload = {
+      ok: true,
+      projects: [
+        {
+          id: design.id,
+          title: design.title,
+          revision: 1,
+          designUpdatedAt: design.updatedAt,
+          updatedAt: design.updatedAt,
+          shapeCount: 0,
+        },
+      ],
+    };
+    let finishRefresh: (response: Response) => void = () => {};
+    const pending = new Promise<Response>((resolve) => {
+      finishRefresh = resolve;
+    });
+    const fetch = vi
+      .fn(async () => Response.json(payload))
+      .mockResolvedValueOnce(Response.json(payload))
+      .mockImplementationOnce(() => pending);
+    vi.stubGlobal("fetch", fetch);
+    const { result } = renderAccountProjectSync({
+      authUserId: "owner",
+      design,
+    });
+    await waitFor(() => expect(result.current.accountProjects).toHaveLength(1));
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      finishRefresh(Response.json(payload));
+    });
+    await waitFor(() =>
+      expect(result.current.accountProjectsLoading).toBe(false)
+    );
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
   it("keeps the opened revision frozen when focus discovers an external edit", async () => {
     const design = createDefaultDesign();
     design.id = "track";

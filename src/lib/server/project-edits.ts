@@ -13,7 +13,11 @@ import { shapeFitsField } from "@/lib/track/field-bounds";
 import { DRAFT_UNVALIDATED_CONSTRAINTS } from "@/lib/track/draft";
 import { getDatabase } from "./db";
 import { getProjectForUser, type StoredProject } from "./projects";
-import { ProjectToolError, assertDerivedDesign } from "./mcp/project-context";
+import {
+  ProjectToolError,
+  assertDerivedDesign,
+  MCP_MAX_RESULT_BYTES,
+} from "./mcp/project-context";
 
 const patch = z
   .strictObject({
@@ -194,7 +198,10 @@ export async function previewProjectEdit(
       : {}),
     unvalidated_constraints: DRAFT_UNVALIDATED_CONSTRAINTS,
   };
-  if (new TextEncoder().encode(JSON.stringify(result)).length > 32_768)
+  if (
+    new TextEncoder().encode(JSON.stringify(result)).byteLength >
+    MCP_MAX_RESULT_BYTES
+  )
     throw new ProjectToolError(
       "response_too_large",
       "This preview is too large. Propose fewer changes."

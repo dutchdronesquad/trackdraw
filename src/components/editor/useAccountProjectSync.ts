@@ -141,6 +141,7 @@ export function useAccountProjectSync({
   const lastAccountSyncSignatureRef = useRef<string | null>(null);
   const syncInFlightByIdRef = useRef<Record<string, boolean>>({});
   const accountProjectsFetchedAtRef = useRef<number | null>(null);
+  const accountProjectsRefreshingForUserRef = useRef<string | null>(null);
   const accountProjectsFetchedForUserRef = useRef<string | null>(null);
   const openedFromAccountSignatureRef = useRef<string | null>(null);
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
@@ -196,6 +197,9 @@ export function useAccountProjectSync({
         return;
       }
 
+      // Tab activation can emit both focus and visibilitychange before the response.
+      if (accountProjectsRefreshingForUserRef.current === authUserId) return;
+      accountProjectsRefreshingForUserRef.current = authUserId;
       setAccountProjectsLoading(true);
       setAccountProjectsError(null);
 
@@ -281,6 +285,8 @@ export function useAccountProjectSync({
             : "Failed to load account projects"
         );
       } finally {
+        if (accountProjectsRefreshingForUserRef.current === authUserId)
+          accountProjectsRefreshingForUserRef.current = null;
         setAccountProjectsLoading(false);
       }
     },
