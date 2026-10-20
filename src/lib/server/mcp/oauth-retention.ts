@@ -7,6 +7,7 @@ type Database = {
 /** Keep expired credential evidence briefly; never prune an active grant. */
 export async function cleanupMcpOauth(db: Database) {
   const statements = [
+    "DELETE FROM mcp_project_edits WHERE applied_at IS NULL AND datetime(expires_at) < datetime('now')",
     `DELETE FROM verifications WHERE datetime(expiresAt) < datetime('now', '-1 day')
       AND (CASE WHEN json_valid(value) THEN json_extract(value, '$.type') ELSE NULL END) = 'authorization_code'`,
     "DELETE FROM oauthAccessToken WHERE datetime(expiresAt) < datetime('now', '-30 days')",

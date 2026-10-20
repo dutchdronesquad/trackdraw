@@ -4,7 +4,7 @@ import {
   createCatalogShapeDraft,
   getTrackElementCatalogEntry,
 } from "./elements/catalog";
-import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
+import { shapeFitsField } from "./field-bounds";
 import type { Shape } from "@/lib/types";
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/);
@@ -203,38 +203,7 @@ export function validateTrackDraft(input: unknown) {
     const path = `shapes.${index}`;
     if (shape.kind !== "label" && shape.kind !== "polyline")
       required[shape.kind]++;
-    const within = (x: number, y: number) =>
-      Number.isFinite(x) &&
-      Number.isFinite(y) &&
-      x >= -1e-8 &&
-      y >= -1e-8 &&
-      x <= design.field.width + 1e-8 &&
-      y <= design.field.height + 1e-8;
-    let fits = true;
-    if (shape.kind === "polyline") {
-      const route = normalized.shapeById[shape.id];
-      const bounds = route && getShapeLocalBounds(route, 1);
-      fits = Boolean(
-        bounds &&
-        within(bounds.x, bounds.y) &&
-        within(bounds.x + bounds.width, bounds.y + bounds.height)
-      );
-    } else if (shape.kind === "label") fits = within(shape.x, shape.y);
-    else {
-      const bounds = getShapeLocalBounds(normalized.shapeById[shape.id], 1);
-      const angle = (shape.rotation * Math.PI) / 180;
-      fits = Boolean(
-        bounds &&
-        [bounds.x, bounds.x + bounds.width].every((x) =>
-          [bounds.y, bounds.y + bounds.height].every((y) =>
-            within(
-              shape.x + x * Math.cos(angle) - y * Math.sin(angle),
-              shape.y + x * Math.sin(angle) + y * Math.cos(angle)
-            )
-          )
-        )
-      );
-    }
+    const fits = shapeFitsField(normalized.shapeById[shape.id], design.field);
     if (!fits)
       issues.push({
         path,

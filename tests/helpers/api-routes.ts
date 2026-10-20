@@ -50,6 +50,7 @@ export function createStoredProjectFixture(
 ): StoredProject {
   const design = createDefaultDesign();
   return {
+    revision: 1,
     id: "project-1",
     ownerUserId: testUser.id,
     title: "Race layout",

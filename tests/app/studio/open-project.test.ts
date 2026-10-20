@@ -56,6 +56,7 @@ it("opens an owned active draft on the canonical host without caching", async ()
   const design = createDefaultDesign();
   vi.mocked(getProjectForUser).mockResolvedValue({
     id: "draft",
+    revision: 1,
     ownerUserId: "owner",
     title: design.title,
     description: "",

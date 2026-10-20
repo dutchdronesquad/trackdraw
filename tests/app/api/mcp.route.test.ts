@@ -212,7 +212,7 @@ describe("TrackDraw MCP endpoint", () => {
         'resource_metadata="https://trackdraw.app/.well-known/oauth-protected-resource/api/mcp"'
       );
       expect(response.headers.get("www-authenticate")).toContain(
-        'scope="mcp:read projects:read projects:create"'
+        'scope="mcp:read projects:read projects:create projects:update"'
       );
       expect(verifyAccessToken).not.toHaveBeenCalled();
     }

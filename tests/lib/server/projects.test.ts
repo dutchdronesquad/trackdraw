@@ -35,6 +35,7 @@ import type { TrackDesign } from "@/lib/types";
 
 function projectRow(design: TrackDesign) {
   return {
+    revision: 1,
     id: "project-1",
     owner_user_id: "user-1",
     title: "Race layout",
@@ -82,7 +83,7 @@ describe("project server helpers", () => {
     expect(selectStatement.sql).toContain("where id = ?");
   });
 
-  it("uses the previous project JSON as an atomic update guard", async () => {
+  it("uses the previous project revision as an atomic update guard", async () => {
     const previousDesign = createDefaultDesign();
     previousDesign.updatedAt = "2026-04-20T10:00:00.000Z";
     const nextDesign = createDefaultDesign();
@@ -104,7 +105,7 @@ describe("project server helpers", () => {
       baseDesignUpdatedAt: previousDesign.updatedAt,
     });
 
-    expect(upsertStatement.sql).toContain("projects.design_json = ?");
+    expect(upsertStatement.sql).toContain("projects.revision = ?");
     expect(upsertStatement.sql).toContain("returning");
     expect(upsertStatement.bind).toHaveBeenCalledWith(
       "project-1",
@@ -117,8 +118,7 @@ describe("project server helpers", () => {
       0,
       expect.any(String),
       expect.any(String),
-      0,
-      JSON.stringify(serializeDesign(previousDesign))
+      1
     );
   });
 

@@ -20,6 +20,7 @@ export function sqliteD1(
   sqlite: DatabaseSync,
   beforeQuery?: (query: string) => void
 ) {
+  let batchQueue = Promise.resolve();
   const db = {
     prepare(query: string) {
       let bindings: SQLInputValue[] = [];
@@ -45,16 +46,25 @@ export function sqliteD1(
       return result;
     },
     async batch<T>(statements: { all<R>(): Promise<{ results: R[] }> }[]) {
+      const previous = batchQueue;
+      let release = () => {};
+      batchQueue = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await previous;
       sqlite.exec("BEGIN");
       try {
         const results = [];
-        for (const statement of statements)
+        for (const statement of statements) {
           results.push(await statement.all<T>());
+        }
         sqlite.exec("COMMIT");
         return results;
       } catch (error) {
         sqlite.exec("ROLLBACK");
         throw error;
+      } finally {
+        release();
       }
     },
   };

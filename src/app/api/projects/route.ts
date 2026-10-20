@@ -18,6 +18,7 @@ const saveProjectRequestSchema = z.object({
   title: z.string().trim().min(1).optional(),
   description: z.string().optional(),
   forceWrite: z.boolean().optional(),
+  baseRevision: z.number().int().positive().optional(),
   baseDesignUpdatedAt: z.string().min(1).nullable().optional(),
 });
 
@@ -67,6 +68,7 @@ export async function GET(request: Request) {
       title: project.title,
       updatedAt: project.updatedAt,
       designUpdatedAt: project.designUpdatedAt,
+      revision: project.revision,
       shapeCount: project.shapeCount,
     }));
 
@@ -112,6 +114,7 @@ export async function POST(request: Request) {
       description: body.description,
       forceWrite: body.forceWrite,
       baseDesignUpdatedAt: body.baseDesignUpdatedAt,
+      baseRevision: body.baseRevision,
     });
 
     if (!existingProject) {
@@ -161,6 +164,7 @@ export async function POST(request: Request) {
             title: cloudProject.title,
             updatedAt: cloudProject.updatedAt,
             designUpdatedAt: cloudProject.designUpdatedAt,
+            revision: cloudProject.revision,
             shapeCount: cloudProject.shapeCount,
           },
         },

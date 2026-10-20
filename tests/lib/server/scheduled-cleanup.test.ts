@@ -186,7 +186,7 @@ describe("scheduled cleanup", () => {
       "localization_demand",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
-    expect(run).toHaveBeenCalledTimes(14);
+    expect(run).toHaveBeenCalledTimes(15);
   });
 
   it("uses a privacy-safe fallback for non-Error rejections", async () => {

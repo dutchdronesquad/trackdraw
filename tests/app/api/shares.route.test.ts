@@ -17,7 +17,8 @@ vi.mock("@/lib/server/auth-session", () => ({
 
 vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
 
-vi.mock("@/lib/server/projects", () => ({
+vi.mock("@/lib/server/projects", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/server/projects")>()),
   getProjectForUser: vi.fn(),
   saveProjectForUser: vi.fn(),
 }));
@@ -49,6 +50,18 @@ describe("shares API route", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("does not overwrite an existing cloud project during unlinked share publishing", async () => {
+    const design = createDefaultDesign();
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
+    vi.mocked(getProjectForUser).mockResolvedValue(
+      createStoredProjectFixture({ id: design.id })
+    );
+    vi.mocked(createShare).mockResolvedValue(createStoredShareFixture());
+    const response = await POST(postRequest({ design }));
+    expect(response.status).toBe(200);
+    expect(saveProjectForUser).not.toHaveBeenCalled();
   });
 
   it("creates anonymous temporary shares with requested expiry", async () => {
