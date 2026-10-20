@@ -796,7 +796,7 @@
       "messages": {
         "loadFailed": "Could not load account projects",
         "loadFailedDescription": "Local projects on this device remain available. Check your connection or sign in again, then reopen Project Manager.",
-        "conflictWarning": "This project changed on another device while you were signed out",
+        "conflictWarning": "This project changed elsewhere",
         "syncError": "Could not sync the latest changes",
         "localCopySavedAfterFailure": "Latest local copy saved {relativeTime}",
         "resolveConflictFirst": "Resolve the version conflict first"
@@ -1002,7 +1002,7 @@
     "title": "Choose a project version",
     "subtitle": "Pick the version you want to keep using on this device.",
     "thisProject": "This project",
-    "body": "changed on another device while you were signed out. Choose which version you want to keep using on this device.",
+    "body": "changed elsewhere. Choose which version you want to keep using on this device.",
     "localVersion": "This device version",
     "cloudVersion": "Account version",
     "lastChanged": "Last changed {date}",
