@@ -86,7 +86,9 @@ describe("gallery media storage", () => {
       previewDataUrl: `data:image/webp;base64,${Buffer.from("webp").toString("base64")}`,
     });
     expect(key).toBeNull();
-    expect(bucket.delete).toHaveBeenCalledWith("gallery/previews/entry-1.webp");
+    expect(bucket.delete).toHaveBeenCalledWith([
+      "gallery/previews/entry-1.webp",
+    ]);
     expect(mocks.run).toHaveBeenCalledTimes(2);
   });
 

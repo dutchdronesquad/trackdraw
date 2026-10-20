@@ -320,8 +320,10 @@ describe("account retention notices", () => {
         )
         .run(`pilot-${i}`, `pilot-${i}@example.test`);
     await run();
-    expect(send).toHaveBeenCalledTimes(25);
+    expect(send).toHaveBeenCalledTimes(2);
     await run();
+    expect(send).toHaveBeenCalledTimes(4);
+    for (let i = 0; i < 14; i++) await run();
     expect(send).toHaveBeenCalledTimes(31);
   });
 });
