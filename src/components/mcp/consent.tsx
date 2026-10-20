@@ -126,10 +126,10 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                 {
                   icon: ShieldCheck,
                   title: request.projectCreateAccess
-                    ? "draftPermissionTitle"
+                    ? "createPermissionTitle"
                     : "readOnlyTitle",
                   body: request.projectCreateAccess
-                    ? "draftPermission"
+                    ? "createPermission"
                     : request.projectReadAccess
                       ? "projectPermission"
                       : "readPermission",
@@ -138,12 +138,12 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                 {
                   icon: LockKeyhole,
                   title: request.projectCreateAccess
-                    ? "draftBoundaryTitle"
+                    ? "createBoundaryTitle"
                     : request.projectReadAccess
                       ? "noWriteTitle"
                       : "privateTitle",
                   body: request.projectCreateAccess
-                    ? "draftBoundary"
+                    ? "createBoundary"
                     : request.projectReadAccess
                       ? "noWriteAccess"
                       : "noProjectAccess",
@@ -246,12 +246,12 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                     <Box className="size-5" aria-hidden="true" />
                   </span>
                   <div className="text-sm sm:text-base">
-                    <p className="font-medium">{t("draftPermissionTitle")}</p>
+                    <p className="font-medium">{t("createPermissionTitle")}</p>
                     <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
-                      {t("draftPermission")}
+                      {t("createPermission")}
                     </p>
                     <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
-                      {t("draftBoundary")}
+                      {t("createBoundary")}
                     </p>
                   </div>
                 </li>
@@ -273,7 +273,7 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
             <p className="text-muted-foreground pb-5 text-xs leading-5 lg:hidden">
               {t(
                 request.projectCreateAccess
-                  ? "draftBoundary"
+                  ? "createBoundary"
                   : request.projectReadAccess
                     ? "noWriteAccess"
                     : "noProjectAccess"

@@ -37,7 +37,7 @@ describe("MCP consent and connection management", () => {
     ).toBeTruthy();
     expect(fetch).not.toHaveBeenCalled();
   });
-  it("shows create-only boundaries only for explicitly requested draft access", () => {
+  it("shows create-only boundaries only for explicitly requested project creation", () => {
     render(
       <McpConsent
         request={{
@@ -47,9 +47,9 @@ describe("MCP consent and connection management", () => {
         }}
       />
     );
-    expect(
-      screen.getAllByText("Create separate track drafts").length
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Create track projects").length).toBeGreaterThan(
+      0
+    );
     expect(
       screen.getAllByText(/cannot edit, delete or publish existing projects/)
         .length

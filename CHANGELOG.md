@@ -8,7 +8,7 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ### MCP connection foundation
 
-Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. With project-read permission, assistants can find saved cloud projects and inspect track data, overlays and viewer snapshots. Large tracks use paged shapes and route points. They can also request material quantities, route metrics and setup estimates, or compare two selected tracks. With separate draft-creation permission, assistants can propose a track within your stated field and inventory limits and save it as a new private project for review in Studio. Existing tracks stay untouched. See the [connection guide](docs/mcp.md).
+Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. With project-read permission, assistants can find saved cloud projects and inspect track data, overlays and viewer snapshots. Large tracks use paged shapes and route points. They can also request material quantities, route metrics and setup estimates, or compare two selected tracks. The same connection can let assistants create a new track project within your stated field and inventory limits, ready to open and adjust in Studio. Existing tracks stay untouched. See the [connection guide](docs/mcp.md).
 
 ### Project access for integrations
 

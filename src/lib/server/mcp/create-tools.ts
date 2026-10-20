@@ -8,16 +8,16 @@ import {
 } from "@/lib/track/draft";
 import { trackElementCatalog } from "@/lib/track/elements/catalog";
 import {
-  createProjectDraftForUser,
-  DraftRequestError,
+  createMcpProjectForUser,
+  ProjectCreateRequestError,
 } from "@/lib/server/projects";
 import { getSiteUrl } from "@/lib/seo";
 import { annotations, execute, ProjectToolError } from "./project-context";
 
 export const CATALOG_TOOLS = ["get_track_catalog"] as const;
-export const DRAFT_TOOLS = ["create_track_draft"] as const;
+export const CREATE_TOOLS = ["create_track"] as const;
 const record = z.record(z.string(), z.unknown());
-export function registerDraftTools(
+export function registerCreateTools(
   server: McpServer,
   userId: string,
   canCreate: boolean
@@ -25,16 +25,16 @@ export function registerDraftTools(
   server.registerTool(
     "get_track_catalog",
     {
-      title: "Inspect track catalog and draft schema",
+      title: "Inspect track catalog and creation schema",
       description:
-        "Return a page of supported physical catalog items and the exact version-2 draft proposal JSON Schema. All lengths are meters, rotation is degrees with 0 as stored forward, coordinates use a top-left field origin. Catalog placements use catalog_id and keep canonical dimensions/metadata; custom shapes use kind and explicit dimensions. Inventory counts complete placed assemblies including towers. Query before proposing a draft; no account project data is returned.",
+        "Return a page of supported physical catalog items and the exact version-2 track proposal JSON Schema. All lengths are meters, rotation is degrees with 0 as stored forward, coordinates use a top-left field origin. Catalog placements use catalog_id and keep canonical dimensions/metadata; custom shapes use kind and explicit dimensions. Inventory counts complete placed assemblies including towers. Query before creating a track; no account project data is returned.",
       inputSchema: z.strictObject({
         offset: z.number().int().min(0).max(1000).default(0),
         limit: z.number().int().min(1).max(20).default(10),
       }),
       outputSchema: z.object({
         type: z.literal("track_catalog"),
-        schema: z.literal("trackdraw.mcp.draft.v1"),
+        schema: z.literal("trackdraw.mcp.project-create.v1"),
         design_version: z.literal(2),
         proposal_schema: record,
         items: z.array(record),
@@ -55,7 +55,7 @@ export function registerDraftTools(
         const more = offset + limit < catalog.length;
         return {
           type: "track_catalog",
-          schema: "trackdraw.mcp.draft.v1",
+          schema: "trackdraw.mcp.project-create.v1",
           design_version: 2,
           proposal_schema: z.toJSONSchema(draftProposalSchema),
           items: catalog.slice(offset, offset + limit).map((entry) => ({
@@ -82,18 +82,18 @@ export function registerDraftTools(
   );
   if (!canCreate) return;
   server.registerTool(
-    "create_track_draft",
+    "create_track",
     {
-      title: "Create a separate track draft",
+      title: "Create a track project",
       description:
-        "Create a NEW private owned cloud project from a proposed version-2 track and explicit field/inventory constraints. Requires projects:create consent; never edits, replaces or publishes an existing project. First get_track_catalog for schema, units and supported items. Use a unique idempotency_key for each intended draft and the SAME key+proposal when retrying; changed proposals require a new key. Returns actionable validation issues or a stable Studio opening URL. Field footprints and assembly counts are checked; clearance and flight safety require user review.",
+        "Create a new track project in the authorized account from a proposed version-2 track and explicit field/inventory constraints. Requires projects:create consent; never edits, replaces or publishes an existing project. First get_track_catalog for schema, units and supported items. Use a unique idempotency_key for each new project and the SAME key+proposal when retrying; changed proposals require a new key. Returns actionable validation issues or a stable Studio opening URL. Field footprints and assembly counts are checked; clearance and flight safety require user review.",
       inputSchema: z.strictObject({
         idempotency_key: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
         proposal: z.unknown(),
       }),
       outputSchema: z.object({
-        type: z.literal("track_draft"),
-        schema: z.literal("trackdraw.mcp.draft.v1"),
+        type: z.literal("project"),
+        schema: z.literal("trackdraw.mcp.project-create.v1"),
         project_id: z.string(),
         title: z.string(),
         studio_url: z.string(),
@@ -117,7 +117,7 @@ export function registerDraftTools(
         if (!validated.ok)
           throw new ProjectToolError(
             "validation_failed",
-            "Correct the proposed track and retry. No draft was created.",
+            "Correct the proposed track and retry. No project was created.",
             validated.issues
           );
         const bytes = new TextEncoder().encode(
@@ -129,15 +129,15 @@ export function registerDraftTools(
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
         try {
-          const { project, replayed } = await createProjectDraftForUser(
+          const { project, replayed } = await createMcpProjectForUser(
             userId,
             validated.design,
             idempotency_key,
             hash
           );
           return {
-            type: "track_draft",
-            schema: "trackdraw.mcp.draft.v1",
+            type: "project",
+            schema: "trackdraw.mcp.project-create.v1",
             project_id: project.id,
             title: project.title,
             studio_url: new URL(
@@ -152,7 +152,7 @@ export function registerDraftTools(
             },
           };
         } catch (error) {
-          if (error instanceof DraftRequestError)
+          if (error instanceof ProjectCreateRequestError)
             throw new ProjectToolError(error.code, error.message);
           throw error;
         }

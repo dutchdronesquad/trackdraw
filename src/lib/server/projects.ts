@@ -218,9 +218,9 @@ export async function saveProjectForUser(
   return mapProjectRow(savedRow);
 }
 
-export class DraftRequestError extends Error {
+export class ProjectCreateRequestError extends Error {
   constructor(
-    readonly code: "idempotency_conflict" | "draft_unavailable",
+    readonly code: "idempotency_conflict" | "project_unavailable",
     message: string
   ) {
     super(message);
@@ -228,7 +228,7 @@ export class DraftRequestError extends Error {
 }
 
 /** Atomic create-only persistence: retry receipts never overwrite a saved or edited project. */
-export async function createProjectDraftForUser(
+export async function createMcpProjectForUser(
   ownerUserId: string,
   design: TrackDesign,
   requestKey: string,
@@ -279,15 +279,15 @@ export async function createProjectDraftForUser(
     .bind(ownerUserId, requestKey)
     .first<{ request_hash: string; project_id: string }>();
   if (!receipt || receipt.request_hash !== requestHash)
-    throw new DraftRequestError(
+    throw new ProjectCreateRequestError(
       "idempotency_conflict",
-      "This idempotency key was used for a different proposal. Use a new key for a new draft."
+      "This idempotency key was used for a different proposal. Use a new key for a new project."
     );
   const project = await getProjectForUser(receipt.project_id, ownerUserId);
   if (!project)
-    throw new DraftRequestError(
-      "draft_unavailable",
-      "The original draft was archived or deleted. It will not be recreated. Use a new key to create a new draft."
+    throw new ProjectCreateRequestError(
+      "project_unavailable",
+      "The original project was archived or deleted. It will not be recreated. Use a new key to create a new project."
     );
   return { project, replayed: receipt.project_id !== projectId };
 }

@@ -228,10 +228,10 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
         .isError
     ).toBe(true);
   });
-  it("requires explicit live create consent and creates idempotent separate drafts", async () => {
+  it("requires explicit live create consent and creates new projects idempotently", async () => {
     const proposal = {
       version: 2,
-      title: "Track draft",
+      title: "Practice track",
       constraints: {
         field: { width: 30, height: 20 },
         inventory: {
@@ -248,7 +248,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
       shapes: [{ ...gate, x: 10, y: 10 }],
     };
     const args = { idempotency_key: "request1", proposal };
-    expect((await call("create_track_draft", args)).isError).toBe(true);
+    expect((await call("create_track", args)).isError).toBe(true);
     const catalog = await data("get_track_catalog", { limit: 20 });
     expect(catalog).toMatchObject({
       type: "track_catalog",
@@ -264,21 +264,21 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
       `UPDATE oauthConsent SET scopes='["mcp:read","projects:read","projects:create"]'`
     );
     expect((await data("get_account")).mcp).toMatchObject({
-      draft_creation: true,
+      project_creation: true,
       project_writes: true,
     });
     save("existing");
-    const first = await data("create_track_draft", args);
+    const first = await data("create_track", args);
     expect(first).toMatchObject({
-      type: "track_draft",
+      type: "project",
       replayed: false,
       design_version: 2,
       studio_url: expect.stringContaining("/studio/open/"),
     });
     expect(first.project_id).not.toBe("existing");
     const [again, concurrent] = await Promise.all([
-      data("create_track_draft", args),
-      data("create_track_draft", args),
+      data("create_track", args),
+      data("create_track", args),
     ]);
     expect(again.project_id).toBe(first.project_id);
     expect(concurrent.project_id).toBe(first.project_id);
@@ -293,15 +293,15 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     sqlite
       .prepare("UPDATE projects SET title='Edited' WHERE id=?")
       .run(String(first.project_id));
-    expect((await data("create_track_draft", args)).title).toBe("Edited");
-    const changed = await call("create_track_draft", {
+    expect((await data("create_track", args)).title).toBe("Edited");
+    const changed = await call("create_track", {
       ...args,
       proposal: { ...proposal, title: "Different" },
     });
     expect(changed.structuredContent).toMatchObject({
       error: { code: "idempotency_conflict" },
     });
-    const invalid = await call("create_track_draft", {
+    const invalid = await call("create_track", {
       idempotency_key: "invalid",
       proposal: { ...proposal, shapes: [{ ...gate, x: 0 }] },
     });
@@ -314,18 +314,18 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     sqlite
       .prepare("UPDATE projects SET archived_at='2026-10-20' WHERE id=?")
       .run(String(first.project_id));
-    expect(
-      (await call("create_track_draft", args)).structuredContent
-    ).toMatchObject({ error: { code: "draft_unavailable" } });
+    expect((await call("create_track", args)).structuredContent).toMatchObject({
+      error: { code: "project_unavailable" },
+    });
     sqlite
       .prepare("DELETE FROM projects WHERE id=?")
       .run(String(first.project_id));
-    expect(
-      (await call("create_track_draft", args)).structuredContent
-    ).toMatchObject({ error: { code: "draft_unavailable" } });
+    expect((await call("create_track", args)).structuredContent).toMatchObject({
+      error: { code: "project_unavailable" },
+    });
     // Same request key in a different account creates only that account's own project.
-    const { createProjectDraftForUser } = await import("@/lib/server/projects");
-    const foreign = await createProjectDraftForUser(
+    const { createMcpProjectForUser } = await import("@/lib/server/projects");
+    const foreign = await createMcpProjectForUser(
       "other",
       stored!.design,
       "request1",

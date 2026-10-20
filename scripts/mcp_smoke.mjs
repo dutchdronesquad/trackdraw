@@ -9,8 +9,8 @@ import {
   UnauthorizedError,
 } from "@modelcontextprotocol/sdk/client/auth.js";
 
-const createDraft = process.env.TRACKDRAW_MCP_CREATE_DRAFT === "1";
-const scope = `mcp:read projects:read${createDraft ? " projects:create" : ""} offline_access`;
+const createTrack = process.env.TRACKDRAW_MCP_CREATE_TRACK === "1";
+const scope = `mcp:read projects:read${createTrack ? " projects:create" : ""} offline_access`;
 let endpoint;
 try {
   endpoint = new URL(process.env.TRACKDRAW_MCP_URL);
@@ -158,7 +158,7 @@ try {
     [
       "get_account",
       "get_track_catalog",
-      ...(createDraft ? ["create_track_draft"] : []),
+      ...(createTrack ? ["create_track"] : []),
       "list_projects",
       "get_project",
       "get_track",
@@ -171,7 +171,7 @@ try {
   const result = await client.callTool({ name: "get_account", arguments: {} });
   assert.notEqual(result.isError, true);
   assert.equal(result.structuredContent?.type, "api_identity");
-  assert.equal(result.structuredContent?.mcp?.project_writes, createDraft);
+  assert.equal(result.structuredContent?.mcp?.project_writes, createTrack);
   assert.equal(result.structuredContent?.mcp?.project_reads, true);
   const catalog = await client.callTool({
     name: "get_track_catalog",
@@ -179,12 +179,12 @@ try {
   });
   assert.notEqual(catalog.isError, true);
   assert.equal(catalog.structuredContent?.design_version, 2);
-  if (createDraft) {
+  if (createTrack) {
     const args = {
       idempotency_key: randomBytes(16).toString("hex"),
       proposal: {
         version: 2,
-        title: "MCP 30 × 20 track draft",
+        title: "MCP 30 × 20 track",
         constraints: {
           field: { width: 30, height: 20 },
           inventory: {
@@ -219,12 +219,12 @@ try {
       },
     };
     const created = await client.callTool({
-      name: "create_track_draft",
+      name: "create_track",
       arguments: args,
     });
     assert.notEqual(created.isError, true);
     const retry = await client.callTool({
-      name: "create_track_draft",
+      name: "create_track",
       arguments: args,
     });
     assert.equal(
@@ -233,7 +233,7 @@ try {
     );
     assert.equal(retry.structuredContent?.replayed, true);
     console.log(
-      `Open the new private draft for review: ${created.structuredContent?.studio_url}`
+      `Open the new track project in Studio: ${created.structuredContent?.studio_url}`
     );
   }
   const listed = await client.callTool({

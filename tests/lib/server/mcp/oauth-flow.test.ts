@@ -260,7 +260,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     ).toMatchObject({ scope: "mcp:read offline_access" });
   });
 
-  it("authorizes the standard read and draft permissions in one consent", async () => {
+  it("authorizes the standard read and creation permissions in one consent", async () => {
     const id = await register(null);
     const scope = MCP_DEFAULT_SCOPES.join(" ");
     expect(scope).toBe("mcp:read projects:read projects:create");
@@ -277,7 +277,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     ).toMatchObject({ scope });
   });
 
-  it("preserves explicitly read-only grants without draft access", async () => {
+  it("preserves explicitly read-only grants without creation access", async () => {
     const id = await register(null);
     const grant = await approve(id, "mcp:read projects:read");
     expect(grant.consent.searchParams.get("scope")).toBe(
