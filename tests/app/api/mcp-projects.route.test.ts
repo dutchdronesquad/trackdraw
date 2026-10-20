@@ -17,10 +17,9 @@ import {
   toApiTrackPackage,
   toApiViewerSnapshotPackage,
 } from "@/lib/server/api-projects";
-import {
-  MCP_MAX_RESULT_BYTES,
-  PROJECT_READ_TOOLS,
-} from "@/lib/server/mcp/project-tools";
+import { PROJECT_READ_TOOLS } from "@/lib/server/mcp/project-tools";
+import { MCP_MAX_RESULT_BYTES } from "@/lib/server/mcp/project-context";
+import { TRACK_ANALYSIS_TOOLS } from "@/lib/server/mcp/analysis-tools";
 import type { Shape } from "@/lib/types";
 vi.mock("server-only", () => ({}));
 const oauth = vi.hoisted(() => ({ claims: vi.fn() }));
@@ -49,7 +48,7 @@ function save(
 ) {
   const design = createDefaultDesign();
   design.id = id;
-  design.title = "Course " + id;
+  design.title = "Track " + id;
   design.updatedAt = "2026-10-20T10:00:00Z";
   design.shapeOrder = shapes.map((s) => s.id);
   design.shapeById = Object.fromEntries(shapes.map((s) => [s.id, s]));
@@ -118,6 +117,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     expect((await client.listTools()).tools.map((t) => t.name)).toEqual([
       "get_account",
       ...PROJECT_READ_TOOLS,
+      ...TRACK_ANALYSIS_TOOLS,
     ]);
     expect((await data("get_account")).mcp).toMatchObject({
       project_reads: true,
@@ -136,6 +136,95 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     scopes = "mcp:read projects:read";
     sqlite.exec("UPDATE oauthConsent SET scopes='[\"mcp:read\"]'");
     await expect(client.listTools()).rejects.toThrow();
+  });
+  it("analyzes persisted tracks and compares only two explicitly selected owned projects", async () => {
+    save("a");
+    save("b", "owner", [gate, { ...gate, id: "second" }]);
+    save("secret", "other");
+    save("archived", "owner", [gate], true);
+    const analysis = await data("analyze_track", { project_id: "b" });
+    expect(analysis).toMatchObject({
+      type: "track_analysis",
+      source: { id: "b" },
+      facts: {
+        material_item_count: 2,
+        materials: [{ kind: "gate", quantity: 2 }],
+      },
+      measured: { route_length_m: null },
+    });
+    const comparison = await data("compare_tracks", {
+      left_project_id: "a",
+      right_project_id: "b",
+    });
+    expect(comparison).toMatchObject({
+      type: "track_comparison",
+      left: { source: { id: "a" } },
+      right: { source: { id: "b" } },
+      differences: {
+        direction: "right_minus_left",
+        material_item_count: 1,
+        route_length_m: null,
+      },
+    });
+    expect(JSON.stringify(comparison)).not.toContain('"materials"');
+    for (const id of ["secret", "archived", "missing", "share-token"]) {
+      for (const args of [
+        { left_project_id: id, right_project_id: "a" },
+        { left_project_id: "a", right_project_id: id },
+      ]) {
+        const response = await call("compare_tracks", args);
+        expect(response.isError).toBe(true);
+        expect(response.structuredContent).toEqual({
+          error: { code: "not_found", message: expect.any(String) },
+        });
+      }
+    }
+    scopes = "mcp:read";
+    for (const name of TRACK_ANALYSIS_TOOLS)
+      expect(
+        (
+          await call(
+            name,
+            name === "analyze_track"
+              ? { project_id: "a" }
+              : { left_project_id: "a", right_project_id: "b" }
+          )
+        ).isError
+      ).toBe(true);
+  });
+  it("bounds analysis input and output and rejects unsupported requested metrics", async () => {
+    save(
+      "large",
+      "owner",
+      Array.from({ length: 2001 }, (_, i) => ({ ...gate, id: String(i) }))
+    );
+    expect(
+      (await call("analyze_track", { project_id: "large" })).structuredContent
+    ).toMatchObject({ error: { code: "response_too_large" } });
+    save(
+      "many",
+      "owner",
+      Array.from({ length: 300 }, (_, i) => ({
+        ...gate,
+        id: String(i),
+        width: i + 1,
+      }))
+    );
+    expect(
+      (await call("analyze_track", { project_id: "many" })).structuredContent
+    ).toMatchObject({ error: { code: "response_too_large" } });
+    expect(
+      (
+        await call("compare_tracks", {
+          left_project_id: "many",
+          right_project_id: "many",
+        })
+      ).isError
+    ).not.toBe(true);
+    expect(
+      (await call("analyze_track", { project_id: "many", metrics: ["safety"] }))
+        .isError
+    ).toBe(true);
   });
   it("paginates owned summaries using bounded SQL in REST order", async () => {
     save("b");
@@ -172,7 +261,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     async (id) => {
       save("secret", "other");
       save("archived", "owner", [gate], true);
-      for (const name of PROJECT_READ_TOOLS.filter(
+      for (const name of [...PROJECT_READ_TOOLS, "analyze_track"].filter(
         (n) => n !== "list_projects"
       )) {
         const r = await call(name, { project_id: id });
@@ -218,21 +307,21 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
         { x: 20, y: 10 },
       ],
     };
-    save("course", "owner", [gate, route]);
-    const project = (await getProjectForUser("course", "owner"))!;
+    save("track", "owner", [gate, route]);
+    const project = (await getProjectForUser("track", "owner"))!;
     expect(
-      (await data("get_project", { project_id: "course" })).project
+      (await data("get_project", { project_id: "track" })).project
     ).toEqual(toApiProjectSummary(project));
-    const track = await data("get_track", { project_id: "course", limit: 1 });
+    const track = await data("get_track", { project_id: "track", limit: 1 });
     expect(track.shapes).toEqual(toApiTrackPackage(project).shapes.slice(0, 1));
-    expect(await data("get_overlay", { project_id: "course" })).toEqual(
+    expect(await data("get_overlay", { project_id: "track" })).toEqual(
       toApiOverlayPackage(project)
     );
-    expect(await data("get_viewer_snapshot", { project_id: "course" })).toEqual(
+    expect(await data("get_viewer_snapshot", { project_id: "track" })).toEqual(
       toApiViewerSnapshotPackage(project)
     );
     const shapePage = await data("get_track", {
-      project_id: "course",
+      project_id: "track",
       limit: 1,
       cursor: (track.pagination as { next_cursor: string }).next_cursor,
     });
@@ -241,12 +330,12 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     ]);
     expect((shapePage.shapes as object[])[0]).not.toHaveProperty("points");
     const points = await data("get_track", {
-      project_id: "course",
+      project_id: "track",
       shape_id: "route",
       limit: 2,
     });
     const next = await data("get_track", {
-      project_id: "course",
+      project_id: "track",
       shape_id: "route",
       limit: 2,
       cursor: (points.pagination as { next_cursor: string }).next_cursor,
@@ -257,24 +346,24 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     ]).toEqual(toApiTrackPackage(project).shapes[1].points);
   });
   it("rejects cursors reused for another project, shape or revision", async () => {
-    save("course", "owner", [gate, { ...gate, id: "two" }]);
+    save("track", "owner", [gate, { ...gate, id: "two" }]);
     save("another", "owner", [gate, { ...gate, id: "two" }]);
-    const first = await data("get_track", { project_id: "course", limit: 1 });
+    const first = await data("get_track", { project_id: "track", limit: 1 });
     const cursor = (first.pagination as { next_cursor: string }).next_cursor;
     for (const args of [
       { project_id: "another", cursor },
-      { project_id: "course", shape_id: "gate", cursor },
+      { project_id: "track", shape_id: "gate", cursor },
     ])
       expect((await call("get_track", args)).structuredContent).toMatchObject({
         error: { code: "invalid_cursor" },
       });
-    const project = (await getProjectForUser("course", "owner"))!;
+    const project = (await getProjectForUser("track", "owner"))!;
     project.design.updatedAt = "2026-10-20T11:00:00Z";
     sqlite
-      .prepare("UPDATE projects SET design_json=? WHERE id='course'")
+      .prepare("UPDATE projects SET design_json=? WHERE id='track'")
       .run(JSON.stringify(serializeDesign(project.design)));
     expect(
-      (await call("get_track", { project_id: "course", cursor })).isError
+      (await call("get_track", { project_id: "track", cursor })).isError
     ).toBe(true);
   });
   it("keeps large geometry inspectable while refusing oversized complete snapshots", async () => {

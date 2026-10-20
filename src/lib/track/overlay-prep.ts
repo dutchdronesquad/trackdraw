@@ -144,7 +144,7 @@ function getRouteProjection(
   };
 }
 
-function getSmoothRouteLength(route: PolylineShape) {
+export function getSmoothRouteLength(route: PolylineShape) {
   const pathPoints = getPolyline2DDerived(route).smoothPoints;
   let routeLength = 0;
 

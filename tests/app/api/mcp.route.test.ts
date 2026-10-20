@@ -126,7 +126,7 @@ describe("TrackDraw MCP endpoint", () => {
     try {
       expect(client.getServerVersion()).toEqual({
         name: "trackdraw",
-        version: "1.1.0",
+        version: "1.2.0",
       });
       expect(client.getServerCapabilities()?.tools).toBeDefined();
       expect(transport.sessionId).toBeUndefined();
