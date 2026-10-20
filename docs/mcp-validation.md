@@ -1,0 +1,73 @@
+# MCP client validation and release gates
+
+This checklist tracks [#1000](https://github.com/dutchdronesquad/trackdraw/issues/1000) under [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994). Connection instructions, scopes, revocation and troubleshooting live in the [MCP guide](mcp.md).
+
+## Compatibility matrix
+
+Record a client version, environment, date and observed OAuth flow before marking it verified. A working transport or a provider unit test alone does not establish client compatibility.
+
+| Client                                       | Flow                                                                                                                                                               | Evidence and limitations                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Official MCP TypeScript SDK 1.32.1           | Streamable HTTP, protected-resource and issuer discovery, public Dynamic Client Registration, authorization code, S256 PKCE, loopback callback, resource indicator | Verified against the deployed development Worker for browser consent, small-track reads/creation/edits/recovery and token lifecycle. Scale testing found an output-schema error; the corrected branch passes local Cloudflare preview. See the evidence below before treating the dev deployment as accepted. |
+| Other desktop, browser and hosted assistants | Not yet tested                                                                                                                                                     | Do not advertise compatibility until that exact client/version completes discovery, consent, callback and the required tools. Clients requiring CIMD have no verified fallback; CIMD is not advertised.                                                                                                       |
+
+Use the SDK smoke client as a reproducible reference. It does not replace testing the actual assistant a user intends to connect. REST API keys are not an OAuth fallback.
+
+## Deployment evidence — October 20, 2026
+
+- Development: [deployment run 39430592150](https://github.com/dutchdronesquad/trackdraw/actions/runs/39430592150) succeeded for commit `525cae811cebf54dc68675f8db244a01cca5ffee`, including migrations through `0029_mcp_project_edits.sql` and Worker deployment. This contains all three capability milestones.
+- A live request to `https://dev.trackdraw.app/.well-known/oauth-protected-resource/api/mcp` returned 200, the expected resource URL and all four capability scopes. An unauthenticated MCP POST returned 401 with a resource-metadata challenge and `Cache-Control: no-store`.
+- Production: both MCP discovery and `/api/mcp` returned 404. The latest production deployment is release `v1.18.1`, predating MCP. Do not present production onboarding as available.
+- Local verification: provider tests exercise actual Better Auth code with an in-memory adapter; route tests use the official SDK and migrated SQLite D1 adapter. These establish implementation behavior, not Cloudflare deployment or compatibility of another assistant.
+
+### Observed client results
+
+The SDK's real OAuth flow completed through the hosted consent page and loopback callback using a disposable, ordinary development account. The initial consent contained the requested read/create/edit scopes together. The returned Studio link opened the generated 30 × 20 m, two-gate project with the expected inventory.
+
+| Environment / code                    | Result                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Deployed dev, `525cae81`              | Small-track account/catalog reads, creation retry, preview without saving, apply retry, stale-proposal conflict and recovery passed. A separate read-only connection confirmed update tools were unavailable.                                                                                                                                                                                                |
+| Deployed dev, `525cae81`              | Forced expiry returned 401; missing scope returned 403; wrong resource returned 401. Setting only the disposable account/client counter to its limit returned 429 with Retry-After; resetting only that counter restored access. Refresh rotation preserved access; refresh-token revocation immediately rejected access. Old refresh-token replay also invalidated the rotated access token.                |
+| Deployed dev, `525cae81`              | A typical track (50 gates, 500 route points) and a large track (2,001 gates, 6,000 route points) returned bounded shape and point pages. Typical material analysis returned 51 shapes. Oversized complete results exposed the schema incompatibility below. Some requests, including consent rendering, also returned Cloudflare 1102; a later retry succeeded. No CPU or memory cause has been established. |
+| This branch, local Cloudflare preview | The complete SDK smoke passed on both fixtures: full shape-page traversal, the first two point pages, materials or explicit `response_too_large`, complete derived results or explicit refusal, creation, edit/conflict/recovery, refresh and revocation. This validates the fix locally; retest the merged commit on dev before accepting its hosted-runtime gate.                                          |
+
+All generated account/project data, tokens and exact test client registrations were removed afterward. Production was not changed. The failures above remain part of the evidence; successful retries do not establish a latency or availability target.
+
+### Compatibility correction found by the real client
+
+SDK 1.32.1 caches output validators after `listTools()`. Returning an error object in `structuredContent` then failed the successful tool output schema, turning an actionable `response_too_large` or `not_found` into protocol error `-32602`. Earlier route tests called these tools without discovery first and did not expose this path.
+
+Errors now use `isError: true` plus their bounded JSON text content, without `structuredContent`. Successful structured results and their published schemas stay intact. This follows the [MCP tool result and error contract](https://modelcontextprotocol.io/specification/2025-11-25/server/tools). A regression test explicitly discovers tools before checking missing projects, invalid cursors and oversized analysis/overlay/snapshot results. Provider coverage also checks that replay invalidates the rotated token family.
+
+## Repeatable acceptance checks
+
+Use an explicitly selected environment and disposable account containing generated tracks. Do not change real users' credentials or counters for failure tests. Record outcomes and failures without tokens, authorization URLs, user identities or project content.
+
+| Check                | Expected result                                                                                                                                                       | Repeatable evidence                                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connect and inspect  | One initial consent, correct account/capabilities, owned project listing, paged geometry, material quantities and selected-project comparison                         | Read-only smoke, optionally setting two owned project IDs; SDK route tests cover ownership and serializers.                                                           |
+| Create               | A version 2 track with the requested field/inventory; same request key returns the same project; open the returned Studio link                                        | `TRACKDRAW_MCP_CREATE_TRACK=1`; inspect the saved project in Studio.                                                                                                  |
+| Edit and recover     | Preview leaves revision unchanged; apply and retry are stable; stale proposal conflicts; recovery restores the prior state and preserves later work on retry          | `TRACKDRAW_MCP_EDIT_TRACK=1`; SDK route and persistence tests also cover Studio conflicts and rollback.                                                               |
+| Refresh and revoke   | Rotation preserves access; revocation immediately rejects access                                                                                                      | `TRACKDRAW_MCP_CHECK_REVOCATION=1`; provider tests cover old-token replay rejection. Separately disconnect in `/mcp/connections` and verify existing access fails.    |
+| Auth failures        | Decline, wrong PKCE/redirect/resource, expired or revoked tokens and missing scope fail; no cross-account data                                                        | Provider, boundary, connection and MCP route tests; repeat the relevant failure paths on the candidate deployment.                                                    |
+| Pagination and scale | Small and typical race tracks remain readable; large routes use point pages; complete oversized outputs return `response_too_large`, never truncated success          | Route tests include 6,000 route points, 2,001 shapes, oversized shape pages and cursor invalidation; repeat with representative fixtures on the candidate deployment. |
+| Request budgets      | 600 MCP requests/hour per account/client, including initialization/notifications; exhaustion returns 429 and Retry-After without token rotation resetting the counter | Durable budget route tests; exercise only a disposable account/client counter when checking the deployed runtime.                                                     |
+
+The reference smoke checks shape pagination up to 5,000 shapes, and the first two point pages of one route. The larger fixture and budget tests above are separate acceptance checks. These are correctness checks; they do not establish a production latency target or prove flight safety.
+
+## Release checklist
+
+For each milestone, keep these evidence levels separate:
+
+1. **Implementation:** merged code, focused regression tests and lint/test/type/build. Check English localization only if product copy changes.
+2. **Cloudflare preview:** migrations, real browser OAuth and SDK flows against the canonical local origin. Record the tested commit and runtime; unit tests do not substitute for this check.
+3. **Development deployment:** verify migration and deploy jobs, then repeat discovery, auth failures, the milestone workflow, representative track sizes and budget behavior against the deployed origin.
+4. **Production release:** use the normal release process. Verify the actual production commit, migrations and endpoints, then repeat onboarding and the milestone checks with disposable data. A successful dev run is not a production release.
+
+| Milestone                        | Merged implementation | Development deployment                                                                | Production   |
+| -------------------------------- | --------------------- | ------------------------------------------------------------------------------------- | ------------ |
+| Read projects and materials      | #995–#997             | Small-track workflow verified; retest corrected oversized-result handling after merge | Not released |
+| Create track projects            | #998                  | Small-track workflow verified; retest corrected oversized-result handling after merge | Not released |
+| Preview/apply edits and recovery | #999                  | Small-track workflow verified; retest corrected oversized-result handling after merge | Not released |
+
+Keep epic #994 open until all milestones have their intended deployed-runtime evidence and production release checks. Keep #1000 open while its required client/runtime acceptance is incomplete. Do not silently treat merged implementation, a green CI run or this checklist as release acceptance.

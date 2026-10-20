@@ -42,24 +42,24 @@ export async function execute(run: () => Promise<Record<string, unknown>>) {
   } catch (error) {
     const known = error instanceof ProjectToolError;
     const invalidCursor = error instanceof ProjectCursorError;
-    return {
-      isError: true,
-      ...result({
-        error: {
-          ...(known && error.issues ? { issues: error.issues } : {}),
-          code: known
-            ? error.code
-            : invalidCursor
-              ? "invalid_cursor"
-              : "unavailable",
-          message: known
-            ? error.message
-            : invalidCursor
-              ? "The list cursor is unavailable. Restart list_projects without a cursor."
-              : "Project data is temporarily unavailable. Retry the request.",
-        },
-      }),
-    };
+    const failure = result({
+      error: {
+        ...(known && error.issues ? { issues: error.issues } : {}),
+        code: known
+          ? error.code
+          : invalidCursor
+            ? "invalid_cursor"
+            : "unavailable",
+        message: known
+          ? error.message
+          : invalidCursor
+            ? "The list cursor is unavailable. Restart list_projects without a cursor."
+            : "Project data is temporarily unavailable. Retry the request.",
+      },
+    });
+    // Error content is outside the successful structured output contract. SDK
+    // clients validate any structuredContent against the discovered outputSchema.
+    return { isError: true, content: failure.content };
   }
 }
 export async function ownedProject(id: string, userId: string) {

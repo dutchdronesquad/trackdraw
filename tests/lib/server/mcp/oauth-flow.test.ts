@@ -422,6 +422,10 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
         })
       ).status
     ).toBe(400);
+    // Reuse detection invalidates the token family, including the rotated access.
+    await expect(
+      auth.api.verifyMcpAccessToken({ body: { token: next.access_token } })
+    ).rejects.toMatchObject({ statusCode: 401 });
   });
 
   it("rejects expired and revoked tokens and keeps server-only verification off HTTP", async () => {

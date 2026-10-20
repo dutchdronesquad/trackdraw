@@ -373,7 +373,7 @@ MCP and OAuth POSTs have a 16 KiB streamed body limit. OAuth provider endpoints 
 
 Application MCP logs contain only `event: "mcp_request"`, method, status and duration. Keep tokens, codes, verifiers, consent queries, private identity output and raw exceptions out of logs. Protect the existing Better Auth secret: it secures signed consent queries and encrypted confidential-client secrets. Public native clients use PKCE without a client secret.
 
-Run local migrations and the official SDK smoke client against Cloudflare preview, then validate browser consent, refresh, expiry, request budgets and owned disconnect. No remote binding is needed. The verified client uses the MCP 2025-11-25 OAuth profile with DCR; CIMD is not advertised. Local validation is not evidence of production availability or compatibility with untested clients.
+Run local migrations and the official SDK smoke client against Cloudflare preview, then validate browser consent, refresh, expiry, request budgets and owned disconnect. No remote binding is needed. The verified client uses the MCP 2025-11-25 OAuth profile with DCR; CIMD is not advertised. Local validation is not evidence of production availability or compatibility with untested clients. Record per-client, per-milestone results using the [MCP validation and release checklist](../mcp-validation.md), including failed checks and the exact deployed commit. Keep the MCP epic open until the production release gates pass.
 
 ## Retention Cleanup
 
