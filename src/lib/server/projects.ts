@@ -218,6 +218,80 @@ export async function saveProjectForUser(
   return mapProjectRow(savedRow);
 }
 
+export class DraftRequestError extends Error {
+  constructor(
+    readonly code: "idempotency_conflict" | "draft_unavailable",
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+/** Atomic create-only persistence: retry receipts never overwrite a saved or edited project. */
+export async function createProjectDraftForUser(
+  ownerUserId: string,
+  design: TrackDesign,
+  requestKey: string,
+  requestHash: string
+) {
+  const db = await getDatabase();
+  const projectId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const normalized = normalizeDesign({
+    ...design,
+    id: projectId,
+    createdAt: now,
+    updatedAt: now,
+  });
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO mcp_draft_requests(user_id,request_key,request_hash,project_id,created_at) VALUES(?,?,?,?,?) ON CONFLICT(user_id,request_key) DO NOTHING`
+      )
+      .bind(ownerUserId, requestKey, requestHash, projectId, now),
+    db
+      .prepare(
+        `INSERT INTO projects(id,owner_user_id,title,description,design_json,field_width,field_height,shape_count,created_at,updated_at,archived_at)
+      SELECT ?,?,?,?,?,?,?,?,?,?,NULL FROM mcp_draft_requests WHERE user_id=? AND request_key=? AND request_hash=? AND project_id=?
+      ON CONFLICT(id) DO NOTHING`
+      )
+      .bind(
+        projectId,
+        ownerUserId,
+        normalized.title,
+        normalized.description ?? "",
+        JSON.stringify(serializeDesign(normalized)),
+        normalized.field.width,
+        normalized.field.height,
+        getDesignShapes(normalized).length,
+        now,
+        now,
+        ownerUserId,
+        requestKey,
+        requestHash,
+        projectId
+      ),
+  ]);
+  const receipt = await db
+    .prepare(
+      "SELECT request_hash, project_id FROM mcp_draft_requests WHERE user_id=? AND request_key=?"
+    )
+    .bind(ownerUserId, requestKey)
+    .first<{ request_hash: string; project_id: string }>();
+  if (!receipt || receipt.request_hash !== requestHash)
+    throw new DraftRequestError(
+      "idempotency_conflict",
+      "This idempotency key was used for a different proposal. Use a new key for a new draft."
+    );
+  const project = await getProjectForUser(receipt.project_id, ownerUserId);
+  if (!project)
+    throw new DraftRequestError(
+      "draft_unavailable",
+      "The original draft was archived or deleted. It will not be recreated. Use a new key to create a new draft."
+    );
+  return { project, replayed: receipt.project_id !== projectId };
+}
+
 export async function getProjectForUser(
   projectId: string,
   ownerUserId: string,

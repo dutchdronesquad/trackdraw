@@ -4,8 +4,12 @@ import { once } from "node:events";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
+import {
+  auth,
+  UnauthorizedError,
+} from "@modelcontextprotocol/sdk/client/auth.js";
 
+const createDraft = process.env.TRACKDRAW_MCP_CREATE_DRAFT === "1";
 let endpoint;
 try {
   endpoint = new URL(process.env.TRACKDRAW_MCP_URL);
@@ -130,6 +134,13 @@ try {
   let transport = new StreamableHTTPClientTransport(endpoint, {
     authProvider: provider,
   });
+  if (createDraft) {
+    await auth(provider, {
+      serverUrl: endpoint,
+      scope: "mcp:read projects:read projects:create offline_access",
+    });
+    await transport.finishAuth(await callback);
+  }
   try {
     await client.connect(transport);
   } catch (error) {
@@ -149,6 +160,8 @@ try {
     tools.map((tool) => tool.name),
     [
       "get_account",
+      "get_track_catalog",
+      ...(createDraft ? ["create_track_draft"] : []),
       "list_projects",
       "get_project",
       "get_track",
@@ -161,8 +174,71 @@ try {
   const result = await client.callTool({ name: "get_account", arguments: {} });
   assert.notEqual(result.isError, true);
   assert.equal(result.structuredContent?.type, "api_identity");
-  assert.equal(result.structuredContent?.mcp?.project_writes, false);
+  assert.equal(result.structuredContent?.mcp?.project_writes, createDraft);
   assert.equal(result.structuredContent?.mcp?.project_reads, true);
+  const catalog = await client.callTool({
+    name: "get_track_catalog",
+    arguments: { limit: 1 },
+  });
+  assert.notEqual(catalog.isError, true);
+  assert.equal(catalog.structuredContent?.design_version, 2);
+  if (createDraft) {
+    const args = {
+      idempotency_key: randomBytes(16).toString("hex"),
+      proposal: {
+        version: 2,
+        title: "MCP 30 × 20 track draft",
+        constraints: {
+          field: { width: 30, height: 20 },
+          inventory: {
+            gate: 2,
+            tower: 0,
+            ladder: 0,
+            divegate: 0,
+            startfinish: 0,
+            flag: 0,
+            cone: 0,
+            barrier: 0,
+          },
+        },
+        shapes: [
+          {
+            id: "gate1",
+            catalog_id: "multigp-standard-gate-5x5",
+            x: 8,
+            y: 10,
+            rotation: 0,
+          },
+          {
+            id: "gate2",
+            kind: "gate",
+            x: 20,
+            y: 10,
+            rotation: 0,
+            width: 3,
+            height: 2,
+          },
+        ],
+      },
+    };
+    const created = await client.callTool({
+      name: "create_track_draft",
+      arguments: args,
+    });
+    assert.notEqual(created.isError, true);
+    const retry = await client.callTool({
+      name: "create_track_draft",
+      arguments: args,
+    });
+    assert.equal(
+      retry.structuredContent?.project_id,
+      created.structuredContent?.project_id
+    );
+    assert.equal(retry.structuredContent?.replayed, true);
+    console.log(
+      `Open the new private draft for review: ${created.structuredContent?.studio_url}`
+    );
+  }
   const listed = await client.callTool({
     name: "list_projects",
     arguments: { limit: 1 },
@@ -234,7 +310,7 @@ try {
     }
   }
   console.log(
-    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization, get_account owned project reads and track material analysis."
+    "MCP OAuth smoke passed: authorization, account/catalog discovery and available owned-project workflows."
   );
 } catch {
   // Do not dump SDK errors, callbacks or token responses into logs.

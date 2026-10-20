@@ -8,8 +8,13 @@ import { getSiteUrl } from "@/lib/seo";
 
 export const MCP_READ_SCOPE = "mcp:read";
 export const MCP_PROJECT_READ_SCOPE = "projects:read";
+export const MCP_PROJECT_CREATE_SCOPE = "projects:create";
 export const MCP_DEFAULT_SCOPES = [MCP_READ_SCOPE, MCP_PROJECT_READ_SCOPE];
-export const MCP_OAUTH_SCOPES = [...MCP_DEFAULT_SCOPES, "offline_access"];
+export const MCP_OAUTH_SCOPES = [
+  ...MCP_DEFAULT_SCOPES,
+  MCP_PROJECT_CREATE_SCOPE,
+  "offline_access",
+];
 
 export function getMcpResource() {
   return new URL("/api/mcp", getSiteUrl()).href;
@@ -41,7 +46,11 @@ export function getMcpOAuthPlugins() {
     allowUnauthenticatedClientRegistration: true,
     clientRegistrationDefaultApplicationType: "infer" as const,
     clientRegistrationDefaultScopes: MCP_DEFAULT_SCOPES,
-    clientRegistrationAllowedScopes: [MCP_PROJECT_READ_SCOPE, "offline_access"],
+    clientRegistrationAllowedScopes: [
+      MCP_PROJECT_READ_SCOPE,
+      MCP_PROJECT_CREATE_SCOPE,
+      "offline_access",
+    ],
     clientRegistrationRequirePKCE: true,
     resources: [
       {

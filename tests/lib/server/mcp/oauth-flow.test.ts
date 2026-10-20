@@ -176,7 +176,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(await resource.json()).toMatchObject({
       resource: getMcpResource(),
       authorization_servers: [origin + "/api/auth"],
-      scopes_supported: ["mcp:read", "projects:read"],
+      scopes_supported: ["mcp:read", "projects:read", "projects:create"],
     });
     const issuer = await request(
       "/.well-known/oauth-authorization-server/api/auth"
@@ -259,6 +259,48 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     ).toMatchObject({ scope: "mcp:read offline_access" });
   });
 
+  it("keeps draft creation opt-in and binds it to explicit provider consent", async () => {
+    const readId = await register("mcp:read projects:read");
+    const readClient = database.oauthClient.find((c) => c.clientId === readId)!;
+    // A persisted registration from before this capability cannot request it.
+    readClient.scopes = ["mcp:read", "projects:read"];
+    const readGrant = await approve(readId, "mcp:read projects:read");
+    const oldTokens = (await (
+      await exchange(readId, readGrant.code, readGrant.verifier)
+    ).json()) as { access_token: string };
+    const stepUp = (
+      await authorize(readId, { scope: "mcp:read projects:create" })
+    ).response;
+    expect(stepUp.status).toBe(302);
+    expect(
+      new URL(stepUp.headers.get("location")!, origin).searchParams.get("error")
+    ).toBe("invalid_scope");
+    const id = await register(
+      "mcp:read projects:read projects:create offline_access"
+    );
+    const grant = await approve(
+      id,
+      "mcp:read projects:read projects:create offline_access"
+    );
+    expect(grant.consent.searchParams.get("scope")).toContain(
+      "projects:create"
+    );
+    const response = await exchange(id, grant.code, grant.verifier);
+    expect(response.status).toBe(200);
+    const tokens = (await response.json()) as { access_token: string };
+    expect(
+      await auth.api.verifyMcpAccessToken({
+        body: { token: tokens.access_token },
+      })
+    ).toMatchObject({
+      scope: "mcp:read projects:read projects:create offline_access",
+    });
+    expect(
+      await auth.api.verifyMcpAccessToken({
+        body: { token: oldTokens.access_token },
+      })
+    ).toMatchObject({ scope: "mcp:read projects:read" });
+  });
   it("rejects a wrong PKCE verifier", async () => {
     const id = await register();
     const { code } = await approve(id);

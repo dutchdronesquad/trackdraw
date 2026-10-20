@@ -86,3 +86,11 @@ Validation: 1,482 tests pass, including old-registration scope rejection and unc
 - Keep stored facts, geometric measurements, setup estimates and unavailable metrics separate. Explicitly selected comparisons return right-minus-left deltas and nulls for unavailable values. Empty tracks have no setup estimate; ambiguous routes are not selected automatically.
 - Use “track” consistently in MCP contracts, descriptions, consent and documentation. Client example: “What materials do we need for my latest track?” uses `list_projects(limit: 1)` followed by `analyze_track(project_id)`.
 - Validate mixed material variants, custom tower/ladder/dive-gate dimensions, closed route parity, stable differences, unavailable metrics, both ownership checks and size bounds through shared-helper and official SDK route tests.
+
+## Separate track drafts (#998)
+
+- Optional `projects:create` enables `create_track_draft` only after explicit OAuth consent; existing read connections stay read-only. `get_track_catalog` provides the bounded catalog and current proposal schema without exposing private project data.
+- The assistant proposes the layout and explicit field/inventory constraints. Shared normalization and renderer footprints validate version 2, units, finite geometry, unique IDs, bounds and assembly quantities. Return unvalidated real-world/clearance constraints for user review.
+- Persist an account-scoped request hash/receipt and new private project atomically with [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch). Same-key retries return the same project without overwriting later Studio edits. Changed proposals conflict; deleted/archived drafts are never resurrected.
+- `/studio/open/[projectId]` checks sign-in/ownership and invokes the established snapshot/open/local persistence flow. Anonymous editing and autosave remain independent.
+- Validate provider scope isolation, malformed/over-budget geometry, simultaneous retries, account isolation, migrations and real Cloudflare preview with desktop/mobile Studio review, reload and export.

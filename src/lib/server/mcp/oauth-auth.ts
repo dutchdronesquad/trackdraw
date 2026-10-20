@@ -9,6 +9,7 @@ import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activit
 import {
   MCP_DEFAULT_SCOPES,
   MCP_PROJECT_READ_SCOPE,
+  MCP_PROJECT_CREATE_SCOPE,
   MCP_READ_SCOPE,
   getMcpIssuer,
   getMcpResource,
@@ -94,14 +95,16 @@ export async function authenticateMcpRequest(request: Request) {
     AND EXISTS (SELECT 1 FROM oauthConsent c WHERE c.userId = u.id AND c.clientId = ?
       AND EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'mcp:read')
       AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)
-      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:read')))
+      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:read'))
+      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:create')))
   `
     )
     .bind(
       claims.sub,
       claims.client_id,
       getMcpResource(),
-      scopes.includes(MCP_PROJECT_READ_SCOPE) ? 1 : 0
+      scopes.includes(MCP_PROJECT_READ_SCOPE) ? 1 : 0,
+      scopes.includes(MCP_PROJECT_CREATE_SCOPE) ? 1 : 0
     )
     .first<{ id: string; name: string | null; lastActiveAt: string | null }>();
   if (!user)
@@ -161,6 +164,9 @@ export async function authenticateMcpRequest(request: Request) {
       user,
       {
         mcp: ["read"],
+        ...(scopes.includes(MCP_PROJECT_CREATE_SCOPE)
+          ? { projects: ["create"] }
+          : {}),
         ...(scopes.includes(MCP_PROJECT_READ_SCOPE) ? trackReadPermission : {}),
       },
       new Date(claims.exp * 1000)
