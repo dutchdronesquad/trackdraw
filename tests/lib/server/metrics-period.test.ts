@@ -65,6 +65,41 @@ afterEach(() => db.close());
 const now = new Date("2026-09-27T12:00:00Z");
 
 describe("selected product insight periods", () => {
+  it("queries only data used by the mounted dashboard while preserving its metrics", async () => {
+    db.exec(`
+      insert into users values ('account', '2026-01-01');
+      insert into product_events values
+        ('2026-07-02T00:00:00.000Z', 'editor.session_started', '1.1.0', '{}', 'signed-in', 'account'),
+        ('2026-07-02T01:00:00.000Z', 'editor.meaningful_edit_completed', '1.1.0', '{}', 'signed-in', 'account'),
+        ('2026-07-02T02:00:00.000Z', 'share.created', '1.1.0', '{}', 'signed-in', 'account');
+    `);
+    const result = await getProductInsights(
+      { from: "2026-07-01", to: "2026-09-27" },
+      now
+    );
+    expect(mocks.prepare).toHaveBeenCalledTimes(8);
+    expect(result.usage).toMatchObject({
+      exports: 1,
+      shareViews: 1,
+      anonymousSessions: 1,
+      accountSessions: 1,
+      creatorFunnel: {
+        anonymous: { started: 1, edited: 1, valuable: 1 },
+        account: { started: 1, edited: 1, valuable: 1 },
+      },
+    });
+    expect(result.analysis?.journey).toMatchObject({
+      started: 2,
+      edited: 2,
+      valuable: 2,
+    });
+    expect(result.analysis?.exportReliability).toContainEqual(
+      expect.objectContaining({ format: "png", successes: 1 })
+    );
+    expect(
+      mocks.prepare.mock.calls.map(([sql]) => String(sql)).join("\n")
+    ).not.toContain("product_metric_creator_activations");
+  });
   it("filters content, editor sessions, exports and share views with exact UTC boundaries", async () => {
     const short = await getProductInsights(
       { from: "2026-07-01", to: "2026-09-27" },

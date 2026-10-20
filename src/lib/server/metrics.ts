@@ -79,13 +79,6 @@ export type GalleryMetrics = {
   missingPreview: number;
 };
 
-export type ActivationMetrics = {
-  registered: number;
-  createdProject: number;
-  createdShare: number;
-  publishedToGallery: number;
-};
-
 export type ContentGrowthPoint = {
   period: string;
   projects: number;
@@ -94,11 +87,6 @@ export type ContentGrowthPoint = {
 };
 
 export type ProductUsageMetrics = {
-  totalEvents: number;
-  eventTypes: Array<{ eventType: string; count: number }>;
-  eventTypesPrevious: Array<{ eventType: string; count: number }>;
-  trackingStartedAt: string | null;
-  trackingDays: number;
   coverage?: {
     availableFrom: string | null;
     from: string | null;
@@ -117,18 +105,9 @@ export type ProductUsageMetrics = {
     anonymous: { started: number; edited: number; valuable: number };
     account: { started: number; edited: number; valuable: number };
   };
-  accountCreatorSegments: {
-    newCreators: number;
-    returningCreators: number;
-  };
   shareViews: number;
   exports: number;
-  preview3dOpens: number;
-  imports: number;
-  elementPlacements: number;
-  apiKeysUsed30d: number;
   exportFormats: Array<{ format: string; count: number }>;
-  elementTypes: Array<{ kind: string; count: number }>;
   shareSurfaces: Array<{ surface: string; count: number }>;
   embedReferrers: Array<{
     shareToken: string;
@@ -143,15 +122,6 @@ export type ProductUsageMetrics = {
     views: number;
     rows: number;
   };
-  importedShapes: number;
-  avgShapesPerImport: number;
-};
-
-export type RetentionCohort = {
-  cohort: string;
-  users: number;
-  retained7d: number;
-  retained30d: number;
 };
 
 export type ProductInsights = {
@@ -163,10 +133,8 @@ export type ProductInsights = {
     previousFrom: string;
     previousTo: string;
   };
-  activation: ActivationMetrics;
   contentGrowth: ContentGrowthPoint[];
   usage: ProductUsageMetrics;
-  retention: RetentionCohort[];
 };
 
 export type PlanLimitRow = {
@@ -480,16 +448,6 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   };
 }
 
-type ProductEventCountRow = {
-  event_type: string;
-  count: number;
-  previous_count: number;
-};
-
-function eventCount(rows: ProductEventCountRow[], eventType: string) {
-  return rows.find((row) => row.event_type === eventType)?.count ?? 0;
-}
-
 export async function getProductInsights(
   range?: GrowthCustomRange,
   now = new Date()
@@ -509,7 +467,6 @@ export async function getProductInsights(
   const previousFrom = addUtcDays(from, -days);
   const startAt = from.toISOString();
   const endAt = end.toISOString();
-  const previousAt = previousFrom.toISOString();
   const startDay = formatUtcDateKey(from);
   const endDay = formatUtcDateKey(end);
   const previousDay = formatUtcDateKey(previousFrom);
@@ -519,45 +476,13 @@ export async function getProductInsights(
   );
   const db = await getDatabase();
   const [
-    activationRow,
     contentGrowthResult,
-    eventCountsResult,
     trackingRow,
     exportFormatsResult,
-    elementTypesResult,
     shareSurfacesResult,
     embedReferrersResult,
-    importStatsRow,
     sessionRow,
-    apiUsageRow,
-    retentionResult,
   ] = await Promise.all([
-    db
-      .prepare(
-        `
-          select
-            count(*) as registered,
-            sum(case when exists (
-              select 1 from projects p where p.owner_user_id = u.id
-            ) then 1 else 0 end) as created_project,
-            sum(case when exists (
-              select 1 from shares s where s.owner_user_id = u.id
-            ) then 1 else 0 end) as created_share,
-            sum(case when exists (
-              select 1
-              from gallery_entries g
-              where g.owner_user_id = u.id
-                and g.gallery_state <> 'unlisted'
-            ) then 1 else 0 end) as published_to_gallery
-          from users u
-        `
-      )
-      .first<{
-        registered: number;
-        created_project: number;
-        created_share: number;
-        published_to_gallery: number;
-      }>(),
     db
       .prepare(
         `
@@ -590,28 +515,7 @@ export async function getProductInsights(
       .prepare(
         `
           select
-            event_type,
-            sum(case when created_at >= ?1 and created_at < ?2 then 1 else 0 end) as count,
-            sum(case
-              when created_at >= ?3 and created_at < ?2
-                and created_at < ?1
-              then 1 else 0
-            end) as previous_count
-          from product_events
-          where contract_version in ('1.0.0', '1.1.0')
-            and created_at >= ?4
-            and created_at >= ?3 and created_at < ?2
-          group by event_type
-        `
-      )
-      .bind(startAt, endAt, previousAt, eventRetainedAt)
-      .all<ProductEventCountRow>(),
-    db
-      .prepare(
-        `
-          select
             min(created_at) as tracking_started_at,
-            cast(julianday('now') - julianday(min(created_at)) as integer) as tracking_days,
             (select min(viewed_on) from embed_referrer_daily) as embed_started_at
           from product_events
           where contract_version in ('1.0.0', '1.1.0')
@@ -619,7 +523,6 @@ export async function getProductInsights(
       )
       .first<{
         tracking_started_at: string | null;
-        tracking_days: number;
         embed_started_at?: string | null;
       }>(),
     db
@@ -638,22 +541,6 @@ export async function getProductInsights(
       )
       .bind(startAt, endAt, eventRetainedAt)
       .all<{ format: string; count: number }>(),
-    db
-      .prepare(
-        `
-          select
-            coalesce(json_extract(metadata_json, '$.kind'), 'unknown') as kind,
-            sum(coalesce(json_extract(metadata_json, '$.count'), 1)) as count
-          from product_events
-          where event_type = 'editor.element_placed'
-            and contract_version in ('1.0.0', '1.1.0')
-            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
-          group by kind
-          order by count desc, kind
-        `
-      )
-      .bind(startAt, endAt, eventRetainedAt)
-      .all<{ kind: string; count: number }>(),
     db
       .prepare(
         `
@@ -712,24 +599,9 @@ export async function getProductInsights(
     db
       .prepare(
         `
-          select
-            coalesce(sum(cast(json_extract(metadata_json, '$.shape_count') as integer)), 0) as imported_shapes,
-            coalesce(round(avg(cast(json_extract(metadata_json, '$.shape_count') as real)), 1), 0) as avg_shapes
-          from product_events
-          where event_type = 'project.imported'
-            and contract_version in ('1.0.0', '1.1.0')
-            and created_at >= ?1 and created_at < ?2 and created_at >= ?3
-        `
-      )
-      .bind(startAt, endAt, eventRetainedAt)
-      .first<{ imported_shapes: number; avg_shapes: number }>(),
-    db
-      .prepare(
-        `
           with session_journeys as (
             select
               session_id,
-              max(case when user_id is not null then user_id end) as user_id,
               max(case when user_id is not null then 1 else 0 end) as signed_in,
               max(case when event_type = 'editor.session_started' then 1 else 0 end) as started,
               min(case when event_type = 'editor.meaningful_edit_completed' then created_at end) as first_edit_at,
@@ -751,20 +623,8 @@ export async function getProductInsights(
             count(case when started = 1 and signed_in = 0 and last_outcome_at > first_edit_at then 1 end) as anonymous_valuable,
             count(case when started = 1 and signed_in = 1 then 1 end) as account_started,
             count(case when started = 1 and signed_in = 1 and first_edit_at is not null then 1 end) as account_edited,
-            count(case when started = 1 and signed_in = 1 and last_outcome_at > first_edit_at then 1 end) as account_valuable,
-            count(distinct case
-              when started = 1 and signed_in = 1
-                and activation.activated_at >= ?1 and activation.activated_at < ?2
-              then session_journeys.user_id
-            end) as new_creators,
-            count(distinct case
-              when started = 1 and signed_in = 1
-                and activation.activated_at < ?1
-              then session_journeys.user_id
-            end) as returning_creators
+            count(case when started = 1 and signed_in = 1 and last_outcome_at > first_edit_at then 1 end) as account_valuable
           from session_journeys
-          left join product_metric_creator_activations activation
-            on activation.user_id = session_journeys.user_id
         `
       )
       .bind(startAt, endAt, eventRetainedAt)
@@ -777,57 +637,6 @@ export async function getProductInsights(
         account_started: number;
         account_edited: number;
         account_valuable: number;
-        new_creators: number;
-        returning_creators: number;
-      }>(),
-    db
-      .prepare(
-        `
-          select count(*) as keys_used
-          from apikey
-          where lastRequest > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
-        `
-      )
-      .first<{ keys_used: number }>(),
-    db
-      .prepare(
-        `
-          select
-            strftime('%Y-%m', u.createdAt) as cohort,
-            count(*) as users,
-            sum(case when exists (
-              select 1 from product_events pe
-              where pe.user_id = u.id
-                and pe.contract_version in ('1.0.0', '1.1.0')
-                and pe.event_type = 'editor.session_started'
-                and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
-                and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+8 days')
-            ) then 1 else 0 end) as retained7d,
-            sum(case when exists (
-              select 1 from product_events pe
-              where pe.user_id = u.id
-                and pe.contract_version in ('1.0.0', '1.1.0')
-                and pe.event_type = 'editor.session_started'
-                and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
-                and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+31 days')
-            ) then 1 else 0 end) as retained30d
-          from users u
-          where u.createdAt >= date('now', 'start of month', '-5 months')
-            and u.createdAt < date('now', 'start of month', '-1 month')
-            and u.createdAt >= date(
-              (select min(created_at) from product_events where contract_version in ('1.0.0', '1.1.0') and event_type = 'editor.session_started'),
-              'start of month',
-              '+1 month'
-            )
-          group by cohort
-          order by cohort
-        `
-      )
-      .all<{
-        cohort: string;
-        users: number;
-        retained7d: number;
-        retained30d: number;
       }>(),
   ]);
 
@@ -837,9 +646,6 @@ export async function getProductInsights(
     endAt,
     eventRetainedAt
   );
-  const eventRows = eventCountsResult.results;
-  const totalEvents = eventRows.reduce((sum, row) => sum + row.count, 0);
-
   const coverage = (
     firstObserved: string | null | undefined,
     retainedSince: string
@@ -877,27 +683,10 @@ export async function getProductInsights(
       previousFrom: previousDay,
       previousTo: formatUtcDateKey(addUtcDays(from, -1)),
     },
-    activation: {
-      registered: activationRow?.registered ?? 0,
-      createdProject: activationRow?.created_project ?? 0,
-      createdShare: activationRow?.created_share ?? 0,
-      publishedToGallery: activationRow?.published_to_gallery ?? 0,
-    },
     contentGrowth: contentGrowthResult.results,
     usage: {
       coverage: coverage(trackingRow?.tracking_started_at, eventRetainedAt),
       embedCoverage: coverage(trackingRow?.embed_started_at, embedRetainedDay),
-      totalEvents,
-      eventTypes: eventRows.map((row) => ({
-        eventType: row.event_type,
-        count: row.count,
-      })),
-      eventTypesPrevious: eventRows.map((row) => ({
-        eventType: row.event_type,
-        count: row.previous_count,
-      })),
-      trackingStartedAt: trackingRow?.tracking_started_at ?? null,
-      trackingDays: trackingRow?.tracking_days ?? 0,
       anonymousSessions: sessionRow?.anonymous_sessions ?? 0,
       accountSessions: sessionRow?.account_sessions ?? 0,
       creatorFunnel: {
@@ -912,21 +701,15 @@ export async function getProductInsights(
           valuable: sessionRow?.account_valuable ?? 0,
         },
       },
-      accountCreatorSegments: {
-        newCreators: sessionRow?.new_creators ?? 0,
-        returningCreators: sessionRow?.returning_creators ?? 0,
-      },
-      shareViews: eventCount(eventRows, "share.viewed"),
-      exports: eventCount(eventRows, "export.completed"),
-      preview3dOpens: eventCount(eventRows, "editor.3d_opened"),
-      imports: eventCount(eventRows, "project.imported"),
-      elementPlacements: elementTypesResult.results.reduce(
-        (sum, row) => sum + row.count,
+      shareViews: shareSurfacesResult.results.reduce(
+        (total, row) => total + row.count,
         0
       ),
-      apiKeysUsed30d: apiUsageRow?.keys_used ?? 0,
+      exports: exportFormatsResult.results.reduce(
+        (total, row) => total + row.count,
+        0
+      ),
       exportFormats: exportFormatsResult.results,
-      elementTypes: elementTypesResult.results,
       shareSurfaces: shareSurfacesResult.results,
       embedReferrers: embedReferrersResult.results.map((row) => ({
         shareToken: row.share_token,
@@ -941,15 +724,7 @@ export async function getProductInsights(
         views: embedReferrersResult.results[0]?.detected_views ?? 0,
         rows: embedReferrersResult.results[0]?.detected_rows ?? 0,
       },
-      importedShapes: importStatsRow?.imported_shapes ?? 0,
-      avgShapesPerImport: importStatsRow?.avg_shapes ?? 0,
     },
-    retention: retentionResult.results.map((row) => ({
-      cohort: row.cohort,
-      users: row.users,
-      retained7d: row.retained7d,
-      retained30d: row.retained30d,
-    })),
   };
 }
 
