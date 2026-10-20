@@ -51,7 +51,7 @@ const provider = {
       token_endpoint_auth_method: "none",
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
-      scope: "mcp:read offline_access",
+      scope: "mcp:read projects:read offline_access",
     };
   },
   state: () => state,
@@ -147,14 +147,58 @@ try {
   const { tools } = await client.listTools();
   assert.deepEqual(
     tools.map((tool) => tool.name),
-    ["get_account"]
+    [
+      "get_account",
+      "list_projects",
+      "get_project",
+      "get_track",
+      "get_overlay",
+      "get_viewer_snapshot",
+    ]
   );
   const result = await client.callTool({ name: "get_account", arguments: {} });
   assert.notEqual(result.isError, true);
   assert.equal(result.structuredContent?.type, "api_identity");
   assert.equal(result.structuredContent?.mcp?.project_writes, false);
+  assert.equal(result.structuredContent?.mcp?.project_reads, true);
+  const listed = await client.callTool({
+    name: "list_projects",
+    arguments: { limit: 2 },
+  });
+  assert.notEqual(listed.isError, true);
+  assert.equal(listed.structuredContent?.type, "project_list");
+  assert.ok(Array.isArray(listed.structuredContent.data));
+  const projectId =
+    process.env.TRACKDRAW_MCP_PROJECT_ID ??
+    listed.structuredContent.data[0]?.id;
+  if (projectId) {
+    const metadata = await client.callTool({
+      name: "get_project",
+      arguments: { project_id: projectId },
+    });
+    assert.notEqual(metadata.isError, true);
+    assert.equal(metadata.structuredContent?.project?.id, projectId);
+    const track = await client.callTool({
+      name: "get_track",
+      arguments: { project_id: projectId, limit: 1 },
+    });
+    assert.notEqual(track.isError, true);
+    assert.equal(track.structuredContent?.source?.id, projectId);
+    for (const name of ["get_overlay", "get_viewer_snapshot"]) {
+      const derived = await client.callTool({
+        name,
+        arguments: { project_id: projectId },
+      });
+      if (derived.isError)
+        assert.equal(
+          derived.structuredContent?.error?.code,
+          "response_too_large"
+        );
+      else assert.equal(derived.structuredContent?.source?.id, projectId);
+    }
+  }
   console.log(
-    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization and get_account."
+    "MCP OAuth smoke passed: discovery, registration, PKCE authorization, initialization, get_account and owned project reads."
   );
 } catch {
   // Do not dump SDK errors, callbacks or token responses into logs.

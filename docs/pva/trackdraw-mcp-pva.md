@@ -2,7 +2,7 @@
 
 Date: October 20, 2026
 
-Status: implementing [#995](https://github.com/dutchdronesquad/trackdraw/issues/995), under [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
+Status: foundation completed in [#995](https://github.com/dutchdronesquad/trackdraw/issues/995), extending owned project reads in [#996](https://github.com/dutchdronesquad/trackdraw/issues/996), under [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
 
 ## Decision
 
@@ -18,7 +18,7 @@ REST API keys remain separate and continue to work on REST. They are not OAuth a
 
 - `mcp:read`: inspect account ID/display name and implemented MCP capabilities. No project access or writes.
 - `offline_access`: optional renewable access. Tokens last 15 minutes; refresh tokens expire after 30 days and rotate with no replay grace period. The resource policy includes this scope to preserve refresh authorization across rotations.
-- Future project reads/writes need explicit additional scopes, shared project ownership/access checks and renewed consent. Existing grants must not silently acquire project access.
+- `projects:read`: read all owned active cloud projects through shared REST ownership/serialization, after separate consent. Existing registrations/grants/tokens are not upgraded silently. Writes require a future additional scope.
 - Anonymous/local-only projects are not uploaded or exposed. Sharing, gallery, editor persistence and public viewers remain unchanged.
 - Verify the official SDK 1.32.1 with the MCP 2025-11-25 authorization profile. DCR supports native/public and web clients; CIMD is not advertised because a secure metadata-fetch transport for Workers is not part of this foundation. Do not claim compatibility with clients that require CIMD without a DCR/pre-registration fallback.
 - Client credentials, device grants and OIDC identity scopes are disabled/out of scope. No trusted clients bypass consent.
@@ -60,6 +60,17 @@ REST API keys remain separate and continue to work on REST. They are not OAuth a
 Validation: 1,466 tests pass; lint, types, Next.js/OpenNext builds, formatting and both i18n checks pass. The official SDK and real browser consent/disconnect pass against local Cloudflare preview. Real token lifecycle checks cover refresh rotation, expiry, revocation, account-bound identity, request budgets and REST-key rejection. The selected consent design was compared with its implementation and checked at desktop and 390px mobile.
 
 The parent epic stays open after this foundation. Production deployment and compatibility with additional clients require separate evidence.
+
+## Owned project read extension (#996)
+
+- Reuse `getProjectForUser` and REST serializers for all five project tools; extend the existing summary service with optional bounded SQL pagination. Existing REST/UI callers retain the prior default behavior.
+- Register project tools only for `projects:read`, mapped to the established REST `tracks: ["read"]` identity permission. Verify that scope against live consent on every request. The existing account-only scope retains its meaning.
+- Return metadata before course data. Page shapes and, separately, polyline points; bind track cursors to project/revision/shape. Keep complete overlay/viewer packages unchanged and reject oversized output with actionable errors. Structured JSON is capped at 32 KiB; large designs skip derived generation above 512 KiB or 2,000 shapes.
+- Apply migration 0027 to extend already seeded MCP resource policy without changing client scopes or user consent. The insert-only provider seed does not update existing rows on deployment.
+- Preserve viewer safety: shared snapshot allowlists and published registry assets only, no private artwork fetch or extra authorization path.
+- Validate ownership, archive/delete/missing cases, scope availability/calls, cursor isolation, 6,000-point geometry, REST parity, registry safety, migration upgrade and real OAuth/Cloudflare preview.
+
+Validation: 1,482 tests pass, including old-registration scope rejection and unchanged account-only tokens, SQL-bounded listings, revision/shape cursor isolation, oversized-result refusal and REST package parity. Lint, types, formatting, i18n integrity and hardcoded-copy checks pass; Next.js/OpenNext builds pass. The official SDK completed real browser consent in local Cloudflare preview and read metadata, shapes, overlay and viewer snapshot from temporary owned projects. Cross-account/archived/missing/share-token rejection, pagination, refresh rotation, expiry, revocation, request budgets and disconnect were verified against that runtime. Local fixtures were removed; production rollout remains separate.
 
 ## Sources
 

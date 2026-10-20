@@ -44,7 +44,7 @@ async function request(
     })
   );
 }
-async function register() {
+async function register(scope = "mcp:read offline_access") {
   const response = await auth.handler(
     new Request(origin + "/api/auth/oauth2/register", {
       method: "POST",
@@ -55,7 +55,7 @@ async function register() {
         token_endpoint_auth_method: "none",
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
-        scope: "mcp:read offline_access",
+        scope,
       }),
     })
   );
@@ -88,8 +88,11 @@ async function authorize(clientId: string, patch: Record<string, string> = {}) {
   );
   return { response, verifier };
 }
-async function approve(clientId: string) {
-  const { response, verifier } = await authorize(clientId);
+async function approve(clientId: string, scope?: string) {
+  const { response, verifier } = await authorize(
+    clientId,
+    scope ? { scope } : {}
+  );
   expect(response.status).toBe(302);
   const consent = new URL(response.headers.get("location")!, origin);
   expect(consent.pathname).toBe("/mcp/consent");
@@ -173,7 +176,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(await resource.json()).toMatchObject({
       resource: getMcpResource(),
       authorization_servers: [origin + "/api/auth"],
-      scopes_supported: ["mcp:read"],
+      scopes_supported: ["mcp:read", "projects:read"],
     });
     const issuer = await request(
       "/.well-known/oauth-authorization-server/api/auth"
@@ -212,6 +215,48 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
       client_id: id,
     });
     expect((await exchange(id, code, verifier)).status).toBe(400);
+  });
+
+  it("requires explicit project-read consent and never upgrades an old token", async () => {
+    const oldId = await register();
+    // Simulate a registration persisted by the account-only foundation.
+    const oldClient = database.oauthClient.find(
+      (client) => client.clientId === oldId
+    )!;
+    oldClient.scopes =
+      typeof oldClient.scopes === "string"
+        ? JSON.stringify(["mcp:read", "offline_access"])
+        : ["mcp:read", "offline_access"];
+    const oldGrant = await approve(oldId);
+    const oldTokens = (await (
+      await exchange(oldId, oldGrant.code, oldGrant.verifier)
+    ).json()) as { access_token: string };
+    const oldStepUp = (
+      await authorize(oldId, { scope: "mcp:read projects:read" })
+    ).response;
+    expect(oldStepUp.status).toBe(302);
+    expect(
+      new URL(oldStepUp.headers.get("location")!, origin).searchParams.get(
+        "error"
+      )
+    ).toBe("invalid_scope");
+    // The old registration cannot request the added scope without re-registration.
+    const id = await register("mcp:read projects:read offline_access");
+    const grant = await approve(id, "mcp:read projects:read offline_access");
+    expect(grant.consent.searchParams.get("scope")).toContain("projects:read");
+    const response = await exchange(id, grant.code, grant.verifier);
+    expect(response.status).toBe(200);
+    const tokens = (await response.json()) as { access_token: string };
+    expect(
+      await auth.api.verifyMcpAccessToken({
+        body: { token: tokens.access_token },
+      })
+    ).toMatchObject({ scope: "mcp:read projects:read offline_access" });
+    expect(
+      await auth.api.verifyMcpAccessToken({
+        body: { token: oldTokens.access_token },
+      })
+    ).toMatchObject({ scope: "mcp:read offline_access" });
   });
 
   it("rejects a wrong PKCE verifier", async () => {

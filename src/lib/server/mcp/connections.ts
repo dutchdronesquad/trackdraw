@@ -6,6 +6,7 @@ import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { getDatabase } from "@/lib/server/db";
 import {
   MCP_OAUTH_SCOPES,
+  MCP_PROJECT_READ_SCOPE,
   MCP_READ_SCOPE,
   getMcpResource,
 } from "./oauth-provider";
@@ -48,6 +49,7 @@ export async function getConsentRequest(query: string, headers: Headers) {
     callbackHost,
     account: user.email ?? user.name ?? user.id,
     offlineAccess: scopes.includes("offline_access"),
+    projectReadAccess: scopes.includes(MCP_PROJECT_READ_SCOPE),
   };
 }
 
