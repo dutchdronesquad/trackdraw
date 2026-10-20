@@ -29,7 +29,11 @@
   },
   "dependencies": {
     "@better-auth/api-key": "^1.6.9",
+    "@better-auth/mcp": "^1.7.11",
+    "@better-auth/oauth-provider": "^1.7.11",
     "@better-auth/passkey": "^1.6.0",
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@noble/ciphers": "^2.2.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",

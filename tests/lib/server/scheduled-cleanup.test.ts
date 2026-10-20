@@ -180,12 +180,13 @@ describe("scheduled cleanup", () => {
       "account_retention_notices",
       "shares",
       "api_keys",
+      "mcp_oauth",
       "product_events",
       "embed_referrers",
       "localization_demand",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
-    expect(run).toHaveBeenCalledTimes(7);
+    expect(run).toHaveBeenCalledTimes(14);
   });
 
   it("uses a privacy-safe fallback for non-Error rejections", async () => {

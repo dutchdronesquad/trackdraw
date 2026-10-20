@@ -8,6 +8,7 @@ import {
   AccountRetentionNoticeError,
   type AccountRetentionNoticeHealth,
 } from "@/lib/server/account-retention-notices";
+import { cleanupMcpOauth } from "@/lib/server/mcp/oauth-retention";
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
@@ -30,6 +31,7 @@ type CleanupDatabase = {
 export type ScheduledCleanupTaskName =
   | "shares"
   | "api_keys"
+  | "mcp_oauth"
   | "product_events"
   | "embed_referrers"
   | "localization_demand"
@@ -124,6 +126,7 @@ export function createScheduledCleanupTasks(
     },
     { name: "shares", run: () => cleanupExpiredShares(db) },
     { name: "api_keys", run: () => cleanupExpiredApiKeys(db) },
+    { name: "mcp_oauth", run: () => cleanupMcpOauth(db) },
     {
       name: "product_events",
       run: async () => {

@@ -6,6 +6,7 @@ import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
 import { getSiteUrl } from "@/lib/seo";
+import { getMcpOAuthPlugins } from "@/lib/server/mcp/oauth-provider";
 import {
   recordAccountEmailChanged,
   recordPasskeyMutation,
@@ -97,7 +98,14 @@ export async function getAuth() {
     },
     basePath: "/api/auth",
     trustedOrigins: getTrustedOrigins(),
+    // OAuth endpoints need a durable per-IP limit across Worker instances.
+    rateLimit: {
+      enabled: true,
+      storage: "database",
+      modelName: "auth_rate_limit",
+    },
     advanced: {
+      useSecureCookies: new URL(getSiteUrl()).protocol === "https:",
       // trustedProxyHeaders and cf-connecting-ip are safe only behind Cloudflare.
       // Do not expose workers directly to the internet without Cloudflare in front.
       trustedProxyHeaders: true,
@@ -250,6 +258,7 @@ export async function getAuth() {
       },
     },
     plugins: [
+      ...getMcpOAuthPlugins(),
       magicLink({
         expiresIn: 600,
         rateLimit: {

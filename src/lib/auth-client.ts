@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { oauthProviderClient } from "@better-auth/oauth-provider/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
@@ -101,7 +102,7 @@ function getAuthEndpointUrl(path: string) {
 
 const betterAuthClient = createAuthClient({
   baseURL: getAuthBaseUrl(),
-  plugins: [magicLinkClient(), passkeyClient()],
+  plugins: [magicLinkClient(), passkeyClient(), oauthProviderClient()],
 });
 
 function removeLocalStorageItem(key: string) {

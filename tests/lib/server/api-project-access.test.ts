@@ -143,11 +143,9 @@ describe("API routes with real query authorization", () => {
     const payload = await (
       await list(new Request("http://localhost/api/v1/projects"))
     ).json();
-    expect(payload.data.map((p: { id: string }) => p.id)).toEqual([
-      "allowed",
-      "future",
-      "unselected",
-    ]);
+    expect(payload).toMatchObject({
+      data: [{ id: "allowed" }, { id: "future" }, { id: "unselected" }],
+    });
   });
   it.each([detail, track, overlay, viewer])(
     "applies selection, ownership, archive and share boundaries to each representation",

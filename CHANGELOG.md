@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### MCP connection foundation
+
+Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. This first version checks your account and available capabilities; project reads and editing follow separately. See the [connection guide](docs/mcp.md).
+
 ### Project access for integrations
 
 Limit an API key to selected cloud projects, or allow all current and future projects you own. Search for projects when creating a key and see its access level in account settings. Existing keys keep access to all your projects.
