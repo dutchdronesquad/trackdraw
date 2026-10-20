@@ -27,6 +27,7 @@ import {
 } from "@/lib/product-events";
 
 export type AccountProjectListItem = {
+  revision?: number;
   id: string;
   title: string;
   updatedAt: string;
@@ -140,6 +141,7 @@ export function useAccountProjectSync({
   const lastAccountSyncSignatureRef = useRef<string | null>(null);
   const syncInFlightByIdRef = useRef<Record<string, boolean>>({});
   const accountProjectsFetchedAtRef = useRef<number | null>(null);
+  const accountProjectsRefreshingForUserRef = useRef<string | null>(null);
   const accountProjectsFetchedForUserRef = useRef<string | null>(null);
   const openedFromAccountSignatureRef = useRef<string | null>(null);
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
@@ -148,6 +150,11 @@ export function useAccountProjectSync({
   // Ids present here predate this session and are never auto-promoted.
   const localProjectIdsAtLoadRef = useRef<Set<string> | null>(null);
   const autoPromoteAttemptedIdsRef = useRef<Set<string>>(new Set());
+
+  // Freeze the version actually opened/saved, independently of refreshed list metadata.
+  const loadedVersionByIdRef = useRef<
+    Record<string, { revision?: number; designUpdatedAt: string }>
+  >({});
 
   const [accountShares, setAccountShares] = useState<AccountShareItem[]>([]);
   const [accountSharesLoading, setAccountSharesLoading] = useState(false);
@@ -190,6 +197,9 @@ export function useAccountProjectSync({
         return;
       }
 
+      // Tab activation can emit both focus and visibilitychange before the response.
+      if (accountProjectsRefreshingForUserRef.current === authUserId) return;
+      accountProjectsRefreshingForUserRef.current = authUserId;
       setAccountProjectsLoading(true);
       setAccountProjectsError(null);
 
@@ -211,8 +221,44 @@ export function useAccountProjectSync({
           updatedAt: project.updatedAt,
           designUpdatedAt: project.designUpdatedAt,
           shapeCount: project.shapeCount,
+          revision: project.revision,
         }));
 
+        const current = designRef.current;
+        const cloud = nextProjects.find((project) => project.id === current.id);
+        const loaded = loadedVersionByIdRef.current[current.id];
+        if (
+          cloud &&
+          loaded &&
+          ((loaded.revision !== undefined &&
+            cloud.revision !== undefined &&
+            loaded.revision !== cloud.revision) ||
+            loaded.designUpdatedAt !== cloud.designUpdatedAt)
+        ) {
+          setProjectVersionConflict({
+            projectId: current.id,
+            title: cloud.title,
+            localUpdatedAt: current.updatedAt,
+            cloudUpdatedAt: cloud.designUpdatedAt,
+          });
+          setProjectSyncMetaById((previous) => ({
+            ...previous,
+            [current.id]: {
+              status: "conflict",
+              lastSyncedAt: cloud.updatedAt,
+              error: null,
+            },
+          }));
+        } else if (
+          cloud &&
+          !loaded &&
+          cloud.designUpdatedAt === current.updatedAt
+        ) {
+          loadedVersionByIdRef.current[current.id] = {
+            revision: cloud.revision,
+            designUpdatedAt: cloud.designUpdatedAt,
+          };
+        }
         setAccountProjects(nextProjects);
         accountProjectsFetchedAtRef.current = Date.now();
         accountProjectsFetchedForUserRef.current = userId;
@@ -221,7 +267,8 @@ export function useAccountProjectSync({
           for (const project of nextProjects) {
             const previousMeta = previous[project.id];
             nextMeta[project.id] =
-              previousMeta?.status === "syncing"
+              previousMeta?.status === "syncing" ||
+              previousMeta?.status === "conflict"
                 ? { ...previousMeta, lastSyncedAt: project.updatedAt }
                 : {
                     status: "synced",
@@ -238,6 +285,8 @@ export function useAccountProjectSync({
             : "Failed to load account projects"
         );
       } finally {
+        if (accountProjectsRefreshingForUserRef.current === authUserId)
+          accountProjectsRefreshingForUserRef.current = null;
         setAccountProjectsLoading(false);
       }
     },
@@ -249,6 +298,20 @@ export function useAccountProjectSync({
     // oxlint-disable-next-line react/set-state-in-effect -- refresh account data after identity changes
     void refreshAccountProjects();
   }, [authUserId, readOnly, refreshAccountProjects]);
+
+  useEffect(() => {
+    if (!authUserId || readOnly || !cloudProjectsAvailable) return;
+    const refresh = () => {
+      if (document.visibilityState !== "hidden")
+        void refreshAccountProjects({ force: true });
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [authUserId, readOnly, cloudProjectsAvailable, refreshAccountProjects]);
 
   const refreshAccountShares = useCallback(
     async (force = false) => {
@@ -325,6 +388,7 @@ export function useAccountProjectSync({
     ) {
       accountProjectsFetchedAtRef.current = null;
       accountProjectsFetchedForUserRef.current = null;
+      loadedVersionByIdRef.current = {};
       setAccountProjects([]);
       setProjectSyncMetaById({});
     }
@@ -371,7 +435,16 @@ export function useAccountProjectSync({
     const localSignature = `${currentDesign.id}:${currentDesign.updatedAt}`;
     const cloudSignature = `${matchingAccountProject.id}:${matchingAccountProject.designUpdatedAt}`;
 
-    if (localSignature === cloudSignature) {
+    const loadedRevision =
+      loadedVersionByIdRef.current[currentDesign.id]?.revision;
+    if (
+      localSignature === cloudSignature &&
+      !(
+        loadedRevision !== undefined &&
+        matchingAccountProject.revision !== undefined &&
+        loadedRevision !== matchingAccountProject.revision
+      )
+    ) {
       lastAccountSyncSignatureRef.current = cloudSignature;
       openedFromAccountSignatureRef.current = cloudSignature;
       setProjectSyncMetaById((previous) => ({
@@ -421,7 +494,14 @@ export function useAccountProjectSync({
     const localSignature = `${currentDesign.id}:${currentDesign.updatedAt}`;
     const cloudSignature = `${matchingAccountProject.id}:${matchingAccountProject.designUpdatedAt}`;
 
-    if (localSignature !== cloudSignature) {
+    const loadedRevision =
+      loadedVersionByIdRef.current[currentDesign.id]?.revision;
+    if (
+      localSignature !== cloudSignature ||
+      (loadedRevision !== undefined &&
+        matchingAccountProject.revision !== undefined &&
+        loadedRevision !== matchingAccountProject.revision)
+    ) {
       return;
     }
 
@@ -446,6 +526,7 @@ export function useAccountProjectSync({
         updatedAt: string;
         designUpdatedAt: string;
         shapeCount: number;
+        revision?: number;
       }
     ) => {
       setAccountProjects((previous) => {
@@ -457,6 +538,7 @@ export function useAccountProjectSync({
             projectOverride?.designUpdatedAt ?? targetDesign.updatedAt,
           shapeCount:
             projectOverride?.shapeCount ?? getDesignShapes(targetDesign).length,
+          revision: projectOverride?.revision,
         };
 
         const existingIndex = previous.findIndex(
@@ -525,12 +607,11 @@ export function useAccountProjectSync({
       if (syncInFlightByIdRef.current[targetDesign.id]) return;
 
       syncInFlightByIdRef.current[targetDesign.id] = true;
-      const knownAccountProject = accountProjectsRef.current.find(
-        (project) => project.id === targetDesign.id
-      );
+      const loadedVersion = loadedVersionByIdRef.current[targetDesign.id];
       const baseDesignUpdatedAt = options?.forceCloudWrite
         ? undefined
-        : knownAccountProject?.designUpdatedAt;
+        : (loadedVersion?.designUpdatedAt ?? targetDesign.updatedAt);
+      const baseRevision = loadedVersion?.revision;
 
       setProjectSyncMetaById((previous) => ({
         ...previous,
@@ -552,6 +633,7 @@ export function useAccountProjectSync({
             design: targetDesign,
             forceWrite: options?.forceCloudWrite,
             baseDesignUpdatedAt,
+            baseRevision,
           }),
         });
         failureCategory = classifyProductOperationFailure(response);
@@ -567,6 +649,7 @@ export function useAccountProjectSync({
             updatedAt: string;
             designUpdatedAt: string;
             shapeCount: number;
+            revision?: number;
           };
         };
 
@@ -602,7 +685,15 @@ export function useAccountProjectSync({
           throw new Error(payload.error ?? "Failed to sync project");
         }
 
+        setProjectVersionConflict((current) =>
+          current?.projectId === targetDesign.id ? null : current
+        );
         lastAccountSyncSignatureRef.current = `${targetDesign.id}:${targetDesign.updatedAt}`;
+        loadedVersionByIdRef.current[targetDesign.id] = {
+          revision: payload.project?.revision,
+          designUpdatedAt:
+            payload.project?.designUpdatedAt ?? targetDesign.updatedAt,
+        };
         upsertAccountProject(targetDesign, payload.project);
         const syncedAt = payload.project?.updatedAt ?? new Date().toISOString();
         setProjectSyncMetaById((previous) => ({
@@ -923,7 +1014,11 @@ export function useAccountProjectSync({
         const payload = (await response.json()) as {
           ok: boolean;
           error?: string;
-          project?: { design: TrackDesign };
+          project?: {
+            design: TrackDesign;
+            revision?: number;
+            designUpdatedAt?: string;
+          };
         };
 
         if (!response.ok || !payload.ok || !payload.project) {
@@ -931,6 +1026,10 @@ export function useAccountProjectSync({
         }
 
         const projectDesign = payload.project.design;
+        loadedVersionByIdRef.current[projectId] = {
+          revision: payload.project.revision,
+          designUpdatedAt: projectDesign.updatedAt,
+        };
         snapshotCurrentDesign();
         replaceDesign(projectDesign);
         saveProject(projectDesign);

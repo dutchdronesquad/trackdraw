@@ -19,7 +19,7 @@ REST API keys remain separate and continue to work on REST. They are not OAuth a
 - `mcp:read`: inspect account ID/display name and implemented MCP capabilities. No project access or writes.
 - `offline_access`: optional renewable access. Tokens last 15 minutes; refresh tokens expire after 30 days and rotate with no replay grace period. The resource policy includes this scope to preserve refresh authorization across rotations.
 - `projects:read`: read all owned active cloud projects through shared REST ownership/serialization.
-- `projects:create`: create new track projects. The standard connection requests account access, project reads and project creation in one consent; clients can explicitly request fewer permissions. Tokens and live consent must include the relevant scope.
+- `projects:create`: create new track projects. The standard connection requests account access, project reads, project creation and edits in one consent; clients can explicitly request fewer permissions. Tokens and live consent must include the relevant scope.
 - Anonymous/local-only projects are not uploaded or exposed. Sharing, gallery, editor persistence and public viewers remain unchanged.
 - Verify the official SDK 1.32.1 with the MCP 2025-11-25 authorization profile. DCR supports native/public and web clients; CIMD is not advertised because a secure metadata-fetch transport for Workers is not part of this foundation. Do not claim compatibility with clients that require CIMD without a DCR/pre-registration fallback.
 - Client credentials, device grants and OIDC identity scopes are disabled/out of scope. No trusted clients bypass consent.
@@ -95,3 +95,12 @@ Validation: 1,482 tests pass, including old-registration scope rejection and unc
 - Persist an account-scoped request hash/receipt and new project atomically with [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch). Same-key retries return the same project without overwriting later Studio edits. Changed proposals conflict; deleted/archived projects are never resurrected.
 - `/studio/open/[projectId]` checks sign-in/ownership and invokes the established snapshot/open/local persistence flow. Anonymous editing and autosave remain independent.
 - Validate provider scope isolation, malformed/over-budget geometry, simultaneous retries, account isolation, migrations and real Cloudflare preview with desktop/mobile Studio review, reload and export.
+
+## Reviewed edits to existing tracks (#999)
+
+- The standard OAuth connection also includes `projects:update` in its initial approval. Read-only and create-only connections retain their boundaries. Use “track” in tool contracts and product copy.
+- `preview_track_edit` accepts bounded move/rotate/name patches for existing unlocked items, or a saved version to restore. It reuses Studio mutations, design normalization and shared renderer bounds. Return affected IDs, before/after fields and validation feedback without saving the project.
+- Bind apply to the immutable proposal ID, account, project and exact base revision. `apply_track_edit` accepts no replacement patches or force flag. A D1 transaction updates the project and applied receipt together; retries return the original result. A monotonic database revision covers Studio saves, metadata changes, archive operations and direct persistence paths.
+- Applied proposals retain the previous server snapshot. `list_project_versions` plus a restore preview and apply provides recovery, including recovery of a recovery. Pending previews expire after 30 minutes and are capped at 20 per account; applied recovery records remain until project/account deletion.
+- Studio freezes the opened/saved base revision, refreshes metadata on focus/visibility and preserves its local design on conflict. Its existing conflict/open/local-copy flows remain the resolution UI. Auto-publishing an unlinked local design must not overwrite a cloud project that already exists.
+- Validate concurrent/retried/stale applies, scope and account isolation, database rollback, recovery, polyline parity, focus conflicts, autosave and existing mobile editing regressions. Deletion, publication and share mutations remain outside MCP.

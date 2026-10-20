@@ -76,6 +76,7 @@ describe("viewer course export integration", () => {
     const design = designFixture();
     const project: StoredProject = {
       id: "private-project",
+      revision: 1,
       ownerUserId: "private-user",
       title: design.title,
       description: "private",

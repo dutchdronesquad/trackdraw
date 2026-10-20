@@ -12,6 +12,7 @@ import { getDatabase } from "@/lib/server/db";
 import { revokeSharesForProject } from "@/lib/server/shares";
 
 type ProjectRow = {
+  revision: number;
   id: string;
   owner_user_id: string;
   title: string;
@@ -26,6 +27,7 @@ type ProjectRow = {
 };
 
 export type StoredProject = {
+  revision: number;
   id: string;
   ownerUserId: string;
   title: string;
@@ -46,6 +48,7 @@ type SaveProjectOptions = {
   description?: string | null;
   forceWrite?: boolean;
   baseDesignUpdatedAt?: string | null;
+  baseRevision?: number;
 };
 
 export class ProjectVersionConflictError extends Error {
@@ -80,6 +83,7 @@ function mapProjectRow(row: ProjectRow): StoredProject {
   const design = normalizeDesign(rawDesign);
 
   return {
+    revision: row.revision,
     id: row.id,
     ownerUserId: row.owner_user_id,
     title: row.title,
@@ -121,10 +125,17 @@ export async function saveProjectForUser(
     ? JSON.stringify(serializeDesign(existingProject.design))
     : null;
 
-  if (existingProject && !options.forceWrite) {
+  if (existingProject) {
     if (
-      options.baseDesignUpdatedAt &&
-      existingProject.designUpdatedAt !== options.baseDesignUpdatedAt
+      (options.baseRevision !== undefined &&
+        existingProject.revision !== options.baseRevision) ||
+      (!options.forceWrite &&
+        options.baseDesignUpdatedAt &&
+        existingProject.designUpdatedAt !== options.baseDesignUpdatedAt) ||
+      (!options.forceWrite &&
+        options.baseRevision === undefined &&
+        !options.baseDesignUpdatedAt &&
+        existingSerializedJson !== serializedJson)
     ) {
       throw new ProjectVersionConflictError({
         projectId,
@@ -135,7 +146,11 @@ export async function saveProjectForUser(
       });
     }
 
-    if (existingSerializedJson === serializedJson) {
+    if (
+      existingSerializedJson === serializedJson &&
+      existingProject.title === title &&
+      existingProject.description === description
+    ) {
       return existingProject;
     }
   }
@@ -167,10 +182,13 @@ export async function saveProjectForUser(
           field_height = excluded.field_height,
           shape_count = excluded.shape_count,
           updated_at = excluded.updated_at,
-          archived_at = null
+          archived_at = null,
+          revision = projects.revision + 1
         where projects.owner_user_id = excluded.owner_user_id
-          and (? = 1 or projects.design_json = ?)
+          and projects.archived_at is null
+          and projects.revision = ?
         returning
+          revision,
           id,
           owner_user_id,
           title,
@@ -195,8 +213,7 @@ export async function saveProjectForUser(
       shapeCount,
       now,
       now,
-      options.forceWrite || !existingProject ? 1 : 0,
-      existingSerializedJson ?? ""
+      existingProject?.revision ?? 0
     )
     .first<ProjectRow>();
 
@@ -307,6 +324,7 @@ export async function getProjectForUser(
     .prepare(
       `
         select
+          revision,
           id,
           owner_user_id,
           title,
@@ -335,6 +353,7 @@ export async function listProjectsForUser(ownerUserId: string) {
     .prepare(
       `
         select
+          revision,
           id,
           owner_user_id,
           title,

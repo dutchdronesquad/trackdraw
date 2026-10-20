@@ -8,6 +8,7 @@ import {
   MCP_OAUTH_SCOPES,
   MCP_PROJECT_READ_SCOPE,
   MCP_PROJECT_CREATE_SCOPE,
+  MCP_PROJECT_UPDATE_SCOPE,
   MCP_READ_SCOPE,
   getMcpResource,
 } from "./oauth-provider";
@@ -51,6 +52,7 @@ export async function getConsentRequest(query: string, headers: Headers) {
     account: user.email ?? user.name ?? user.id,
     offlineAccess: scopes.includes("offline_access"),
     projectCreateAccess: scopes.includes(MCP_PROJECT_CREATE_SCOPE),
+    projectUpdateAccess: scopes.includes(MCP_PROJECT_UPDATE_SCOPE),
     projectReadAccess: scopes.includes(MCP_PROJECT_READ_SCOPE),
   };
 }

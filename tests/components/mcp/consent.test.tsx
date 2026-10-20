@@ -56,6 +56,25 @@ describe("MCP consent and connection management", () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByText(/This connection cannot create/)).toBeNull();
   });
+  it("shows edit approval and recovery without the create-only restriction", () => {
+    render(
+      <McpConsent
+        request={{
+          ...request,
+          projectReadAccess: true,
+          projectCreateAccess: true,
+          projectUpdateAccess: true,
+        }}
+      />
+    );
+    expect(
+      screen.getAllByText("Apply reviewed track changes").length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/previous version remains recoverable/).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/This permission cannot edit/)).toBeNull();
+  });
   it("shows all owned project reads only when explicitly requested", () => {
     render(<McpConsent request={{ ...request, projectReadAccess: true }} />);
     expect(screen.getByText("Read your saved projects")).toBeTruthy();

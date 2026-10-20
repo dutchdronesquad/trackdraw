@@ -177,7 +177,12 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(await resource.json()).toMatchObject({
       resource: getMcpResource(),
       authorization_servers: [origin + "/api/auth"],
-      scopes_supported: ["mcp:read", "projects:read", "projects:create"],
+      scopes_supported: [
+        "mcp:read",
+        "projects:read",
+        "projects:create",
+        "projects:update",
+      ],
     });
     const issuer = await request(
       "/.well-known/oauth-authorization-server/api/auth"
@@ -263,7 +268,9 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
   it("authorizes the standard read and creation permissions in one consent", async () => {
     const id = await register(null);
     const scope = MCP_DEFAULT_SCOPES.join(" ");
-    expect(scope).toBe("mcp:read projects:read projects:create");
+    expect(scope).toBe(
+      "mcp:read projects:read projects:create projects:update"
+    );
     const grant = await approve(id, scope);
     expect(grant.consent.searchParams.get("scope")).toBe(scope);
     expect(database.oauthConsent).toHaveLength(1);

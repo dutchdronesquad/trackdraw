@@ -39,6 +39,7 @@ function makeDesign(shapes: Shape[]): TrackDesign {
 
 function makeProject(design: TrackDesign): StoredProject {
   return {
+    revision: 1,
     id: "project-1",
     ownerUserId: "user-1",
     title: "Race layout",

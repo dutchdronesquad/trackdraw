@@ -110,6 +110,7 @@ describe("projects API route", () => {
           title: "Race layout",
           updatedAt: "2026-04-20T12:00:00.000Z",
           designUpdatedAt: project.designUpdatedAt,
+          revision: 1,
           shapeCount: 0,
         },
       ],
@@ -278,6 +279,7 @@ describe("projects API route", () => {
         title: "Race layout",
         updatedAt: "2026-04-20T10:11:00.000Z",
         designUpdatedAt: "2026-04-20T10:10:00.000Z",
+        revision: 1,
         shapeCount: 0,
       },
     });

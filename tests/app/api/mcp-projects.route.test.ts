@@ -228,6 +228,51 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
         .isError
     ).toBe(true);
   });
+  it("requires update scope on both token and live consent for preview, apply and recovery", async () => {
+    save("track");
+    expect(
+      (await client.listTools()).tools.some(
+        (tool) => tool.name === "preview_track_edit"
+      )
+    ).toBe(false);
+    expect(
+      (
+        await call("preview_track_edit", {
+          project_id: "track",
+          base_revision: 1,
+          changes: [{ shape_id: gate.id, patch: { x: 15 } }],
+        })
+      ).isError
+    ).toBe(true);
+    scopes += " projects:update";
+    await expect(client.listTools()).rejects.toThrow();
+    sqlite.exec(
+      `UPDATE oauthConsent SET scopes='["mcp:read","projects:read","projects:update"]'`
+    );
+    expect(
+      (await data("get_project", { project_id: "track" })).project
+    ).toMatchObject({ revision: 1 });
+    const proposal = await data("preview_track_edit", {
+      project_id: "track",
+      base_revision: 1,
+      changes: [{ shape_id: gate.id, patch: { x: 15 } }],
+    });
+    const applied = await data("apply_track_edit", {
+      project_id: "track",
+      proposal_id: proposal.proposal_id,
+      base_revision: 1,
+    });
+    expect(applied).toMatchObject({ revision: 2 });
+    const versions = await data("list_project_versions", {
+      project_id: "track",
+    });
+    expect(versions.versions).toHaveLength(1);
+    sqlite.exec(
+      `UPDATE oauthConsent SET scopes='["mcp:read","projects:read"]'`
+    );
+    await expect(client.listTools()).rejects.toThrow();
+  });
+
   it("requires explicit live create consent and creates new projects idempotently", async () => {
     const proposal = {
       version: 2,
@@ -423,7 +468,7 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
     const project = (await getProjectForUser("track", "owner"))!;
     expect(
       (await data("get_project", { project_id: "track" })).project
-    ).toEqual(toApiProjectSummary(project));
+    ).toEqual({ ...toApiProjectSummary(project), revision: project.revision });
     const track = await data("get_track", { project_id: "track", limit: 1 });
     expect(track.shapes).toEqual(toApiTrackPackage(project).shapes.slice(0, 1));
     expect(await data("get_overlay", { project_id: "track" })).toEqual(

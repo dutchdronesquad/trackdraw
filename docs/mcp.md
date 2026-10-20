@@ -1,6 +1,6 @@
 # Connecting to TrackDraw MCP
 
-TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account` checks the authorized account and available capabilities. With project-read consent, clients can also inspect owned cloud projects, request track materials and metrics, and compare two selected tracks. The same connection can authorize creating a new track project to open in Studio. Editing existing projects remains a separate milestone in [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
+TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account` checks the authorized account and available capabilities. With project-read consent, clients can also inspect owned cloud projects, request track materials and metrics, and compare two selected tracks. The same connection can authorize creating a new track project to open in Studio. With edit permission, clients can preview and apply reviewed changes to existing projects, with revision checks and recoverable prior versions.
 
 ## Connect and disconnect
 
@@ -12,13 +12,13 @@ TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account
 
 Do not paste a REST API key into an OAuth client. REST keys continue to serve `/api/v1/*`; the MCP endpoint accepts OAuth access tokens issued for its own resource. A browser session alone also does not authorize MCP requests.
 
-The `mcp:read` scope grants access to account ID, display name and MCP capabilities. It does not grant project access. `offline_access` optionally allows refresh tokens so the client can remain connected without signing in for each request. Access tokens last 15 minutes; refresh tokens expire after 30 days and rotate on use. Reusing a rotated refresh token is rejected. `projects:read` separately grants access to all current and future owned active cloud projects, their track data, material summaries, route metrics, setup estimates, overlays and viewer snapshots. The standard connection requests account access, project reads and `projects:create` together, presented on one consent page. Clients can explicitly request fewer permissions for a read-only connection. `projects:create` allows creating new track projects, without editing, deleting or publishing existing projects. Refreshing a token never expands its permissions.
+The `mcp:read` scope grants access to account ID, display name and MCP capabilities. It does not grant project access. `offline_access` optionally allows refresh tokens so the client can remain connected without signing in for each request. Access tokens last 15 minutes; refresh tokens expire after 30 days and rotate on use. Reusing a rotated refresh token is rejected. `projects:read` separately grants access to all current and future owned active cloud projects, their track data, material summaries, route metrics, setup estimates, overlays and viewer snapshots. The standard connection requests account access, project reads, `projects:create` and `projects:update` together, presented on one consent page. Clients can explicitly request fewer permissions for a read-only connection. `projects:create` allows creating new track projects, without editing, deleting or publishing existing projects. `projects:update` authorizes previewing, applying and recovering reviewed edits. Refreshing a token never expands its permissions.
 
 Choose a client you trust: it handles received information under its own policies. Client names are supplied by the client, so the consent page also displays its identifier and callback host. Connecting does not upload anonymous/local-only Studio projects.
 
 ## Read-only project tools
 
-Project tools appear in discovery only when the access token and live consent both include `projects:read`. The `get_account` response reports `project_reads`, `project_writes` and exactly the tools available to that token. Account-only tokens cannot call hidden project tools. `project_creation` and `project_writes` report whether create-only access is granted; existing project updates, deletion and publication remain unavailable.
+Project tools appear in discovery only when the access token and live consent both include `projects:read`. The `get_account` response reports `project_reads`, `project_writes` and exactly the tools available to that token. Account-only tokens cannot call hidden project tools. `project_creation` and `project_updates` distinguish creation and edits; `project_writes` reports either capability. Deletion, publication and sharing changes remain unavailable.
 
 | Tool                  | Input                                                                      | Result                                                                                                                                                  |
 | --------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -114,6 +114,27 @@ TRACKDRAW_MCP_URL=http://127.0.0.1:8790/api/mcp TRACKDRAW_MCP_CREATE_TRACK=1 nod
 
 This opt-in example creates a real project in the selected environment. Inspect/edit/export it in Studio and remove it normally when no longer needed. It never publishes a project.
 
+## Preview, apply and recover edits
+
+The standard connection requests edit permission in the same initial OAuth approval as reads and creation. Explicit read-only or create-only connections cannot call edit or recovery tools. Both the token and current live consent must include `projects:update`.
+
+1. Read `get_project(project_id)` and retain `project.revision`.
+2. Call `preview_track_edit` with `project_id`, `base_revision` and 1–100 unique item patches. Supported fields are `x`, `y`, `rotation` and `name`. Positions use the same units and polyline-anchor behavior as Studio. Locked/missing items, unknown fields, non-finite values, nonzero polyline rotation and changed items outside the shared 2D field bounds are rejected. This first edit interface does not add/remove items or resize them.
+3. Show the returned before/after fields, affected item IDs and unvalidated constraints to the user. The saved project is unchanged. `proposal_id` binds to that exact immutable server-stored proposal for 30 minutes; a maximum of 20 unapplied proposals per account bounds pending storage.
+4. After review, call `apply_track_edit(project_id, proposal_id, base_revision)`. The operation atomically checks ownership, active state, proposal expiry and the current project revision, then saves the change and its recovery record. `revision_conflict` means another write intervened: read and preview again. `proposal_expired` requires a new preview. There is no force option. Applying the same proposal again returns its original revision and `replayed: true`, even if Studio has since made newer edits; it never reapplies over that work. Compare `current_revision` with `revision` when reporting a retried result.
+
+```json
+{
+  "project_id": "your-project-id",
+  "base_revision": 7,
+  "changes": [{ "shape_id": "gate-1", "patch": { "x": 15, "rotation": 90 } }]
+}
+```
+
+Every successful remote edit returns `previous_version_id`. Find older versions through `list_project_versions(project_id)` (20 per page; pass `next_cursor` as `cursor`). To recover a version, read the project's **current** revision, then call `preview_track_edit` with `restore_version_id` instead of `changes`. Review and apply that proposal normally. Recovery also retains the version it replaces. Versions are account-owned server records, independent of the browser's local restore points. Applied records remain until project/account deletion; archiving hides the project and its versions from MCP. Expired unapplied proposals are cleaned up; they are not recovery versions.
+
+Studio refreshes account metadata when its tab regains focus or becomes visible. A remote revision change shows the existing version-conflict flow and leaves the local design intact. Choose to open the account version (first preserving a local restore point), or keep a separate local copy. An uninterrupted open tab detects an intervening edit on its next save. Autosave uses the revision actually opened/saved, never silently adopting a refreshed list revision. Even an explicit overwrite choice still uses a compare-and-swap guard against a further race. A project-linked share keeps its separate published snapshot; sharing never silently overwrites an existing cloud project as a side effect.
+
 ## Supported protocol and client
 
 The verified client is the official MCP TypeScript SDK 1.32.1 with its OAuth client provider and Streamable HTTP transport, using the MCP 2025-11-25 authorization profile. Discovery uses RFC 9728 protected-resource metadata and RFC 8414 authorization-server metadata. Authorization uses the code flow with S256 PKCE, exact registered redirects (including native loopback redirect rules), resource indicators and user consent.
@@ -151,7 +172,7 @@ Each account/client pair gets 600 MCP HTTP requests per hour in a durable D1 cou
 
 ## Local runtime validation
 
-Apply migrations through `0028_mcp_track_drafts.sql` before running the new auth configuration. Use [local auth setup](../CONTRIBUTING.md#local-auth) and an explicit canonical loopback origin. For example, after local migrations:
+Apply migrations through `0029_mcp_project_edits.sql` before running the new auth configuration. Use [local auth setup](../CONTRIBUTING.md#local-auth) and an explicit canonical loopback origin. For example, after local migrations:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:8790 NEXT_PUBLIC_APP_ENV=development npm run preview -- --port 8790 --var NEXT_PUBLIC_SITE_URL:http://localhost:8790

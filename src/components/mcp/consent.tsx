@@ -24,6 +24,7 @@ type ConsentRequest = {
   offlineAccess: boolean;
   projectReadAccess?: boolean;
   projectCreateAccess?: boolean;
+  projectUpdateAccess?: boolean;
 };
 
 export function McpConsent({ request }: { request: ConsentRequest }) {
@@ -125,28 +126,36 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                 },
                 {
                   icon: ShieldCheck,
-                  title: request.projectCreateAccess
-                    ? "createPermissionTitle"
-                    : "readOnlyTitle",
-                  body: request.projectCreateAccess
-                    ? "createPermission"
-                    : request.projectReadAccess
-                      ? "projectPermission"
-                      : "readPermission",
+                  title: request.projectUpdateAccess
+                    ? "editPermissionTitle"
+                    : request.projectCreateAccess
+                      ? "createPermissionTitle"
+                      : "readOnlyTitle",
+                  body: request.projectUpdateAccess
+                    ? "editPermission"
+                    : request.projectCreateAccess
+                      ? "createPermission"
+                      : request.projectReadAccess
+                        ? "projectPermission"
+                        : "readPermission",
                   color: "text-brand-secondary bg-brand-secondary/5",
                 },
                 {
                   icon: LockKeyhole,
-                  title: request.projectCreateAccess
-                    ? "createBoundaryTitle"
-                    : request.projectReadAccess
-                      ? "noWriteTitle"
-                      : "privateTitle",
-                  body: request.projectCreateAccess
-                    ? "createBoundary"
-                    : request.projectReadAccess
-                      ? "noWriteAccess"
-                      : "noProjectAccess",
+                  title: request.projectUpdateAccess
+                    ? "editBoundaryTitle"
+                    : request.projectCreateAccess
+                      ? "createBoundaryTitle"
+                      : request.projectReadAccess
+                        ? "noWriteTitle"
+                        : "privateTitle",
+                  body: request.projectUpdateAccess
+                    ? "editBoundary"
+                    : request.projectCreateAccess
+                      ? "createBoundary"
+                      : request.projectReadAccess
+                        ? "noWriteAccess"
+                        : "noProjectAccess",
                   color: "text-muted-foreground bg-muted/50",
                 },
               ].map(({ icon: Icon, title, body, color }) => (
@@ -251,8 +260,31 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                       {t("createPermission")}
                     </p>
                     <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
-                      {t("createBoundary")}
+                      {t(
+                        request.projectUpdateAccess
+                          ? "editBoundary"
+                          : "createBoundary"
+                      )}
                     </p>
+                  </div>
+                </li>
+              )}
+              {request.projectUpdateAccess && (
+                <li className="border-border/60 flex items-start gap-4 border-t pt-5">
+                  <ShieldCheck
+                    className="text-brand-primary size-5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <div className="text-sm sm:text-base">
+                    <p className="font-medium">{t("editPermissionTitle")}</p>
+                    <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                      {t("editPermission")}
+                    </p>
+                    {!request.projectCreateAccess && (
+                      <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                        {t("editBoundary")}
+                      </p>
+                    )}
                   </div>
                 </li>
               )}
@@ -272,11 +304,13 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
             </ul>
             <p className="text-muted-foreground pb-5 text-xs leading-5 lg:hidden">
               {t(
-                request.projectCreateAccess
-                  ? "createBoundary"
-                  : request.projectReadAccess
-                    ? "noWriteAccess"
-                    : "noProjectAccess"
+                request.projectUpdateAccess
+                  ? "editBoundary"
+                  : request.projectCreateAccess
+                    ? "createBoundary"
+                    : request.projectReadAccess
+                      ? "noWriteAccess"
+                      : "noProjectAccess"
               )}
             </p>
             <details className="group border-border/60 border-t py-4 text-sm">

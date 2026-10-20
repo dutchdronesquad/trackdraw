@@ -87,6 +87,99 @@ describe("useAccountProjectSync", () => {
     vi.unstubAllGlobals();
   });
 
+  it("coalesces overlapping focus and visibility refreshes and allows the next refresh", async () => {
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    const design = createDefaultDesign();
+    const payload = {
+      ok: true,
+      projects: [
+        {
+          id: design.id,
+          title: design.title,
+          revision: 1,
+          designUpdatedAt: design.updatedAt,
+          updatedAt: design.updatedAt,
+          shapeCount: 0,
+        },
+      ],
+    };
+    let finishRefresh: (response: Response) => void = () => {};
+    const pending = new Promise<Response>((resolve) => {
+      finishRefresh = resolve;
+    });
+    const fetch = vi
+      .fn(async () => Response.json(payload))
+      .mockResolvedValueOnce(Response.json(payload))
+      .mockImplementationOnce(() => pending);
+    vi.stubGlobal("fetch", fetch);
+    const { result } = renderAccountProjectSync({
+      authUserId: "owner",
+      design,
+    });
+    await waitFor(() => expect(result.current.accountProjects).toHaveLength(1));
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      finishRefresh(Response.json(payload));
+    });
+    await waitFor(() =>
+      expect(result.current.accountProjectsLoading).toBe(false)
+    );
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps the opened revision frozen when focus discovers an external edit", async () => {
+    const design = createDefaultDesign();
+    design.id = "track";
+    let revision = 1;
+    const metadata = () => ({
+      id: "track",
+      title: "Track",
+      revision,
+      designUpdatedAt: design.updatedAt,
+      updatedAt: design.updatedAt,
+      shapeCount: 0,
+    });
+    const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "POST")
+        return Response.json({ ok: true, project: metadata() });
+      return Response.json({ ok: true, projects: [metadata()] });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const replaceDesign = vi.fn();
+    const { result } = renderAccountProjectSync({
+      authUserId: "owner",
+      design,
+      replaceDesign,
+    });
+    await waitFor(() => expect(result.current.accountProjects).toHaveLength(1));
+    revision = 2;
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    await waitFor(() =>
+      expect(result.current.projectVersionConflict?.projectId).toBe("track")
+    );
+    expect(result.current.projectSyncMetaById.track.status).toBe("conflict");
+    expect(replaceDesign).not.toHaveBeenCalled();
+    await act(async () => {
+      await result.current.syncDesignToAccount({
+        ...design,
+        title: "Local changes",
+      });
+    });
+    const posted = fetch.mock.calls.find(([, init]) => init?.method === "POST");
+    expect(JSON.parse(String(posted?.[1]?.body))).toMatchObject({
+      baseRevision: 1,
+    });
+  });
+
   it("reads header status copy from the active message catalog", () => {
     const localizedWrapper = ({ children }: { children: ReactNode }) => (
       <NextIntlClientProvider
@@ -220,7 +313,7 @@ describe("useAccountProjectSync", () => {
     expect(postCall).toBeDefined();
     expect(JSON.parse(String(postCall?.[1]?.body))).toMatchObject({
       projectId: "project-1",
-      baseDesignUpdatedAt: "2026-04-20T10:10:00.000Z",
+      baseDesignUpdatedAt: "2026-04-20T10:05:00.000Z",
     });
     expect(localStorage.getItem("trackdraw-project-project-1")).toBeNull();
     expect(result.current.projectVersionConflict).toEqual({

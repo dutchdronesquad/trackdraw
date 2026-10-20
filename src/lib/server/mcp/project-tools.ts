@@ -178,7 +178,10 @@ export function registerProjectReadTools(server: McpServer, userId: string) {
         return {
           type: "project_details",
           schema: "trackdraw.mcp.project.v1",
-          project: toApiProjectSummary(project),
+          project: {
+            ...toApiProjectSummary(project),
+            revision: project.revision,
+          },
           design_version: project.design.version,
           track_schema: "trackdraw.track.v1",
           overlay_schema: "trackdraw.overlay.v1",

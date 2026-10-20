@@ -4,7 +4,11 @@ import { auditEventTypes } from "@/lib/audit-events";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { getProjectForUser, saveProjectForUser } from "@/lib/server/projects";
+import {
+  getProjectForUser,
+  saveProjectForUser,
+  ProjectVersionConflictError,
+} from "@/lib/server/projects";
 import {
   createShare,
   getShareByProjectIdForUser,
@@ -95,11 +99,13 @@ export async function POST(request: Request) {
     let projectId = body.projectId ?? null;
     let autoPromotedProjectWasCreated = false;
     if (user && !projectId) {
-      // Reuse design.id so repeated publishes update the same project instead of creating a new one each time.
+      // Reuse the project link without overwriting an existing cloud design.
       const existingProject = await getProjectForUser(design.id, user.id);
-      const project = await saveProjectForUser(user.id, design, {
-        projectId: design.id,
-      });
+      const project =
+        existingProject ??
+        (await saveProjectForUser(user.id, design, {
+          projectId: design.id,
+        }));
       projectId = project.id;
       autoPromotedProjectWasCreated = !existingProject;
 
@@ -155,6 +161,11 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof ProjectVersionConflictError)
+      return NextResponse.json(
+        { ok: false, code: "project_version_conflict", error: error.message },
+        { status: 409 }
+      );
     const message =
       error instanceof z.ZodError
         ? "Invalid share publish payload"

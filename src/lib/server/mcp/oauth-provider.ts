@@ -9,10 +9,12 @@ import { getSiteUrl } from "@/lib/seo";
 export const MCP_READ_SCOPE = "mcp:read";
 export const MCP_PROJECT_READ_SCOPE = "projects:read";
 export const MCP_PROJECT_CREATE_SCOPE = "projects:create";
+export const MCP_PROJECT_UPDATE_SCOPE = "projects:update";
 export const MCP_DEFAULT_SCOPES = [
   MCP_READ_SCOPE,
   MCP_PROJECT_READ_SCOPE,
   MCP_PROJECT_CREATE_SCOPE,
+  MCP_PROJECT_UPDATE_SCOPE,
 ];
 export const MCP_OAUTH_SCOPES = [...MCP_DEFAULT_SCOPES, "offline_access"];
 
