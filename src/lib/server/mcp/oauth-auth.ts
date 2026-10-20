@@ -7,7 +7,6 @@ import { getDatabase } from "@/lib/server/db";
 import { getBearerApiKey, trackReadPermission } from "@/lib/server/api-keys";
 import { recordAuthenticatedAccountActivity } from "@/lib/server/account-activity";
 import {
-  MCP_DEFAULT_SCOPES,
   MCP_PROJECT_READ_SCOPE,
   MCP_PROJECT_CREATE_SCOPE,
   MCP_PROJECT_UPDATE_SCOPE,
@@ -16,16 +15,10 @@ import {
   getMcpResource,
 } from "./oauth-metadata";
 
+import { mcpChallenge } from "./request-guards";
+
 const BUDGET_WINDOW_MS = 3_600_000;
 const BUDGET_MAX = 600;
-
-export function mcpChallenge(error?: "invalid_token" | "insufficient_scope") {
-  const metadata = new URL(
-    "/.well-known/oauth-protected-resource/api/mcp",
-    getMcpResource()
-  ).href;
-  return `Bearer resource_metadata="${metadata}", scope="${MCP_DEFAULT_SCOPES.join(" ")}"${error ? `, error="${error}"` : ""}`;
-}
 
 function failure(
   status: number,

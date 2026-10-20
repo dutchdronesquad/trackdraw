@@ -1,3 +1,4 @@
+import { getEarlyMcpResponse } from "./src/lib/server/mcp/request-guards";
 import { getMcpDiscoveryResponse } from "./src/lib/server/mcp/oauth-metadata";
 import type { AccountDeletionMediaBucket } from "./src/lib/server/account-deletion";
 import {
@@ -29,6 +30,7 @@ type WorkerEnv = PlunkEnvironment & {
   DB: D1Database;
   MEDIA_BUCKET?: AccountDeletionMediaBucket;
   NEXT_PUBLIC_SITE_URL?: string;
+  NEXT_PUBLIC_APP_ENV?: string;
 };
 
 type ScheduledController = {
@@ -46,6 +48,12 @@ const worker = {
   fetch(request: Request, env: WorkerEnv, ctx: WorkerExecutionContext) {
     const earlyResponse = getEarlyWorkerResponse(request);
     if (earlyResponse) return earlyResponse;
+    const mcpRejection = getEarlyMcpResponse(
+      request,
+      env.NEXT_PUBLIC_SITE_URL,
+      env.NEXT_PUBLIC_APP_ENV
+    );
+    if (mcpRejection) return mcpRejection;
     const discovery = getMcpDiscoveryResponse(
       request,
       env.NEXT_PUBLIC_SITE_URL

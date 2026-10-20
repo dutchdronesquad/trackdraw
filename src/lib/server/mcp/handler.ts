@@ -1,35 +1,12 @@
 import "server-only";
 
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { getSiteUrl } from "@/lib/seo";
+import { getEarlyMcpResponse, mcpError } from "./request-guards";
 import { authenticateMcpRequest } from "./oauth-auth";
 import { createMcpServer } from "./server";
 import { readBoundedRequestBody } from "@/lib/server/bounded-request-body";
 
 export const MCP_MAX_BODY_BYTES = 16_384;
-
-function mcpError(
-  status: number,
-  code: number,
-  message: string,
-  headers?: HeadersInit
-) {
-  return Response.json(
-    { jsonrpc: "2.0", id: null, error: { code, message } },
-    { status, headers }
-  );
-}
-
-function isAllowedOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  // Native MCP clients do not send an Origin; authentication is still required.
-  if (origin === null) return true;
-  const allowed = [new URL(getSiteUrl()).origin];
-  if (process.env.NEXT_PUBLIC_APP_ENV !== "production") {
-    allowed.push("http://localhost:8787", "http://127.0.0.1:8787");
-  }
-  return allowed.includes(origin);
-}
 
 async function readMessage(request: Request) {
   try {
@@ -54,16 +31,8 @@ async function readMessage(request: Request) {
 }
 
 async function dispatch(request: Request): Promise<Response> {
-  if (!isAllowedOrigin(request)) {
-    return mcpError(403, -32000, "Origin is not allowed.");
-  }
-  if (new URL(request.url).search) {
-    return mcpError(
-      400,
-      -32600,
-      "Use the MCP endpoint without query parameters."
-    );
-  }
+  const early = getEarlyMcpResponse(request);
+  if (early) return early;
 
   // Revalidate OAuth on every request, including discovery and notifications.
   // Browser sessions and REST API keys do not authorize MCP requests.

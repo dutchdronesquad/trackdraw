@@ -80,7 +80,7 @@ export function toApiProjectSummary(project: StoredProject) {
   };
 }
 
-function toApiShape(shape: Shape) {
+export function toApiTrackShape(shape: Shape) {
   const {
     locked: _locked,
     frontOffsetDeg: _frontOffsetDeg,
@@ -291,7 +291,7 @@ function getSplitIndexByShapeId(timingPoints: OverlayPrepTimingPoint[]) {
   );
 }
 
-export function toApiTrackPackage(project: StoredProject) {
+export function toApiTrackHeader(project: StoredProject) {
   const shapes = getDesignShapes(project.design);
 
   return {
@@ -316,7 +316,13 @@ export function toApiTrackPackage(project: StoredProject) {
       title: marker.title,
     })),
     updated_at: project.designUpdatedAt,
-    shapes: shapes.map(toApiShape),
+  };
+}
+
+export function toApiTrackPackage(project: StoredProject) {
+  return {
+    ...toApiTrackHeader(project),
+    shapes: getDesignShapes(project.design).map(toApiTrackShape),
   };
 }
 

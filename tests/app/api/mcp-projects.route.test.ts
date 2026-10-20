@@ -5,6 +5,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { POST, GET } from "@/app/api/mcp/route";
 import { z } from "zod";
+import * as projects from "@/lib/server/projects";
 import { getDatabase } from "@/lib/server/db";
 import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
@@ -127,6 +128,62 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 describe("owned project MCP tools with real persistence, serializers and SDK", () => {
+  it("does not serialize geometry outside the requested page", async () => {
+    save("paged", "owner", [gate, { ...gate, id: "outside" }]);
+    const project = (await getProjectForUser("paged", "owner"))!;
+    const outside = vi.fn(() => {
+      throw new Error("Unrequested geometry serialized");
+    });
+    Object.defineProperty(project.design.shapeById.outside, "name", {
+      enumerable: true,
+      get: outside,
+    });
+    vi.spyOn(projects, "getProjectForUser").mockResolvedValue(project);
+    const page = await data("get_track", { project_id: "paged", limit: 1 });
+    expect(page.shape_count).toBe(2);
+    expect(page.shapes).toMatchObject([{ id: "gate" }]);
+    expect(outside).not.toHaveBeenCalled();
+  });
+  it("does not serialize polyline coordinates outside the requested point page", async () => {
+    save("route-page", "owner", [
+      {
+        id: "route",
+        kind: "polyline",
+        x: 0,
+        y: 0,
+        rotation: 0,
+        points: [
+          { x: 1, y: 2 },
+          { x: 3, y: 4 },
+        ],
+      },
+    ]);
+    const project = (await getProjectForUser("route-page", "owner"))!;
+    const route = project.design.shapeById.route;
+    if (route.kind !== "polyline") throw new Error("Expected a route");
+    const outside = vi.fn(() => {
+      throw new Error("Unrequested point serialized");
+    });
+    Object.defineProperty(route.points[1], "x", {
+      enumerable: true,
+      get: outside,
+    });
+    vi.spyOn(projects, "getProjectForUser").mockResolvedValue(project);
+    const summary = await data("get_track", { project_id: "route-page" });
+    expect(summary.shapes).toMatchObject([
+      { id: "route", point_count: 2, geometry_omitted: true },
+    ]);
+    const page = await data("get_track", {
+      project_id: "route-page",
+      shape_id: "route",
+      limit: 1,
+    });
+    expect(page.shape).toMatchObject({
+      points: [{ x: 1, y: 2 }],
+      point_count: 2,
+    });
+    expect(outside).not.toHaveBeenCalled();
+  });
   it("keeps tool failures readable after SDK output-schema discovery", async () => {
     save(
       "large",
