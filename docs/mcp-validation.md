@@ -70,4 +70,4 @@ For each milestone, keep these evidence levels separate:
 | Create track projects            | #998                  | Small-track workflow verified; retest corrected oversized-result handling after merge | Not released |
 | Preview/apply edits and recovery | #999                  | Small-track workflow verified; retest corrected oversized-result handling after merge | Not released |
 
-Keep epic #994 open until all milestones have their intended deployed-runtime evidence and production release checks. Keep #1000 open while its required client/runtime acceptance is incomplete. Do not silently treat merged implementation, a green CI run or this checklist as release acceptance.
+After PR #1006 merges, verify the development deploy and repeat the three milestone workflows against that exact deployed commit, including the corrected oversized-result handling. Once that passes and the evidence is recorded, #1000 and epic #994 can close. Production rollout follows the normal release process and is not an additional issue-closure condition; keep its availability status explicit. Do not treat merge or green CI alone as deployed-runtime acceptance.
