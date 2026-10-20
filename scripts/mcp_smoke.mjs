@@ -10,6 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/client/auth.js";
 
 const createDraft = process.env.TRACKDRAW_MCP_CREATE_DRAFT === "1";
+const scope = `mcp:read projects:read${createDraft ? " projects:create" : ""} offline_access`;
 let endpoint;
 try {
   endpoint = new URL(process.env.TRACKDRAW_MCP_URL);
@@ -55,7 +56,7 @@ const provider = {
       token_endpoint_auth_method: "none",
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
-      scope: "mcp:read projects:read offline_access",
+      scope,
     };
   },
   state: () => state,
@@ -134,13 +135,9 @@ try {
   let transport = new StreamableHTTPClientTransport(endpoint, {
     authProvider: provider,
   });
-  if (createDraft) {
-    await auth(provider, {
-      serverUrl: endpoint,
-      scope: "mcp:read projects:read projects:create offline_access",
-    });
-    await transport.finishAuth(await callback);
-  }
+  // Request exactly the smoke run permissions in the initial authorization.
+  await auth(provider, { serverUrl: endpoint, scope });
+  await transport.finishAuth(await callback);
   try {
     await client.connect(transport);
   } catch (error) {

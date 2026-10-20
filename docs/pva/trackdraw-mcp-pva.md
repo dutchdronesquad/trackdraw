@@ -18,7 +18,8 @@ REST API keys remain separate and continue to work on REST. They are not OAuth a
 
 - `mcp:read`: inspect account ID/display name and implemented MCP capabilities. No project access or writes.
 - `offline_access`: optional renewable access. Tokens last 15 minutes; refresh tokens expire after 30 days and rotate with no replay grace period. The resource policy includes this scope to preserve refresh authorization across rotations.
-- `projects:read`: read all owned active cloud projects through shared REST ownership/serialization, after separate consent. Existing registrations/grants/tokens are not upgraded silently. Writes require a future additional scope.
+- `projects:read`: read all owned active cloud projects through shared REST ownership/serialization.
+- `projects:create`: create separate private track drafts. The standard connection requests account access, project reads and draft creation in one consent; clients can explicitly request fewer permissions. Tokens and live consent must include the relevant scope.
 - Anonymous/local-only projects are not uploaded or exposed. Sharing, gallery, editor persistence and public viewers remain unchanged.
 - Verify the official SDK 1.32.1 with the MCP 2025-11-25 authorization profile. DCR supports native/public and web clients; CIMD is not advertised because a secure metadata-fetch transport for Workers is not part of this foundation. Do not claim compatibility with clients that require CIMD without a DCR/pre-registration fallback.
 - Client credentials, device grants and OIDC identity scopes are disabled/out of scope. No trusted clients bypass consent.
@@ -89,7 +90,7 @@ Validation: 1,482 tests pass, including old-registration scope rejection and unc
 
 ## Separate track drafts (#998)
 
-- Optional `projects:create` enables `create_track_draft` only after explicit OAuth consent; existing read connections stay read-only. `get_track_catalog` provides the bounded catalog and current proposal schema without exposing private project data.
+- The standard connection requests `projects:create` together with account and project reads in one OAuth consent. Explicitly read-only connections cannot create drafts. `get_track_catalog` provides the bounded catalog and current proposal schema without exposing private project data.
 - The assistant proposes the layout and explicit field/inventory constraints. Shared normalization and renderer footprints validate version 2, units, finite geometry, unique IDs, bounds and assembly quantities. Return unvalidated real-world/clearance constraints for user review.
 - Persist an account-scoped request hash/receipt and new private project atomically with [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch). Same-key retries return the same project without overwriting later Studio edits. Changed proposals conflict; deleted/archived drafts are never resurrected.
 - `/studio/open/[projectId]` checks sign-in/ownership and invokes the established snapshot/open/local persistence flow. Anonymous editing and autosave remain independent.

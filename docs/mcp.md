@@ -1,6 +1,6 @@
 # Connecting to TrackDraw MCP
 
-TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account` checks the authorized account and available capabilities. With project-read consent, clients can also inspect owned cloud projects, request track materials and metrics, and compare two selected tracks. With separate draft-creation consent, they can create a new private track for review in Studio. Editing existing projects remains a separate milestone in [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
+TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account` checks the authorized account and available capabilities. With project-read consent, clients can also inspect owned cloud projects, request track materials and metrics, and compare two selected tracks. The same connection can authorize creating a new private track for review in Studio. Editing existing projects remains a separate milestone in [epic #994](https://github.com/dutchdronesquad/trackdraw/issues/994).
 
 ## Connect and disconnect
 
@@ -12,9 +12,9 @@ TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account
 
 Do not paste a REST API key into an OAuth client. REST keys continue to serve `/api/v1/*`; the MCP endpoint accepts OAuth access tokens issued for its own resource. A browser session alone also does not authorize MCP requests.
 
-The `mcp:read` scope grants access to account ID, display name and MCP capabilities. It does not grant project access. `offline_access` optionally allows refresh tokens so the client can remain connected without signing in for each request. Access tokens last 15 minutes; refresh tokens expire after 30 days and rotate on use. Reusing a rotated refresh token is rejected. `projects:read` separately grants access to all current and future owned active cloud projects, their track data, material summaries, route metrics, setup estimates, overlays and viewer snapshots. New clients request both read scopes. Existing account-only tokens retain account-only access: re-register/re-add the connection with `projects:read` and approve the expanded consent to enable project tools. The existing client registration may restrict its allowed scopes; refreshing an old token never adds scope.
+The `mcp:read` scope grants access to account ID, display name and MCP capabilities. It does not grant project access. `offline_access` optionally allows refresh tokens so the client can remain connected without signing in for each request. Access tokens last 15 minutes; refresh tokens expire after 30 days and rotate on use. Reusing a rotated refresh token is rejected. `projects:read` separately grants access to all current and future owned active cloud projects, their track data, material summaries, route metrics, setup estimates, overlays and viewer snapshots. The standard connection requests account access, project reads and `projects:create` together, presented on one consent page. Clients can explicitly request fewer permissions for a read-only connection. `projects:create` allows creating separate private drafts, without editing, deleting or publishing existing projects. Refreshing a token never expands its permissions.
 
-Choose a client you trust: it handles received information under its own policies. Client names are supplied by the client, so the consent page also displays its identifier and callback host. Connecting does not upload anonymous/local-only Studio projects or allow editing or publishing existing projects. Creating a separate draft requires the optional `projects:create` scope and explicit consent. Default connection challenges request read access only; an existing registration may need re-registration before it can request the additional scope. Refreshing an old read token never adds draft access.
+Choose a client you trust: it handles received information under its own policies. Client names are supplied by the client, so the consent page also displays its identifier and callback host. Connecting does not upload anonymous/local-only Studio projects.
 
 ## Read-only project tools
 
@@ -106,7 +106,7 @@ Use a new idempotency key for each intended draft. Retry with the **same key and
 
 Success returns `trackdraw.mcp.draft.v1`, `project_id`, `studio_url`, `replayed`, the required quantities and unvalidated constraints. Open the URL for human review: `/studio/open/[projectId]` preserves the link across login, checks ownership/active status, and uses `/studio?project=…` to invoke the existing cloud-project loader. That loader snapshots the current local design before replacing it and then persists the opened draft through the normal project layer. Studio removes the opening parameter after success; refresh and export use the standard project flow. Other accounts and unavailable projects receive the same not-found page. Local-only/anonymous editor flows do not process a cloud opening link until signed in.
 
-The SDK smoke client remains read-only by default. Set `TRACKDRAW_MCP_CREATE_DRAFT=1` to explicitly request draft access, create the example above, verify retry behavior and print the new private Studio review URL:
+The SDK smoke client remains read-only by default. Both smoke modes request their permissions in a single OAuth authorization. Set `TRACKDRAW_MCP_CREATE_DRAFT=1` to include draft access, create the example above, verify retry behavior and print the new private Studio review URL:
 
 ```bash
 TRACKDRAW_MCP_URL=http://127.0.0.1:8790/api/mcp TRACKDRAW_MCP_CREATE_DRAFT=1 node scripts/mcp_smoke.mjs
