@@ -11,13 +11,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  ActivationFunnel,
-  EditorUsageBreakdown,
-  EmbedReachTable,
-  ExportUsageBreakdown,
-  GrowthTabs,
   PlanLimitSimulator,
-  UsageTabs,
   UserGrowthCard,
 } from "@/components/dashboard/MetricsCharts";
 import {
@@ -104,29 +98,18 @@ describe("UserGrowthCard", () => {
 });
 
 const usage = {
-  totalEvents: 20,
-  eventTypes: [{ eventType: "editor.session_started", count: 10 }],
-  eventTypesPrevious: [],
-  trackingStartedAt: "2026-07-01T00:00:00.000Z",
-  trackingDays: 30,
   anonymousSessions: 4,
   accountSessions: 6,
   creatorFunnel: {
     anonymous: { started: 4, edited: 3, valuable: 1 },
     account: { started: 6, edited: 5, valuable: 3 },
   },
-  accountCreatorSegments: {
-    newCreators: 2,
-    returningCreators: 3,
-  },
+
   shareViews: 12,
   exports: 5,
-  preview3dOpens: 3,
-  imports: 1,
-  elementPlacements: 8,
-  apiKeysUsed30d: 0,
+
   exportFormats: [{ format: "png", count: 5 }],
-  elementTypes: [{ kind: "gate", count: 8 }],
+
   shareSurfaces: [
     { surface: "share", count: 5 },
     { surface: "embed", count: 7 },
@@ -146,129 +129,10 @@ const usage = {
     views: 10,
     rows: 2,
   },
-  importedShapes: 4,
-  avgShapesPerImport: 4,
 } satisfies ProductInsights["usage"];
 
 describe("metrics decision views", () => {
   afterEach(cleanup);
-
-  it("shows step and overall conversion in the account journey", () => {
-    render(
-      <ActivationFunnel
-        activation={{
-          registered: 100,
-          createdProject: 50,
-          createdShare: 20,
-          publishedToGallery: 5,
-        }}
-      />
-    );
-
-    expect(screen.getByText("50% from previous · 50% overall")).toBeTruthy();
-    expect(screen.getByText("40% from previous · 20% overall")).toBeTruthy();
-    expect(screen.getAllByRole("progressbar")).toHaveLength(4);
-  });
-
-  it("keeps usage compact behind keyboard-accessible tabs", async () => {
-    const user = userEvent.setup();
-    render(<UsageTabs usage={usage} />);
-
-    expect(
-      screen.getByRole("tab", { name: "Editor" }).getAttribute("aria-selected")
-    ).toBe("true");
-    await user.click(screen.getByRole("tab", { name: "Sharing" }));
-    expect(screen.getByText("Viewing sessions")).toBeTruthy();
-    expect(screen.getByText("events.example.org")).toBeTruthy();
-    expect(
-      screen.getByRole("region", { name: "Detected embed websites" })
-    ).toBeTruthy();
-  });
-
-  it("sorts export usage from highest to lowest", () => {
-    render(
-      <ExportUsageBreakdown
-        usage={{
-          ...usage,
-          exports: 10,
-          exportFormats: [
-            { format: "png", count: 2 },
-            { format: "json", count: 7 },
-            { format: "custom", count: 1 },
-          ],
-        }}
-      />
-    );
-
-    expect(
-      screen
-        .getAllByText(/^(Project file \(JSON\)|2D image \(PNG\)|custom)$/)
-        .map((row) => row.textContent)
-    ).toEqual(["Project file (JSON)", "2D image (PNG)", "custom"]);
-  });
-
-  it("left-aligns creator-funnel journey steps", () => {
-    render(<EditorUsageBreakdown usage={usage} />);
-
-    const stepHeader = screen.getByRole("columnheader", {
-      name: "Journey step",
-    });
-    expect(stepHeader.className).toContain("text-left");
-    expect(stepHeader.closest("table")?.className).toContain("table-fixed");
-
-    for (const name of [
-      "Editor started",
-      "Meaningful edit",
-      "Valuable outcome",
-    ]) {
-      expect(screen.getByRole("rowheader", { name }).className).toContain(
-        "text-left"
-      );
-    }
-  });
-
-  it("keeps user and content growth in one switchable panel", async () => {
-    const user = userEvent.setup();
-    render(
-      <GrowthTabs
-        growthByRange={growthByRange}
-        growthTimeline={{
-          dailyGrowth: [{ date: "2026-07-01", users: 2 }],
-          totalUsers: 12,
-          today: "2026-07-09",
-        }}
-        contentGrowth={[
-          { period: "2026-07", projects: 3, shares: 2, presets: 1 },
-        ]}
-      />
-    );
-
-    expect(screen.getByRole("tab", { name: "Users" })).toBeTruthy();
-    await user.click(screen.getByRole("tab", { name: "Content" }));
-    expect(screen.getByText("Content growth")).toBeTruthy();
-  });
-
-  it("presents thresholded embed reach as a labelled data table", () => {
-    render(<EmbedReachTable usage={usage} />);
-
-    expect(screen.getByRole("columnheader", { name: "Website" })).toBeTruthy();
-    expect(
-      screen.getByRole("columnheader", { name: "Last seen" })
-    ).toBeTruthy();
-    expect(screen.getByText("events.example.org")).toBeTruthy();
-    expect(screen.getByText("Up 75%")).toBeTruthy();
-    expect(screen.getByText("2")).toBeTruthy();
-    expect(screen.getByText("10")).toBeTruthy();
-    expect(screen.getByText("70%")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Showing the top 1 of 2 qualifying track and website combinations."
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("link", { name: "Race day layout" }).getAttribute("href")
-    ).toBe("/share/race-layout");
-  });
 
   it("labels every plan-limit slider and follows the changed resource", () => {
     render(
@@ -599,15 +463,8 @@ describe("metrics decision views", () => {
       <MetricsWorkspace
         metrics={metrics}
         insights={{
-          activation: {
-            registered: 12,
-            createdProject: 10,
-            createdShare: 5,
-            publishedToGallery: 2,
-          },
           contentGrowth: [],
           usage,
-          retention: [],
         }}
         growthByRange={growthByRange}
         growthTimeline={{
@@ -751,15 +608,8 @@ describe("metrics decision views", () => {
     expect(screen.queryByText("Previous 28d")).toBeNull();
 
     vi.mocked(loadProductInsights).mockResolvedValue({
-      activation: {
-        registered: 0,
-        createdProject: 0,
-        createdShare: 0,
-        publishedToGallery: 0,
-      },
       contentGrowth: [],
       usage: { ...usage, exports: 777 },
-      retention: [],
       period: {
         from: "2025-07-01",
         to: "2026-07-08",
