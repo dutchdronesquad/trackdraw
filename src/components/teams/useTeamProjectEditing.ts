@@ -45,7 +45,7 @@ export function useTeamProjectEditing(
   }>({ loaded: null, status: "loading", dirty: false, recovery: null });
   const actions = useRef({
     acquire: async () => {},
-    release: async () => {},
+    release: async () => false,
     save: async () => {},
     reload: async () => {},
   });
@@ -253,9 +253,9 @@ export function useTeamProjectEditing(
         }
       },
       release: async () => {
-        if (!lease || busy) return;
+        if (!lease || busy) return false;
         await save();
-        if (!lease || dirty || busy) return;
+        if (!lease || dirty || busy) return false;
         const currentLease = lease;
         lease = null;
         status = "viewing";
@@ -274,6 +274,7 @@ export function useTeamProjectEditing(
           /* Bounded expiry remains the fallback. */
         }
         await read();
+        return true;
       },
     };
     const unsubscribe = useEditor.subscribe((next, previous) => {

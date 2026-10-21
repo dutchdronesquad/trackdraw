@@ -1,12 +1,25 @@
 "use client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  Download,
+  LoaderCircle,
+  LockKeyhole,
+  LogOut,
+  PencilLine,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { useEditor } from "@/store/editor";
 import { serializeDesign } from "@/lib/track/design";
 import type { EditorView } from "@/lib/editor/view";
 import { downloadJsonFile } from "@/lib/export/download-json";
+import { TeamAvatar } from "./TeamAvatar";
 import { Button } from "@/components/ui/button";
 import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { useTeamProjectEditing } from "./useTeamProjectEditing";
@@ -27,6 +40,7 @@ export default function TeamProjectWorkspace({
   initialTab: EditorView;
 }) {
   const t = useTranslations("dialogs.teamLibrary");
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user.id;
   const current = useTeamProjectEditing(userId, teamId, projectId);
@@ -85,49 +99,164 @@ export default function TeamProjectWorkspace({
       </main>
     );
   const editorName = loaded.editing?.name;
+  const saveLabel = t(
+    status === "saving"
+      ? "savingShort"
+      : current.dirty
+        ? "unsavedShort"
+        : "savedShort"
+  );
+  const sessionLabel = editing
+    ? t("youAreEditing")
+    : editorName
+      ? t("editorActive", { name: editorName })
+      : t("viewer");
+  const goBack = async () => {
+    if (recovery || (editing && !(await current.release()))) return;
+    router.push("/studio?dialog=projects");
+  };
   return (
     <div className="bg-background flex h-dvh flex-col">
-      <div className="border-border flex shrink-0 flex-wrap items-center gap-x-4 gap-y-3 border-b px-4 py-3">
-        {back}
-        <div className="min-w-0 flex-1 basis-48">
-          <p className="truncate text-sm font-medium">
-            {loaded.team.name} · {loaded.project.design.title}
-          </p>
-          <p role="status" className="text-muted-foreground text-xs">
-            {editing
-              ? t(
-                  status === "saving"
-                    ? "saving"
-                    : current.dirty
-                      ? "unsaved"
-                      : "editing"
-                )
-              : editorName
-                ? t("editorActive", { name: editorName })
-                : t("viewer")}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={exportDesign}>
-            {t(recovery ? "exportRecovery" : "export")}
+      <div
+        aria-label={t("workspaceContext")}
+        className="border-border flex shrink-0 flex-col gap-0.5 border-b px-3 py-1 text-xs sm:h-9 sm:flex-row sm:items-center sm:gap-3 sm:py-0 sm:pr-4"
+      >
+        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 sm:h-auto sm:gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 shrink-0 gap-1 px-1.5 font-normal"
+            aria-label={t("back")}
+            disabled={
+              Boolean(recovery) || status === "saving" || status === "acquiring"
+            }
+            title={recovery ? t("recoverBeforeLeaving") : undefined}
+            onClick={() => void goBack()}
+          >
+            <ChevronLeft className="size-3.5" />
+            <span className="hidden sm:inline">{t("projectsShort")}</span>
           </Button>
-          {editing ? (
+          <span aria-hidden="true" className="bg-border h-4 w-px shrink-0" />
+          <TeamAvatar
+            name={loaded.team.name}
+            compact
+            className="size-6 shrink-0"
+          />
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <span
+              className="text-muted-foreground hidden max-w-48 truncate md:inline"
+              title={loaded.team.name}
+            >
+              {loaded.team.name}
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="text-muted-foreground/60 hidden size-3 shrink-0 md:block"
+            />
+            <span
+              className="truncate font-medium"
+              title={loaded.project.design.title}
+            >
+              {loaded.project.design.title}
+            </span>
+          </div>
+        </div>
+        <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 sm:min-h-0 sm:justify-end sm:gap-3">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="text-muted-foreground flex min-w-0 items-center gap-2 sm:gap-3"
+          >
+            {editing ? (
+              <>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  {status === "saving" ? (
+                    <LoaderCircle
+                      aria-hidden="true"
+                      className="size-3.5 animate-spin"
+                    />
+                  ) : current.dirty ? (
+                    <CircleDot
+                      aria-hidden="true"
+                      className="size-3.5 text-amber-600 dark:text-amber-400"
+                    />
+                  ) : (
+                    <CheckCircle2
+                      aria-hidden="true"
+                      className="size-3.5 text-emerald-600 dark:text-emerald-400"
+                    />
+                  )}
+                  <span>{saveLabel}</span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="bg-border h-4 w-px shrink-0"
+                />
+              </>
+            ) : null}
+            <span
+              className="flex min-w-0 items-center gap-1.5"
+              title={sessionLabel}
+            >
+              {editing || editorName ? (
+                <PencilLine aria-hidden="true" className="size-3.5 shrink-0" />
+              ) : (
+                <LockKeyhole aria-hidden="true" className="size-3.5 shrink-0" />
+              )}
+              <span className="truncate">{sessionLabel}</span>
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button
               size="sm"
-              onClick={() => void current.release()}
-              disabled={status === "saving"}
+              variant="ghost"
+              className={`text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal ${editing ? "sm:hidden" : ""}`}
+              onClick={exportDesign}
+              aria-label={t(recovery ? "exportRecovery" : "export")}
+              title={t(recovery ? "exportRecovery" : "export")}
             >
-              {t("finishEditing")}
+              <Download className="size-3.5" />
+              <span className={recovery ? "" : "sr-only"}>
+                {recovery ? t("exportRecovery") : t("export")}
+              </span>
             </Button>
-          ) : !recovery && loaded.team.role !== "viewer" ? (
-            <Button
-              size="sm"
-              disabled={status === "acquiring" || Boolean(editorName)}
-              onClick={() => void current.acquire()}
-            >
-              {t(status === "acquiring" ? "starting" : "startEditing")}
-            </Button>
-          ) : null}
+            {editing ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="bg-border h-4 w-px shrink-0"
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                  onClick={() => void current.release()}
+                  disabled={status === "saving"}
+                >
+                  <LogOut className="size-3.5" />
+                  {t("finishEditing")}
+                </Button>
+              </>
+            ) : !recovery && loaded.team.role !== "viewer" ? (
+              <Button
+                size="sm"
+                className="h-8 gap-1.5"
+                disabled={status === "acquiring" || Boolean(editorName)}
+                onClick={() => void current.acquire()}
+              >
+                {status === "acquiring" ? (
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-3.5 animate-spin"
+                  />
+                ) : (
+                  <PencilLine className="size-3.5" />
+                )}
+                {t(status === "acquiring" ? "starting" : "startEditing")}
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
       {status === "lost" || status === "conflict" || recovery ? (
@@ -156,12 +285,6 @@ export default function TeamProjectWorkspace({
               managedProject={{
                 onSave: () => void current.save(),
                 saveLabel: t("save"),
-                statusTone:
-                  status === "saving"
-                    ? "syncing"
-                    : current.dirty
-                      ? "pending"
-                      : "success",
                 statusLabel: t(
                   status === "saving"
                     ? "saving"

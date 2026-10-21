@@ -116,7 +116,6 @@ export default function EditorShell({
     onSave: () => void;
     statusLabel: string;
     saveLabel: string;
-    statusTone: "pending" | "syncing" | "success";
   };
 }) {
   usePerfMetric("render:EditorShell");
@@ -678,8 +677,8 @@ export default function EditorShell({
               title={design.title || t("shell.untitledTrack")}
               studioHref={studioHref}
               lastSnapshotLabel={lastSnapshotLabel}
-              statusLabel={managedProject?.statusLabel ?? headerStatus?.label}
-              statusTone={managedProject?.statusTone ?? headerStatus?.tone}
+              statusLabel={managedProject ? undefined : headerStatus?.label}
+              statusTone={headerStatus?.tone}
               onRetrySync={
                 isAccountProject && currentProjectSyncMeta?.status === "failed"
                   ? () => void handleSyncProject(design.id)

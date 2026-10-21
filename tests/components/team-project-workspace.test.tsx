@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   session: vi.fn(),
   editing: vi.fn(),
   download: vi.fn(),
+  push: vi.fn(),
 }));
 vi.mock("@/components/teams/team-project-client", async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -30,6 +31,7 @@ vi.mock("@/lib/auth-client", () => ({
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: mocks.push }),
 }));
 vi.mock("next/dynamic", () => ({
   default: () =>
@@ -45,6 +47,7 @@ const privateDesign = {
 };
 beforeEach(() => {
   vi.stubGlobal("localStorage", createMemoryStorage());
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({}));
   mocks.session.mockReturnValue({
     data: { user: { id: "alice" } },
     isPending: false,
@@ -153,4 +156,68 @@ it("exports the unsaved recovery design rather than the older server design", as
   expect(
     mocks.editing.mock.calls.filter(([c]) => c.action === "save")
   ).toHaveLength(0);
+});
+
+async function startEditableWorkspace() {
+  mocks.request.mockResolvedValue({
+    project: { design: privateDesign, revision: 1 },
+    team: { id: "club", name: "Club", role: "editor" },
+    editing: null,
+  });
+  mocks.editing.mockImplementation(async (command) =>
+    command.action === "acquire"
+      ? {
+          lease: {
+            sessionId: "00000000-0000-4000-a000-000000000001",
+            expiresAt: "2099-01-01",
+          },
+          project: { design: privateDesign, revision: 1 },
+        }
+      : command.action === "save"
+        ? { revision: 2 }
+        : {}
+  );
+  render(
+    <TeamProjectWorkspace
+      teamId="club"
+      projectId="private-race"
+      initialTab="2d"
+    />
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Edit project" }));
+  await screen.findByRole("button", { name: "Finish editing" });
+}
+it("saves and releases before navigating back from the compact context bar", async () => {
+  await startEditableWorkspace();
+  act(() =>
+    useEditor.getState().updateDesignMeta({ title: "Save before leaving" })
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
+  await waitFor(() =>
+    expect(mocks.push).toHaveBeenCalledWith("/studio?dialog=projects")
+  );
+  expect(mocks.editing.mock.calls.map(([c]) => c.action)).toEqual([
+    "acquire",
+    "save",
+    "release",
+  ]);
+});
+it("keeps a failed save on screen instead of navigating away from the recovery draft", async () => {
+  await startEditableWorkspace();
+  act(() =>
+    useEditor.getState().updateDesignMeta({ title: "Keep this draft" })
+  );
+  mocks.editing.mockRejectedValueOnce(new Error("connection lost"));
+  fireEvent.click(screen.getByRole("button", { name: "Back to projects" }));
+  await screen.findByRole("button", { name: "Export unsaved changes" });
+  expect(mocks.push).not.toHaveBeenCalled();
+  expect(mocks.editing.mock.calls.map(([c]) => c.action)).toEqual([
+    "acquire",
+    "save",
+  ]);
+  expect(
+    screen
+      .getByRole("button", { name: "Back to projects" })
+      .hasAttribute("disabled")
+  ).toBe(true);
 });
