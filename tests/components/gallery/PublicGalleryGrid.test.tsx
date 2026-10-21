@@ -50,13 +50,11 @@ function galleryEntry(
   return {
     id,
     shareToken: `token-${id}`,
-    ownerUserId: "user-1",
     galleryState: "listed",
     galleryTitle: `Track ${id}`,
     galleryDescription: `Description for ${id}`,
     galleryPreviewImage: `/previews/${id}.png`,
     galleryPublishedAt: "2026-01-15T10:00:00.000Z",
-    moderationHiddenAt: null,
     createdAt: "2026-01-15T10:00:00.000Z",
     updatedAt: "2026-01-15T10:00:00.000Z",
     ownerName: "Race Pilot",

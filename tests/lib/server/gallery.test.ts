@@ -138,18 +138,16 @@ describe("gallery server helpers", () => {
     const previewStatement = createStatement({
       first: { gallery_preview_image: "gallery/previews/entry-1.webp" },
     });
-    const deleteStatement = createStatement();
-    installStatements([previewStatement, deleteStatement]);
+    installStatements([previewStatement]);
 
     await deleteGalleryEntry("share-1");
 
-    expect(previewStatement.sql).toContain("select gallery_preview_image");
+    expect(previewStatement.sql).toContain("RETURNING gallery_preview_image");
     expect(previewStatement.bind).toHaveBeenCalledWith("share-1");
     expect(mocks.deleteGalleryPreviewImage).toHaveBeenCalledWith(
       "gallery/previews/entry-1.webp"
     );
-    expect(deleteStatement.sql).toContain("delete from gallery_entries");
-    expect(deleteStatement.bind).toHaveBeenCalledWith("share-1");
+    expect(previewStatement.sql).toContain("DELETE FROM gallery_entries");
   });
 
   it("aggregates gallery overview stats by state", async () => {

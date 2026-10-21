@@ -1105,7 +1105,7 @@
     "chooseTeam": "Choose a team you own",
     "noOwnedTeam": "You must own a team to move a project into it.",
     "publicationImpact": "Existing access: {shares, plural, one {# active share link} other {# active share links}}, {gallery, plural, one {# public gallery entry} other {# public gallery entries}}.",
-    "publicationUnchanged": "Existing published snapshots and links remain accessible and stay managed by their original publisher. Moving does not make them private or publish any new content.",
+    "publicationUnchanged": "Existing published snapshots and links remain accessible. The team owner manages them separately. Moving does not make them private or publish any new content.",
     "confirmMove": "Move project to team",
     "moveFailed": "The project or its publication state changed, access was lost, or an editing session is active. Return to Projects, sync any changes, and review the move again.",
     "back": "Back to projects",
@@ -1142,6 +1142,20 @@
     "savedShort": "Saved",
     "savingShort": "Saving…",
     "unsavedShort": "Unsaved",
-    "youAreEditing": "You are editing"
+    "youAreEditing": "You are editing",
+    "publish": "Share",
+    "editShort": "Edit"
+  },
+  "teamPublication": {
+    "audience": "Anyone with the link can view this snapshot.",
+    "consequences": "Recipients can copy, download or export the published track. Revoking a link cannot remove copies they already saved. Membership changes do not revoke public links.",
+    "snapshot": "Publish or update uses the saved team project. Internal edits stay private until you explicitly update the link. Map references, inventory and internal metadata are excluded. Private artwork is replaced with the standard appearance.",
+    "galleryAudience": "Listing makes this snapshot discoverable in the public gallery and search engines, with your display name. Removing it from the gallery leaves its link active.",
+    "selectLink": "Manage published link",
+    "title": "Team project snapshot",
+    "description": "Publish a saved version of this team project. Updating a link replaces only that link’s public snapshot.",
+    "noLink": "No published team snapshot",
+    "galleryDescription": "Add a public title and description for this saved snapshot.",
+    "galleryPreview": "Uses the standard TrackDraw image."
   }
 }

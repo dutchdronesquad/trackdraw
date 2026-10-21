@@ -1,4 +1,14 @@
 import "server-only";
+import { shareManagementPredicate } from "./share-management";
+function galleryGuard(userId?: string) {
+  const guard = userId ? shareManagementPredicate(userId) : null;
+  return {
+    sql: guard
+      ? `EXISTS(SELECT 1 FROM shares WHERE shares.token=gallery_entries.share_token AND ${guard.sql})`
+      : "1",
+    bindings: guard?.bindings ?? [],
+  };
+}
 
 import { cache } from "react";
 import { getDatabase } from "@/lib/server/db";
@@ -106,7 +116,10 @@ type GalleryStateCountRow = {
   count: number;
 };
 
-export type PublicGalleryEntry = StoredGalleryEntry & {
+export type PublicGalleryEntry = Omit<
+  StoredGalleryEntry,
+  "ownerUserId" | "moderationHiddenAt"
+> & {
   ownerName: string | null;
   shareTitle: string | null;
   fieldWidth: number | null;
@@ -183,8 +196,13 @@ function mapDashboardGalleryEntryRow(
 function mapPublicGalleryEntryRow(
   row: PublicGalleryEntryRow
 ): PublicGalleryEntry {
+  const {
+    ownerUserId: _owner,
+    moderationHiddenAt: _moderation,
+    ...entry
+  } = mapGalleryEntryRow(row);
   return {
-    ...mapGalleryEntryRow(row),
+    ...entry,
     ownerName: row.owner_name,
     shareTitle: row.share_title,
     fieldWidth:
@@ -381,12 +399,16 @@ export async function listPublicGalleryEntries(limit = 48) {
   return result.results.map(mapPublicGalleryEntryRow);
 }
 
-export async function createUnlistedGalleryEntry(params: {
-  shareToken: string;
-  ownerUserId: string;
-  title: string;
-  description: string;
-}) {
+export async function createUnlistedGalleryEntry(
+  params: {
+    shareToken: string;
+    ownerUserId: string;
+    title: string;
+    description: string;
+  },
+  actorUserId?: string
+) {
+  const guard = actorUserId ? shareManagementPredicate(actorUserId) : null;
   const db = await getDatabase();
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
@@ -407,7 +429,7 @@ export async function createUnlistedGalleryEntry(params: {
           created_at,
           updated_at
         )
-        values (?, ?, ?, 'unlisted', ?, ?, null, null, null, ?, ?)
+        SELECT ?, ?, ?, 'unlisted', ?, ?, null, null, null, ?, ? WHERE ${guard ? `EXISTS(SELECT 1 FROM shares WHERE token=? AND ${guard.sql})` : "1"}
         returning
           id,
           share_token,
@@ -429,43 +451,35 @@ export async function createUnlistedGalleryEntry(params: {
       params.title,
       params.description,
       now,
-      now
+      now,
+      ...(guard ? [params.shareToken, ...guard.bindings] : [])
     )
     .first<GalleryEntryRow>();
 
   return row ? mapGalleryEntryRow(row) : null;
 }
 
-export async function deleteGalleryEntry(shareToken: string) {
+export async function deleteGalleryEntry(
+  shareToken: string,
+  actorUserId?: string
+) {
   const db = await getDatabase();
+  const guard = galleryGuard(actorUserId);
   const row = await db
     .prepare(
-      `
-        select gallery_preview_image
-        from gallery_entries
-        where share_token = ?
-        limit 1
-      `
+      `DELETE FROM gallery_entries WHERE share_token=? AND ${guard.sql} RETURNING gallery_preview_image`
     )
-    .bind(shareToken)
+    .bind(shareToken, ...guard.bindings)
     .first<{ gallery_preview_image: string | null }>();
-
-  if (row?.gallery_preview_image) {
+  if (row?.gallery_preview_image)
     await deleteGalleryPreviewImage(row.gallery_preview_image);
-  }
-
-  await db
-    .prepare(
-      `
-        delete from gallery_entries
-        where share_token = ?
-      `
-    )
-    .bind(shareToken)
-    .run();
 }
 
-export async function moveGalleryEntryToListed(shareToken: string) {
+export async function moveGalleryEntryToListed(
+  shareToken: string,
+  actorUserId?: string
+) {
+  const guard = galleryGuard(actorUserId);
   const db = await getDatabase();
   const now = new Date().toISOString();
 
@@ -478,18 +492,22 @@ export async function moveGalleryEntryToListed(shareToken: string) {
           gallery_published_at = coalesce(gallery_published_at, ?),
           moderation_hidden_at = null,
           updated_at = ?
-        where share_token = ?
+        where share_token = ? AND ${guard.sql}
       `
     )
-    .bind(now, now, shareToken)
+    .bind(now, now, shareToken, ...guard.bindings)
     .run();
 }
 
-export async function updateGalleryEntryMetadata(params: {
-  shareToken: string;
-  title: string;
-  description: string;
-}) {
+export async function updateGalleryEntryMetadata(
+  params: {
+    shareToken: string;
+    title: string;
+    description: string;
+  },
+  actorUserId?: string
+) {
+  const guard = galleryGuard(actorUserId);
   const db = await getDatabase();
   const now = new Date().toISOString();
 
@@ -501,17 +519,27 @@ export async function updateGalleryEntryMetadata(params: {
           gallery_title = ?,
           gallery_description = ?,
           updated_at = ?
-        where share_token = ?
+        where share_token = ? AND ${guard.sql}
       `
     )
-    .bind(params.title, params.description, now, params.shareToken)
+    .bind(
+      params.title,
+      params.description,
+      now,
+      params.shareToken,
+      ...guard.bindings
+    )
     .run();
 }
 
-export async function setGalleryEntryPreviewImage(params: {
-  shareToken: string;
-  previewImage: string | null;
-}) {
+export async function setGalleryEntryPreviewImage(
+  params: {
+    shareToken: string;
+    previewImage: string | null;
+  },
+  actorUserId?: string
+) {
+  const guard = galleryGuard(actorUserId);
   const db = await getDatabase();
   const now = new Date().toISOString();
 
@@ -522,10 +550,10 @@ export async function setGalleryEntryPreviewImage(params: {
         set
           gallery_preview_image = ?,
           updated_at = ?
-        where share_token = ?
+        where share_token = ? AND ${guard.sql}
       `
     )
-    .bind(params.previewImage, now, params.shareToken)
+    .bind(params.previewImage, now, params.shareToken, ...guard.bindings)
     .run();
 }
 

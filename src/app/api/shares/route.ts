@@ -1,3 +1,4 @@
+import { TeamProjectError } from "@/lib/server/team-project-error";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auditEventTypes } from "@/lib/audit-events";
@@ -161,6 +162,11 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof TeamProjectError)
+      return NextResponse.json(
+        { ok: false, code: error.code },
+        { status: error.status }
+      );
     if (error instanceof ProjectVersionConflictError)
       return NextResponse.json(
         { ok: false, code: "project_version_conflict", error: error.message },
