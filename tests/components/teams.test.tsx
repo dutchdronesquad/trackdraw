@@ -100,13 +100,15 @@ it("creates a team in the account surface and loads its owner controls", async (
   vi.stubGlobal("fetch", fetch);
   render(<TeamsView />);
   const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: "Create team" }));
   await user.type(
     await screen.findByRole("textbox", { name: "Team name" }),
     "Race team"
   );
   await user.click(screen.getByRole("button", { name: "Create team" }));
   expect(await screen.findByRole("heading", { name: "Members" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Send invitation" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Invite member" })).toBeTruthy();
+  expect(screen.queryByRole("textbox", { name: "Email address" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Leave team" })).toBeNull();
 });
 it("requires confirmation to remove a member and does not offer owner promotion", async () => {
@@ -116,7 +118,10 @@ it("requires confirmation to remove a member and does not offer owner promotion"
   expect(
     screen.getAllByRole("option").map((option) => option.textContent)
   ).not.toContain("Owner");
-  await user.click(screen.getByRole("button", { name: "Remove" }));
+  await user.click(
+    screen.getByRole("button", { name: "Actions for pilot@example.invalid" })
+  );
+  await user.click(await screen.findByRole("menuitem", { name: "Remove" }));
   expect(action).not.toHaveBeenCalled();
   await user.click(screen.getByRole("button", { name: "Confirm removal" }));
   expect(action).toHaveBeenCalledWith({
@@ -126,20 +131,39 @@ it("requires confirmation to remove a member and does not offer owner promotion"
   });
 });
 it("offers a member only their own role and a confirmed leave action", async () => {
-  const action = vi.fn();
-  render(
-    <TeamManagement
-      team={{ ...team, role: "viewer", members: [] }}
-      busy={false}
-      onCommand={action}
-    />
-  );
+  const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+    if (init?.method === "POST") return response({ ok: true, teamId: "team" });
+    return response(
+      url.includes("teamId=")
+        ? { ok: true, team: { ...team, role: "viewer", members: [] } }
+        : {
+            ok: true,
+            enabled: true,
+            teams: [{ id: "team", name: "Race team", role: "viewer" }],
+            invitations: [],
+          }
+    );
+  });
+  vi.stubGlobal("fetch", fetch);
+  render(<TeamsView />);
   const user = userEvent.setup();
-  expect(screen.queryByRole("button", { name: "Send invitation" })).toBeNull();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  expect(await screen.findByText("Your role: Viewer")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Invite member" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Team actions" }));
+  await user.click(await screen.findByRole("menuitem", { name: "Leave team" }));
+  expect(fetch.mock.calls.some((call) => call[1]?.method === "POST")).toBe(
+    false
+  );
   await user.click(screen.getByRole("button", { name: "Leave team" }));
-  expect(action).not.toHaveBeenCalled();
-  await user.click(screen.getByRole("button", { name: "Leave team" }));
-  expect(action).toHaveBeenCalledWith({ action: "leave", teamId: "team" });
+  await waitFor(() =>
+    expect(
+      fetch.mock.calls.some(
+        (call) =>
+          call[1]?.body === JSON.stringify({ action: "leave", teamId: "team" })
+      )
+    ).toBe(true)
+  );
 });
 it("preserves the invitation through sign-in and never accepts it on page load", async () => {
   const fetch = vi.fn(async (_url: string, init?: RequestInit) =>
@@ -208,7 +232,7 @@ it("shows expired invitations without an accept action", async () => {
   ).toBeNull();
 });
 
-it("preserves team selection and unsent form drafts when responsive content remounts", async () => {
+it("keeps the directory lean and preserves the invitation screen and draft across responsive remounts", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) =>
@@ -226,9 +250,12 @@ it("preserves team selection and unsent form drafts when responsive content remo
   );
   const { rerender } = render(<TeamsView key="desktop" />);
   const user = userEvent.setup();
-  await user.selectOptions(
-    await screen.findByRole("combobox", { name: "Choose a team" }),
-    "team"
+  await screen.findByRole("button", { name: /Race team/ });
+  expect(screen.queryByRole("textbox")).toBeNull();
+  expect(screen.queryByText("owner@example.invalid")).toBeNull();
+  await user.click(screen.getByRole("button", { name: /Race team/ }));
+  await user.click(
+    await screen.findByRole("button", { name: "Invite member" })
   );
   await user.type(
     await screen.findByRole("textbox", { name: "Email address" }),
@@ -238,35 +265,120 @@ it("preserves team selection and unsent form drafts when responsive content remo
     screen.getByRole("combobox", { name: /^Role$/ }),
     "viewer"
   );
-  await user.clear(screen.getAllByRole("textbox", { name: "Team name" })[0]);
-  await user.type(
-    screen.getAllByRole("textbox", { name: "Team name" })[0],
-    "Unsent rename"
-  );
   rerender(<TeamsView key="mobile" />);
-  expect(
-    (
-      screen.getByRole("combobox", {
-        name: "Choose a team",
-      }) as HTMLSelectElement
-    ).value
-  ).toBe("team");
   expect(
     (screen.getByRole("textbox", { name: "Email address" }) as HTMLInputElement)
       .value
   ).toBe("draft@example.invalid");
   expect(
-    (
-      screen.getByRole("combobox", {
-        name: /^Role$/,
-      }) as HTMLSelectElement
-    ).value
+    (screen.getByRole("combobox", { name: /^Role$/ }) as HTMLSelectElement)
+      .value
   ).toBe("viewer");
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(await screen.findByRole("heading", { name: "Members" })).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Team actions" }));
+  await user.click(
+    await screen.findByRole("menuitem", { name: "Rename team" })
+  );
+  const input = screen.getByRole("textbox", { name: "Team name" });
+  await user.clear(input);
+  await user.type(input, "Unsent rename");
+  rerender(<TeamsView key="desktop-again" />);
   expect(
-    (
-      screen.getAllByRole("textbox", {
-        name: "Team name",
-      })[0] as HTMLInputElement
-    ).value
+    (screen.getByRole("textbox", { name: "Team name" }) as HTMLInputElement)
+      .value
   ).toBe("Unsent rename");
+});
+it("returns to the team after sending an invitation and exposes resend and revoke in its menu", async () => {
+  const fetch = vi.fn(async (url: string, init?: RequestInit) =>
+    response(
+      init?.method === "POST"
+        ? { ok: true, teamId: "team" }
+        : url.includes("teamId=")
+          ? {
+              ok: true,
+              team: {
+                ...team,
+                invitations: [{ ...invitation, email: "noor@example.invalid" }],
+              },
+            }
+          : {
+              ok: true,
+              enabled: true,
+              teams: [{ id: team.id, name: team.name, role: "owner" }],
+              invitations: [],
+            }
+    )
+  );
+  vi.stubGlobal("fetch", fetch);
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  await user.click(
+    await screen.findByRole("button", { name: "Invite member" })
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "Email address" }),
+    "noor@example.invalid"
+  );
+  await user.click(screen.getByRole("button", { name: "Send invitation" }));
+  expect(await screen.findByRole("status")).toBeTruthy();
+  expect(screen.queryByRole("textbox", { name: "Email address" })).toBeNull();
+  expect(
+    fetch.mock.calls.some(
+      (call) =>
+        call[1]?.body ===
+        JSON.stringify({
+          action: "invite",
+          teamId: "team",
+          email: "noor@example.invalid",
+          role: "editor",
+        })
+    )
+  ).toBe(true);
+  await user.click(
+    screen.getByRole("button", {
+      name: "Invitation actions for noor@example.invalid",
+    })
+  );
+  expect(
+    await screen.findByRole("menuitem", { name: "Send new invitation" })
+  ).toBeTruthy();
+  expect(screen.getByRole("menuitem", { name: "Revoke" })).toBeTruthy();
+});
+it("keeps the form draft and offers retry after an invitation delivery failure", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init?: RequestInit) =>
+      init?.method === "POST"
+        ? response({ ok: false, code: "delivery" }, 502)
+        : response(
+            url.includes("teamId=")
+              ? { ok: true, team }
+              : {
+                  ok: true,
+                  enabled: true,
+                  teams: [{ id: team.id, name: team.name, role: "owner" }],
+                  invitations: [],
+                }
+          )
+    )
+  );
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  await user.click(
+    await screen.findByRole("button", { name: "Invite member" })
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "Email address" }),
+    "draft@example.invalid"
+  );
+  await user.click(screen.getByRole("button", { name: "Send invitation" }));
+  expect(await screen.findByRole("alert")).toBeTruthy();
+  expect(
+    (screen.getByRole("textbox", { name: "Email address" }) as HTMLInputElement)
+      .value
+  ).toBe("draft@example.invalid");
+  expect(screen.getByRole("button", { name: "Send invitation" })).toBeTruthy();
 });

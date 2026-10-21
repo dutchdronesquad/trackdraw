@@ -8,6 +8,12 @@ The account dialog has a Teams section for creating/renaming teams, inviting edi
 
 `TRACKDRAW_TEAMS_ENABLED=true` enables management. It defaults off. The authenticated capability response controls account navigation; the same server flag guards reads/mutations. Keep production disabled until the epic's activation criteria are met. An invitation URL does not enable the feature or confer membership. No placeholder team projects or live collaboration are exposed.
 
+## Account Navigation
+
+Teams opens as a flat directory showing each team and the current account’s role. Selecting a team opens its detail; owners see an aligned member list and actionable invitations, while other members see only their own role. Creating, renaming and inviting use separate focused forms within the account dialog. Team/member/invitation menus expose secondary actions; removal and leaving require confirmation. Back and Cancel preserve unsent drafts, including when the responsive dialog changes its portal. Successful submission returns to the team detail.
+
+The directory does not expose member counts or avatar stacks because the overview API intentionally does not disclose roster data. Desktop retains the account sidebar. Mobile keeps account navigation in the directory, while team details and forms use a focused drawer with Back and Close. Its accessible dialog title remains available to screen readers, and heading focus never scrolls away the drawer controls.
+
 ## Server Boundary
 
 `/api/teams` uses existing Better Auth cookie sessions, current users, trusted-origin checks on mutations, a streamed 4 KiB JSON cap and closed command schemas. Reads and errors are `no-store` with `Vary: Cookie`. Role checks use #1019's live membership boundary; actual writes repeat the owner/recipient check in SQL. Viewers/editors can see their own team/role and leave; only owners receive member names/emails and invitation management data. Direct invitation reads match the verified current account email and never enumerate unrelated recipients.

@@ -1,24 +1,29 @@
 "use client";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { TeamCommand, TeamDetails, TeamOverview } from "@/lib/teams";
 import { teamRequest, TeamRequestError } from "./team-client";
 import { Invitations } from "./Invitations";
 import { useTeamDialogState } from "./TeamDialogState";
 import { TeamManagement } from "./TeamManagement";
+import { TeamForms } from "./TeamForms";
+import { TeamAvatar } from "./TeamAvatar";
+import { TeamActions } from "./TeamActions";
 
 export function TeamsView() {
   const t = useTranslations("dialogs.teams");
   const {
+    screen,
+    setScreen,
     overview,
     setOverview,
     team,
     setTeam,
     selected,
     setSelected,
-    name,
     setName,
     busy,
     setBusy,
@@ -31,55 +36,79 @@ export function TeamsView() {
     setRole,
     setConfirm,
   } = useTeamDialogState();
+  const heading = useRef<HTMLHeadingElement>(null);
+  const initialSelection = useRef(selected);
+  const requestVersion = useRef(0);
+  const mounted = useRef(false);
   const load = useCallback(
     async (preferred?: string) => {
       const data = await teamRequest<TeamOverview>();
       setOverview(data);
       const id = data.teams.some((item) => item.id === preferred)
         ? preferred
-        : data.teams[0]?.id;
+        : undefined;
       setSelected(id ?? "");
       if (id) {
         const detail = await teamRequest<{ team: TeamDetails }>({ teamId: id });
         setTeam(detail.team);
-      } else setTeam(null);
+      } else {
+        setTeam(null);
+        setScreen("overview");
+      }
     },
-    [setOverview, setSelected, setTeam]
+    [setOverview, setSelected, setTeam, setScreen]
   );
   useEffect(() => {
     let cancelled = false;
+    const version = requestVersion.current;
     void teamRequest<TeamOverview>()
-      .then((data) => {
-        if (!cancelled) {
-          setOverview(data);
-          setSelected((current) =>
-            data.teams.some((item) => item.id === current) ? current : ""
+      .then(async (data) => {
+        if (cancelled || version !== requestVersion.current) return;
+        setOverview(data);
+        const id = initialSelection.current;
+        if (id && data.teams.some((item) => item.id === id)) {
+          // Refresh live rights when the responsive portal remounts; never retain a stale roster.
+          setTeam((current) =>
+            current &&
+            data.teams.find((item) => item.id === id)?.role === "owner"
+              ? current
+              : null
           );
-          setTeam((current) => {
-            if (!current) return null;
-            const membership = data.teams.find(
-              (item) => item.id === current.id
-            );
-            return membership
-              ? {
-                  ...current,
-                  ...membership,
-                  ...(membership.role !== "owner"
-                    ? { members: [], invitations: [] }
-                    : {}),
-                }
-              : null;
+          const detail = await teamRequest<{ team: TeamDetails }>({
+            teamId: id,
           });
+          if (!cancelled && version === requestVersion.current)
+            setTeam(detail.team);
+        } else if (id) {
+          setSelected("");
+          setTeam(null);
+          setScreen("overview");
         }
       })
       .catch(() => {
-        if (!cancelled) setError("failed");
+        if (!cancelled && version === requestVersion.current) {
+          setTeam(null);
+          setError("failed");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [setOverview, setError, setSelected, setTeam]);
+  }, [setOverview, setError, setSelected, setTeam, setScreen]);
+  useEffect(() => {
+    if (mounted.current) heading.current?.focus({ preventScroll: true });
+    mounted.current = true;
+  }, [screen]);
+  function navigate(next: typeof screen) {
+    if (busy) return;
+    setError(null);
+    setNotice(false);
+    setConfirm(null);
+    setScreen(next);
+  }
   async function choose(id: string) {
+    if (busy) return;
+    requestVersion.current += 1;
     setSelected(id);
     setRenameDraft(null);
     setEmail("");
@@ -88,9 +117,10 @@ export function TeamsView() {
     setTeam(null);
     setBusy(true);
     setError(null);
+    setNotice(false);
+    setScreen("detail");
     try {
-      const data = await teamRequest<{ team: TeamDetails }>({ teamId: id });
-      setTeam(data.team);
+      setTeam((await teamRequest<{ team: TeamDetails }>({ teamId: id })).team);
     } catch (e) {
       setError(e instanceof TeamRequestError ? e.code : "failed");
     } finally {
@@ -99,25 +129,35 @@ export function TeamsView() {
   }
   async function command(input: TeamCommand) {
     if (busy) return;
+    requestVersion.current += 1;
     setBusy(true);
     setError(null);
     setNotice(false);
     try {
       const result = await teamRequest<{ teamId: string }>({ command: input });
       await load(result.teamId);
+      setConfirm(null);
       if (input.action === "create") setName("");
       if (input.action === "rename" || input.action === "create")
         setRenameDraft(null);
       if (input.action === "invite") setEmail("");
+      if (["invite", "rename", "create", "accept"].includes(input.action))
+        setScreen("detail");
       setNotice(true);
     } catch (e) {
-      setTeam(null);
-      setError(e instanceof TeamRequestError ? e.code : "failed");
+      const code = e instanceof TeamRequestError ? e.code : "failed";
+      if (code === "not_found" || code === "unauthorized") {
+        setTeam(null);
+        setScreen("overview");
+      }
+      setError(code);
     } finally {
       setBusy(false);
     }
   }
   async function refresh() {
+    if (busy) return;
+    requestVersion.current += 1;
     setBusy(true);
     setError(null);
     setTeam(null);
@@ -129,12 +169,127 @@ export function TeamsView() {
       setBusy(false);
     }
   }
+  const form =
+    screen === "create" || screen === "rename" || screen === "invite";
+  const title =
+    screen === "overview"
+      ? t("title")
+      : screen === "create"
+        ? t("createTitle")
+        : screen === "rename"
+          ? t("renameTitle")
+          : screen === "invite"
+            ? t("inviteTitle")
+            : (team?.name ?? t("title"));
+  const received =
+    overview?.invitations.filter(
+      (item) =>
+        item.status === "pending" ||
+        item.status === "expired" ||
+        item.status === "sending"
+    ) ?? [];
   return (
-    <div className="space-y-6" aria-busy={busy}>
+    <div className="space-y-7" aria-busy={busy}>
+      {screen !== "overview" && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground -ml-2 gap-2"
+          disabled={busy}
+          onClick={() =>
+            navigate(
+              screen === "invite" || screen === "rename" ? "detail" : "overview"
+            )
+          }
+        >
+          <ArrowLeft className="size-4" />
+          {screen === "invite" || screen === "rename"
+            ? (team?.name ?? t("title"))
+            : t("title")}
+        </Button>
+      )}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {screen === "detail" && team && (
+            <TeamAvatar name={team.name} square />
+          )}
+          <div className="min-w-0">
+            <h2
+              ref={heading}
+              tabIndex={-1}
+              className="text-foreground text-2xl leading-tight font-semibold tracking-tight break-words outline-none"
+            >
+              {title}
+            </h2>
+            {screen === "overview" && (
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {t("description")}
+              </p>
+            )}
+            {screen === "invite" && (
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {t("inviteDescription")}
+              </p>
+            )}
+          </div>
+          {screen === "detail" && team && (
+            <>
+              {" "}
+              <TeamActions label={t("teamActions")} busy={busy}>
+                <DropdownMenuItem onSelect={() => void refresh()}>
+                  {t("refresh")}
+                </DropdownMenuItem>
+                {team.role === "owner" ? (
+                  <DropdownMenuItem onSelect={() => navigate("rename")}>
+                    {t("renameTitle")}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onSelect={() => setConfirm("leave")}
+                  >
+                    {t("leave")}
+                  </DropdownMenuItem>
+                )}
+              </TeamActions>{" "}
+            </>
+          )}
+        </div>
+        {overview?.enabled && screen === "overview" && (
+          <Button disabled={busy} onClick={() => navigate("create")}>
+            <Plus className="size-4" />
+            {t("create")}
+          </Button>
+        )}
+        {screen === "detail" && team && (
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            {team.role === "owner" && (
+              <Button
+                className="w-full sm:w-auto"
+                disabled={busy}
+                onClick={() => navigate("invite")}
+              >
+                <Plus className="size-4" />
+                {t("inviteMember")}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
       {error && (
-        <p className="text-destructive text-sm" role="alert">
-          {t(`errors.${error}`)}
-        </p>
+        <div className="space-y-3">
+          <p className="text-destructive text-sm" role="alert">
+            {t(`errors.${error}`)}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => void refresh()}
+          >
+            {t("refresh")}
+          </Button>
+        </div>
       )}
       {notice && (
         <p className="text-muted-foreground text-sm" role="status">
@@ -142,98 +297,80 @@ export function TeamsView() {
         </p>
       )}
       {!overview ? (
-        error ? (
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={() => void refresh()}
-          >
-            {t("refresh")}
-          </Button>
-        ) : (
+        !error && (
           <p className="text-muted-foreground text-sm">{t("loading")}</p>
         )
       ) : !overview.enabled ? (
         <p className="text-muted-foreground text-sm">{t("errors.disabled")}</p>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold">{t("yourTeams")}</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={busy}
-              onClick={() => void refresh()}
-            >
-              {t("refresh")}
-            </Button>
-          </div>
-          {overview.teams.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("empty")}</p>
-          ) : (
-            <label className="block text-sm">
-              {t("selectTeam")}
-              <select
-                className="border-input bg-background mt-2 h-10 w-full rounded-md border px-3"
-                value={selected}
-                disabled={busy}
-                onChange={(e) => void choose(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("selectTeam")}
-                </option>
-                {overview.teams.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} — {t(`roles.${item.role}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {team && (
-            <TeamManagement
-              key={`${team.id}:${team.name}:${team.role}`}
-              team={team}
-              busy={busy}
-              onCommand={(input) => void command(input)}
-            />
-          )}
-          <section className="border-border/60 space-y-3 border-t pt-5">
-            <h3 className="text-sm font-semibold">{t("createTitle")}</h3>
-            <form
-              className="space-y-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void command({ action: "create", name });
-              }}
-            >
-              <label className="block text-sm">
-                {t("teamName")}
-                <Input
-                  className="mt-2"
-                  value={name}
-                  maxLength={80}
-                  required
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-              <Button type="submit" disabled={busy || !name.trim()}>
-                {t("create")}
-              </Button>
-            </form>
-          </section>
-          <section className="border-border/60 border-t pt-5">
-            <h3 className="text-sm font-semibold">{t("invitations")}</h3>
-            <Invitations
-              items={overview.invitations.filter(
-                (item) => item.status === "pending" || item.status === "expired"
+          {screen === "overview" && (
+            <>
+              {overview.teams.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-sm">
+                  {t("empty")}
+                </p>
+              ) : (
+                <ul className="divide-border/60 border-border/60 divide-y border-y">
+                  {overview.teams.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        className="hover:bg-muted/40 focus-visible:ring-ring flex w-full cursor-pointer items-center gap-4 rounded-sm py-5 text-left transition-colors outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-50"
+                        disabled={busy}
+                        onClick={() => void choose(item.id)}
+                      >
+                        <TeamAvatar name={item.name} square />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-base font-medium break-words">
+                            {item.name}
+                          </span>
+                          <span className="text-muted-foreground mt-1 block text-sm">
+                            {t(`roles.${item.role}`)}
+                          </span>
+                        </span>
+                        <ChevronRight className="text-muted-foreground mr-1 size-4 shrink-0" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-              busy={busy}
-              onAccept={(id) =>
-                void command({ action: "accept", invitationId: id })
+              {received.length > 0 && (
+                <section aria-label={t("invitations")} className="pt-2">
+                  <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
+                    {t("invitations")}
+                  </h3>
+                  <Invitations
+                    items={received}
+                    busy={busy}
+                    onAccept={(id) =>
+                      void command({ action: "accept", invitationId: id })
+                    }
+                  />
+                </section>
+              )}
+            </>
+          )}
+          {screen === "detail" &&
+            (team ? (
+              <TeamManagement
+                team={team}
+                busy={busy}
+                onCommand={(input) => void command(input)}
+              />
+            ) : (
+              !error && (
+                <p className="text-muted-foreground text-sm">{t("loading")}</p>
+              )
+            ))}
+          {form && (screen === "create" || team?.role === "owner") && (
+            <TeamForms
+              onCommand={(input) => void command(input)}
+              onCancel={() =>
+                navigate(screen === "create" ? "overview" : "detail")
               }
             />
-          </section>
+          )}
         </>
       )}
     </div>

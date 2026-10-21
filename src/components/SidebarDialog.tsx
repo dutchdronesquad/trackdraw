@@ -28,6 +28,8 @@ export interface SidebarDialogProps {
   activeItem: string;
   onItemChange: (id: string) => void;
   contentTitle?: string;
+  contentHeaderless?: boolean;
+  mobileContentOnly?: boolean;
   contentDescription?: string;
   contentActions?: React.ReactNode;
   children: React.ReactNode;
@@ -203,6 +205,8 @@ export function SidebarDialog({
   activeItem,
   onItemChange,
   contentTitle,
+  contentHeaderless = false,
+  mobileContentOnly = false,
   contentDescription,
   contentActions,
   children,
@@ -237,10 +241,26 @@ export function SidebarDialog({
         open={open}
         onOpenChange={onOpenChange}
         title={title}
+        headerless={mobileContentOnly}
         subtitle={mobileSubtitle}
-        contentClassName="max-h-[92dvh]"
+        contentClassName={cn("max-h-[92dvh]", contentHeaderless && "h-[92dvh]")}
         pinnedContent={
-          <div className="border-border/30 shrink-0 border-b">{mobileNav}</div>
+          <div
+            className={cn(
+              "border-border/30 shrink-0",
+              !mobileContentOnly && "border-b"
+            )}
+          >
+            {contentHeaderless && (
+              <div className="absolute top-6 right-3 z-10">
+                <CloseDialogButton
+                  onClick={() => onOpenChange(false)}
+                  label={t("actions.close")}
+                />
+              </div>
+            )}
+            {!mobileContentOnly && mobileNav}
+          </div>
         }
         bodyClassName="pt-4 pb-4"
       >
@@ -359,7 +379,15 @@ export function SidebarDialog({
           data-slot="sidebar-dialog-content"
           className="flex min-w-0 flex-1 flex-col overflow-hidden"
         >
-          {!unified && (
+          {contentHeaderless && !unified && (
+            <div className="absolute top-4 right-4 z-10">
+              <CloseDialogButton
+                onClick={() => onOpenChange(false)}
+                label={t("actions.close")}
+              />
+            </div>
+          )}
+          {!unified && !contentHeaderless && (
             <div
               className={cn(
                 "flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4",
@@ -396,7 +424,12 @@ export function SidebarDialog({
             </div>
           )}
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-7 py-6">
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto px-7 py-6",
+              contentHeaderless && "pt-14"
+            )}
+          >
             <AnimatedContentPanel activeItem={activeItem}>
               {children}
             </AnimatedContentPanel>

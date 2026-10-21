@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
-import { SidebarDialog } from "@/components/SidebarDialog";
+import { TeamAccountDialog } from "@/components/teams/TeamAccountDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApiKeyActions } from "./ApiKeyActions";
 import { AccountApiKeysView } from "./ApiKeysView";
@@ -694,12 +694,14 @@ export default function AccountDialog({
 
   return (
     <TeamDialogState key={userId ?? "signed-out"}>
-      <SidebarDialog
+      <TeamAccountDialog
         open={open}
         onOpenChange={onOpenChange}
         eyebrow={t("account.dialog.eyebrow")}
         title={tCommon("labels.account")}
-        mobileSubtitle={t("account.dialog.mobileSubtitle")}
+        mobileSubtitle={
+          view === "teams" ? undefined : t("account.dialog.mobileSubtitle")
+        }
         navItems={navItems}
         activeItem={view}
         onItemChange={(id) => {
@@ -707,8 +709,9 @@ export default function AccountDialog({
           else setView(id as AccountDialogView);
           setError(null);
         }}
+        contentHeaderless={view === "teams"}
         contentTitle={current.title}
-        contentDescription={current.description}
+        contentDescription={view === "teams" ? undefined : current.description}
         contentActions={
           view === "apiKeys" && user && !isMobile ? (
             <ApiKeyActions
@@ -717,10 +720,11 @@ export default function AccountDialog({
             />
           ) : undefined
         }
-        maxWidth="max-w-4xl"
+        maxWidth={view === "teams" ? "max-w-6xl" : "max-w-4xl"}
+        height={view === "teams" ? "h-[43rem]" : undefined}
       >
         {current.content}
-      </SidebarDialog>
+      </TeamAccountDialog>
     </TeamDialogState>
   );
 }

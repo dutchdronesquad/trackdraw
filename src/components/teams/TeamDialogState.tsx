@@ -3,6 +3,9 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import type { TeamDetails, TeamOverview, TeamErrorCode } from "@/lib/teams";
 
 function useDialogState() {
+  const [screen, setScreen] = useState<
+    "overview" | "detail" | "create" | "rename" | "invite"
+  >("overview");
   const [overview, setOverview] = useState<TeamOverview | null>(null);
   const [team, setTeam] = useState<TeamDetails | null>(null);
   const [selected, setSelected] = useState("");
@@ -15,6 +18,8 @@ function useDialogState() {
   const [role, setRole] = useState<"editor" | "viewer">("editor");
   const [confirm, setConfirm] = useState<string | null>(null);
   return {
+    screen,
+    setScreen,
     overview,
     setOverview,
     team,

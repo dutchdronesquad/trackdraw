@@ -1011,7 +1011,7 @@
   },
   "teams": {
     "title": "Teams",
-    "description": "Manage your team and invite people using their own accounts.",
+    "description": "Collaborate using your own accounts.",
     "yourTeams": "Your teams",
     "selectTeam": "Choose a team",
     "empty": "You have not joined a team yet.",
@@ -1071,6 +1071,18 @@
       "failed": "Something went wrong. Refresh and try again."
     },
     "switchAccount": "Use another account",
-    "invitationSending": "This invitation is still being sent. Reload this page shortly."
+    "invitationSending": "This invitation is still being sent. Reload this page shortly.",
+    "inviteMember": "Invite member",
+    "inviteDescription": "They’ll join using their own TrackDraw account.",
+    "editorHelp": "Can create and edit team tracks.",
+    "viewerHelp": "Can view team tracks.",
+    "renameTitle": "Rename team",
+    "pendingInvitations": "Pending invitations",
+    "memberActions": "Actions for {email}",
+    "invitationActions": "Invitation actions for {email}",
+    "teamActions": "Team actions",
+    "makeEditor": "Change to Editor",
+    "makeViewer": "Change to Viewer",
+    "removeConfirm": "Remove {name} from this team? They will lose access to team tracks."
   }
 }

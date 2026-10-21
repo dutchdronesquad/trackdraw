@@ -14,6 +14,7 @@ interface MobileDrawerProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   subtitle?: string;
+  headerless?: boolean;
   children: React.ReactNode;
   pinnedContent?: React.ReactNode;
   footerContent?: React.ReactNode;
@@ -66,6 +67,7 @@ export function MobileDrawer({
   onOpenChange,
   title,
   subtitle,
+  headerless = false,
   children,
   pinnedContent,
   footerContent,
@@ -93,7 +95,11 @@ export function MobileDrawer({
         )}
       >
         <DrawerPrimitive.Handle className="mx-auto mt-3 h-1 w-25 shrink-0 self-center rounded-full bg-black/14 dark:bg-white/72" />
-        <MobileDrawerHeader title={title} subtitle={subtitle} />
+        {headerless ? (
+          <DrawerTitle className="sr-only">{title}</DrawerTitle>
+        ) : (
+          <MobileDrawerHeader title={title} subtitle={subtitle} />
+        )}
         {pinnedContent}
         <div
           className={cn(
