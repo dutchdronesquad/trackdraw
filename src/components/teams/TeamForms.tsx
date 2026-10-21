@@ -73,6 +73,7 @@ export function TeamForms({
               <TeamRoleSelect
                 id={roleId}
                 label={t("role")}
+                className="h-8 rounded-lg px-2.5 shadow-none"
                 value={role}
                 disabled={busy}
                 onValueChange={setRole}
