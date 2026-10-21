@@ -1,9 +1,5 @@
 import { apiKeyProjectAccessSchema } from "@/lib/api/project-access";
-import {
-  getProjectForActor,
-  listProjectSummariesForUser,
-} from "@/lib/server/projects";
-import { getAuthorizedTeam } from "@/lib/server/project-authorization";
+import { validateApiKeyProjectAccess } from "@/lib/server/api-key-project-access";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auditEventTypes } from "@/lib/audit-events";
@@ -114,34 +110,15 @@ export async function POST(request: Request) {
     }
 
     const body = parseResult.data;
-    const access = body.projectAccess;
-    if (access?.teamId) {
-      const actor = {
-        userId: user.id,
-        scope: { kind: "team" as const, teamId: access.teamId },
-      };
-      if (!(await getAuthorizedTeam(actor, "read")))
-        return NextResponse.json(
-          { ok: false, error: "Invalid project context" },
-          { status: 400 }
-        );
-      if (access.mode === "selected") {
-        for (const id of new Set(access.projectIds))
-          if (!(await getProjectForActor(id, actor)))
-            return NextResponse.json(
-              { ok: false, error: "Invalid project selection" },
-              { status: 400 }
-            );
-      }
-    } else if (access?.mode === "selected") {
-      const projects = await listProjectSummariesForUser(user.id, access);
-      const ids = new Set(projects.map((project) => project.id));
-      if (access.projectIds.some((id) => !ids.has(id)))
-        return NextResponse.json(
-          { ok: false, error: "Invalid project selection" },
-          { status: 400 }
-        );
-    }
+    const accessError = await validateApiKeyProjectAccess(
+      user.id,
+      body.projectAccess ?? { mode: "all" }
+    );
+    if (accessError)
+      return NextResponse.json(
+        { ok: false, error: accessError },
+        { status: 400 }
+      );
     const apiKey = await createApiKeyForSession({
       headers: request.headers,
       name: body.name,

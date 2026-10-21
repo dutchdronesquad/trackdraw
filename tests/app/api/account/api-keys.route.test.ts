@@ -14,6 +14,7 @@ vi.mock("@/lib/server/api-keys", () => ({
   apiKeyExpiryDayOptions: [7, 30, 90, 365],
   createApiKeyForSession: vi.fn(),
   deleteApiKeyForSession: vi.fn(),
+  updateApiKeyProjectAccessForSession: vi.fn(),
   getApiKeyForSession: vi.fn(),
   listApiKeysForSession: vi.fn(),
   normalizeApiKeyExpiryDays: vi.fn((value: unknown) => value ?? 90),
@@ -35,10 +36,11 @@ vi.mock("@/lib/server/audit", () => ({
 }));
 
 import { GET, POST } from "@/app/api/account/api-keys/route";
-import { DELETE } from "@/app/api/account/api-keys/[keyId]/route";
+import { DELETE, PATCH } from "@/app/api/account/api-keys/[keyId]/route";
 import {
   createApiKeyForSession,
   deleteApiKeyForSession,
+  updateApiKeyProjectAccessForSession,
   getApiKeyForSession,
   listApiKeysForSession,
 } from "@/lib/server/api-keys";
@@ -408,5 +410,123 @@ describe("explicit team key creation", () => {
       ).status
     ).toBe(400);
     expect(createApiKeyForSession).not.toHaveBeenCalled();
+  });
+});
+
+describe("editing API key project scope", () => {
+  const context = { params: Promise.resolve({ keyId: "key-1" }) };
+  const patch = (body: unknown) =>
+    new Request("http://localhost/api/account/api-keys/key-1", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(isTrustedRequest).mockReturnValue(true);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(getApiKeyForSession).mockResolvedValue({
+      ...apiKey,
+      metadata: { source: "integration" },
+    } as never);
+    vi.mocked(updateApiKeyProjectAccessForSession).mockResolvedValue(
+      apiKey as never
+    );
+  });
+  it("requires a trusted browser session", async () => {
+    vi.mocked(isTrustedRequest).mockReturnValue(false);
+    expect(
+      (await PATCH(patch({ projectAccess: { mode: "all" } }), context)).status
+    ).toBe(403);
+    vi.mocked(isTrustedRequest).mockReturnValue(true);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
+    expect(
+      (await PATCH(patch({ projectAccess: { mode: "all" } }), context)).status
+    ).toBe(401);
+    expect(updateApiKeyProjectAccessForSession).not.toHaveBeenCalled();
+  });
+  it("does not update another user's key or inspect their project selection", async () => {
+    vi.mocked(getApiKeyForSession).mockRejectedValue({ statusCode: 404 });
+    expect(
+      (await PATCH(patch({ projectAccess: { mode: "all" } }), context)).status
+    ).toBe(404);
+    expect(updateApiKeyProjectAccessForSession).not.toHaveBeenCalled();
+    expect(getAuthorizedTeam).not.toHaveBeenCalled();
+  });
+  it("keeps the same key and updates only validated scope metadata", async () => {
+    const projectAccess = { mode: "selected", projectIds: ["race"] };
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
+      { id: "race" },
+    ] as never);
+    const response = await PATCH(patch({ projectAccess }), context);
+    expect(response.status).toBe(200);
+    expect(updateApiKeyProjectAccessForSession).toHaveBeenCalledWith({
+      headers: expect.any(Headers),
+      keyId: "key-1",
+      projectAccess,
+      metadata: { source: "integration" },
+    });
+    expect(createApiKeyForSession).not.toHaveBeenCalled();
+    expect(deleteApiKeyForSession).not.toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "api_key.access_updated",
+        entityId: "key-1",
+      })
+    );
+  });
+  it("rejects inaccessible personal projects and former team membership", async () => {
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([]);
+    expect(
+      (
+        await PATCH(
+          patch({ projectAccess: { mode: "selected", projectIds: ["other"] } }),
+          context
+        )
+      ).status
+    ).toBe(400);
+    vi.mocked(getAuthorizedTeam).mockResolvedValue(null);
+    expect(
+      (
+        await PATCH(
+          patch({ projectAccess: { mode: "all", teamId: "team-1" } }),
+          context
+        )
+      ).status
+    ).toBe(400);
+    expect(updateApiKeyProjectAccessForSession).not.toHaveBeenCalled();
+  });
+  it("allows team scopes only after validating current membership and every project", async () => {
+    vi.mocked(getAuthorizedTeam).mockResolvedValue({ role: "viewer" } as never);
+    vi.mocked(getProjectForActor).mockResolvedValue(null);
+    const body = {
+      projectAccess: {
+        mode: "selected",
+        teamId: "team-1",
+        projectIds: ["team-race"],
+      },
+    };
+    expect((await PATCH(patch(body), context)).status).toBe(400);
+    vi.mocked(getProjectForActor).mockResolvedValue({
+      id: "team-race",
+    } as never);
+    expect((await PATCH(patch(body), context)).status).toBe(200);
+    expect(getProjectForActor).toHaveBeenLastCalledWith("team-race", {
+      userId: user.id,
+      scope: { kind: "team", teamId: "team-1" },
+    });
+  });
+  it.each([
+    { projectAccess: { mode: "all" }, permissions: { projects: ["create"] } },
+    {
+      projectAccess: {
+        mode: "selected",
+        projectIds: Array.from({ length: 101 }, (_, i) => String(i)),
+      },
+    },
+    { projectAccess: { mode: "unknown" } },
+  ])("rejects invalid or unrelated changes", async (body) => {
+    expect((await PATCH(patch(body), context)).status).toBe(400);
+    expect(updateApiKeyProjectAccessForSession).not.toHaveBeenCalled();
   });
 });

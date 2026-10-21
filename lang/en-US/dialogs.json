@@ -223,7 +223,15 @@
         "writable": "Can edit"
       },
       "newKey": "New API key",
-      "actionsFor": "Actions for {name}"
+      "actionsFor": "Actions for {name}",
+      "edit": {
+        "action": "Edit project access",
+        "actions": "Actions for {name}",
+        "title": "Project access for {name}",
+        "description": "Changes apply immediately. Your API key, expiry and read/write permissions stay the same.",
+        "save": "Save changes",
+        "saving": "Saving…"
+      }
     },
     "danger": {
       "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",
@@ -257,7 +265,8 @@
       "passkeyRemoveFailed": "Failed to remove passkey.",
       "apiKeyNameRequired": "Enter a name for this API key.",
       "apiKeyCreateFailed": "Failed to create API key.",
-      "apiKeyRevokeFailed": "Failed to revoke API key."
+      "apiKeyRevokeFailed": "Failed to revoke API key.",
+      "apiKeyUpdateFailed": "Could not update project access. Try again."
     },
     "success": {
       "profileUpdated": "Profile updated",
@@ -265,7 +274,8 @@
       "passkeyRenamed": "Passkey renamed",
       "apiKeyCreated": "API key created",
       "apiKeyCopied": "API key copied",
-      "apiKeyRevoked": "API key revoked"
+      "apiKeyRevoked": "API key revoked",
+      "apiKeyAccessUpdated": "Project access updated"
     }
   },
   "export": {

@@ -16,6 +16,7 @@ vi.mock("@/lib/server/account-activity", () => ({
 
 import {
   createApiKeyForSession,
+  updateApiKeyProjectAccessForSession,
   deleteApiKeyForSession,
   getApiIdentityFromBearerKey,
   getBearerApiKey,
@@ -248,4 +249,26 @@ it("issues mutation permissions only after explicit opt-in, preserving the selec
       }),
     })
   );
+});
+
+it("updates only scope metadata using the existing session-owned key", async () => {
+  const updateApiKey = vi.fn(async () => apiKeyRecord);
+  vi.mocked(getAuth).mockResolvedValue({ api: { updateApiKey } } as never);
+  const headers = new Headers({ cookie: "session" });
+  await updateApiKeyProjectAccessForSession({
+    headers,
+    keyId: "key-1",
+    projectAccess: { mode: "selected", projectIds: ["race"] },
+    metadata: { source: "existing" },
+  });
+  expect(updateApiKey).toHaveBeenCalledWith({
+    headers,
+    body: {
+      keyId: "key-1",
+      metadata: {
+        source: "existing",
+        projectAccess: { mode: "selected", projectIds: ["race"] },
+      },
+    },
+  });
 });

@@ -51,6 +51,7 @@ function renderView(
         onCreateApiKey={vi.fn(async () => true)}
         onDeleteApiKey={noop}
         onRefreshApiKeys={noop}
+        onUpdateApiKeyAccess={vi.fn(async () => true)}
         user={{ id: "user-1" }}
         {...overrides}
       />
@@ -89,7 +90,7 @@ describe("compact API key settings", () => {
     expect(screen.queryByText("td_live")).toBeNull();
     expect(screen.queryByText(/tracks:read/i)).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Revoke RotorHazard" })
+      screen.getByRole("button", { name: "Actions for RotorHazard" })
     ).toBeTruthy();
   });
 
@@ -112,7 +113,10 @@ describe("compact API key settings", () => {
       renderView({ isMobile, onDeleteApiKey: remove }, false);
       const user = userEvent.setup();
       await user.click(
-        screen.getByRole("button", { name: "Revoke RotorHazard" })
+        screen.getByRole("button", { name: "Actions for RotorHazard" })
+      );
+      await user.click(
+        screen.getByRole("menuitem", { name: "Revoke RotorHazard" })
       );
       expect(remove).not.toHaveBeenCalled();
       expect(screen.getByText("Revoke API key?")).toBeTruthy();
@@ -336,4 +340,36 @@ it("keeps the key list primary and opens creation as a separate view", async () 
   expect(screen.queryByRole("table")).toBeNull();
   await user.click(screen.getByRole("button", { name: "Cancel" }));
   expect(screen.getByRole("table", { name: "Active API keys" })).toBeTruthy();
+});
+
+it("edits an existing key scope, retains failed drafts and saves without creating a key", async () => {
+  stubProjects();
+  const update = vi
+    .fn()
+    .mockResolvedValueOnce(false)
+    .mockResolvedValueOnce(true);
+  const create = vi.fn();
+  renderView({ onUpdateApiKeyAccess: update, onCreateApiKey: create }, false);
+  const user = userEvent.setup();
+  await user.click(
+    screen.getByRole("button", { name: "Actions for RotorHazard" })
+  );
+  await user.click(
+    screen.getByRole("menuitem", { name: "Edit project access" })
+  );
+  await user.click(screen.getByRole("button", { name: "Project access" }));
+  await user.click(screen.getByRole("tab", { name: "Selected" }));
+  await user.click(await screen.findByRole("checkbox", { name: "Race night" }));
+  await user.click(screen.getByRole("button", { name: "Done" }));
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  expect(update).toHaveBeenLastCalledWith("key-1", {
+    mode: "selected",
+    projectIds: ["race"],
+  });
+  expect(screen.getByRole("button", { name: "Save changes" })).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("button", { name: "Save changes" })).toBeNull()
+  );
+  expect(create).not.toHaveBeenCalled();
 });

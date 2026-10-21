@@ -172,6 +172,29 @@ export async function getApiKeyForSession(options: {
   });
 }
 
+/** Update metadata only; Better Auth enforces session ownership and retains the key hash. */
+export async function updateApiKeyProjectAccessForSession(options: {
+  headers: Headers;
+  keyId: string;
+  projectAccess: ApiKeyProjectAccess;
+  metadata: unknown;
+}) {
+  const auth = await getAuth();
+  const metadata =
+    options.metadata &&
+    typeof options.metadata === "object" &&
+    !Array.isArray(options.metadata)
+      ? options.metadata
+      : {};
+  return auth.api.updateApiKey({
+    headers: options.headers,
+    body: {
+      keyId: options.keyId,
+      metadata: { ...metadata, projectAccess: options.projectAccess },
+    },
+  });
+}
+
 export async function deleteApiKeyForSession(options: {
   headers: Headers;
   keyId: string;

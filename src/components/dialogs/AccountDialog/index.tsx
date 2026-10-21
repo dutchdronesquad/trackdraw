@@ -466,6 +466,41 @@ export default function AccountDialog({
     }
   };
 
+  const handleUpdateApiKeyAccess = async (
+    keyId: string,
+    projectAccess: ApiKeyProjectAccess
+  ) => {
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/account/api-keys/${encodeURIComponent(keyId)}`,
+        {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ projectAccess }),
+        }
+      );
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        apiKey?: AccountApiKey;
+      };
+      if (!response.ok || !payload.ok || !payload.apiKey) throw new Error();
+      const updated = payload.apiKey;
+      setApiKeys((current) =>
+        current.map((item) => (item.id === keyId ? updated : item))
+      );
+      setCreatedApiKey((current) =>
+        current?.id === keyId ? { ...current, ...updated } : current
+      );
+      toast.success(t("account.success.apiKeyAccessUpdated"));
+      return true;
+    } catch {
+      setError(t("account.errors.apiKeyUpdateFailed"));
+      return false;
+    }
+  };
+
   const handleCopyApiKey = async (key: string) => {
     try {
       await navigator.clipboard.writeText(key);
@@ -596,6 +631,7 @@ export default function AccountDialog({
       onApiKeyNameChange={setApiKeyName}
       onApiKeyExpiryDaysChange={setApiKeyExpiryDays}
       onCreateApiKey={handleCreateApiKey}
+      onUpdateApiKeyAccess={handleUpdateApiKeyAccess}
       onCopyApiKey={(key) => void handleCopyApiKey(key)}
       onDeleteApiKey={(keyId) => void handleDeleteApiKey(keyId)}
       onRefreshApiKeys={refreshApiKeys}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Clipboard, LoaderCircle, Plus } from "lucide-react";
+import { Clipboard, LoaderCircle, Plus, MoreHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -35,15 +41,31 @@ function ApiKeyRow({
   isMobile,
   deleting,
   onDelete,
+  onUpdate,
 }: {
   apiKey: AccountApiKey;
   isMobile: boolean;
   deleting: boolean;
   onDelete: () => void;
+  onUpdate: (keyId: string, access: ApiKeyProjectAccess) => Promise<boolean>;
 }) {
   const t = useTranslations("dialogs.account.apiKeys");
   const tCommon = useTranslations("common");
   const [confirming, setConfirming] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draftAccess, setDraftAccess] = useState<ApiKeyProjectAccess>(
+    apiKey.projectAccess ?? { mode: "all" }
+  );
+
+  async function saveAccess() {
+    setSaving(true);
+    try {
+      if (await onUpdate(apiKey.id, draftAccess)) setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  }
   const name = apiKey.name?.trim() || t("fallback.unnamed");
   const writeAccess = Boolean(apiKey.permissions?.projects?.length);
   const access = apiKey.projectAccess?.teamId
@@ -60,7 +82,47 @@ function ApiKeyRow({
         isMobile ? "grid-cols-[minmax(0,1fr)_auto]" : desktopColumns
       )}
     >
-      {confirming ? (
+      {editing ? (
+        <div role="cell" className="col-span-full space-y-4 px-2.5 py-2">
+          <div>
+            <p className="font-medium">{t("edit.title", { name })}</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {t("edit.description")}
+            </p>
+          </div>
+          <div className="w-full sm:max-w-sm">
+            <ApiKeyProjectAccessSelector
+              value={draftAccess}
+              onChange={setDraftAccess}
+              disabled={saving}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={saving}
+              onClick={() => setEditing(false)}
+            >
+              {tCommon("actions.cancel")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={
+                saving ||
+                (draftAccess.mode === "selected" &&
+                  !draftAccess.projectIds.length)
+              }
+              onClick={() => void saveAccess()}
+            >
+              {saving && <LoaderCircle className="size-3.5 animate-spin" />}
+              {t(saving ? "edit.saving" : "edit.save")}
+            </Button>
+          </div>
+        </div>
+      ) : confirming ? (
         <div
           role="cell"
           className="col-span-full flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-2.5"
@@ -135,17 +197,37 @@ function ApiKeyRow({
               isMobile && "col-start-2 row-span-3 row-start-1"
             )}
           >
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={deleting}
-              aria-label={t("revoke.ariaLabel", { name })}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-2.5 text-xs"
-              onClick={() => setConfirming(true)}
-            >
-              {deleting && <LoaderCircle className="size-3.5 animate-spin" />}
-              {t(deleting ? "revoke.revoking" : "revoke.action")}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={deleting}
+                  aria-label={t("edit.actions", { name })}
+                  className="size-9"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setDraftAccess(apiKey.projectAccess ?? { mode: "all" });
+                    setEditing(true);
+                  }}
+                >
+                  {t("edit.action")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={() => setConfirming(true)}
+                  aria-label={t("revoke.ariaLabel", { name })}
+                >
+                  {t("revoke.action")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </>
       )}
@@ -178,6 +260,10 @@ type ApiKeysViewProps = {
   onCopyApiKey: (key: string) => void;
   onDeleteApiKey: (keyId: string) => void;
   onRefreshApiKeys: () => void;
+  onUpdateApiKeyAccess: (
+    keyId: string,
+    access: ApiKeyProjectAccess
+  ) => Promise<boolean>;
 };
 
 export function AccountApiKeysView({
@@ -202,6 +288,7 @@ export function AccountApiKeysView({
   onCopyApiKey,
   onDeleteApiKey,
   onRefreshApiKeys,
+  onUpdateApiKeyAccess,
 }: ApiKeysViewProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
@@ -485,6 +572,7 @@ export function AccountApiKeysView({
                   isMobile={isMobile}
                   deleting={deletingApiKeyId === apiKey.id}
                   onDelete={() => onDeleteApiKey(apiKey.id)}
+                  onUpdate={onUpdateApiKeyAccess}
                 />
               ))
             )}
