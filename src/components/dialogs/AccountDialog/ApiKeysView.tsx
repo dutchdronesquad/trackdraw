@@ -1,21 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Clipboard,
-  LoaderCircle,
-  MoreHorizontal,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Clipboard, LoaderCircle, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -37,7 +25,7 @@ import type { AccountApiKey, CreatedAccountApiKey } from "./types";
 import { formatDate } from "./utils";
 
 const desktopColumns =
-  "grid-cols-[minmax(0,1fr)_14.5rem_8rem_1.75rem] max-[960px]:grid-cols-[minmax(0,1fr)_8rem_7rem_1.75rem]";
+  "grid-cols-[minmax(0,1fr)_14.5rem_8rem_5rem] max-[960px]:grid-cols-[minmax(0,1fr)_8rem_7rem_5rem]";
 
 function ApiKeyRow({
   apiKey,
@@ -141,36 +129,17 @@ function ApiKeyRow({
               isMobile && "col-start-2 row-span-3 row-start-1"
             )}
           >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  disabled={deleting}
-                  aria-label={t("actionsFor", { name })}
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 items-center justify-center rounded-lg outline-none focus-visible:ring-2 disabled:opacity-50"
-                >
-                  {deleting ? (
-                    <LoaderCircle className="size-4 animate-spin" />
-                  ) : (
-                    <MoreHorizontal className="size-4" />
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="rounded-lg"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <DropdownMenuItem
-                  aria-label={t("revoke.ariaLabel", { name })}
-                  className="text-destructive focus:text-destructive gap-2 text-xs"
-                  onSelect={() => setConfirming(true)}
-                >
-                  <Trash2 className="size-3.5" />
-                  {t("revoke.action")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={deleting}
+              aria-label={t("revoke.ariaLabel", { name })}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-2.5 text-xs"
+              onClick={() => setConfirming(true)}
+            >
+              {deleting && <LoaderCircle className="size-3.5 animate-spin" />}
+              {t(deleting ? "revoke.revoking" : "revoke.action")}
+            </Button>
           </div>
         </>
       )}
@@ -243,7 +212,7 @@ export function AccountApiKeysView({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-6">
       {isMobile && (
         <div className="flex justify-end">
           <ApiKeyActions
@@ -252,59 +221,6 @@ export function AccountApiKeysView({
           />
         </div>
       )}
-      <div role="table" aria-label={t("account.apiKeys.active.title")}>
-        <div
-          role="row"
-          className={cn(
-            "text-muted-foreground border-border/60 grid items-center gap-3 border-b pb-3 text-xs font-medium",
-            desktopColumns,
-            isMobile && "sr-only"
-          )}
-        >
-          <span role="columnheader" className="px-2.5">
-            {tCommon("labels.name")}
-          </span>
-          <span role="columnheader" className="px-2.5">
-            {t("account.apiKeys.access.label")}
-          </span>
-          <span role="columnheader" className="px-2.5">
-            {tCommon("labels.expires")}
-          </span>
-          <span role="columnheader" className="sr-only">
-            {tCommon("labels.actions")}
-          </span>
-        </div>
-        {apiKeysLoading ? (
-          <div role="row">
-            <div
-              role="cell"
-              className="text-muted-foreground flex items-center gap-2 px-2.5 py-5 text-sm"
-            >
-              <LoaderCircle className="size-4 animate-spin" />
-              {t("account.apiKeys.active.loading")}
-            </div>
-          </div>
-        ) : apiKeys.length === 0 ? (
-          <div role="row">
-            <p
-              role="cell"
-              className="text-muted-foreground px-2.5 py-5 text-sm"
-            >
-              {t("account.apiKeys.empty.title")}
-            </p>
-          </div>
-        ) : (
-          apiKeys.map((apiKey) => (
-            <ApiKeyRow
-              key={apiKey.id}
-              apiKey={apiKey}
-              isMobile={isMobile}
-              deleting={deletingApiKeyId === apiKey.id}
-              onDelete={() => onDeleteApiKey(apiKey.id)}
-            />
-          ))
-        )}
-      </div>
 
       {draftOpen ? (
         <form
@@ -313,54 +229,58 @@ export function AccountApiKeysView({
             event.preventDefault();
             void createKey();
           }}
-          className="space-y-3"
+          className="space-y-5"
         >
-          <div
-            className={cn(
-              "grid gap-3",
-              isMobile ? "grid-cols-2" : desktopColumns
-            )}
-          >
-            <div className={cn("min-w-0", isMobile && "col-span-2")}>
+          <div>
+            <h3 className="text-sm font-medium">
+              {t("account.apiKeys.newKey")}
+            </h3>
+            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+              {t("account.apiKeys.form.description")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_11rem]">
+            <div className="min-w-0 sm:col-span-2">
               <label
                 htmlFor="api-key-name"
-                className={cn(
-                  "text-muted-foreground mb-1.5 block text-xs",
-                  !isMobile && "sr-only"
-                )}
+                className="mb-2 block text-sm font-medium"
               >
                 {t("account.apiKeys.form.keyNameLabel")}
               </label>
               <Input
                 id="api-key-name"
+                autoFocus
                 type="text"
                 value={apiKeyName}
                 disabled={creatingApiKey}
                 required
                 maxLength={64}
                 onChange={(event) => onApiKeyNameChange(event.target.value)}
-                className="h-[34px] rounded-lg px-2.5 text-sm shadow-none focus-visible:ring-2"
+                className="h-10 rounded-lg px-3 text-sm shadow-none focus-visible:ring-2"
                 placeholder={t("account.apiKeys.form.namePlaceholder")}
               />
             </div>
             <div className="min-w-0">
-              {isMobile && (
-                <p className="text-muted-foreground mb-1.5 text-xs">
-                  {t("account.apiKeys.access.label")}
-                </p>
-              )}
+              <p className="mb-2 text-sm font-medium">
+                {t("account.apiKeys.access.label")}
+              </p>
               <ApiKeyProjectAccessSelector
                 value={projectAccess}
                 onChange={onProjectAccessChange}
                 disabled={creatingApiKey}
               />
+              <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
+                {t(
+                  projectAccess.mode === "all"
+                    ? "account.apiKeys.access.allHint"
+                    : "account.apiKeys.access.selectedHint"
+                )}
+              </p>
             </div>
             <div className="min-w-0">
-              {isMobile && (
-                <p className="text-muted-foreground mb-1.5 text-xs">
-                  {tCommon("labels.expires")}
-                </p>
-              )}
+              <p className="mb-2 text-sm font-medium">
+                {tCommon("labels.expires")}
+              </p>
               <Select
                 value={apiKeyExpiryDays}
                 onValueChange={onApiKeyExpiryDaysChange}
@@ -390,7 +310,7 @@ export function AccountApiKeysView({
               variant="ghost"
               disabled={creatingApiKey}
               onClick={resetDraft}
-              className="text-muted-foreground h-8 rounded-lg px-2.5 text-xs"
+              className="text-muted-foreground h-9 rounded-lg px-3 text-sm"
             >
               {tCommon("actions.cancel")}
             </Button>
@@ -402,7 +322,7 @@ export function AccountApiKeysView({
                 (projectAccess.mode === "selected" &&
                   projectAccess.projectIds.length === 0)
               }
-              className="h-8 rounded-lg px-3 text-xs"
+              className="h-9 rounded-lg px-4 text-sm"
             >
               {creatingApiKey && (
                 <LoaderCircle className="size-3.5 animate-spin" />
@@ -411,21 +331,12 @@ export function AccountApiKeysView({
             </Button>
           </div>
         </form>
-      ) : (
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground inline-flex h-8 items-center gap-1.5 px-2.5 text-sm"
-          onClick={() => onDraftOpenChange(true)}
-        >
-          <Plus className="size-3.5" />
-          {t("account.apiKeys.newKey")}
-        </button>
-      )}
+      ) : null}
 
       {createdApiKey && (
         <section
           aria-label={t("account.apiKeys.created.title")}
-          className="border-border/60 space-y-2.5 border-t pt-4"
+          className="border-brand-primary/30 bg-brand-primary/5 space-y-3 rounded-xl border p-4"
         >
           <div>
             <p className="text-sm font-medium">
@@ -456,6 +367,77 @@ export function AccountApiKeysView({
           </div>
         </section>
       )}
+      {!draftOpen && (
+        <section>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-medium">
+              {t("account.apiKeys.active.title")}
+            </h3>
+            <Button
+              type="button"
+              className="h-8 shrink-0 rounded-lg px-3 text-xs"
+              onClick={() => onDraftOpenChange(true)}
+            >
+              <Plus className="size-3.5" />
+              {t("account.apiKeys.newKey")}
+            </Button>
+          </div>
+          <div role="table" aria-label={t("account.apiKeys.active.title")}>
+            <div
+              role="row"
+              className={cn(
+                "text-muted-foreground border-border/60 grid items-center gap-3 border-b pb-3 text-xs font-medium",
+                desktopColumns,
+                isMobile && "sr-only"
+              )}
+            >
+              <span role="columnheader" className="px-2.5">
+                {tCommon("labels.name")}
+              </span>
+              <span role="columnheader" className="px-2.5">
+                {t("account.apiKeys.access.label")}
+              </span>
+              <span role="columnheader" className="px-2.5">
+                {tCommon("labels.expires")}
+              </span>
+              <span role="columnheader" className="sr-only">
+                {tCommon("labels.actions")}
+              </span>
+            </div>
+            {apiKeysLoading ? (
+              <div role="row">
+                <div
+                  role="cell"
+                  className="text-muted-foreground flex items-center gap-2 px-2.5 py-5 text-sm"
+                >
+                  <LoaderCircle className="size-4 animate-spin" />
+                  {t("account.apiKeys.active.loading")}
+                </div>
+              </div>
+            ) : apiKeys.length === 0 ? (
+              <div role="row">
+                <p
+                  role="cell"
+                  className="text-muted-foreground px-2.5 py-5 text-sm"
+                >
+                  {t("account.apiKeys.empty.title")}
+                </p>
+              </div>
+            ) : (
+              apiKeys.map((apiKey) => (
+                <ApiKeyRow
+                  key={apiKey.id}
+                  apiKey={apiKey}
+                  isMobile={isMobile}
+                  deleting={deletingApiKeyId === apiKey.id}
+                  onDelete={() => onDeleteApiKey(apiKey.id)}
+                />
+              ))
+            )}
+          </div>
+        </section>
+      )}
+
       <AccountDialogError error={error} />
     </div>
   );

@@ -59,3 +59,27 @@ describe("studio dialog links", () => {
     ).toBe("/studio?dialog=import");
   });
 });
+
+describe("integration links", () => {
+  it.each(["connected-apps", "integrations"])(
+    "opens %s inside the account dialog",
+    (section) => {
+      expect(
+        parseStudioDialog(new URLSearchParams({ dialog: "account", section }))
+          .accountView
+      ).toBe("connectedApps");
+    }
+  );
+  it("round-trips the connected apps destination", () => {
+    const path = studioDialogUrl(
+      "https://trackdraw.app/studio",
+      "account",
+      "connectedApps"
+    );
+    expect(path).toBe("/studio?dialog=account&section=connected-apps");
+    expect(
+      parseStudioDialog(new URL(path, "https://trackdraw.app").searchParams)
+        .accountView
+    ).toBe("connectedApps");
+  });
+});

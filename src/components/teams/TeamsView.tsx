@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
-import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeft, ChevronRight, Plus, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -10,6 +10,7 @@ import { Invitations } from "./Invitations";
 import { useTeamDialogState } from "./TeamDialogState";
 import { TeamManagement } from "./TeamManagement";
 import { TeamForms } from "./TeamForms";
+import { TeamEmptyState } from "./TeamEmptyState";
 import { TeamAvatar } from "./TeamAvatar";
 import { TeamActions } from "./TeamActions";
 
@@ -210,6 +211,11 @@ export function TeamsView() {
       )}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
+          {screen === "create" && (
+            <div className="bg-brand-primary/8 text-brand-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <UsersRound className="size-5" aria-hidden="true" />
+            </div>
+          )}
           {screen === "detail" && team && (
             <TeamAvatar name={team.name} square />
           )}
@@ -226,6 +232,11 @@ export function TeamsView() {
             {screen === "overview" && (
               <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed">
                 {t("description")}
+              </p>
+            )}
+            {screen === "create" && (
+              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                {t("createDescription")}
               </p>
             )}
             {screen === "invite" && team && (
@@ -257,7 +268,7 @@ export function TeamsView() {
             </>
           )}
         </div>
-        {overview && screen === "overview" && (
+        {overview && overview.teams.length > 0 && screen === "overview" && (
           <Button
             className="ml-auto h-8 rounded-lg px-2.5"
             disabled={busy}
@@ -309,11 +320,27 @@ export function TeamsView() {
       ) : (
         <>
           {screen === "overview" && (
-            <>
+            <div className="flex flex-col">
+              {received.length > 0 && (
+                <section aria-label={t("invitations")} className="mb-5">
+                  <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
+                    {t("invitations")}
+                  </h3>
+                  <Invitations
+                    items={received}
+                    busy={busy}
+                    onAccept={(id) =>
+                      void command({ action: "accept", invitationId: id })
+                    }
+                  />
+                </section>
+              )}
               {overview.teams.length === 0 ? (
-                <p className="text-muted-foreground py-6 text-sm">
-                  {t("empty")}
-                </p>
+                <TeamEmptyState
+                  busy={busy}
+                  onCreate={() => navigate("create")}
+                  hasInvitations={received.length > 0}
+                />
               ) : (
                 <ul className="divide-border/60 border-border/60 divide-y border-y">
                   {overview.teams.map((item) => (
@@ -339,21 +366,7 @@ export function TeamsView() {
                   ))}
                 </ul>
               )}
-              {received.length > 0 && (
-                <section aria-label={t("invitations")} className="pt-2">
-                  <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
-                    {t("invitations")}
-                  </h3>
-                  <Invitations
-                    items={received}
-                    busy={busy}
-                    onAccept={(id) =>
-                      void command({ action: "accept", invitationId: id })
-                    }
-                  />
-                </section>
-              )}
-            </>
+            </div>
           )}
           {screen === "detail" &&
             (team ? (

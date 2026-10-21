@@ -20,6 +20,8 @@ const accountSections: Record<string, AccountDialogView> = {
   privacy: "privacy",
   teams: "teams",
   "api-keys": "apiKeys",
+  integrations: "connectedApps",
+  "connected-apps": "connectedApps",
   danger: "danger",
 };
 
@@ -64,7 +66,11 @@ export function studioDialogUrl(
   if (dialog === "account") {
     url.searchParams.set(
       "section",
-      accountView === "apiKeys" ? "api-keys" : accountView
+      accountView === "apiKeys"
+        ? "api-keys"
+        : accountView === "connectedApps"
+          ? "connected-apps"
+          : accountView
     );
   }
   return `${url.pathname}${url.search}${url.hash}`;
