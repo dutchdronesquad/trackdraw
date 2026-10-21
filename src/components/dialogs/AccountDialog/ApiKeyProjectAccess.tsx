@@ -131,7 +131,7 @@ export function ApiKeyProjectAccessSelector({
         collisionPadding={16}
         onClick={(event) => event.stopPropagation()}
         aria-label={t("label")}
-        className="border-border/70 flex max-h-[min(30rem,var(--radix-popover-content-available-height))] w-[21.5rem] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
+        className="border-border/70 flex max-h-[min(30rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
       >
         <div className="shrink-0 space-y-2">
           <label htmlFor={ownerId} className="text-sm font-medium">
