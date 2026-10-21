@@ -62,6 +62,10 @@ TrackDraw supports English, Dutch, German, Simplified Chinese, and Spanish, with
 
 TrackDraw is actively developed. See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for current priorities and progress.
 
+## Use TrackDraw with an AI assistant
+
+The [MCP connection guide](docs/mcp.md#quick-start) explains how to configure ChatGPT, Claude (web, Desktop and Code), Codex CLI and other remote MCP clients, with example prompts for material lists, track comparisons, new layouts and reviewed edits. MCP is currently documented for development testing; see the guide's availability and client-validation notes before connecting.
+
 ## Related repositories
 
 - [TrackDraw Viewer](https://github.com/dutchdronesquad/track-viewer) — the standalone 2D and 3D viewer for embedding TrackDraw tracks in other websites and applications, including offline viewing. Explore the [live demo](https://viewer.trackdraw.app/) or use the [developer examples](https://viewer.trackdraw.app/develop) for integration code.
