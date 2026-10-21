@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -190,15 +189,12 @@ export function TeamsView() {
         item.status === "sending"
     ) ?? [];
   return (
-    <div
-      className={cn("space-y-7", screen === "invite" && "mx-auto max-w-3xl")}
-      aria-busy={busy}
-    >
+    <div className="space-y-5" aria-busy={busy}>
       {screen !== "overview" && (
         <Button
           variant="ghost"
           size="sm"
-          className="text-muted-foreground -ml-2 gap-2"
+          className="text-muted-foreground -ml-2 h-8 gap-2 rounded-lg px-2.5 text-xs"
           disabled={busy}
           onClick={() =>
             navigate(
@@ -217,21 +213,23 @@ export function TeamsView() {
           {screen === "detail" && team && (
             <TeamAvatar name={team.name} square />
           )}
-          <div className="min-w-0">
+          <div
+            className={screen === "overview" ? "min-w-0 md:hidden" : "min-w-0"}
+          >
             <h2
               ref={heading}
               tabIndex={-1}
-              className="text-foreground text-2xl leading-tight font-semibold tracking-tight break-words outline-none"
+              className="text-foreground text-[15px] leading-snug font-semibold tracking-[-0.01em] break-words outline-none"
             >
               {title}
             </h2>
             {screen === "overview" && (
-              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed">
                 {t("description")}
               </p>
             )}
             {screen === "invite" && team && (
-              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed">
                 {t("inviteDescription", { team: team.name })}
               </p>
             )}
@@ -260,7 +258,11 @@ export function TeamsView() {
           )}
         </div>
         {overview && screen === "overview" && (
-          <Button disabled={busy} onClick={() => navigate("create")}>
+          <Button
+            className="ml-auto h-8 rounded-lg px-2.5"
+            disabled={busy}
+            onClick={() => navigate("create")}
+          >
             <Plus className="size-4" />
             {t("create")}
           </Button>
@@ -269,7 +271,7 @@ export function TeamsView() {
           <div className="flex w-full items-center gap-2 sm:w-auto">
             {team.role === "owner" && (
               <Button
-                className="w-full sm:w-auto"
+                className="h-8 w-full rounded-lg px-2.5 sm:w-auto"
                 disabled={busy}
                 onClick={() => navigate("invite")}
               >
@@ -318,16 +320,16 @@ export function TeamsView() {
                     <li key={item.id}>
                       <button
                         type="button"
-                        className="hover:bg-muted/40 focus-visible:ring-ring flex w-full cursor-pointer items-center gap-4 rounded-sm py-5 text-left transition-colors outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-50"
+                        className="hover:bg-muted/40 focus-visible:ring-ring flex w-full cursor-pointer items-center gap-3 rounded-sm py-3 text-left transition-colors outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-50"
                         disabled={busy}
                         onClick={() => void choose(item.id)}
                       >
                         <TeamAvatar name={item.name} square />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-base font-medium break-words">
+                          <span className="block text-sm font-medium break-words">
                             {item.name}
                           </span>
-                          <span className="text-muted-foreground mt-1 block text-sm">
+                          <span className="text-muted-foreground mt-0.5 block text-xs">
                             {t(`roles.${item.role}`)}
                           </span>
                         </span>

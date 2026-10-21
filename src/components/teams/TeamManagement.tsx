@@ -52,22 +52,22 @@ export function TeamManagement({
     ["pending", "sending", "expired"].includes(item.status)
   );
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section aria-label={t("members")}>
         <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
           {t("members")}
         </h3>
         <ul className="divide-border/60 divide-y">
           {team.members.map((member) => (
-            <li key={member.userId} className="py-5">
+            <li key={member.userId} className="py-3">
               <div className="flex items-center gap-3">
                 <TeamAvatar name={member.name || member.email} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-medium break-words">
+                  <p className="text-sm font-medium break-words">
                     {member.name || member.email}
                   </p>
                   {member.name && (
-                    <p className="text-muted-foreground mt-1 text-sm break-all">
+                    <p className="text-muted-foreground mt-0.5 text-xs break-all">
                       {member.email}
                     </p>
                   )}

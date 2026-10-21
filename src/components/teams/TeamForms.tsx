@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { TeamCommand } from "@/lib/teams";
-import { cn } from "@/lib/utils";
 import { useTeamDialogState } from "./TeamDialogState";
 
 export function TeamForms({
@@ -34,7 +33,7 @@ export function TeamForms({
   const draft = screen === "rename" ? (renameDraft ?? team?.name ?? "") : name;
   return (
     <form
-      className={cn("space-y-6", !inviting && "max-w-md")}
+      className="space-y-5"
       onSubmit={(e) => {
         e.preventDefault();
         if (busy) return;
@@ -57,7 +56,7 @@ export function TeamForms({
             <label className="block space-y-2 text-sm font-medium">
               <span className="block">{t("email")}</span>
               <Input
-                className="h-10"
+                className="h-8 rounded-lg px-2.5 shadow-none"
                 type="email"
                 value={email}
                 maxLength={254}
@@ -92,6 +91,7 @@ export function TeamForms({
         <label className="block space-y-2 text-sm font-medium">
           <span>{t("teamName")}</span>
           <Input
+            className="h-8 rounded-lg px-2.5 shadow-none"
             value={draft}
             maxLength={80}
             required
@@ -104,24 +104,19 @@ export function TeamForms({
           />
         </label>
       )}
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-3",
-          inviting && "border-border/60 justify-end border-t pt-5"
-        )}
-      >
-        {inviting && (
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={busy}
-            onClick={onCancel}
-          >
-            {t("cancel")}
-          </Button>
-        )}
+      <div className="border-border/60 flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-8 rounded-lg px-2.5"
+          disabled={busy}
+          onClick={onCancel}
+        >
+          {t("cancel")}
+        </Button>
         <Button
           type="submit"
+          className="h-8 rounded-lg px-2.5"
           disabled={
             busy ||
             (inviting
@@ -132,16 +127,6 @@ export function TeamForms({
         >
           {t(inviting ? "invite" : screen === "rename" ? "rename" : "create")}
         </Button>
-        {!inviting && (
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={busy}
-            onClick={onCancel}
-          >
-            {t("cancel")}
-          </Button>
-        )}
       </div>
     </form>
   );
