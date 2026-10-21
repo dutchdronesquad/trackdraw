@@ -60,7 +60,7 @@ export function TeamForms({
             <label className="block space-y-2 text-sm font-medium">
               <span className="block">{t("email")}</span>
               <Input
-                className="h-8 rounded-lg px-2.5 shadow-none"
+                className="h-9 rounded-lg px-3 shadow-none"
                 type="email"
                 value={email}
                 maxLength={254}
@@ -77,7 +77,7 @@ export function TeamForms({
               <TeamRoleSelect
                 id={roleId}
                 label={t("role")}
-                className="h-8 rounded-lg px-2.5 shadow-none"
+                className="h-9 rounded-lg px-3 shadow-none"
                 value={role}
                 disabled={busy}
                 onValueChange={setRole}
