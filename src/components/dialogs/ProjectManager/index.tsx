@@ -1,5 +1,8 @@
 "use client";
 
+import { useProjectLibrary } from "@/store/project-library";
+import { TeamLibrary } from "./TeamLibrary";
+import { MoveProject } from "./MoveProject";
 import { useState } from "react";
 import { Cloud, Clock, FolderOpen, Link2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,6 +17,8 @@ import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync"
 import { useTranslations } from "next-intl";
 
 interface ProjectManagerDialogProps {
+  userId?: string;
+  moveBlockedProjectId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenNewProject?: () => void;
@@ -51,6 +56,8 @@ interface ProjectManagerDialogProps {
 type View = "device" | "account" | "restore" | "shares";
 
 export default function ProjectManagerDialog({
+  userId,
+  moveBlockedProjectId,
   open,
   onOpenChange,
   onOpenNewProject,
@@ -82,7 +89,15 @@ export default function ProjectManagerDialog({
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
-  const [view, setView] = useState<View>("device");
+  const [view, setView] = useState<View>(() =>
+    userId &&
+    useProjectLibrary.getState().byUser[userId] &&
+    useProjectLibrary.getState().byUser[userId] !== "personal"
+      ? "account"
+      : "device"
+  );
+
+  const [movingProject, setMovingProject] = useState<string | null>(null);
 
   const hasAccountSection = Boolean(onSyncProject);
 
@@ -94,7 +109,7 @@ export default function ProjectManagerDialog({
     id: View;
     label: string;
     icon: React.ReactNode;
-    count: number;
+    count?: number;
   };
   const navItems: NavItem[] = [
     {
@@ -109,7 +124,7 @@ export default function ProjectManagerDialog({
             id: "account",
             label: tCommon("labels.account"),
             icon: <Cloud className="size-4" />,
-            count: accountProjects.length,
+            count: userId ? undefined : accountProjects.length,
           },
           {
             id: "shares",
@@ -138,8 +153,12 @@ export default function ProjectManagerDialog({
       description: t("projectManager.panels.device.description"),
     },
     account: {
-      label: t("projectManager.panels.account.label"),
-      description: t("projectManager.panels.account.description"),
+      label: userId
+        ? t("teamLibrary.panelTitle")
+        : t("projectManager.panels.account.label"),
+      description: userId
+        ? t("teamLibrary.panelDescription")
+        : t("projectManager.panels.account.description"),
     },
     restore: {
       label: t("projectManager.panels.snapshots.label"),
@@ -152,6 +171,7 @@ export default function ProjectManagerDialog({
   };
 
   const current = viewMeta[activeView];
+  const cloudView = activeView === "account" && !!userId && !movingProject;
 
   const tabContent = {
     device: (
@@ -181,6 +201,8 @@ export default function ProjectManagerDialog({
         activeDesignId={activeDesignId}
         syncingProjectId={syncingProjectId}
         projectSyncMetaById={projectSyncMetaById}
+        moveBlockedProjectId={moveBlockedProjectId}
+        onMoveProject={userId ? (id) => setMovingProject(id) : undefined}
         onOpenAccountProject={onOpenAccountProject}
         onSyncProject={onSyncProject}
         onDuplicateAccountProject={onDuplicateAccountProject}
@@ -225,9 +247,38 @@ export default function ProjectManagerDialog({
       activeItem={activeView}
       onItemChange={(id) => setView(id as View)}
       contentTitle={current.label}
-      contentDescription={current.description}
+      contentDescription={cloudView ? undefined : current.description}
+      contentHeaderless={cloudView}
+      contentBodyClassName={cloudView ? "p-0" : undefined}
+      maxWidth={activeView === "account" && userId ? "max-w-5xl" : undefined}
+      height={activeView === "account" && userId ? "h-[36rem]" : undefined}
     >
-      {tabContent[activeView]}
+      {activeView === "account" && userId ? (
+        movingProject ? (
+          <MoveProject
+            key={`${userId}:${movingProject}`}
+            projectId={movingProject}
+            userId={userId}
+            onCancel={() => setMovingProject(null)}
+          />
+        ) : (
+          <TeamLibrary
+            key={userId}
+            userId={userId}
+            personal={tabContent.account}
+            onNewPersonalProject={
+              onOpenNewProject
+                ? () => {
+                    onOpenChange(false);
+                    onOpenNewProject();
+                  }
+                : undefined
+            }
+          />
+        )
+      ) : (
+        tabContent[activeView]
+      )}
     </SidebarDialog>
   );
 }

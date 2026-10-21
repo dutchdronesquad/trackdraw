@@ -129,6 +129,7 @@ export interface EditorDialogsHostProps {
   accountProjectsError?: string | null;
   accountShares?: AccountShareItem[];
   accountSharesLoading?: boolean;
+  moveBlockedProjectId?: string;
   projectSyncMetaById?: Record<string, ProjectSyncMeta>;
   syncingProjectId?: string | null;
   restorePoints?: RestorePointMeta[];
@@ -208,6 +209,7 @@ export function EditorDialogsHost({
   accountProjectsError,
   accountShares,
   accountSharesLoading,
+  moveBlockedProjectId,
   projectSyncMetaById,
   syncingProjectId,
   restorePoints,
@@ -285,6 +287,8 @@ export function EditorDialogsHost({
 
       {projectManagerOpen ? (
         <ProjectManagerDialog
+          userId={authUser?.id}
+          moveBlockedProjectId={moveBlockedProjectId}
           open={projectManagerOpen}
           onOpenChange={onProjectManagerOpenChange}
           onOpenNewProject={onProjectManagerOpenNewProject}

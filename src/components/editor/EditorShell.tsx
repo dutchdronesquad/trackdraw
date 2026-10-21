@@ -1139,6 +1139,11 @@ export default function EditorShell({
           accountShares={accountShares}
           accountSharesLoading={accountSharesLoading}
           onRevokeShare={handleRevokeShare}
+          moveBlockedProjectId={
+            isAccountProject && headerStatus?.tone !== "success"
+              ? design.id
+              : undefined
+          }
           projectSyncMetaById={projectSyncMetaById}
           syncingProjectId={syncingProjectId}
           restorePoints={restorePoints}

@@ -55,6 +55,10 @@ Apply `0030_team_project_ownership.sql` before deploying the team ownership serv
 
 Apply `0031_team_membership_management.sql` before deploying team management. It adds invitation delivery state, bounded per-account action counters and database guards protecting team owners from removal/demotion/account deletion. Inactivity notice/removal queries exclude team owners. Team management is directly available through `/api/teams` and account navigation for signed-in users, without a feature flag. Existing API/MCP credentials gain no team project access. Invitation pages at `/teams/invitation/[invitationId]` are non-indexable and require explicit authenticated acceptance. Keep private API responses uncached, retain cookie/CSRF checks and the streamed 4 KiB body limit, and avoid broadening public auth/WAF exemptions for this route. Production uses existing Plunk configuration; local non-production fallback prints disposable invitation links. See [the management contract](../pva/team-membership-management.md).
 
+### Team projects
+
+Apply `0032_project_edit_leases.sql` before this application version. It adds the shared `project_edit_leases` boundary used to reject ownership moves during active sessions; lease acquisition/renewal remains #1022. Cookie-authenticated `/api/team-projects` provides bounded team metadata pages, authorized design reads, blank project creation and explicit personal-to-team moves. Keep no-store/Vary: Cookie, same-origin mutations, the streamed 4 KiB input limit and existing Worker/API/WAF protections. No new secrets, bindings or deployment exemptions are needed. `/studio?teamId=…&teamProject=…` loads private content only after browser-session authorization; never cache those API responses or treat the URL as access. Existing REST/MCP grants remain personal-only. Private viewing disables publication/copy-link actions and does not persist team designs in browser drafts. See [the team project contract](../pva/team-project-libraries.md).
+
 ## Local development requirements
 
 Local Cloudflare preview does not need a database connection string anymore.
