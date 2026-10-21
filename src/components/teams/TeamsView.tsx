@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -189,7 +190,10 @@ export function TeamsView() {
         item.status === "sending"
     ) ?? [];
   return (
-    <div className="space-y-7" aria-busy={busy}>
+    <div
+      className={cn("space-y-7", screen === "invite" && "mx-auto max-w-3xl")}
+      aria-busy={busy}
+    >
       {screen !== "overview" && (
         <Button
           variant="ghost"
@@ -226,9 +230,9 @@ export function TeamsView() {
                 {t("description")}
               </p>
             )}
-            {screen === "invite" && (
+            {screen === "invite" && team && (
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                {t("inviteDescription")}
+                {t("inviteDescription", { team: team.name })}
               </p>
             )}
           </div>

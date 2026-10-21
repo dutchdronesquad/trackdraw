@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { TeamCommand } from "@/lib/teams";
+import { cn } from "@/lib/utils";
 import { useTeamDialogState } from "./TeamDialogState";
 
 export function TeamForms({
@@ -33,7 +34,7 @@ export function TeamForms({
   const draft = screen === "rename" ? (renameDraft ?? team?.name ?? "") : name;
   return (
     <form
-      className="max-w-md space-y-6"
+      className={cn("space-y-6", !inviting && "max-w-md")}
       onSubmit={(e) => {
         e.preventDefault();
         if (busy) return;
@@ -52,36 +53,40 @@ export function TeamForms({
     >
       {inviting ? (
         <>
-          <label className="block space-y-2 text-sm font-medium">
-            <span>{t("email")}</span>
-            <Input
-              type="email"
-              value={email}
-              maxLength={254}
-              required
-              autoComplete="email"
-              disabled={busy}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor={roleId}>
-              {t("role")}
+          <div className="grid gap-5 sm:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+            <label className="block space-y-2 text-sm font-medium">
+              <span className="block">{t("email")}</span>
+              <Input
+                className="h-10"
+                type="email"
+                value={email}
+                maxLength={254}
+                required
+                autoComplete="email"
+                disabled={busy}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </label>
-            <TeamRoleSelect
-              id={roleId}
-              label={t("role")}
-              value={role}
-              disabled={busy}
-              onValueChange={setRole}
-            />
-            <p className="text-muted-foreground text-sm">
-              {t(role === "editor" ? "editorHelp" : "viewerHelp")}
-            </p>
+            <div className="min-w-0 space-y-2">
+              <label className="block text-sm font-medium" htmlFor={roleId}>
+                {t("role")}
+              </label>
+              <TeamRoleSelect
+                id={roleId}
+                label={t("role")}
+                value={role}
+                disabled={busy}
+                onValueChange={setRole}
+              />
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {t(role === "editor" ? "editorHelp" : "viewerHelp")}
+              </p>
+            </div>
           </div>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            {t("inviteHelp")}
-          </p>
+          <div className="text-muted-foreground space-y-1 text-sm leading-relaxed">
+            <p>{t("inviteDelivery")}</p>
+            <p>{t("inviteSignIn")}</p>
+          </div>
         </>
       ) : (
         <label className="block space-y-2 text-sm font-medium">
@@ -99,7 +104,22 @@ export function TeamForms({
           />
         </label>
       )}
-      <div className="flex flex-wrap items-center gap-3">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-3",
+          inviting && "border-border/60 justify-end border-t pt-5"
+        )}
+      >
+        {inviting && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy}
+            onClick={onCancel}
+          >
+            {t("cancel")}
+          </Button>
+        )}
         <Button
           type="submit"
           disabled={
@@ -112,14 +132,16 @@ export function TeamForms({
         >
           {t(inviting ? "invite" : screen === "rename" ? "rename" : "create")}
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={busy}
-          onClick={onCancel}
-        >
-          {t("cancel")}
-        </Button>
+        {!inviting && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy}
+            onClick={onCancel}
+          >
+            {t("cancel")}
+          </Button>
+        )}
       </div>
     </form>
   );

@@ -1027,7 +1027,6 @@
     "email": "Email address",
     "inviteTitle": "Invite a member",
     "invite": "Send invitation",
-    "inviteHelp": "Invitations expire after 7 days. The recipient must sign in with a verified account matching this email address.",
     "invitations": "Your invitations",
     "accept": "Accept invitation",
     "resend": "Send new invitation",
@@ -1073,7 +1072,7 @@
     "switchAccount": "Use another account",
     "invitationSending": "This invitation is still being sent. Reload this page shortly.",
     "inviteMember": "Invite member",
-    "inviteDescription": "They’ll join using their own TrackDraw account.",
+    "inviteDescription": "Invite someone to {team}.",
     "editorHelp": "Can create and edit team tracks.",
     "viewerHelp": "Can view team tracks.",
     "renameTitle": "Rename team",
@@ -1083,6 +1082,8 @@
     "teamActions": "Team actions",
     "makeEditor": "Change to Editor",
     "makeViewer": "Change to Viewer",
-    "removeConfirm": "Remove {name} from this team? They will lose access to team tracks."
+    "removeConfirm": "Remove {name} from this team? They will lose access to team tracks.",
+    "inviteDelivery": "We’ll email an invitation valid for 7 days.",
+    "inviteSignIn": "They’ll need to sign in with this email address."
   }
 }
