@@ -1086,7 +1086,7 @@
     "inviteSignIn": "They’ll need to sign in with this email address."
   },
   "teamLibrary": {
-    "library": "Project library",
+    "library": "Show projects from",
     "personal": "Personal projects",
     "private": "Private · only team members have access",
     "create": "New team project",
@@ -1115,7 +1115,7 @@
     "unavailable": "This project is unavailable, or your team access could not be verified.",
     "signIn": "Sign in to access this private team project.",
     "signInAction": "Sign in",
-    "panelTitle": "Project libraries",
-    "panelDescription": "Your personal projects and private tracks shared with your teams."
+    "panelTitle": "Cloud projects",
+    "panelDescription": "Your personal projects and tracks shared with your teams."
   }
 }
