@@ -11,7 +11,15 @@ export function createMigratedDatabase(throughMigration?: string) {
         name.endsWith(".sql") && (!throughMigration || name <= throughMigration)
     )
     .sort()) {
-    sqlite.exec(readFileSync(new URL(name, directory), "utf8"));
+    sqlite.exec("BEGIN");
+    try {
+      sqlite.exec(readFileSync(new URL(name, directory), "utf8"));
+      sqlite.exec("COMMIT");
+    } catch (error) {
+      sqlite.exec("ROLLBACK");
+      sqlite.close();
+      throw error;
+    }
   }
   return sqlite;
 }

@@ -270,7 +270,7 @@ export async function applyProjectEdit(
       db
         .prepare(
           `UPDATE projects SET title=?,description=?,design_json=?,field_width=?,field_height=?,shape_count=?,updated_at=?,revision=revision+1
-        WHERE id=? AND owner_user_id=? AND archived_at IS NULL AND revision=?
+        WHERE id=? AND owner_user_id=? AND owner_team_id IS NULL AND archived_at IS NULL AND revision=?
         AND EXISTS(SELECT 1 FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=? AND applied_at IS NULL AND expires_at>?) RETURNING id`
         )
         .bind(
