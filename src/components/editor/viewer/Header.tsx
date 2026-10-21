@@ -18,6 +18,7 @@ interface HeaderProps {
   onTabChange: (tab: "2d" | "3d") => void;
   embedMode?: boolean;
   title?: string;
+  contextLabel?: string;
   studioHref?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -30,6 +31,7 @@ export default function Header({
   onTabChange,
   embedMode = false,
   title,
+  contextLabel,
   studioHref = "/studio",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
@@ -98,9 +100,10 @@ export default function Header({
             /
           </span>
           <span className="text-muted-foreground/70 hidden shrink-0 text-[11px] font-medium xl:inline">
-            {embedMode
-              ? t("sharedHeader.embedLabel")
-              : t("sharedHeader.sharedPreviewLabel")}
+            {contextLabel ??
+              (embedMode
+                ? t("sharedHeader.embedLabel")
+                : t("sharedHeader.sharedPreviewLabel"))}
           </span>
         </div>
       </div>

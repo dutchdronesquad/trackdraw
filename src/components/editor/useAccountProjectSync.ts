@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { getDesignShapes } from "@/lib/track/design";
 import {
+  isMovedTeamProject,
   createProjectDuplicate,
   deleteProject,
   hasMeaningfulProjectContent,
@@ -597,6 +598,10 @@ export function useAccountProjectSync({
         forceCloudWrite?: boolean;
       }
     ) => {
+      if (isMovedTeamProject(targetDesign.id))
+        throw new Error(
+          "This project has moved to a team. Reopen it from the team library."
+        );
       if (!cloudProjectsAvailable) {
         throw new Error(
           cloudProjectsUnavailableReason ??

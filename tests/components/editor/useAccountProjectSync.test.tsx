@@ -11,7 +11,11 @@ import {
   AccountProjectSyncConflictError,
   useAccountProjectSync,
 } from "@/components/editor/useAccountProjectSync";
-import { saveProject, type ProjectMeta } from "@/lib/projects";
+import {
+  forgetMovedProject,
+  saveProject,
+  type ProjectMeta,
+} from "@/lib/projects";
 import type { TrackDesign } from "@/lib/types";
 import { createMemoryStorage } from "../../helpers/storage";
 
@@ -85,6 +89,16 @@ describe("useAccountProjectSync", () => {
     cleanup();
     vi.useRealTimers();
     vi.unstubAllGlobals();
+  });
+
+  it("never resubmits a draft after its project moved to a team", async () => {
+    const design = createDefaultDesign();
+    const { result } = renderAccountProjectSync({ design });
+    forgetMovedProject(design.id);
+    await expect(
+      result.current.syncDesignToAccount(design, { forceCloudWrite: true })
+    ).rejects.toThrow("moved to a team");
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("coalesces overlapping focus and visibility refreshes and allows the next refresh", async () => {

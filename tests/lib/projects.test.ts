@@ -2,6 +2,9 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  forgetMovedProject,
+  saveLocalDraft,
+  loadLocalDraft,
   createProjectDuplicate,
   createRestorePoint,
   deleteProjects,
@@ -200,5 +203,38 @@ describe("local project persistence", () => {
       expect(duplicate.createdAt).not.toBe(source.createdAt);
       expect(duplicate.updatedAt).not.toBe(source.updatedAt);
     });
+  });
+});
+
+describe("personal cache after team transfer", () => {
+  beforeEach(() => vi.stubGlobal("localStorage", createMemoryStorage()));
+  afterEach(() => vi.unstubAllGlobals());
+  it("removes only the moved project's draft, design and history and blocks late saves", () => {
+    const moved = { ...createDefaultDesign(), id: "moved" };
+    const other = { ...createDefaultDesign(), id: "other" };
+    saveProjectWithResult(moved);
+    saveProjectWithResult(other);
+    saveLocalDraft(moved);
+    const snapshot = createRestorePoint(moved);
+    createRestorePoint(other);
+    forgetMovedProject(moved.id);
+    expect(loadProject(moved.id)).toBeNull();
+    expect(loadLocalDraft()).toBeNull();
+    expect(loadRestorePoint(snapshot.id)).toBeNull();
+    expect(saveProjectWithResult(moved).ok).toBe(false);
+    expect(saveLocalDraft(moved).ok).toBe(false);
+    createRestorePoint(moved);
+    expect(listProjects().map((p) => p.id)).toEqual(["other"]);
+    expect(listRestorePoints().map((p) => p.designId)).toEqual(["other"]);
+    expect(loadProject(other.id)).not.toBeNull();
+    expect(saveProjectWithResult({ ...moved, id: "explicit-copy" }).ok).toBe(
+      true
+    );
+  });
+  it("keeps the active draft of a different personal project", () => {
+    const other = { ...createDefaultDesign(), id: "other" };
+    saveLocalDraft(other);
+    forgetMovedProject("moved");
+    expect(loadLocalDraft()?.id).toBe("other");
   });
 });

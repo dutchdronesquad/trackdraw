@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Cloud, CloudUpload, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Cloud, CloudUpload, Copy, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
@@ -31,6 +32,8 @@ interface ProjectManagerAccountTabProps {
   activeDesignId?: string;
   syncingProjectId?: string | null;
   projectSyncMetaById: Record<string, ProjectSyncMeta>;
+  moveBlockedProjectId?: string;
+  onMoveProject?: (id: string) => void;
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
   onDuplicateAccountProject?: (id: string) => void;
@@ -45,6 +48,8 @@ export function ProjectManagerAccountTab({
   activeDesignId,
   syncingProjectId,
   projectSyncMetaById,
+  moveBlockedProjectId,
+  onMoveProject,
   onOpenAccountProject,
   onSyncProject,
   onDuplicateAccountProject,
@@ -208,6 +213,25 @@ export function ProjectManagerAccountTab({
               className="flex shrink-0 items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
+              {onMoveProject ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={
+                    isSyncing ||
+                    hasConflict ||
+                    hasSyncFailure ||
+                    hasPendingChanges ||
+                    moveBlockedProjectId === proj.id
+                  }
+                  aria-label={t("teamLibrary.moveProject", {
+                    title: projectTitle,
+                  })}
+                  onClick={() => onMoveProject(proj.id)}
+                >
+                  <Users className="size-3.5" />
+                </Button>
+              ) : null}
               {showSyncButton ? (
                 <button
                   type="button"

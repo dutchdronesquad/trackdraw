@@ -127,14 +127,31 @@ export function hasMeaningfulProjectContent(design: TrackDesign): boolean {
   );
 }
 
+// Ownership is global per project ID. A moved project must not re-enter personal
+// drafts, restore history or auto-promotion, including from another open tab.
+const MOVED_PROJECTS_KEY = "trackdraw.teamProjectIds";
+export function isMovedTeamProject(id: string): boolean {
+  return (readJson<string[]>(MOVED_PROJECTS_KEY) ?? []).includes(id);
+}
+export function forgetMovedProject(id: string): void {
+  const ids = readJson<string[]>(MOVED_PROJECTS_KEY) ?? [];
+  writeJson(MOVED_PROJECTS_KEY, [...new Set([...ids, id])]);
+  const draft = readJson<{ id?: string }>(LOCAL_DRAFT_KEY);
+  if (draft?.id === id) clearLocalDraft();
+  deleteProject(id);
+}
+
 export function saveLocalDraft(design: TrackDesign): LocalPersistenceResult {
+  if (isMovedTeamProject(design.id))
+    return { ok: false, error: new Error("Project belongs to a team") };
   return writeJson(LOCAL_DRAFT_KEY, serializeDesign(design));
 }
 
 export function loadLocalDraft(): TrackDesign | null {
   const raw = readJson<unknown>(LOCAL_DRAFT_KEY);
   if (!raw) return null;
-  return parseDesign(raw);
+  const design = parseDesign(raw);
+  return design && !isMovedTeamProject(design.id) ? design : null;
 }
 
 export function clearLocalDraft(): void {
@@ -146,7 +163,9 @@ export function clearLocalDraft(): void {
 // ---------------------------------------------------------------------------
 
 export function listProjects(): ProjectMeta[] {
-  return readJson<ProjectMeta[]>(PROJECT_LIST_KEY) ?? [];
+  return (readJson<ProjectMeta[]>(PROJECT_LIST_KEY) ?? []).filter(
+    (project) => !isMovedTeamProject(project.id)
+  );
 }
 
 /**
@@ -164,6 +183,9 @@ export function saveProjectWithResult(design: TrackDesign): SaveProjectResult {
     createdAt: design.createdAt,
     shapeCount,
   };
+
+  if (isMovedTeamProject(design.id))
+    return { meta, ok: false, error: new Error("Project belongs to a team") };
 
   const projectWrite = writeJson(`trackdraw-project-${design.id}`, serialized);
   if (!projectWrite.ok) {
@@ -194,7 +216,8 @@ export function saveProject(design: TrackDesign): ProjectMeta {
 export function loadProject(id: string): TrackDesign | null {
   const raw = readJson<unknown>(`trackdraw-project-${id}`);
   if (!raw) return null;
-  return parseDesign(raw);
+  const design = parseDesign(raw);
+  return design && !isMovedTeamProject(design.id) ? design : null;
 }
 
 export function deleteProject(id: string): void {
@@ -306,6 +329,7 @@ export function createRestorePoint(design: TrackDesign): RestorePointMeta {
     shapeCount: serialized.shapes.length,
   };
 
+  if (isMovedTeamProject(design.id)) return meta;
   writeJson(`trackdraw-restore-${id}`, serialized);
 
   const all = listRestorePoints();
@@ -331,7 +355,8 @@ export function createRestorePoint(design: TrackDesign): RestorePointMeta {
 export function loadRestorePoint(id: string): TrackDesign | null {
   const raw = readJson<unknown>(`trackdraw-restore-${id}`);
   if (!raw) return null;
-  return parseDesign(raw);
+  const design = parseDesign(raw);
+  return design && !isMovedTeamProject(design.id) ? design : null;
 }
 
 export function deleteRestorePoint(id: string): void {

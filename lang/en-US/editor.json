@@ -589,7 +589,8 @@
     "loading3d": "Loading 3D…",
     "portraitOnlyEyebrow": "Mobile editor",
     "portraitOnlyTitle": "Turn your phone upright",
-    "portraitOnlyDescription": "The TrackDraw editor is designed for portrait mode on mobile. Rotate your phone to continue editing."
+    "portraitOnlyDescription": "The TrackDraw editor is designed for portrait mode on mobile. Rotate your phone to continue editing.",
+    "privateTeamPreview": "Private team project"
   },
   "languagePicker": {
     "ariaLabel": "Language"
