@@ -131,7 +131,7 @@ export function ApiKeyProjectAccessSelector({
         collisionPadding={16}
         onClick={(event) => event.stopPropagation()}
         aria-label={t("label")}
-        className="border-border/70 flex max-h-[min(30rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
+        className="border-border/70 flex max-h-[min(34rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
       >
         <div className="shrink-0 space-y-2">
           <label htmlFor={ownerId} className="text-sm font-medium">
@@ -238,7 +238,7 @@ export function ApiKeyProjectAccessSelector({
                     onChange={(event) => setSearch(event.target.value)}
                   />
                 </div>
-                <div className="min-h-0 overflow-y-auto overscroll-contain">
+                <div className="h-60 min-h-0 overflow-y-auto overscroll-contain">
                   {status === "loading" ? (
                     <p role="status" className="py-2 text-xs">
                       {t("loading")}
