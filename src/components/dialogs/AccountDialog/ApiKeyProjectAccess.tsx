@@ -119,7 +119,7 @@ export function ApiKeyProjectAccessSelector({
           type="button"
           disabled={disabled}
           aria-label={t("label")}
-          className="border-input focus-visible:border-ring focus-visible:ring-ring/40 flex h-[34px] w-full min-w-0 items-center justify-between gap-2 rounded-lg border bg-transparent px-2.5 text-left text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
+          className="border-input focus-visible:border-ring focus-visible:ring-ring/40 flex h-9 w-full min-w-0 items-center justify-between gap-2 rounded-lg border bg-transparent px-2.5 text-left text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
         >
           <span className="truncate">
             {value.teamId

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Clipboard, LoaderCircle, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
@@ -23,6 +24,8 @@ import {
 } from "./shared";
 import type { AccountApiKey, CreatedAccountApiKey } from "./types";
 import { formatDate } from "./utils";
+
+const formRow = "grid gap-3 py-4 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-8";
 
 const desktopColumns =
   "grid-cols-[minmax(0,1fr)_14.5rem_8rem_5rem] max-[960px]:grid-cols-[minmax(0,1fr)_8rem_7rem_5rem]";
@@ -203,6 +206,8 @@ export function AccountApiKeysView({
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const [writeAccess, setWriteAccess] = useState(false);
+  const writeAccessId = useId();
+  const writeHintId = useId();
 
   if (isPending) return <AccountDialogLoading />;
   if (!user) return <AccountDialogNotSignedIn />;
@@ -237,7 +242,7 @@ export function AccountApiKeysView({
             event.preventDefault();
             void createKey();
           }}
-          className="space-y-5"
+          className="w-full max-w-3xl space-y-5"
         >
           <div>
             <h3 className="text-sm font-medium">
@@ -247,14 +252,16 @@ export function AccountApiKeysView({
               {t("account.apiKeys.form.description")}
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_11rem]">
-            <div className="min-w-0 sm:col-span-2">
-              <label
-                htmlFor="api-key-name"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("account.apiKeys.form.keyNameLabel")}
-              </label>
+          <div className="divide-border/60 border-border/60 divide-y border-y">
+            <div className={formRow}>
+              <div className="space-y-1">
+                <label htmlFor="api-key-name" className="text-sm font-medium">
+                  {t("account.apiKeys.form.keyNameLabel")}
+                </label>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {t("account.apiKeys.form.nameHint")}
+                </p>
+              </div>
               <Input
                 id="api-key-name"
                 autoFocus
@@ -264,34 +271,40 @@ export function AccountApiKeysView({
                 required
                 maxLength={64}
                 onChange={(event) => onApiKeyNameChange(event.target.value)}
-                className="h-10 rounded-lg px-3 text-sm shadow-none focus-visible:ring-2"
+                className="h-9 rounded-lg px-2.5 text-sm shadow-none focus-visible:ring-2"
                 placeholder={t("account.apiKeys.form.namePlaceholder")}
               />
             </div>
-            <div className="min-w-0">
-              <p className="mb-2 text-sm font-medium">
-                {t("account.apiKeys.access.label")}
-              </p>
+            <div className={formRow}>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">
+                  {t("account.apiKeys.access.label")}
+                </p>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {t(
+                    projectAccess.teamId
+                      ? "account.apiKeys.access.teamHint"
+                      : projectAccess.mode === "all"
+                        ? "account.apiKeys.access.allHint"
+                        : "account.apiKeys.access.selectedHint"
+                  )}
+                </p>
+              </div>
               <ApiKeyProjectAccessSelector
                 value={projectAccess}
                 onChange={onProjectAccessChange}
                 disabled={creatingApiKey}
               />
-              <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
-                {t(
-                  projectAccess.teamId
-                    ? "account.apiKeys.access.teamHint"
-                    : projectAccess.mode === "all"
-                      ? "account.apiKeys.access.allHint"
-                      : "account.apiKeys.access.selectedHint"
-                )}
-              </p>
             </div>
-
-            <div className="min-w-0">
-              <p className="mb-2 text-sm font-medium">
-                {tCommon("labels.expires")}
-              </p>
+            <div className={formRow}>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">
+                  {tCommon("labels.expires")}
+                </p>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {t("account.apiKeys.form.expiryHint")}
+                </p>
+              </div>
               <Select
                 value={apiKeyExpiryDays}
                 onValueChange={onApiKeyExpiryDaysChange}
@@ -299,7 +312,7 @@ export function AccountApiKeysView({
               >
                 <SelectTrigger
                   aria-label={tCommon("labels.expires")}
-                  className="border-input focus-visible:border-ring focus-visible:ring-ring/40 flex h-[34px] w-full items-center justify-between gap-2 rounded-lg border bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2"
+                  className="h-9 w-full rounded-lg shadow-none focus-visible:ring-2"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -314,23 +327,36 @@ export function AccountApiKeysView({
                 </SelectContent>
               </Select>
             </div>
-            <label className="flex items-start gap-2 text-sm sm:col-span-2">
-              <input
-                type="checkbox"
+            <div className="flex items-center justify-between gap-8 py-4">
+              <div className="min-w-0 space-y-1">
+                <label
+                  htmlFor={writeAccessId}
+                  className="cursor-pointer text-sm font-medium"
+                >
+                  {t("account.apiKeys.access.allowWrites")}
+                </label>
+                <p
+                  id={writeHintId}
+                  className="text-muted-foreground text-xs leading-relaxed"
+                >
+                  {t(
+                    projectAccess.mode === "selected"
+                      ? "account.apiKeys.access.selectedWriteHint"
+                      : "account.apiKeys.access.writeHint"
+                  )}
+                </p>
+              </div>
+              <Switch
+                id={writeAccessId}
+                className="data-[state=unchecked]:bg-muted-foreground/25"
+                aria-describedby={writeHintId}
                 checked={writeAccess}
                 disabled={creatingApiKey}
-                onChange={(event) => setWriteAccess(event.target.checked)}
-                className="accent-brand-primary mt-1"
+                onCheckedChange={setWriteAccess}
               />
-              <span>
-                {t("account.apiKeys.access.allowWrites")}
-                <span className="text-muted-foreground mt-1 block text-xs">
-                  {t("account.apiKeys.access.writeHint")}
-                </span>
-              </span>
-            </label>
+            </div>
           </div>
-          <div className="flex items-center justify-end gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
             <Button
               type="button"
               variant="ghost"

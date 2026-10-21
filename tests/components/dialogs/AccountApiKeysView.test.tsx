@@ -159,10 +159,10 @@ describe("compact API key settings", () => {
     const create = vi.fn(async () => false);
     renderView({ apiKeyName: "Integration", onCreateApiKey: create });
     const user = userEvent.setup();
-    const writes = screen.getByRole("checkbox", {
+    const writes = screen.getByRole("switch", {
       name: /Allow project changes/,
-    }) as HTMLInputElement;
-    expect(writes.checked).toBe(false);
+    });
+    expect(writes.getAttribute("aria-checked")).toBe("false");
     await user.click(writes);
     await user.click(screen.getByRole("button", { name: "Create key" }));
     expect(create).toHaveBeenCalledWith({ mode: "all" }, true);

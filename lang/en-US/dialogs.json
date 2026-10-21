@@ -153,6 +153,8 @@
     "apiKeys": {
       "form": {
         "keyNameLabel": "Key name",
+        "nameHint": "Use a name you can recognize later.",
+        "expiryHint": "Choose when this key stops working.",
         "expiryDays": "{days} days",
         "expiryYear": "1 year",
         "namePlaceholder": "Integration name",
@@ -214,7 +216,8 @@
         "teamHint": "Access follows your current team role. Leaving the team stops this key’s access.",
         "more": "Load more projects",
         "allowWrites": "Allow project changes",
-        "writeHint": "Allows creation, updates and archiving within this selection and your current role. Selected-project keys cannot create new projects.",
+        "writeHint": "Let this integration create, edit and archive projects within your access.",
+        "selectedWriteHint": "Let this integration edit and archive the selected projects.",
         "writable": "Can edit"
       },
       "newKey": "New API key",
