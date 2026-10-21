@@ -10,7 +10,12 @@ export const MCP_DEFAULT_SCOPES = [
   MCP_PROJECT_CREATE_SCOPE,
   MCP_PROJECT_UPDATE_SCOPE,
 ];
-export const MCP_OAUTH_SCOPES = [...MCP_DEFAULT_SCOPES, "offline_access"];
+export const MCP_TEAM_ACCESS_SCOPE = "teams:access";
+export const MCP_SUPPORTED_SCOPES = [
+  ...MCP_DEFAULT_SCOPES,
+  MCP_TEAM_ACCESS_SCOPE,
+];
+export const MCP_OAUTH_SCOPES = [...MCP_SUPPORTED_SCOPES, "offline_access"];
 
 export function getMcpResource(siteUrl: string = getSiteUrl()) {
   return new URL("/api/mcp", siteUrl).href;
@@ -67,7 +72,7 @@ export function getMcpDiscoveryResponse(
         authorization_servers: [base],
         bearer_methods_supported: ["header"],
         dpop_signing_alg_values_supported: dpopAlgorithms,
-        scopes_supported: MCP_DEFAULT_SCOPES,
+        scopes_supported: MCP_SUPPORTED_SCOPES,
       }
     : {
         scopes_supported: MCP_OAUTH_SCOPES,

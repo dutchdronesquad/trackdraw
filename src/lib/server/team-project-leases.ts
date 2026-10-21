@@ -1,6 +1,9 @@
 import "server-only";
 import { getDatabase } from "./db";
-import { projectAuthorizationPredicate } from "./project-authorization";
+import {
+  type ProjectActor,
+  projectAuthorizationPredicate,
+} from "./project-authorization";
 import { TeamProjectError } from "./team-project-error";
 import { getProjectForActor } from "./projects";
 import { getDesignShapes, serializeDesign } from "@/lib/track/design";
@@ -10,9 +13,16 @@ import type { ProjectEditor } from "@/lib/team-projects";
 // Evaluate expiry at statement execution, never against a request's earlier clock.
 const now = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
 const expiry = "strftime('%Y-%m-%dT%H:%M:%fZ','now','+90 seconds')";
-function access(userId: string, teamId: string) {
+function access(userId: string, teamId: string, actor?: ProjectActor) {
+  if (
+    actor &&
+    (actor.userId !== userId ||
+      actor.scope.kind !== "team" ||
+      actor.scope.teamId !== teamId)
+  )
+    throw new TeamProjectError("not_found");
   return projectAuthorizationPredicate(
-    { userId, scope: { kind: "team", teamId } },
+    actor ?? { userId, scope: { kind: "team", teamId } },
     "update"
   );
 }
@@ -34,10 +44,11 @@ export async function readProjectEditor(
 export async function acquireProjectLease(
   userId: string,
   teamId: string,
-  projectId: string
+  projectId: string,
+  actor?: ProjectActor
 ) {
   const db = await getDatabase();
-  const auth = access(userId, teamId);
+  const auth = access(userId, teamId, actor);
   const sessionId = crypto.randomUUID();
   const lease = await db
     .prepare(
@@ -51,10 +62,10 @@ export async function acquireProjectLease(
     .first<{ sessionId: string; expiresAt: string }>();
   if (!lease) throw new TeamProjectError("lease_unavailable", 409);
   // No client draft is accepted during acquisition. Every new lease loads server state.
-  const project = await getProjectForActor(projectId, {
-    userId,
-    scope: { kind: "team", teamId },
-  });
+  const project = await getProjectForActor(
+    projectId,
+    actor ?? { userId, scope: { kind: "team", teamId } }
+  );
   if (!project) throw new TeamProjectError("not_found");
   return { lease, project };
 }
@@ -62,10 +73,11 @@ export async function renewProjectLease(
   userId: string,
   teamId: string,
   projectId: string,
-  sessionId: string
+  sessionId: string,
+  actor?: ProjectActor
 ) {
   const db = await getDatabase();
-  const auth = access(userId, teamId);
+  const auth = access(userId, teamId, actor);
   const lease = await db
     .prepare(
       `UPDATE project_edit_leases SET expires_at=${expiry}
@@ -99,11 +111,12 @@ export async function saveTeamProject(
   projectId: string,
   sessionId: string,
   revision: number,
-  design: TrackDesign
+  design: TrackDesign,
+  actor?: ProjectActor
 ) {
   if (design.id !== projectId) throw new TeamProjectError("invalid", 400);
   const db = await getDatabase();
-  const auth = access(userId, teamId);
+  const auth = access(userId, teamId, actor);
   const saved = await db
     .prepare(
       `UPDATE projects SET title=?,description=?,design_json=?,field_width=?,field_height=?,shape_count=?,updated_at=${now},revision=revision+1
@@ -127,7 +140,7 @@ export async function saveTeamProject(
     .first<{ revision: number }>();
   if (!saved) {
     // Classify without ever retrying or forcing a failed compare-and-swap.
-    await renewProjectLease(userId, teamId, projectId, sessionId);
+    await renewProjectLease(userId, teamId, projectId, sessionId, actor);
     throw new TeamProjectError("conflict", 409);
   }
   return saved;

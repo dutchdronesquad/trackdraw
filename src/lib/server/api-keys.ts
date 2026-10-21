@@ -140,6 +140,7 @@ export async function createApiKeyForSession(options: {
   name: string;
   expiresInDays: ApiKeyExpiryDays;
   projectAccess?: ApiKeyProjectAccess;
+  writeAccess?: boolean;
 }) {
   const auth = await getAuth();
   return auth.api.createApiKey({
@@ -148,6 +149,14 @@ export async function createApiKeyForSession(options: {
       name: options.name,
       expiresIn: options.expiresInDays * 24 * 60 * 60,
       metadata: { projectAccess: options.projectAccess ?? { mode: "all" } },
+      ...(options.writeAccess
+        ? {
+            permissions: {
+              tracks: ["read"],
+              projects: ["create", "update", "archive"],
+            },
+          }
+        : {}),
     },
   });
 }
@@ -160,6 +169,29 @@ export async function getApiKeyForSession(options: {
   return auth.api.getApiKey({
     headers: options.headers,
     query: { id: options.keyId },
+  });
+}
+
+/** Update metadata only; Better Auth enforces session ownership and retains the key hash. */
+export async function updateApiKeyProjectAccessForSession(options: {
+  headers: Headers;
+  keyId: string;
+  projectAccess: ApiKeyProjectAccess;
+  metadata: unknown;
+}) {
+  const auth = await getAuth();
+  const metadata =
+    options.metadata &&
+    typeof options.metadata === "object" &&
+    !Array.isArray(options.metadata)
+      ? options.metadata
+      : {};
+  return auth.api.updateApiKey({
+    headers: options.headers,
+    body: {
+      keyId: options.keyId,
+      metadata: { ...metadata, projectAccess: options.projectAccess },
+    },
   });
 }
 

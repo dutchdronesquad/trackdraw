@@ -88,7 +88,9 @@ async function call(name: string, args: Record<string, unknown> = {}) {
 }
 async function data(name: string, args: Record<string, unknown> = {}) {
   const response = await call(name, args);
-  expect(response.isError).not.toBe(true);
+  expect(response.isError, JSON.stringify(response.structuredContent)).not.toBe(
+    true
+  );
   return z.record(z.string(), z.unknown()).parse(response.structuredContent);
 }
 beforeEach(async () => {
@@ -716,5 +718,122 @@ describe("owned project MCP tools with real persistence, serializers and SDK", (
       error: { code: "unavailable" },
     });
     expect(JSON.stringify(r)).not.toContain("private malformed");
+  });
+});
+
+describe("explicit team MCP consent with real SDK and SQL", () => {
+  function team() {
+    sqlite.exec(
+      "INSERT INTO teams(id,name,slug,createdAt) VALUES('club','Club','club','2026'); INSERT INTO team_members(id,organizationId,userId,role,createdAt) VALUES('member','club','owner','editor','2026')"
+    );
+    save("team-race");
+    sqlite.exec(
+      "UPDATE projects SET owner_user_id=NULL,owner_team_id='club' WHERE id='team-race'"
+    );
+  }
+  function consent() {
+    scopes =
+      "mcp:read projects:read projects:create projects:update teams:access";
+    sqlite
+      .prepare("UPDATE oauthConsent SET scopes=?")
+      .run(JSON.stringify(scopes.split(" ")));
+  }
+  it("requires token and live consent, then uses explicit team context for every representation", async () => {
+    team();
+    expect(
+      (await call("get_project", { project_id: "team-race", team_id: "club" }))
+        .structuredContent
+    ).toMatchObject({ error: { code: "team_consent_required" } });
+    scopes += " teams:access";
+    await expect(client.listTools()).rejects.toThrow();
+    consent();
+    expect((await client.listTools()).tools.map((t) => t.name)).toContain(
+      "list_teams"
+    );
+    expect(await data("list_teams")).toMatchObject({
+      teams: [{ id: "club", name: "Club", role: "editor" }],
+    });
+    expect(await data("list_projects")).toMatchObject({ data: [] });
+    for (const name of [
+      "get_project",
+      "get_track",
+      "get_overlay",
+      "get_viewer_snapshot",
+    ]) {
+      expect(
+        (await call(name, { project_id: "team-race" })).structuredContent
+      ).toMatchObject({ error: { code: "not_found" } });
+      expect(
+        (await call(name, { project_id: "team-race", team_id: "club" })).isError
+      ).not.toBe(true);
+    }
+    sqlite.exec("DELETE FROM team_members WHERE userId='owner'");
+    expect(await data("list_teams")).toMatchObject({ teams: [] });
+    expect(
+      (await call("get_project", { project_id: "team-race", team_id: "club" }))
+        .structuredContent
+    ).toMatchObject({ error: { code: "not_found" } });
+  });
+  it("creates team projects idempotently and applies reviewed proposals with live permissions", async () => {
+    team();
+    consent();
+    const proposal = {
+      version: 2,
+      title: "Team draft",
+      constraints: {
+        field: { width: 30, height: 20 },
+        inventory: {
+          gate: 2,
+          ladder: 0,
+          divegate: 0,
+          tower: 0,
+          startfinish: 0,
+          flag: 0,
+          cone: 0,
+          barrier: 0,
+        },
+      },
+      shapes: [{ ...gate, x: 10, y: 10 }],
+    };
+    const args = { team_id: "club", idempotency_key: "team-create", proposal };
+    const first = await data("create_track", args);
+    expect(first.studio_url).toEqual(
+      expect.stringContaining("teamId=club&teamProject=")
+    );
+    expect(await data("create_track", args)).toMatchObject({
+      project_id: first.project_id,
+      replayed: true,
+    });
+    const stored = sqlite
+      .prepare("SELECT owner_team_id,owner_user_id FROM projects WHERE id=?")
+      .get(String(first.project_id));
+    expect(stored).toMatchObject({
+      owner_team_id: "club",
+      owner_user_id: null,
+    });
+    const metadata = await data("get_project", {
+      project_id: "team-race",
+      team_id: "club",
+    });
+    const preview = await data("preview_track_edit", {
+      team_id: "club",
+      project_id: "team-race",
+      base_revision: (metadata.project as { revision: number }).revision,
+      changes: [{ shape_id: "gate", patch: { x: 8 } }],
+    });
+    const apply = {
+      team_id: "club",
+      project_id: "team-race",
+      base_revision: (metadata.project as { revision: number }).revision,
+      proposal_id: preview.proposal_id,
+    };
+    sqlite.exec("UPDATE team_members SET role='viewer' WHERE userId='owner'");
+    expect(
+      (await call("apply_track_edit", apply)).structuredContent
+    ).toMatchObject({ error: { code: "not_found" } });
+    sqlite.exec("UPDATE team_members SET role='editor' WHERE userId='owner'");
+    expect(await data("apply_track_edit", apply)).toMatchObject({
+      revision: Number((metadata.project as { revision: number }).revision) + 1,
+    });
   });
 });

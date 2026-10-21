@@ -10,6 +10,8 @@ import {
   routeContext,
 } from "../../../helpers/api-routes";
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/lib/server/api-keys", () => ({
   trackReadPermission: { tracks: ["read"] },
 }));
@@ -44,7 +46,8 @@ vi.mock("@/lib/server/api-v1", () => ({
   ),
 }));
 
-vi.mock("@/lib/server/projects", () => ({
+vi.mock("@/lib/server/projects", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/server/projects")>()),
   getProjectForUser: vi.fn(),
   listProjectSummariesForUser: vi.fn(),
 }));
@@ -86,6 +89,7 @@ import { trackReadPermission } from "@/lib/server/api-keys";
 import {
   getProjectForUser,
   listProjectSummariesForUser,
+  ProjectCursorError,
 } from "@/lib/server/projects";
 import {
   toApiOverlayPackage,
@@ -143,9 +147,13 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(listProjectSummariesForUser).toHaveBeenCalledWith("user-1", {
-      mode: "all",
-    });
+    expect(listProjectSummariesForUser).toHaveBeenCalledWith(
+      "user-1",
+      {
+        mode: "all",
+      },
+      { limit: 101, afterId: undefined }
+    );
     expect(vi.mocked(toApiProjectSummaryLight).mock.calls[0]?.[0]).toBe(
       summary
     );
@@ -194,13 +202,18 @@ describe("v1 project API routes", () => {
   });
 
   it("resumes from a cursor with no overlap or gap across pages", async () => {
-    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
-      makeProjectSummary("project-1"),
-      makeProjectSummary("project-2"),
-      makeProjectSummary("project-3"),
-      makeProjectSummary("project-4"),
-      makeProjectSummary("project-5"),
-    ]);
+    vi.mocked(listProjectSummariesForUser)
+      .mockResolvedValueOnce([
+        makeProjectSummary("project-1"),
+        makeProjectSummary("project-2"),
+        makeProjectSummary("project-3"),
+      ])
+      .mockResolvedValueOnce([
+        makeProjectSummary("project-3"),
+        makeProjectSummary("project-4"),
+        makeProjectSummary("project-5"),
+      ])
+      .mockResolvedValueOnce([makeProjectSummary("project-5")]);
 
     const page1 = await projectsRoute.GET(
       new Request("http://localhost/api/v1/projects?limit=2")
@@ -255,9 +268,9 @@ describe("v1 project API routes", () => {
   });
 
   it("returns 400 for a cursor whose project id is no longer in the list", async () => {
-    vi.mocked(listProjectSummariesForUser).mockResolvedValue([
-      makeProjectSummary("project-1"),
-    ]);
+    vi.mocked(listProjectSummariesForUser).mockRejectedValue(
+      new ProjectCursorError()
+    );
 
     const response = await projectsRoute.GET(
       new Request(
@@ -291,6 +304,7 @@ describe("v1 project API routes", () => {
         id: "project-1",
         title: "Race layout",
         shape_count: 0,
+        revision: 1,
       },
       meta: { api_version: "v1" },
     });

@@ -313,3 +313,5 @@ See [Obstacle appearances](docs/obstacle-appearances.md) for registry selection,
 See [Transparent 3D export](docs/transparent-3d-export.md) for the shared camera/floor conventions and the standalone Chromium check for PNG alpha, texture readiness, compositing and camera preservation.
 
 See [API-key project access](docs/api-key-project-access.md) for all-project and selected-project authorization, legacy compatibility and integration behavior.
+
+Team integration changes require local migrations through `0034_team_integration_context.sql`. Validate individual key selection, live membership changes, optional MCP team consent and cross-transport lease exclusion with `tests/lib/server/team-integrations.test.ts` and the real SDK route tests before exercising Cloudflare preview. Existing personal grants must remain personal.

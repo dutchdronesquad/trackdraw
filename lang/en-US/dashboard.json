@@ -209,7 +209,8 @@
       "galleryEntryRestored": "Entry restored",
       "galleryEntryDeleted": "Entry deleted",
       "signedUp": "Signed up",
-      "system": "System"
+      "system": "System",
+      "apiKeyAccessUpdated": "API key project access updated"
     },
     "relativeTime": {
       "minutes": "{count}m ago",
@@ -1433,7 +1434,8 @@
       "sharePublished": "Share published",
       "shareRevoked": "Share revoked",
       "sharePurged": "Share permanently deleted",
-      "metricsMaintenanceCompleted": "Metrics maintenance completed"
+      "metricsMaintenanceCompleted": "Metrics maintenance completed",
+      "apiKeyAccessUpdated": "API key project access updated"
     },
     "entityLabels": {
       "accountRole": "Account role",

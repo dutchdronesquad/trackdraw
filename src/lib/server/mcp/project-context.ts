@@ -1,11 +1,28 @@
 import "server-only";
+import type { ProjectActor } from "@/lib/server/project-authorization";
+import { TeamProjectError } from "@/lib/server/team-project-error";
 import { z } from "zod";
 import { getDesignShapes } from "@/lib/track/design";
 import {
   getProjectForUser,
+  getProjectForActor,
   ProjectCursorError,
   type StoredProject,
 } from "@/lib/server/projects";
+
+export function mcpTeamActor(
+  userId: string,
+  teamId: string | undefined,
+  consent: boolean
+): ProjectActor | undefined {
+  if (!teamId) return undefined;
+  if (!consent)
+    throw new ProjectToolError(
+      "team_consent_required",
+      "Reconnect with teams:access consent, then explicitly select team_id. Personal access is unchanged."
+    );
+  return { userId, scope: { kind: "team", teamId } };
+}
 
 export const projectId = z.string().trim().min(1).max(128);
 export const annotations = {
@@ -42,19 +59,27 @@ export async function execute(run: () => Promise<Record<string, unknown>>) {
   } catch (error) {
     const known = error instanceof ProjectToolError;
     const invalidCursor = error instanceof ProjectCursorError;
+    const teamError = error instanceof TeamProjectError;
     const failure = result({
       error: {
         ...(known && error.issues ? { issues: error.issues } : {}),
-        code: known
-          ? error.code
-          : invalidCursor
-            ? "invalid_cursor"
-            : "unavailable",
-        message: known
-          ? error.message
-          : invalidCursor
-            ? "The list cursor is unavailable. Restart list_projects without a cursor."
-            : "Project data is temporarily unavailable. Retry the request.",
+        code:
+          known || teamError
+            ? error.code
+            : invalidCursor
+              ? "invalid_cursor"
+              : "unavailable",
+        message: teamError
+          ? error.code === "lease_unavailable"
+            ? "Project is locked. Finish the other session or retry after expiry."
+            : error.code === "conflict"
+              ? "Read the current revision and preview a new proposal."
+              : "Project or editing session is unavailable. Recheck access and start a new session."
+          : known
+            ? error.message
+            : invalidCursor
+              ? "The list cursor is unavailable. Restart list_projects without a cursor."
+              : "Project data is temporarily unavailable. Retry the request.",
       },
     });
     // Error content is outside the successful structured output contract. SDK
@@ -62,8 +87,14 @@ export async function execute(run: () => Promise<Record<string, unknown>>) {
     return { isError: true, content: failure.content };
   }
 }
-export async function ownedProject(id: string, userId: string) {
-  const project = await getProjectForUser(id, userId);
+export async function ownedProject(
+  id: string,
+  userId: string,
+  actor?: ProjectActor
+) {
+  const project = actor
+    ? await getProjectForActor(id, actor)
+    : await getProjectForUser(id, userId);
   if (!project)
     throw new ProjectToolError(
       "not_found",
@@ -72,7 +103,9 @@ export async function ownedProject(id: string, userId: string) {
   return project;
 }
 
-export function assertDerivedDesign(project: StoredProject) {
+export function assertDerivedDesign(
+  project: Omit<StoredProject, "ownerUserId">
+) {
   if (
     new TextEncoder().encode(JSON.stringify(project.design)).byteLength >
       524_288 ||

@@ -11,6 +11,7 @@ import {
   MCP_PROJECT_CREATE_SCOPE,
   MCP_PROJECT_UPDATE_SCOPE,
   MCP_READ_SCOPE,
+  MCP_TEAM_ACCESS_SCOPE,
   getMcpIssuer,
   getMcpResource,
 } from "./oauth-metadata";
@@ -91,7 +92,8 @@ export async function authenticateMcpRequest(request: Request) {
       AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)
       AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:read'))
       AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:create'))
-      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:update')))
+      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'projects:update'))
+      AND (? = 0 OR EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = 'teams:access')))
   `
     )
     .bind(
@@ -100,7 +102,8 @@ export async function authenticateMcpRequest(request: Request) {
       getMcpResource(),
       scopes.includes(MCP_PROJECT_READ_SCOPE) ? 1 : 0,
       scopes.includes(MCP_PROJECT_CREATE_SCOPE) ? 1 : 0,
-      scopes.includes(MCP_PROJECT_UPDATE_SCOPE) ? 1 : 0
+      scopes.includes(MCP_PROJECT_UPDATE_SCOPE) ? 1 : 0,
+      scopes.includes(MCP_TEAM_ACCESS_SCOPE) ? 1 : 0
     )
     .first<{ id: string; name: string | null; lastActiveAt: string | null }>();
   if (!user)
@@ -160,6 +163,9 @@ export async function authenticateMcpRequest(request: Request) {
       user,
       {
         mcp: ["read"],
+        ...(scopes.includes(MCP_TEAM_ACCESS_SCOPE)
+          ? { teams: ["access"] }
+          : {}),
         projects: [
           ...(scopes.includes(MCP_PROJECT_CREATE_SCOPE) ? ["create"] : []),
           ...(scopes.includes(MCP_PROJECT_UPDATE_SCOPE) ? ["update"] : []),

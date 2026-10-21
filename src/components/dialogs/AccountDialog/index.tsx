@@ -85,6 +85,11 @@ export default function AccountDialog({
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
   const [deletingApiKeyId, setDeletingApiKeyId] = useState<string | null>(null);
+  const [apiKeyEditDraft, setApiKeyEditDraft] = useState<{
+    keyId: string;
+    projectAccess: ApiKeyProjectAccess;
+  } | null>(null);
+  const [updatingApiKey, setUpdatingApiKey] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -115,6 +120,7 @@ export default function AccountDialog({
     setCreatingApiKey(false);
     setCreatedApiKey(null);
     setDeletingApiKeyId(null);
+    setApiKeyEditDraft(null);
     setView(initialView);
   }, [initialView, open, user?.email, user?.name]);
 
@@ -409,7 +415,10 @@ export default function AccountDialog({
     setError(null);
   };
 
-  const handleCreateApiKey = async (projectAccess: ApiKeyProjectAccess) => {
+  const handleCreateApiKey = async (
+    projectAccess: ApiKeyProjectAccess,
+    writeAccess = false
+  ) => {
     const name = apiKeyName.trim();
     if (!name) {
       setError(t("account.errors.apiKeyNameRequired"));
@@ -430,6 +439,7 @@ export default function AccountDialog({
           name,
           expiresInDays: Number.parseInt(apiKeyExpiryDays, 10),
           projectAccess,
+          ...(writeAccess ? { writeAccess: true } : {}),
         }),
       });
       const payload = (await response.json()) as {
@@ -459,6 +469,44 @@ export default function AccountDialog({
       return false;
     } finally {
       setCreatingApiKey(false);
+    }
+  };
+
+  const handleUpdateApiKeyAccess = async (
+    keyId: string,
+    projectAccess: ApiKeyProjectAccess
+  ) => {
+    setUpdatingApiKey(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/account/api-keys/${encodeURIComponent(keyId)}`,
+        {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ projectAccess }),
+        }
+      );
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        apiKey?: AccountApiKey;
+      };
+      if (!response.ok || !payload.ok || !payload.apiKey) throw new Error();
+      const updated = payload.apiKey;
+      setApiKeys((current) =>
+        current.map((item) => (item.id === keyId ? updated : item))
+      );
+      setCreatedApiKey((current) =>
+        current?.id === keyId ? { ...current, ...updated } : current
+      );
+      toast.success(t("account.success.apiKeyAccessUpdated"));
+      return true;
+    } catch {
+      setError(t("account.errors.apiKeyUpdateFailed"));
+      return false;
+    } finally {
+      setUpdatingApiKey(false);
     }
   };
 
@@ -592,6 +640,13 @@ export default function AccountDialog({
       onApiKeyNameChange={setApiKeyName}
       onApiKeyExpiryDaysChange={setApiKeyExpiryDays}
       onCreateApiKey={handleCreateApiKey}
+      onUpdateApiKeyAccess={handleUpdateApiKeyAccess}
+      editDraft={apiKeyEditDraft}
+      onEditDraftChange={(draft) => {
+        setApiKeyEditDraft(draft);
+        setError(null);
+      }}
+      updatingApiKey={updatingApiKey}
       onCopyApiKey={(key) => void handleCopyApiKey(key)}
       onDeleteApiKey={(keyId) => void handleDeleteApiKey(keyId)}
       onRefreshApiKeys={refreshApiKeys}

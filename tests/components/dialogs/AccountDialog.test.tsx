@@ -144,7 +144,7 @@ it("keeps restricted project access when the responsive dialog remounts its cont
     "Integration"
   );
   await user.click(screen.getByRole("button", { name: "Project access" }));
-  await user.click(screen.getByRole("radio", { name: "Selected" }));
+  await user.click(screen.getByRole("tab", { name: "Selected" }));
   await user.click(await screen.findByRole("checkbox", { name: "Race night" }));
   await user.keyboard("{Escape}");
   for (const mobile of [true, false]) {

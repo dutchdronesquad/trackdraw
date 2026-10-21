@@ -12,12 +12,25 @@ import {
 import { shapeFitsField } from "@/lib/track/field-bounds";
 import { DRAFT_UNVALIDATED_CONSTRAINTS } from "@/lib/track/draft";
 import { getDatabase } from "./db";
-import { getProjectForUser, type StoredProject } from "./projects";
+import {
+  getProjectForUser,
+  getProjectForActor,
+  type StoredProject,
+} from "./projects";
 import {
   ProjectToolError,
   assertDerivedDesign,
   MCP_MAX_RESULT_BYTES,
 } from "./mcp/project-context";
+
+import {
+  type ProjectActor,
+  projectAuthorizationPredicate,
+} from "./project-authorization";
+import {
+  acquireProjectLease,
+  releaseProjectLease,
+} from "./team-project-leases";
 
 const patch = z
   .strictObject({
@@ -55,9 +68,12 @@ type EditRow = {
   expires_at: string;
   applied_at: string | null;
   applied_revision: number | null;
+  team_id: string | null;
 };
-async function owned(projectId: string, userId: string) {
-  const project = await getProjectForUser(projectId, userId);
+async function owned(projectId: string, userId: string, actor?: ProjectActor) {
+  const project = actor
+    ? await getProjectForActor(projectId, actor, "update")
+    : await getProjectForUser(projectId, userId);
   if (!project)
     throw new ProjectToolError(
       "not_found",
@@ -71,7 +87,7 @@ function conflict() {
     "The project changed. Read its current revision and preview a new proposal before applying."
   );
 }
-function snapshot(project: StoredProject): Snapshot {
+function snapshot(project: Omit<StoredProject, "ownerUserId">): Snapshot {
   return {
     title: project.title,
     description: project.description,
@@ -87,14 +103,18 @@ export async function previewProjectEdit(
   userId: string,
   projectId: string,
   baseRevision: number,
-  input: { changes?: unknown; restoreVersionId?: string }
+  input: { changes?: unknown; restoreVersionId?: string },
+  actor?: ProjectActor
 ) {
   if (Boolean(input.changes) === Boolean(input.restoreVersionId))
     throw invalid("Provide changes or restoreVersionId, exclusively.");
-  const project = await owned(projectId, userId);
+  const project = await owned(projectId, userId, actor);
   if (project.revision !== baseRevision) throw conflict();
   assertDerivedDesign(project);
   const db = await getDatabase();
+  const scope = actor ?? { userId, scope: { kind: "personal" as const } };
+  const teamId = scope.scope.kind === "team" ? scope.scope.teamId : null;
+  const guard = projectAuthorizationPredicate(scope, "update");
   const before = snapshot(project);
   let after = structuredClone(before);
   let design = normalizeDesign(after.design);
@@ -102,9 +122,9 @@ export async function previewProjectEdit(
   if (input.restoreVersionId) {
     const version = await db
       .prepare(
-        "SELECT before_json FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=? AND applied_at IS NOT NULL"
+        "SELECT before_json FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=? AND applied_at IS NOT NULL AND team_id IS ?"
       )
-      .bind(input.restoreVersionId, userId, projectId)
+      .bind(input.restoreVersionId, userId, projectId, teamId)
       .first<{ before_json: string }>();
     if (!version)
       throw new ProjectToolError(
@@ -215,8 +235,8 @@ export async function previewProjectEdit(
     .run();
   const inserted = await db
     .prepare(
-      `INSERT INTO mcp_project_edits(id,user_id,project_id,base_revision,before_json,after_json,changes_json,created_at,expires_at)
-    SELECT ?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM mcp_project_edits WHERE user_id=? AND applied_at IS NULL)<20 RETURNING id`
+      `INSERT INTO mcp_project_edits(id,user_id,project_id,base_revision,before_json,after_json,changes_json,created_at,expires_at,team_id)
+    SELECT ?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL AND revision=? AND ${guard.sql}) AND (SELECT COUNT(*) FROM mcp_project_edits WHERE user_id=? AND applied_at IS NULL)<20 RETURNING id`
     )
     .bind(
       id,
@@ -228,14 +248,21 @@ export async function previewProjectEdit(
       JSON.stringify(changes),
       now,
       expires,
+      teamId,
+      projectId,
+      baseRevision,
+      ...guard.bindings,
       userId
     )
     .first();
-  if (!inserted)
+  if (!inserted) {
+    const latest = await owned(projectId, userId, actor);
+    if (latest.revision !== baseRevision) throw conflict();
     throw new ProjectToolError(
       "proposal_limit",
       "There are too many pending proposals. Apply one or wait for it to expire."
     );
+  }
   return result;
 }
 
@@ -243,15 +270,19 @@ export async function applyProjectEdit(
   userId: string,
   projectId: string,
   proposalId: string,
-  baseRevision: number
+  baseRevision: number,
+  actor?: ProjectActor
 ) {
-  await owned(projectId, userId);
+  await owned(projectId, userId, actor);
+  const scope = actor ?? { userId, scope: { kind: "personal" as const } };
+  const teamId = scope.scope.kind === "team" ? scope.scope.teamId : null;
+  const guard = projectAuthorizationPredicate(scope, "update");
   const db = await getDatabase();
   const proposal = await db
     .prepare(
-      "SELECT * FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=?"
+      "SELECT * FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=? AND team_id IS ?"
     )
-    .bind(proposalId, userId, projectId)
+    .bind(proposalId, userId, projectId, teamId)
     .first<EditRow>();
   if (!proposal)
     throw new ProjectToolError("not_found", "Edit proposal not found.");
@@ -266,35 +297,46 @@ export async function applyProjectEdit(
       );
     const after = JSON.parse(proposal.after_json) as Snapshot;
     const design = normalizeDesign(after.design);
-    const results = await db.batch([
-      db
-        .prepare(
-          `UPDATE projects SET title=?,description=?,design_json=?,field_width=?,field_height=?,shape_count=?,updated_at=?,revision=revision+1
-        WHERE id=? AND owner_user_id=? AND owner_team_id IS NULL AND archived_at IS NULL AND revision=?
+    const acquired = teamId
+      ? await acquireProjectLease(userId, teamId, projectId, scope)
+      : null;
+    let results;
+    try {
+      results = await db.batch([
+        db
+          .prepare(
+            `UPDATE projects SET title=?,description=?,design_json=?,field_width=?,field_height=?,shape_count=?,updated_at=?,revision=revision+1
+        WHERE id=? AND ${guard.sql} AND archived_at IS NULL AND revision=?
+        ${acquired ? "AND EXISTS(SELECT 1 FROM project_edit_leases WHERE project_id=projects.id AND user_id=? AND session_id=? AND expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now'))" : ""}
         AND EXISTS(SELECT 1 FROM mcp_project_edits WHERE id=? AND user_id=? AND project_id=? AND applied_at IS NULL AND expires_at>?) RETURNING id`
-        )
-        .bind(
-          after.title,
-          after.description,
-          JSON.stringify(after.design),
-          design.field.width,
-          design.field.height,
-          getDesignShapes(design).length,
-          now,
-          projectId,
-          userId,
-          baseRevision,
-          proposalId,
-          userId,
-          projectId,
-          now
-        ),
-      db
-        .prepare(
-          "UPDATE mcp_project_edits SET applied_at=?,applied_revision=base_revision+1 WHERE id=? AND user_id=? AND applied_at IS NULL AND changes()=1"
-        )
-        .bind(now, proposalId, userId),
-    ]);
+          )
+          .bind(
+            after.title,
+            after.description,
+            JSON.stringify(after.design),
+            design.field.width,
+            design.field.height,
+            getDesignShapes(design).length,
+            now,
+            projectId,
+            ...guard.bindings,
+            baseRevision,
+            ...(acquired ? [userId, acquired.lease.sessionId] : []),
+            proposalId,
+            userId,
+            projectId,
+            now
+          ),
+        db
+          .prepare(
+            "UPDATE mcp_project_edits SET applied_at=?,applied_revision=base_revision+1 WHERE id=? AND user_id=? AND applied_at IS NULL AND changes()=1"
+          )
+          .bind(now, proposalId, userId),
+      ]);
+    } finally {
+      if (acquired)
+        await releaseProjectLease(userId, projectId, acquired.lease.sessionId);
+    }
     wasApplied = results[0].results.length === 0;
   }
   const applied = await db
@@ -311,23 +353,25 @@ export async function applyProjectEdit(
     revision: applied.applied_revision,
     previous_version_id: proposalId,
     replayed: wasApplied,
-    current_revision: (await owned(projectId, userId)).revision,
+    current_revision: (await owned(projectId, userId, actor)).revision,
   };
 }
 
 export async function listProjectVersions(
   userId: string,
   projectId: string,
-  before?: number
+  before?: number,
+  actor?: ProjectActor
 ) {
-  await owned(projectId, userId);
+  await owned(projectId, userId, actor);
+  const teamId = actor?.scope.kind === "team" ? actor.scope.teamId : null;
   const db = await getDatabase();
   const rows = await db
     .prepare(
       `SELECT id,base_revision,applied_revision,applied_at FROM mcp_project_edits
-    WHERE user_id=? AND project_id=? AND applied_at IS NOT NULL AND (? IS NULL OR applied_revision<?) ORDER BY applied_revision DESC LIMIT 21`
+    WHERE user_id=? AND project_id=? AND team_id IS ? AND applied_at IS NOT NULL AND (? IS NULL OR applied_revision<?) ORDER BY applied_revision DESC LIMIT 21`
     )
-    .bind(userId, projectId, before ?? null, before ?? null)
+    .bind(userId, projectId, teamId, before ?? null, before ?? null)
     .all<{
       id: string;
       base_revision: number;

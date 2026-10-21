@@ -1,4 +1,5 @@
 import "server-only";
+import { apiKeyProjectAccess } from "@/lib/api/project-access";
 
 import {
   normalizeApiKeyPermissions,
@@ -20,9 +21,12 @@ export function toAccountIdentitySummary(
 }
 
 export function toApiIdentitySummary(identity: ApiIdentity) {
-  return toAccountIdentitySummary(
-    identity.user,
-    normalizeApiKeyPermissions(identity.key.permissions),
-    identity.key.expiresAt ?? null
-  );
+  return {
+    ...toAccountIdentitySummary(
+      identity.user,
+      normalizeApiKeyPermissions(identity.key.permissions),
+      identity.key.expiresAt ?? null
+    ),
+    project_access: apiKeyProjectAccess(identity.key.metadata),
+  };
 }

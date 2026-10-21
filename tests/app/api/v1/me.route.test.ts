@@ -64,6 +64,7 @@ describe("v1 me API route", () => {
     await expect(response.json()).resolves.toEqual({
       data: {
         type: "api_identity",
+        project_access: { mode: "all" },
         account: {
           id: "user-1",
           name: "Race Director",
