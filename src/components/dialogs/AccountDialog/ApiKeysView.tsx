@@ -242,7 +242,7 @@ export function AccountApiKeysView({
             event.preventDefault();
             void createKey();
           }}
-          className="w-full max-w-3xl space-y-5"
+          className="w-full space-y-5"
         >
           <div>
             <h3 className="text-sm font-medium">
