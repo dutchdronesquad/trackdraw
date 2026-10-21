@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import { renderMcpCallbackPage } from "./mcp-callback-page.mjs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import {
@@ -89,6 +90,12 @@ const provider = {
 const server = createServer((request, response) => {
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("Referrer-Policy", "no-referrer");
+  response.setHeader("Content-Type", "text/html; charset=utf-8");
+  response.setHeader("X-Content-Type-Options", "nosniff");
+  response.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+  );
   const url = new URL(request.url, redirectUrl);
   const suppliedState = Buffer.from(url.searchParams.get("state") ?? "");
   const expectedState = Buffer.from(state);
@@ -101,20 +108,16 @@ const server = createServer((request, response) => {
     !registration?.issuer ||
     url.searchParams.get("iss") !== registration.issuer
   ) {
-    response.writeHead(400).end("Invalid authorization callback.");
+    response.writeHead(400).end(renderMcpCallbackPage("invalid"));
     return;
   }
   const code = url.searchParams.get("code");
   if (!code || url.searchParams.has("error")) {
-    response
-      .writeHead(403)
-      .end("TrackDraw connection declined. You can close this window.");
+    response.writeHead(403).end(renderMcpCallbackPage("declined"));
     rejectCallback(new Error("Authorization declined"));
     return;
   }
-  response
-    .writeHead(200, { "Content-Type": "text/plain; charset=utf-8" })
-    .end("TrackDraw connection approved. You can close this window.");
+  response.writeHead(200).end(renderMcpCallbackPage("approved"));
   resolveCallback(code);
 });
 const client = new Client({ name: "trackdraw-smoke", version: "1.0.0" });
