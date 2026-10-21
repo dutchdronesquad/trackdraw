@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Select,
@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -30,12 +32,10 @@ export function ApiKeyProjectAccessSelector({
   disabled?: boolean;
 }) {
   const t = useTranslations("dialogs.account.apiKeys.access");
-  const radioName = useId();
+  const ownerId = useId();
   const requestGeneration = useRef(0);
   const [loadingMore, setLoadingMore] = useState(false);
-  const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
-  const [boundary, setBoundary] = useState<Element | null>(null);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [projects, setProjects] = useState<ProjectChoice[]>([]);
@@ -102,11 +102,6 @@ export function ApiKeyProjectAccessSelector({
     <Popover
       open={open}
       onOpenChange={(nextOpen) => {
-        setBoundary(
-          trigger.current?.closest(
-            '[data-slot="sidebar-dialog-content"], [data-slot="mobile-drawer-content"]'
-          ) ?? null
-        );
         requestGeneration.current++;
         setLoadingMore(false);
         if (nextOpen) setStatus("loading");
@@ -115,7 +110,6 @@ export function ApiKeyProjectAccessSelector({
     >
       <PopoverTrigger asChild>
         <button
-          ref={trigger}
           type="button"
           disabled={disabled}
           aria-label={t("label")}
@@ -134,197 +128,237 @@ export function ApiKeyProjectAccessSelector({
       <PopoverContent
         align="end"
         sideOffset={6}
-        collisionBoundary={boundary}
         collisionPadding={16}
         onClick={(event) => event.stopPropagation()}
         aria-label={t("label")}
-        className="border-border/70 flex max-h-[min(22rem,var(--radix-popover-content-available-height))] w-60 max-w-[calc(100vw-2rem)] flex-col gap-2 overflow-hidden rounded-xl p-2.5 shadow-lg"
+        className="border-border/70 flex max-h-[min(30rem,var(--radix-popover-content-available-height))] w-[21.5rem] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
       >
-        <Select
-          value={value.teamId ?? "personal"}
-          disabled={disabled}
-          onValueChange={(teamId) => {
+        <div className="shrink-0 space-y-2">
+          <label htmlFor={ownerId} className="text-sm font-medium">
+            {t("context")}
+          </label>
+          <Select
+            value={value.teamId ?? "personal"}
+            disabled={disabled}
+            onValueChange={(teamId) => {
+              requestGeneration.current++;
+              setLoadingMore(false);
+              setSearch("");
+              setProjects([]);
+              setStatus("loading");
+              setNextCursor(null);
+              onChange({
+                mode: "all",
+                ...(teamId !== "personal" ? { teamId } : {}),
+              });
+            }}
+          >
+            <SelectTrigger
+              id={ownerId}
+              aria-label={t("context")}
+              className="h-9 w-full rounded-lg px-3 text-sm shadow-none"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                {value.teamId ? (
+                  <Users className="text-muted-foreground size-4 shrink-0" />
+                ) : (
+                  <UserRound className="text-muted-foreground size-4 shrink-0" />
+                )}
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="personal">{t("personal")}</SelectItem>
+              {teams.map((team) => (
+                <SelectItem key={team.id} value={team.id}>
+                  {team.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Tabs
+          value={value.mode}
+          onValueChange={(mode) => {
+            if (mode !== "all" && mode !== "selected") return;
             requestGeneration.current++;
             setLoadingMore(false);
-            setProjects([]);
             setStatus("loading");
-            setNextCursor(null);
-            onChange({
-              mode: "all",
-              ...(teamId !== "personal" ? { teamId } : {}),
-            });
+            onChange(
+              mode === "all"
+                ? { mode, ...(value.teamId ? { teamId: value.teamId } : {}) }
+                : {
+                    mode,
+                    projectIds: [],
+                    ...(value.teamId ? { teamId: value.teamId } : {}),
+                  }
+            );
           }}
+          className="flex min-h-0 flex-1 flex-col gap-3"
         >
-          <SelectTrigger
-            aria-label={t("context")}
-            className="h-8 w-full text-xs"
+          <TabsList
+            aria-label={t("label")}
+            className="h-10 w-full shrink-0 p-1"
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="personal">{t("personal")}</SelectItem>
-            {teams.map((team) => (
-              <SelectItem key={team.id} value={team.id}>
-                {team.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <fieldset
-          disabled={disabled}
-          className="flex shrink-0 items-center justify-between gap-2 text-[13px]"
-        >
-          <legend className="sr-only">{t("label")}</legend>
-          {(["all", "selected"] as const).map((mode) => (
-            <label
-              key={mode}
-              className="flex min-h-6 cursor-pointer items-center gap-1.5"
+            <TabsTrigger
+              value="all"
+              disabled={disabled}
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-8 flex-1"
             >
-              <input
-                type="radio"
-                name={radioName}
-                value={mode}
-                checked={value.mode === mode}
-                className="accent-brand-primary size-3.5"
-                onChange={() => {
-                  requestGeneration.current++;
-                  setLoadingMore(false);
-                  setStatus("loading");
-                  onChange(
-                    mode === "all"
-                      ? {
-                          mode,
-                          ...(value.teamId ? { teamId: value.teamId } : {}),
-                        }
-                      : {
-                          mode,
-                          projectIds: [],
-                          ...(value.teamId ? { teamId: value.teamId } : {}),
-                        }
-                  );
-                }}
-              />
-              {t(mode === "all" ? "all" : "selectedShort")}
-            </label>
-          ))}
-        </fieldset>
-        {value.mode === "selected" && (
-          <>
-            <div className="relative shrink-0">
-              <Search className="text-muted-foreground pointer-events-none absolute top-2 left-2.5 size-4" />
-              <Input
-                aria-label={t("search")}
-                placeholder={t("search")}
-                value={search}
-                disabled={disabled}
-                className="h-8 rounded-lg pr-2.5 pl-8 text-[13px] shadow-none focus-visible:ring-2"
-                onChange={(event) => setSearch(event.target.value)}
-              />
-            </div>
-            <div className="min-h-0 overflow-y-auto overscroll-contain">
-              {status === "loading" ? (
-                <p role="status" className="py-2 text-xs">
-                  {t("loading")}
-                </p>
-              ) : status === "error" ? (
-                <div role="alert" className="space-y-2 text-xs">
-                  <p>{t("error")}</p>
-                  <button
-                    type="button"
-                    className="text-brand-primary underline"
-                    onClick={() => {
-                      setStatus("loading");
-                      setAttempt((current) => current + 1);
-                    }}
-                  >
-                    {t("retry")}
-                  </button>
+              {t("all")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="selected"
+              disabled={disabled}
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-8 flex-1"
+            >
+              {t("selectedShort")}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent
+            value="all"
+            className="text-muted-foreground m-0 text-sm leading-relaxed"
+          >
+            {t("allOwnerHint")}
+          </TabsContent>
+          <TabsContent
+            value="selected"
+            className="m-0 flex min-h-0 flex-1 flex-col gap-3"
+          >
+            {value.mode === "selected" && (
+              <>
+                <div className="relative shrink-0">
+                  <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 size-4" />
+                  <Input
+                    aria-label={t("search")}
+                    placeholder={t("search")}
+                    value={search}
+                    disabled={disabled}
+                    className="h-9 rounded-lg pr-3 pl-9 text-sm shadow-none focus-visible:ring-2"
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
                 </div>
-              ) : visibleProjects.length ? (
-                visibleProjects.map((project) => (
-                  <label
-                    key={project.id}
-                    className="hover:bg-muted flex min-h-[30px] cursor-pointer items-center gap-2 rounded-md px-1 text-[13px]"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={value.projectIds.includes(project.id)}
-                      className="accent-brand-primary size-3.5 shrink-0"
-                      disabled={
-                        disabled ||
-                        (!value.projectIds.includes(project.id) &&
-                          value.projectIds.length >= 100)
-                      }
-                      onChange={(event) =>
-                        onChange({
-                          mode: "selected",
-                          ...(value.teamId ? { teamId: value.teamId } : {}),
-                          projectIds: event.target.checked
-                            ? [...value.projectIds, project.id]
-                            : value.projectIds.filter(
-                                (id) => id !== project.id
-                              ),
-                        })
-                      }
-                    />
-                    <span className="min-w-0 break-words">{project.title}</span>
-                  </label>
-                ))
-              ) : (
-                <p className="text-muted-foreground py-2 text-xs">
-                  {t(projects.length ? "noMatches" : "empty")}
-                </p>
-              )}
-              {nextCursor && value.teamId ? (
-                <button
-                  type="button"
-                  className="text-brand-primary mt-2 text-xs underline"
-                  disabled={loadingMore}
-                  onClick={() => {
-                    const generation = requestGeneration.current;
-                    setLoadingMore(true);
-                    void fetch(
-                      `/api/team-projects?teamId=${encodeURIComponent(value.teamId!)}&after=${encodeURIComponent(nextCursor)}`
-                    )
-                      .then(async (response) => {
-                        const data = (await response.json()) as {
-                          ok: boolean;
-                          projects: ProjectChoice[];
-                          nextCursor: string | null;
-                        };
-                        if (generation !== requestGeneration.current) return;
-                        if (!response.ok || !data.ok) throw new Error();
-                        setProjects((previous) => [
-                          ...previous,
-                          ...data.projects,
-                        ]);
-                        setNextCursor(data.nextCursor);
-                      })
-                      .catch(() => {
-                        if (generation === requestGeneration.current)
-                          setStatus("error");
-                      })
-                      .finally(() => {
-                        if (generation === requestGeneration.current)
-                          setLoadingMore(false);
-                      });
-                  }}
-                >
-                  {t("more")}
-                </button>
-              ) : null}
-            </div>
-          </>
-        )}
-        <p className="text-muted-foreground border-border/60 shrink-0 border-t pt-2 text-[11px] leading-relaxed">
-          {value.teamId
-            ? t("teamHint")
-            : value.mode === "all"
-              ? t("allHint")
-              : value.projectIds.length >= 100
-                ? t("limit")
-                : t("selectedCompactHint")}
-        </p>
+                <div className="min-h-0 overflow-y-auto overscroll-contain">
+                  {status === "loading" ? (
+                    <p role="status" className="py-2 text-xs">
+                      {t("loading")}
+                    </p>
+                  ) : status === "error" ? (
+                    <div role="alert" className="space-y-2 text-xs">
+                      <p>{t("error")}</p>
+                      <button
+                        type="button"
+                        className="text-brand-primary underline"
+                        onClick={() => {
+                          setStatus("loading");
+                          setAttempt((current) => current + 1);
+                        }}
+                      >
+                        {t("retry")}
+                      </button>
+                    </div>
+                  ) : visibleProjects.length ? (
+                    visibleProjects.map((project) => (
+                      <label
+                        key={project.id}
+                        className="hover:bg-muted flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-2 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={value.projectIds.includes(project.id)}
+                          className="accent-brand-primary size-4 shrink-0"
+                          disabled={
+                            disabled ||
+                            (!value.projectIds.includes(project.id) &&
+                              value.projectIds.length >= 100)
+                          }
+                          onChange={(event) =>
+                            onChange({
+                              mode: "selected",
+                              ...(value.teamId ? { teamId: value.teamId } : {}),
+                              projectIds: event.target.checked
+                                ? [...value.projectIds, project.id]
+                                : value.projectIds.filter(
+                                    (id) => id !== project.id
+                                  ),
+                            })
+                          }
+                        />
+                        <span className="min-w-0 break-words">
+                          {project.title}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground py-2 text-xs">
+                      {t(projects.length ? "noMatches" : "empty")}
+                    </p>
+                  )}
+                  {nextCursor && value.teamId ? (
+                    <button
+                      type="button"
+                      className="text-brand-primary mt-2 text-xs underline"
+                      disabled={loadingMore}
+                      onClick={() => {
+                        const generation = requestGeneration.current;
+                        setLoadingMore(true);
+                        void fetch(
+                          `/api/team-projects?teamId=${encodeURIComponent(value.teamId!)}&after=${encodeURIComponent(nextCursor)}`
+                        )
+                          .then(async (response) => {
+                            const data = (await response.json()) as {
+                              ok: boolean;
+                              projects: ProjectChoice[];
+                              nextCursor: string | null;
+                            };
+                            if (generation !== requestGeneration.current)
+                              return;
+                            if (!response.ok || !data.ok) throw new Error();
+                            setProjects((previous) => [
+                              ...previous,
+                              ...data.projects,
+                            ]);
+                            setNextCursor(data.nextCursor);
+                          })
+                          .catch(() => {
+                            if (generation === requestGeneration.current)
+                              setStatus("error");
+                          })
+                          .finally(() => {
+                            if (generation === requestGeneration.current)
+                              setLoadingMore(false);
+                          });
+                      }}
+                    >
+                      {t("more")}
+                    </button>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+        <div className="border-border/60 flex shrink-0 items-center justify-between gap-3 border-t pt-3">
+          <p
+            className="text-muted-foreground text-xs leading-relaxed"
+            role="status"
+          >
+            {value.mode === "selected"
+              ? t(value.projectIds.length >= 100 ? "limit" : "summary", {
+                  count: value.projectIds.length,
+                })
+              : t("all")}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            className="h-9 rounded-lg px-4 text-sm"
+            disabled={disabled}
+            onClick={() => setOpen(false)}
+          >
+            {t("done")}
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -215,7 +215,7 @@ describe("project access popover", () => {
       const user = userEvent.setup();
       expect(fetchMock).not.toHaveBeenCalled();
       await user.click(screen.getByRole("button", { name: "Project access" }));
-      await user.click(screen.getByRole("radio", { name: "Selected" }));
+      await user.click(screen.getByRole("tab", { name: "Selected" }));
       expect(
         screen
           .getByRole("button", { name: "Create key" })
@@ -241,7 +241,7 @@ describe("project access popover", () => {
         false
       );
       await user.click(screen.getByRole("button", { name: "Project access" }));
-      await user.click(screen.getByRole("radio", { name: "All projects" }));
+      await user.click(screen.getByRole("tab", { name: "All projects" }));
       await user.keyboard("{Escape}");
       await user.click(screen.getByRole("button", { name: "Create key" }));
       expect(create).toHaveBeenLastCalledWith({ mode: "all" }, false);
@@ -253,7 +253,7 @@ describe("project access popover", () => {
     renderView();
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Project access" }));
-    await user.click(screen.getByRole("radio", { name: "Selected" }));
+    await user.click(screen.getByRole("tab", { name: "Selected" }));
     await user.click(
       await screen.findByRole("checkbox", { name: "Race night" })
     );
@@ -266,6 +266,35 @@ describe("project access popover", () => {
     expect(
       (screen.getByRole("checkbox", { name: "Race night" }) as HTMLInputElement)
         .checked
+    ).toBe(true);
+  });
+
+  it("shows the owner label and keeps a selection when Done closes the picker", async () => {
+    stubProjects();
+    const create = vi.fn(async () => false);
+    renderView({ apiKeyName: "Integration", onCreateApiKey: create });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Project access" }));
+    expect(
+      screen.getByRole("combobox", { name: "Project owner" })
+    ).toBeTruthy();
+    await user.click(screen.getByRole("tab", { name: "Selected" }));
+    await user.click(
+      await screen.findByRole("checkbox", { name: "Race night" })
+    );
+    expect(screen.getByText("1 selected project")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Done" }));
+    expect(
+      screen.queryByRole("combobox", { name: "Project owner" })
+    ).toBeNull();
+    expect(create).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Project access" }));
+    expect(
+      (
+        (await screen.findByRole("checkbox", {
+          name: "Race night",
+        })) as HTMLInputElement
+      ).checked
     ).toBe(true);
   });
 
@@ -288,7 +317,7 @@ describe("project access popover", () => {
     renderView();
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Project access" }));
-    await user.click(screen.getByRole("radio", { name: "Selected" }));
+    await user.click(screen.getByRole("tab", { name: "Selected" }));
     await user.click(await screen.findByRole("button", { name: "Retry" }));
     expect(
       await screen.findByText("No cloud projects available.")
