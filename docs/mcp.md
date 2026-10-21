@@ -6,19 +6,19 @@ TrackDraw uses OAuth to connect MCP clients to a TrackDraw account. `get_account
 
 MCP lets an AI assistant work with TrackDraw through a conversation: ask for a material list, compare layouts, create a track from your available obstacles, or preview changes to a saved track. You do not need to write code or generate an API key.
 
-**Availability:** these are setup instructions to try against the development environment, not a verified ChatGPT, Claude or Codex integration. The [validation record](mcp-validation.md) dated October 21, 2026 still has an open hosted acceptance gate and records production MCP as unavailable. Check that record before choosing an environment; development accounts and projects are separate from production.
+These instructions use `https://trackdraw.app/api/mcp`. Client availability depends on your assistant and workspace settings. See the [compatibility matrix](mcp-validation.md#compatibility-matrix) for recorded client tests.
 
-Before connecting, sign in to the intended TrackDraw environment and save a project to your account if you want the assistant to read it. A project stored only in your browser is not available through MCP.
+Before connecting, sign in to [TrackDraw](https://trackdraw.app) and save a project to your account if you want the assistant to read it. A project stored only in your browser is not available through MCP.
 
 Use these settings in a client that supports remote MCP with OAuth:
 
-| Setting                            | Value                                                                  |
-| ---------------------------------- | ---------------------------------------------------------------------- |
-| Connection name                    | `TrackDraw Dev`                                                        |
-| Server URL for development testing | `https://dev.trackdraw.app/api/mcp`                                    |
-| Transport, if requested            | Streamable HTTP                                                        |
-| Authentication                     | OAuth, using automatic discovery and Dynamic Client Registration (DCR) |
-| API key / manual bearer token      | None; sign in through the browser authorization flow                   |
+| Setting                       | Value                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| Connection name               | `TrackDraw`                                                            |
+| Server URL                    | `https://trackdraw.app/api/mcp`                                        |
+| Transport, if requested       | Streamable HTTP                                                        |
+| Authentication                | OAuth, using automatic discovery and Dynamic Client Registration (DCR) |
+| API key / manual bearer token | None; sign in through the browser authorization flow                   |
 
 Use the complete `/api/mcp` URL without query parameters. It is a protocol endpoint, not a page to open in a browser. Do not substitute `/api/v1`, `/api/auth` or `/sse`. For a different deployment, use its configured origin with the same `/api/mcp` path.
 
@@ -27,24 +27,24 @@ Use the complete `/api/mcp` URL without query parameters. It is a protocol endpo
 The steps below follow the [official OpenAI connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt) and [plugin quickstart](https://developers.openai.com/plugins/quickstart), checked October 21, 2026. Account and workspace policies control access to custom MCP servers; if the option is missing, check with your workspace administrator.
 
 1. Open **Plugins** in ChatGPT, select **+**, then **Add custom MCP server**.
-2. Name it **TrackDraw Dev**, enter `https://dev.trackdraw.app/api/mcp` as the server URL, and choose **OAuth** authentication.
+2. Name it **TrackDraw**, enter `https://trackdraw.app/api/mcp` as the server URL, and choose **OAuth** authentication.
 3. Review the warning and select **Create as a plugin**. Complete the TrackDraw browser sign-in and consent when prompted, checking the account, callback host and requested permissions.
 4. Install the resulting plugin from your personal plugins.
-5. Start a new **Work** chat, type `@` and select **TrackDraw Dev**.
+5. Start a new **Work** chat, type `@` and select **TrackDraw**.
 6. Ask: “Check which TrackDraw account is connected and what you can do. Do not change anything.” The assistant should call `get_account`.
 7. Ask: “List my saved TrackDraw projects, including their IDs. Do not change anything.” With project-read permission, this should call `list_projects`.
 
-A successful setup returns live account/project results, including an empty list when there are no cloud projects. A conversational answer without a tool call does not verify the connection. This guide does not establish that ChatGPT's current OAuth client completes TrackDraw registration; record an actual successful run before marking it supported.
+A successful setup returns live account/project results, including an empty list when there are no cloud projects. A conversational answer without a tool call does not verify the connection.
 
 ### Claude (web and Desktop)
 
 These steps follow the [official Claude custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp), checked October 21, 2026.
 
 1. Open **Customize → Connectors**, then **+ Add → Add custom connector**.
-2. Name it **TrackDraw Dev**, enter `https://dev.trackdraw.app/api/mcp`, and select **Continue**.
+2. Name it **TrackDraw**, enter `https://trackdraw.app/api/mcp`, and select **Continue**.
 3. Review the detected OAuth settings. Choose **Sign in now** and, under **OAuth client**, **Register automatically**. TrackDraw advertises DCR, so use this instead of Claude's published identity. Leave fixed request headers empty.
 4. Finish with **Add** and **Connect** if shown. Complete TrackDraw sign-in and review the account and permissions before allowing access.
-5. In a new conversation, open **+ → Connectors** and enable **TrackDraw Dev**.
+5. In a new conversation, open **+ → Connectors** and enable **TrackDraw**.
 6. Try the two read-only account/project prompts from the ChatGPT section. Inspect the `get_account` and `list_projects` tool results.
 
 For Team/Enterprise, an authorized administrator first adds the connector through **Organization settings → Connectors → Add → Custom → Web**; members then connect individually. Remote connectors run through Anthropic's cloud, including on Desktop: use the public HTTPS endpoint, not localhost or a Desktop local-server configuration.
@@ -54,23 +54,21 @@ For Team/Enterprise, an authorized administrator first adds the connector throug
 For Claude's terminal client, follow the [official Claude Code MCP guide](https://code.claude.com/docs/en/mcp):
 
 ```bash
-claude mcp add --transport http --scope user trackdraw-dev https://dev.trackdraw.app/api/mcp
+claude mcp add --transport http --scope user trackdraw https://trackdraw.app/api/mcp
 ```
 
-The user scope makes the connection available across your projects. Start Claude Code, run `/mcp`, select **trackdraw-dev** and follow the authentication flow in your browser. Review TrackDraw consent, then try the same account/project prompts. `claude mcp list` shows connection status; adding the configuration alone does not verify OAuth or tool calls.
-
-Both Claude instructions are setup guidance awaiting an actual TrackDraw client-validation run; the development availability notes above still apply.
+The user scope makes the connection available across your projects. Start Claude Code, run `/mcp`, select **trackdraw** and follow the authentication flow in your browser. Review TrackDraw consent, then try the same account/project prompts. `claude mcp list` shows connection status; adding the configuration alone does not verify OAuth or tool calls.
 
 ### Codex CLI
 
 For a terminal-based assistant, add the same remote endpoint and authorize it through OAuth:
 
 ```bash
-codex mcp add trackdraw-dev --url https://dev.trackdraw.app/api/mcp
-codex mcp login trackdraw-dev --oauth-client-registration dcr
+codex mcp add trackdraw --url https://trackdraw.app/api/mcp
+codex mcp login trackdraw --oauth-client-registration dcr
 ```
 
-Complete TrackDraw sign-in and consent in the browser. Start a Codex session, use `/mcp` to inspect the connection, then try the same two read-only prompts above. The explicit `dcr` option selects the registration flow TrackDraw advertises; CIMD is not advertised. If your CLI does not recognize the option, check `codex mcp login --help` and the [official Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli). These commands describe configuration, not an end-to-end TrackDraw compatibility result.
+Complete TrackDraw sign-in and consent in the browser. Start a Codex session, use `/mcp` to inspect the connection, then try the same two read-only prompts above. The explicit `dcr` option selects the registration flow TrackDraw advertises; CIMD is not advertised. If your CLI does not recognize the option, check `codex mcp login --help` and the [official Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
 ### Other MCP clients
 
@@ -97,7 +95,7 @@ To stop access, open **Connected apps** in TrackDraw account settings or `/mcp/c
 
 | Symptom                                                    | What to check                                                                                                                                                                                                       |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Endpoint returns 404                                       | Confirm the environment and complete `/api/mcp` path. The validation record currently does not establish production availability.                                                                                   |
+| Endpoint returns 404                                       | Use the complete `https://trackdraw.app/api/mcp` URL. If it still returns 404, report the unavailable endpoint to TrackDraw.                                                                                        |
 | Browser shows an error when opening the MCP URL            | Configure that URL in the assistant instead. MCP uses authenticated protocol requests; browser navigation does not test the connection.                                                                             |
 | Registration fails or asks for credentials you do not have | Use OAuth discovery/DCR, not a REST API key. Clients requiring CIMD have no verified fallback. Do not invent a client ID or secret.                                                                                 |
 | Sign-in or consent expires                                 | Restart connection from the assistant and complete sign-in and consent on the same TrackDraw environment.                                                                                                           |
@@ -106,11 +104,11 @@ To stop access, open **Connected apps** in TrackDraw account settings or `/mcp/c
 | ChatGPT still shows an old tool list                       | Open its custom connection in Plugins, select Refresh, then start a new conversation, following the [official refresh instructions](https://developers.openai.com/plugins/deploy/connect-chatgpt#refresh-metadata). |
 | An edit conflicts with a newer save                        | Read the current project again and request a fresh preview. Do not force an older proposal over newer work.                                                                                                         |
 | HTTP 429                                                   | Wait for `Retry-After`; reconnecting does not reset the hourly request budget.                                                                                                                                      |
-| HTTP 503 / Cloudflare 1102                                 | Check the hosted acceptance status in the validation record. Development validation confirmed CPU limit failures during large-track pagination; replacing OAuth credentials is not a demonstrated fix.              |
+| HTTP 503 / Cloudflare 1102                                 | The server could not complete the request. Try again later; if it persists, report the failing tool to TrackDraw. Changing OAuth credentials does not resolve a server resource limit.                              |
 
 ## Connect and disconnect
 
-1. Add the TrackDraw environment's `/api/mcp` URL to your MCP client. Use HTTPS for hosted environments; use the explicitly configured loopback origin for local preview.
+1. Add `https://trackdraw.app/api/mcp` to your MCP client.
 2. The client discovers TrackDraw's authorization server and registers itself, or uses its existing registration.
 3. Sign in to TrackDraw with a passkey or magic link. Both methods return you to the original OAuth request.
 4. Review the requesting app, callback host, account and permissions, then allow or decline the connection.
@@ -252,7 +250,7 @@ Dynamic Client Registration is enabled for public/native and web clients with pr
 Install repository dependencies and set only the environment URL:
 
 ```bash
-TRACKDRAW_MCP_URL=http://localhost:8790/api/mcp node scripts/mcp_smoke.mjs
+TRACKDRAW_MCP_URL=https://trackdraw.app/api/mcp node scripts/mcp_smoke.mjs
 ```
 
 The script prints an authorization URL. Open it in a browser, sign in and review the consent page. Its callback listener binds only to `127.0.0.1` on an automatically assigned port and checks callback state and issuer. A lightweight TrackDraw confirmation page shows whether authorization was approved, declined or could not be verified; return to the terminal for the connection check result. Other MCP clients provide their own callback page. The SDK handles discovery, registration, PKCE and code exchange. Credentials and code verifiers stay in memory and are never printed or saved.
@@ -262,14 +260,14 @@ A successful run checks unauthenticated rejection, OAuth discovery and code exch
 To validate edits and recovery, use a disposable account and opt into the edit workflow:
 
 ```bash
-TRACKDRAW_MCP_URL=https://dev.trackdraw.app/api/mcp TRACKDRAW_MCP_EDIT_TRACK=1 TRACKDRAW_MCP_CHECK_REVOCATION=1 node scripts/mcp_smoke.mjs
+TRACKDRAW_MCP_URL=https://trackdraw.app/api/mcp TRACKDRAW_MCP_EDIT_TRACK=1 TRACKDRAW_MCP_CHECK_REVOCATION=1 node scripts/mcp_smoke.mjs
 ```
 
 `TRACKDRAW_MCP_EDIT_TRACK=1` includes creation and edit scopes in the initial consent. It creates a new example project and only edits that project. If `TRACKDRAW_MCP_PROJECT_ID` is set, it also reads that selected project without editing it. It checks that preview does not save, apply increments the revision, retry does not rewrite, a competing proposal conflicts, and restoring the previous version recovers the original gate position. Retrying the original apply after recovery must preserve the recovered revision. Creation/edit checks leave the new project in the account for inspection in Studio; remove the disposable data afterward.
 
 `TRACKDRAW_MCP_CHECK_REVOCATION=1` rotates the refresh token, checks that the renewed access works, revokes this run's refresh token and verifies that its access token is immediately rejected. It disconnects this smoke session; it does not revoke other clients. Without this option, use `/mcp/connections` to disconnect the test app manually.
 
-See the [client validation and release checklist](mcp-validation.md) for dated evidence, client limitations and the remaining production gate. A successful local smoke run does not establish support for a different client or deployment.
+See the [client validation and release checklist](mcp-validation.md) for dated evidence, client limitations and deployment-specific results. A successful local smoke run does not establish support for a different client or deployment.
 
 In your own SDK integration, configure `StreamableHTTPClientTransport` with an `authProvider` implementing `OAuthClientProvider` from `@modelcontextprotocol/sdk/client/auth.js`. Store credentials securely, retain issuer binding with registration/tokens, validate callback state and issuer, and use `finishAuth(code)` before reconnecting after authorization. Do not replace OAuth with a static bearer header. See [the official SDK client documentation](https://ts.sdk.modelcontextprotocol.io/client).
 

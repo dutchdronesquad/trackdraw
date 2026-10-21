@@ -64,7 +64,7 @@ TrackDraw is actively developed. See the [public roadmap discussion](https://git
 
 ## Use TrackDraw with an AI assistant
 
-The [MCP connection guide](docs/mcp.md#quick-start) explains how to configure ChatGPT, Claude (web, Desktop and Code), Codex CLI and other remote MCP clients, with example prompts for material lists, track comparisons, new layouts and reviewed edits. MCP is currently documented for development testing; see the guide's availability and client-validation notes before connecting.
+The [MCP connection guide](docs/mcp.md#quick-start) explains how to configure ChatGPT, Claude (web, Desktop and Code), Codex CLI and other remote MCP clients, with example prompts for material lists, track comparisons, new layouts and reviewed edits. Connect using `https://trackdraw.app/api/mcp` and authorize access through your TrackDraw account.
 
 ## Related repositories
 
