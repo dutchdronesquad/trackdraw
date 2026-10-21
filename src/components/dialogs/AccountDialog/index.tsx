@@ -85,6 +85,11 @@ export default function AccountDialog({
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
   const [deletingApiKeyId, setDeletingApiKeyId] = useState<string | null>(null);
+  const [apiKeyEditDraft, setApiKeyEditDraft] = useState<{
+    keyId: string;
+    projectAccess: ApiKeyProjectAccess;
+  } | null>(null);
+  const [updatingApiKey, setUpdatingApiKey] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -466,12 +471,6 @@ export default function AccountDialog({
       setCreatingApiKey(false);
     }
   };
-
-  const [apiKeyEditDraft, setApiKeyEditDraft] = useState<{
-    keyId: string;
-    projectAccess: ApiKeyProjectAccess;
-  } | null>(null);
-  const [updatingApiKey, setUpdatingApiKey] = useState(false);
 
   const handleUpdateApiKeyAccess = async (
     keyId: string,
