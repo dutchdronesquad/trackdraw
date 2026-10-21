@@ -25,7 +25,7 @@ import {
 import type { AccountApiKey, CreatedAccountApiKey } from "./types";
 import { formatDate } from "./utils";
 
-const formRow = "grid gap-3 py-4 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-8";
+const formRow = "grid gap-3 py-4 sm:grid-cols-2 sm:gap-8";
 
 const desktopColumns =
   "grid-cols-[minmax(0,1fr)_14.5rem_8rem_5rem] max-[960px]:grid-cols-[minmax(0,1fr)_8rem_7rem_5rem]";
@@ -271,7 +271,7 @@ export function AccountApiKeysView({
                 required
                 maxLength={64}
                 onChange={(event) => onApiKeyNameChange(event.target.value)}
-                className="h-9 rounded-lg px-2.5 text-sm shadow-none focus-visible:ring-2"
+                className="h-9 rounded-lg px-2.5 text-sm shadow-none focus-visible:ring-2 sm:max-w-sm sm:justify-self-end"
                 placeholder={t("account.apiKeys.form.namePlaceholder")}
               />
             </div>
@@ -290,11 +290,13 @@ export function AccountApiKeysView({
                   )}
                 </p>
               </div>
-              <ApiKeyProjectAccessSelector
-                value={projectAccess}
-                onChange={onProjectAccessChange}
-                disabled={creatingApiKey}
-              />
+              <div className="w-full sm:max-w-sm sm:justify-self-end">
+                <ApiKeyProjectAccessSelector
+                  value={projectAccess}
+                  onChange={onProjectAccessChange}
+                  disabled={creatingApiKey}
+                />
+              </div>
             </div>
             <div className={formRow}>
               <div className="space-y-1">
@@ -312,7 +314,7 @@ export function AccountApiKeysView({
               >
                 <SelectTrigger
                   aria-label={tCommon("labels.expires")}
-                  className="h-9 w-full rounded-lg shadow-none focus-visible:ring-2"
+                  className="h-9 w-full rounded-lg shadow-none focus-visible:ring-2 sm:max-w-sm sm:justify-self-end"
                 >
                   <SelectValue />
                 </SelectTrigger>
