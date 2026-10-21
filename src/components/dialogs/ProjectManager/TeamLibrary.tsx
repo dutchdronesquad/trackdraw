@@ -280,7 +280,9 @@ function TeamProjectList({
             <LockKeyhole className="size-3.5 shrink-0" />
             <span>{t("private")}</span>
             <span aria-hidden="true">·</span>
-            <span>{t("readOnly")}</span>
+            <span>
+              {t(team.role === "viewer" ? "readOnly" : "editingInTurns")}
+            </span>
           </p>
         </div>
         {team.role !== "viewer" && title === null ? (

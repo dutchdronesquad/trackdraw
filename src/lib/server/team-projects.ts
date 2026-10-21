@@ -11,14 +11,9 @@ import type {
   TeamProjectSummary,
 } from "@/lib/team-projects";
 
-export class TeamProjectError extends Error {
-  constructor(
-    readonly code: "not_found" | "conflict" | "invalid",
-    readonly status = 404
-  ) {
-    super(code);
-  }
-}
+import { TeamProjectError } from "./team-project-error";
+import { readProjectEditor } from "./team-project-leases";
+export { TeamProjectError } from "./team-project-error";
 const actorFor = (userId: string, teamId: string): ProjectActor => ({
   userId,
   scope: { kind: "team", teamId },
@@ -87,7 +82,7 @@ export async function readTeamProject(
   const project = await getProjectForActor(projectId, actor);
   const team = await getAuthorizedTeam(actor, "read");
   if (!project || !team) throw new TeamProjectError("not_found");
-  return { team, project, editing: "unavailable" as const };
+  return { team, project, editing: await readProjectEditor(projectId) };
 }
 export async function createTeamProject(
   userId: string,

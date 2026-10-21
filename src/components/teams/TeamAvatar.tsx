@@ -1,13 +1,16 @@
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function TeamAvatar({
   name,
   square = false,
   compact = false,
+  className,
 }: {
   name: string;
   square?: boolean;
   compact?: boolean;
+  className?: string;
 }) {
   const initials = name
     .trim()
@@ -19,7 +22,10 @@ export function TeamAvatar({
   return (
     <Avatar
       aria-hidden="true"
-      className={compact ? "size-8" : square ? "size-11 rounded-xl" : "size-11"}
+      className={cn(
+        compact ? "size-8" : square ? "size-11 rounded-xl" : "size-11",
+        className
+      )}
     >
       <AvatarFallback
         className={

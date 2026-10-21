@@ -30,3 +30,23 @@ export async function teamProjectRequest<T>(
     throw new TeamProjectRequestError(body.code ?? "failed");
   return body as T;
 }
+
+export async function teamEditingRequest<T>(
+  command: import("@/lib/team-projects").TeamEditingCommand,
+  signal?: AbortSignal
+): Promise<T> {
+  const response = await fetch("/api/team-projects/editing", {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(12_000)])
+      : AbortSignal.timeout(12_000),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(command),
+  });
+  const body = await response.json();
+  if (!response.ok || !body.ok)
+    throw new TeamProjectRequestError(body.code ?? "failed");
+  return body as T;
+}

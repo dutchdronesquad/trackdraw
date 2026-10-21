@@ -67,9 +67,9 @@ function TrackDrawIcon({ className }: { className?: string }) {
 }
 
 interface ToolbarProps {
-  onImport: () => void;
+  onImport?: () => void;
   onExport: () => void;
-  onOpenProjectManager: () => void;
+  onOpenProjectManager?: () => void;
   onOpenPresets: () => void;
   onFeedback: () => void;
   collapsed: boolean;
@@ -341,20 +341,22 @@ export default function Toolbar({
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
           <SidebarMenu className="gap-0 space-y-1" key="projects-footer-v3">
-            {renderFooterAction({
-              key: "projects",
-              label: t("toolbar.projects"),
-              tooltip: t("toolbar.projectsTooltip"),
-              icon: <FolderOpen className="size-3.5" />,
-              onClick: onOpenProjectManager,
-            })}
-            {renderFooterAction({
-              key: "import",
-              label: t("toolbar.import"),
-              tooltip: t("toolbar.importTooltip"),
-              icon: <Import className="size-3.5" />,
-              onClick: onImport,
-            })}
+            {onOpenProjectManager &&
+              renderFooterAction({
+                key: "projects",
+                label: t("toolbar.projects"),
+                tooltip: t("toolbar.projectsTooltip"),
+                icon: <FolderOpen className="size-3.5" />,
+                onClick: onOpenProjectManager,
+              })}
+            {onImport &&
+              renderFooterAction({
+                key: "import",
+                label: t("toolbar.import"),
+                tooltip: t("toolbar.importTooltip"),
+                icon: <Import className="size-3.5" />,
+                onClick: onImport,
+              })}
             {renderFooterAction({
               key: "export",
               label: t("toolbar.export"),
