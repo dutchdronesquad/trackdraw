@@ -94,7 +94,7 @@ describe("team project libraries", () => {
         createdByUserId: user,
         design: { version: 2, title: "New race" },
       });
-      expect(editing).toBe("unavailable");
+      expect(editing).toBeNull();
       expect(await getProjectForUser(project.id, user)).toBeNull();
       expect(
         (await listTeamProjects("viewer", "club")).projects.map((p) => p.id)

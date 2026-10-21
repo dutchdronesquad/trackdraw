@@ -1,15 +1,35 @@
 // @vitest-environment happy-dom
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import { useEditor } from "@/store/editor";
 import { createMemoryStorage } from "../helpers/storage";
-const mocks = vi.hoisted(() => ({ request: vi.fn(), session: vi.fn() }));
-vi.mock("@/components/teams/team-project-client", () => ({
+const mocks = vi.hoisted(() => ({
+  request: vi.fn(),
+  session: vi.fn(),
+  editing: vi.fn(),
+  download: vi.fn(),
+}));
+vi.mock("@/components/teams/team-project-client", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
   teamProjectRequest: mocks.request,
+  teamEditingRequest: mocks.editing,
+}));
+vi.mock("@/lib/export/download-json", () => ({
+  downloadJsonFile: mocks.download,
 }));
 vi.mock("@/lib/auth-client", () => ({
   authClient: { useSession: mocks.session },
+}));
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("next/dynamic", () => ({
   default: () =>
@@ -94,4 +114,43 @@ it("hides the previous account's content immediately on sign-out", async () => {
     expect(useEditor.getState().track.design.id).not.toBe("private-race")
   );
   expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+});
+
+it("exports the unsaved recovery design rather than the older server design", async () => {
+  mocks.request.mockResolvedValue({
+    project: { design: privateDesign, revision: 1 },
+    team: { id: "club", name: "Club", role: "editor" },
+    editing: null,
+  });
+  mocks.editing.mockResolvedValue({
+    lease: {
+      sessionId: "00000000-0000-4000-a000-000000000001",
+      expiresAt: "2099-01-01",
+    },
+    project: { design: privateDesign, revision: 1 },
+  });
+  render(
+    <TeamProjectWorkspace
+      teamId="club"
+      projectId="private-race"
+      initialTab="2d"
+    />
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Edit project" }));
+  await screen.findByRole("button", { name: "Finish editing" });
+  act(() =>
+    useEditor.getState().updateDesignMeta({ title: "My unsaved draft" })
+  );
+  act(() => window.dispatchEvent(new Event("offline")));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Export unsaved changes" })
+  );
+  expect(mocks.download).toHaveBeenCalledWith(
+    "My unsaved draft-recovery.json",
+    expect.objectContaining({ id: "private-race", title: "My unsaved draft" })
+  );
+  expect(screen.queryByRole("button", { name: "Finish editing" })).toBeNull();
+  expect(
+    mocks.editing.mock.calls.filter(([c]) => c.action === "save")
+  ).toHaveLength(0);
 });
