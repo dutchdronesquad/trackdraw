@@ -5,6 +5,7 @@ import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
 import { useEffect, useState } from "react";
 import {
   Braces,
+  UsersRound,
   ChartNoAxesColumn,
   ShieldCheck,
   ShieldAlert,
@@ -13,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
-import { SidebarDialog } from "@/components/SidebarDialog";
+import { TeamAccountDialog } from "@/components/teams/TeamAccountDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApiKeyActions } from "./ApiKeyActions";
 import { AccountApiKeysView } from "./ApiKeysView";
@@ -22,6 +23,9 @@ import { AccountProfileView } from "./ProfileView";
 import { AccountSecurityView } from "./SecurityView";
 import { studioDialogUrl } from "@/lib/editor/dialog-links";
 import { ProductAnalyticsControl } from "@/components/ProductAnalyticsControl";
+import { TeamDialogState } from "@/components/teams/TeamDialogState";
+import { TeamsView } from "@/components/teams/TeamsView";
+import { AccountDialogNotSignedIn } from "./shared";
 import type {
   AccountApiKey,
   AccountDialogProps,
@@ -38,6 +42,7 @@ export default function AccountDialog({
 }: AccountDialogProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
+  const tTeams = useTranslations("dialogs.teams");
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
@@ -610,6 +615,15 @@ export default function AccountDialog({
       label: t("account.nav.apiKeys"),
       icon: <Braces className="size-4" />,
     },
+    ...(user
+      ? [
+          {
+            id: "teams" as AccountDialogView,
+            label: tTeams("title"),
+            icon: <UsersRound className="size-4" />,
+          },
+        ]
+      : []),
     {
       id: "danger" as AccountDialogView,
       label: t("account.nav.danger"),
@@ -642,6 +656,15 @@ export default function AccountDialog({
       description: t("account.panels.apiKeys.description"),
       content: apiKeysContent,
     },
+    teams: {
+      title: tTeams("title"),
+      description: tTeams("description"),
+      content: user ? (
+        <TeamsView key={user.id} />
+      ) : (
+        <AccountDialogNotSignedIn />
+      ),
+    },
     danger: {
       title: t("account.panels.danger.title"),
       description: t("account.panels.danger.description"),
@@ -652,29 +675,38 @@ export default function AccountDialog({
   const current = contentMap[view];
 
   return (
-    <SidebarDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      eyebrow={t("account.dialog.eyebrow")}
-      title={tCommon("labels.account")}
-      mobileSubtitle={t("account.dialog.mobileSubtitle")}
-      navItems={navItems}
-      activeItem={view}
-      onItemChange={(id) => {
-        if (onViewChange) onViewChange(id as AccountDialogView);
-        else setView(id as AccountDialogView);
-        setError(null);
-      }}
-      contentTitle={current.title}
-      contentDescription={current.description}
-      contentActions={
-        view === "apiKeys" && user && !isMobile ? (
-          <ApiKeyActions loading={apiKeysLoading} onRefresh={refreshApiKeys} />
-        ) : undefined
-      }
-      maxWidth="max-w-4xl"
-    >
-      {current.content}
-    </SidebarDialog>
+    <TeamDialogState key={userId ?? "signed-out"}>
+      <TeamAccountDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        eyebrow={t("account.dialog.eyebrow")}
+        title={tCommon("labels.account")}
+        mobileSubtitle={
+          view === "teams" ? undefined : t("account.dialog.mobileSubtitle")
+        }
+        navItems={navItems}
+        activeItem={view}
+        onItemChange={(id) => {
+          if (onViewChange) onViewChange(id as AccountDialogView);
+          else setView(id as AccountDialogView);
+          setError(null);
+        }}
+        contentHeaderless={view === "teams"}
+        contentTitle={current.title}
+        contentDescription={view === "teams" ? undefined : current.description}
+        contentActions={
+          view === "apiKeys" && user && !isMobile ? (
+            <ApiKeyActions
+              loading={apiKeysLoading}
+              onRefresh={refreshApiKeys}
+            />
+          ) : undefined
+        }
+        maxWidth={view === "teams" ? "max-w-6xl" : "max-w-4xl"}
+        height={view === "teams" ? "h-[43rem]" : undefined}
+      >
+        {current.content}
+      </TeamAccountDialog>
+    </TeamDialogState>
   );
 }

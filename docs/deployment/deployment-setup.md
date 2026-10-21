@@ -51,6 +51,10 @@ TrackDraw uses Cloudflare D1 for persisted share storage.
 
 Apply `0030_team_project_ownership.sql` before deploying the team ownership services. It rebuilds `projects` inside the normal D1 migration transaction, preserves existing project/share IDs and pending/applied MCP history, and adds team/member/invitation tables plus exclusive personal-or-team ownership. Deferred foreign keys do not suppress cascades; the migration explicitly preserves the edit history before replacing its parent. Do not split the migration into autocommit statements. No new binding, secret, auth endpoint or user-facing team feature is enabled. See [the ownership and permission contract](../pva/team-project-authorization.md) and its lifecycle activation requirements.
 
+### Team membership management
+
+Apply `0031_team_membership_management.sql` before deploying team management. It adds invitation delivery state, bounded per-account action counters and database guards protecting team owners from removal/demotion/account deletion. Inactivity notice/removal queries exclude team owners. Team management is directly available through `/api/teams` and account navigation for signed-in users, without a feature flag. Existing API/MCP credentials gain no team project access. Invitation pages at `/teams/invitation/[invitationId]` are non-indexable and require explicit authenticated acceptance. Keep private API responses uncached, retain cookie/CSRF checks and the streamed 4 KiB body limit, and avoid broadening public auth/WAF exemptions for this route. Production uses existing Plunk configuration; local non-production fallback prints disposable invitation links. See [the management contract](../pva/team-membership-management.md).
+
 ## Local development requirements
 
 Local Cloudflare preview does not need a database connection string anymore.

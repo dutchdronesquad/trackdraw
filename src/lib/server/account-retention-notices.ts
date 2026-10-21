@@ -45,7 +45,7 @@ const CLAIM_MS = 5 * 60 * 1000;
 const BATCH_SIZE = 5;
 
 // Admins are exempt; unknown session expiry also protects the account.
-const RETENTION_GUARD = `u.role <> 'admin' AND NOT EXISTS (
+const RETENTION_GUARD = `u.role <> 'admin' AND NOT EXISTS (SELECT 1 FROM team_members WHERE userId = u.id AND role = 'owner') AND NOT EXISTS (
   SELECT 1 FROM sessions s WHERE s.userId = u.id
     AND (julianday(s.expiresAt) IS NULL OR julianday(s.expiresAt) > julianday(?))
 )`;

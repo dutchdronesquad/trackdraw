@@ -18,6 +18,7 @@ const accountSections: Record<string, AccountDialogView> = {
   profile: "profile",
   security: "security",
   privacy: "privacy",
+  teams: "teams",
   "api-keys": "apiKeys",
   danger: "danger",
 };

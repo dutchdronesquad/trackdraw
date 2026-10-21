@@ -26,10 +26,14 @@ vi.mock("@/components/SidebarDialog", () => ({
   SidebarDialog: ({
     open,
     contentTitle,
+    navItems,
+    onItemChange,
     children,
   }: {
     open: boolean;
     contentTitle: string;
+    navItems: { id: string; label: string }[];
+    onItemChange: (id: string) => void;
     children: ReactNode;
   }) =>
     open ? (
@@ -38,6 +42,13 @@ vi.mock("@/components/SidebarDialog", () => ({
         role="dialog"
         aria-label={contentTitle}
       >
+        <nav>
+          {navItems.map((item) => (
+            <button key={item.id} onClick={() => onItemChange(item.id)}>
+              {item.label}
+            </button>
+          ))}
+        </nav>
         {children}
       </div>
     ) : null,
@@ -62,7 +73,8 @@ describe("account deep-link session boundary", () => {
     async (mobile) => {
       state.mobile = mobile;
       const fetchMock = vi.fn(
-        async () => new Response(JSON.stringify({ ok: true, apiKeys: [] }))
+        async (_url: string, _options?: RequestInit) =>
+          new Response(JSON.stringify({ ok: true, apiKeys: [] }))
       );
       vi.stubGlobal("fetch", fetchMock);
       const props = {
@@ -141,4 +153,30 @@ it("keeps restricted project access when the responsive dialog remounts its cont
         .value
     ).toBe("Integration");
   }
+});
+
+it("shows Teams immediately after sign-in without a capability request", async () => {
+  state.user = {
+    id: "test-user",
+    name: "Test User",
+    email: "test@example.test",
+  };
+  state.mobile = false;
+  const fetch = vi.fn(
+    async () =>
+      new Response(JSON.stringify({ ok: true, teams: [], invitations: [] }))
+  );
+  vi.stubGlobal("fetch", fetch);
+  render(<AccountDialog open onOpenChange={vi.fn()} initialView="privacy" />);
+  expect(screen.getByRole("button", { name: "Teams" })).toBeTruthy();
+  expect(fetch).not.toHaveBeenCalled();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Teams" }));
+  expect(
+    await screen.findByText("You have not joined a team yet.")
+  ).toBeTruthy();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith("/api/teams", {
+    credentials: "same-origin",
+    cache: "no-store",
+  });
 });

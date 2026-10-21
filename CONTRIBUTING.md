@@ -72,6 +72,10 @@ openssl rand -base64 32
 
 For email template styling in non-production environments, use `/dev/email-preview` to preview auth mail variants without sending a real message.
 
+## Team Management Preview
+
+Team management is available to signed-in users after applying migrations through `0031_team_membership_management.sql`. For local validation, run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. Project libraries, editing leases and ownership transfer/deletion follow in the remaining epic issues.
+
 ## Roles And Dashboard Checks
 
 Use two modes:
