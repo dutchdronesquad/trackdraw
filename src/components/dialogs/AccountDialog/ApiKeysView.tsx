@@ -252,7 +252,7 @@ export function AccountApiKeysView({
               {t("account.apiKeys.form.description")}
             </p>
           </div>
-          <div className="divide-border/60 border-border/60 divide-y border-y">
+          <div className="border-border/60 border-b">
             <div className={formRow}>
               <div className="space-y-1">
                 <label htmlFor="api-key-name" className="text-sm font-medium">
@@ -329,7 +329,7 @@ export function AccountApiKeysView({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between gap-8 py-4">
+            <div className="border-border/60 flex items-center justify-between gap-8 border-t py-4">
               <div className="min-w-0 space-y-1">
                 <label
                   htmlFor={writeAccessId}
