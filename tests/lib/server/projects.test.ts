@@ -118,6 +118,7 @@ describe("project server helpers", () => {
       0,
       expect.any(String),
       expect.any(String),
+      "user-1",
       1
     );
   });
