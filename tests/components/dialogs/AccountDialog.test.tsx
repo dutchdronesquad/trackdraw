@@ -62,7 +62,8 @@ describe("account deep-link session boundary", () => {
     async (mobile) => {
       state.mobile = mobile;
       const fetchMock = vi.fn(
-        async () => new Response(JSON.stringify({ ok: true, apiKeys: [] }))
+        async (_url: string, _options?: RequestInit) =>
+          new Response(JSON.stringify({ ok: true, apiKeys: [] }))
       );
       vi.stubGlobal("fetch", fetchMock);
       const props = {
@@ -90,10 +91,11 @@ describe("account deep-link session boundary", () => {
       expect(screen.getByRole("dialog", { name: "API keys" })).toBeTruthy();
       expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
       for (const call of fetchMock.mock.calls) {
-        expect(call).toEqual([
-          "/api/account/api-keys",
-          { credentials: "same-origin" },
-        ]);
+        expect(call).toEqual(
+          call[0] === "/api/teams?capabilities=1"
+            ? ["/api/teams?capabilities=1", { cache: "no-store" }]
+            : ["/api/account/api-keys", { credentials: "same-origin" }]
+        );
       }
     }
   );

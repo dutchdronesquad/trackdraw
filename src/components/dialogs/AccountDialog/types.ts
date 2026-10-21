@@ -9,7 +9,7 @@ export type AccountDialogProps = {
 };
 
 export type AccountDialogView =
-  "profile" | "security" | "privacy" | "apiKeys" | "danger";
+  "profile" | "security" | "privacy" | "teams" | "apiKeys" | "danger";
 
 export type AccountApiKey = {
   id: string;
