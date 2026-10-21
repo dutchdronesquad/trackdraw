@@ -37,6 +37,7 @@ export interface SidebarDialogProps {
   sidebarFooter?: React.ReactNode;
   maxWidth?: string;
   height?: string;
+  mobileHeight?: string;
 }
 
 function DesktopNavList({
@@ -215,6 +216,7 @@ export function SidebarDialog({
   sidebarFooter,
   maxWidth = "max-w-4xl",
   height = "h-[34rem]",
+  mobileHeight,
 }: SidebarDialogProps) {
   const isMobile = useIsMobile();
   const t = useTranslations("common");
@@ -245,7 +247,10 @@ export function SidebarDialog({
         title={title}
         headerless={mobileContentOnly}
         subtitle={mobileSubtitle}
-        contentClassName={cn("max-h-[92dvh]", contentHeaderless && "h-[92dvh]")}
+        contentClassName={cn(
+          "max-h-[92dvh]",
+          mobileHeight ?? (contentHeaderless && "h-[92dvh]")
+        )}
         pinnedContent={
           <div
             className={cn(

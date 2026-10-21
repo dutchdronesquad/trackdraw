@@ -691,9 +691,8 @@ export default function AccountDialog({
           else setView(id as AccountDialogView);
           setError(null);
         }}
-        contentHeaderless={view === "teams"}
         contentTitle={current.title}
-        contentDescription={view === "teams" ? undefined : current.description}
+        contentDescription={current.description}
         contentActions={
           view === "apiKeys" && user && !isMobile ? (
             <ApiKeyActions
@@ -702,8 +701,9 @@ export default function AccountDialog({
             />
           ) : undefined
         }
-        maxWidth={view === "teams" ? "max-w-6xl" : "max-w-4xl"}
-        height={view === "teams" ? "h-[43rem]" : undefined}
+        maxWidth="max-w-6xl"
+        height="h-[43rem] max-h-[calc(100dvh-2.5rem)]"
+        mobileHeight="h-[92dvh]"
       >
         {current.content}
       </TeamAccountDialog>

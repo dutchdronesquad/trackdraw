@@ -9,8 +9,8 @@ vi.mock("@/lib/server/auth-session", () => ({
 
 vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
 
-vi.mock("@/lib/server/authorization", () => ({
-  isResourceOwner: vi.fn(),
+vi.mock("@/lib/server/share-management", () => ({
+  canManageShare: vi.fn(),
 }));
 
 vi.mock("@/lib/server/gallery-media", () => ({
@@ -36,7 +36,7 @@ import { recordAuditEvent } from "@/lib/server/audit";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { isResourceOwner } from "@/lib/server/authorization";
+import { canManageShare } from "@/lib/server/share-management";
 import {
   deleteGalleryEntry,
   getGalleryEntryByShareToken,
@@ -93,7 +93,7 @@ describe("owner share gallery API route", () => {
       share,
     });
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
-    vi.mocked(isResourceOwner).mockReturnValue(true);
+    vi.mocked(canManageShare).mockResolvedValue(true);
     vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue(entry);
     vi.mocked(getGalleryEntryByShareToken)
       .mockResolvedValueOnce(null)
@@ -132,21 +132,33 @@ describe("owner share gallery API route", () => {
         galleryDescription: "Public description",
       },
     });
-    expect(updateGalleryEntryMetadata).toHaveBeenCalledWith({
-      shareToken: share.token,
-      title: "Public title",
-      description: "Public description",
-    });
+    expect(updateGalleryEntryMetadata).toHaveBeenCalledWith(
+      {
+        shareToken: share.token,
+        title: "Public title",
+        description: "Public description",
+      },
+      testUser.id
+    );
     expect(uploadGalleryPreviewImage).toHaveBeenCalledWith({
       galleryEntryId: entry.id,
       previewDataUrl: "data:image/webp;base64,AAAA",
     });
-    expect(setGalleryEntryPreviewImage).toHaveBeenCalledWith({
-      shareToken: share.token,
-      previewImage: "gallery/previews/entry-1.webp",
-    });
-    expect(moveGalleryEntryToListed).toHaveBeenCalledWith(share.token);
-    expect(getOrCreateGalleryEntryForShare).toHaveBeenCalledWith(share);
+    expect(setGalleryEntryPreviewImage).toHaveBeenCalledWith(
+      {
+        shareToken: share.token,
+        previewImage: "gallery/previews/entry-1.webp",
+      },
+      testUser.id
+    );
+    expect(moveGalleryEntryToListed).toHaveBeenCalledWith(
+      share.token,
+      testUser.id
+    );
+    expect(getOrCreateGalleryEntryForShare).toHaveBeenCalledWith(
+      share,
+      testUser.id
+    );
     expect(recordAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: "gallery.entry.listed",
@@ -181,7 +193,7 @@ describe("owner share gallery API route", () => {
     )) as Response;
 
     expect(response.status).toBe(200);
-    expect(revokeShare).toHaveBeenCalledWith(share.token);
+    expect(revokeShare).toHaveBeenCalledWith(share.token, testUser.id);
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
     expect(recordAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -289,11 +301,14 @@ describe("owner share gallery API route", () => {
     )) as Response;
 
     expect(response.status).toBe(200);
-    expect(updateGalleryEntryMetadata).toHaveBeenCalledWith({
-      shareToken: share.token,
-      title: "Updated title",
-      description: "Updated public description",
-    });
+    expect(updateGalleryEntryMetadata).toHaveBeenCalledWith(
+      {
+        shareToken: share.token,
+        title: "Updated title",
+        description: "Updated public description",
+      },
+      testUser.id
+    );
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
     expect(recordAuditEvent).toHaveBeenCalledWith(
@@ -342,7 +357,7 @@ describe("owner share gallery API route", () => {
     )) as Response;
 
     expect(response.status).toBe(200);
-    expect(deleteGalleryEntry).toHaveBeenCalledWith(share.token);
+    expect(deleteGalleryEntry).toHaveBeenCalledWith(share.token, testUser.id);
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
     expect(recordAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({

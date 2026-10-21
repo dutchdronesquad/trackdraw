@@ -60,3 +60,43 @@ export const teamEditingCommandSchema = z.discriminatedUnion("action", [
   }),
 ]);
 export type TeamEditingCommand = z.infer<typeof teamEditingCommandSchema>;
+
+const publicationContext = { teamId: id, projectId: id };
+const publicationMetadata = {
+  title: z.string().trim().min(1).max(120),
+  description: z.string().trim().min(10).max(500),
+};
+export const teamPublicationCommandSchema = z.discriminatedUnion("action", [
+  z.strictObject({
+    ...publicationContext,
+    action: z.literal("publish"),
+    token: id.optional(),
+    revision: z.number().int().positive(),
+    view: z.enum(["2d", "3d"]).optional(),
+  }),
+  z.strictObject({
+    ...publicationContext,
+    token: id,
+    action: z.literal("revoke"),
+  }),
+  z.strictObject({
+    ...publicationContext,
+    token: id,
+    action: z.literal("unlist"),
+  }),
+  z.strictObject({
+    ...publicationContext,
+    token: id,
+    ...publicationMetadata,
+    action: z.literal("list"),
+  }),
+  z.strictObject({
+    ...publicationContext,
+    token: id,
+    ...publicationMetadata,
+    action: z.literal("update"),
+  }),
+]);
+export type TeamPublicationCommand = z.infer<
+  typeof teamPublicationCommandSchema
+>;

@@ -25,13 +25,11 @@ describe("sitemap metadata", () => {
       {
         id: "entry-1",
         shareToken: "share token",
-        ownerUserId: "user-1",
         galleryState: "featured",
         galleryTitle: "Featured track",
         galleryDescription: "Description",
         galleryPreviewImage: null,
         galleryPublishedAt: "2026-06-08T10:00:00.000Z",
-        moderationHiddenAt: null,
         createdAt: "2026-06-07T10:00:00.000Z",
         updatedAt: "2026-06-08T11:00:00.000Z",
         ownerName: "Pilot",

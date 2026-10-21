@@ -10,6 +10,13 @@ import {
   type SidebarDialogNavItem,
 } from "@/components/SidebarDialog";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEditor } from "@/store/editor";
 import {
   buildStoredEmbedPath,
@@ -191,6 +198,8 @@ interface ShareDialogProps {
   onExportJson?: () => void;
   onSharePublished?: () => void;
   existingShareMode?: boolean;
+  teamId?: string;
+  revision?: number;
 }
 
 export default function ShareDialog({
@@ -201,6 +210,8 @@ export default function ShareDialog({
   onExportJson,
   onSharePublished,
   existingShareMode = false,
+  teamId,
+  revision,
 }: ShareDialogProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
@@ -221,7 +232,37 @@ export default function ShareDialog({
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
   const [activeTab, setActiveTab] = useState<Tab>("share");
-  const [share, setShare] = useState<ActiveShare | null>(null);
+  const [share, setActiveShare] = useState<ActiveShare | null>(null);
+  const [teamShares, setTeamShares] = useState<
+    {
+      token: string;
+      title: string;
+      expiresAt: string | null;
+      shareType: "temporary" | "published";
+      galleryState: string | null;
+      galleryTitle: string | null;
+      galleryDescription: string | null;
+    }[]
+  >([]);
+  const setShare = useCallback(
+    (next: ActiveShare | null) => {
+      setActiveShare(next);
+      if (teamId && next)
+        setTeamShares((previous) =>
+          previous.map((item) =>
+            item.token === next.shareToken
+              ? {
+                  ...item,
+                  galleryState: next.galleryState,
+                  galleryTitle: next.galleryTitle,
+                  galleryDescription: next.galleryDescription,
+                }
+              : item
+          )
+        );
+    },
+    [teamId]
+  );
   const [loadDone, setLoadDone] = useState(existingShareMode);
   const [publishedDesignToken, setPublishedDesignToken] = useState<
     string | null
@@ -245,6 +286,7 @@ export default function ShareDialog({
   const abortRef = useRef<AbortController | null>(null);
 
   const shareNeedsRefresh =
+    !teamId &&
     share !== null &&
     publishedDesignToken !== null &&
     publishedDesignToken !== currentDesignToken;
@@ -288,7 +330,7 @@ export default function ShareDialog({
     displayNameValid,
     shareNeedsRefresh,
     hasShare: share !== null,
-    previewReady: galleryPreviewDataUrl !== null,
+    previewReady: Boolean(teamId) || galleryPreviewDataUrl !== null,
   });
   const canSubmitGalleryMetadataUpdate = canSubmitGalleryMetadataUpdateForm({
     title: galleryTitleInput,
@@ -335,13 +377,16 @@ export default function ShareDialog({
       try {
         if (userId && projectId) {
           const res = await fetch(
-            `/api/shares?projectId=${encodeURIComponent(projectId)}`,
+            teamId
+              ? `/api/team-projects/publication?teamId=${encodeURIComponent(teamId)}&projectId=${encodeURIComponent(projectId)}`
+              : `/api/shares?projectId=${encodeURIComponent(projectId)}`,
             { signal: ac.signal }
           );
           if (ac.signal.aborted) return;
 
           const data = (await res.json()) as {
             ok: boolean;
+            shares?: typeof teamShares;
             share?: {
               token: string;
               expiresAt: string | null;
@@ -354,6 +399,7 @@ export default function ShareDialog({
 
           if (ac.signal.aborted) return;
 
+          if (data.ok && teamId) setTeamShares(data.shares ?? []);
           if (data.ok && data.share) {
             const s = data.share;
             const expiry = inferExpiryDays(s.expiresAt);
@@ -408,22 +454,36 @@ export default function ShareDialog({
     projectId,
     currentView,
     currentDesignToken,
+    teamId,
+    setShare,
   ]);
 
   const doPublish = async (force = false): Promise<string> => {
     setPublishing(true);
     let failureCategory: ProductEventFailureCategory = "network";
     try {
-      const res = await fetch("/api/shares", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          design,
-          view: currentView,
-          ...(!isAuthenticated ? { expiresInDays } : {}),
-          ...(projectId ? { projectId } : {}),
-        }),
-      });
+      const res = await fetch(
+        teamId ? "/api/team-projects/publication" : "/api/shares",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(teamId
+              ? {
+                  action: "publish",
+                  teamId,
+                  revision,
+                  ...(share?.shareType === "published"
+                    ? { token: share.shareToken }
+                    : {}),
+                }
+              : { design }),
+            view: currentView,
+            ...(!isAuthenticated ? { expiresInDays } : {}),
+            ...(projectId ? { projectId } : {}),
+          }),
+        }
+      );
       failureCategory = classifyProductOperationFailure(res);
       const data = (await res.json()) as
         | {
@@ -433,6 +493,9 @@ export default function ShareDialog({
               path: string;
               expiresAt: string | null;
               shareType: "temporary" | "published";
+              galleryState?: string | null;
+              galleryTitle?: string | null;
+              galleryDescription?: string | null;
             };
           }
         | { ok: false; error?: string };
@@ -446,7 +509,7 @@ export default function ShareDialog({
           ? null
           : (inferExpiryDays(data.share.expiresAt) ?? expiresInDays);
 
-      if (force && share && share.shareToken !== data.share.token) {
+      if (!teamId && force && share && share.shareToken !== data.share.token) {
         fetch(`/api/shares/${encodeURIComponent(share.shareToken)}`, {
           method: "DELETE",
         }).catch(() => {
@@ -459,11 +522,25 @@ export default function ShareDialog({
         shareToken: data.share.token,
         shareType: data.share.shareType,
         expiresInDays: expiry,
-        galleryState: null,
-        galleryTitle: design.title.trim(),
-        galleryDescription: design.description?.trim() ?? "",
+        galleryState: parseGalleryState(data.share.galleryState),
+        galleryTitle: data.share.galleryTitle ?? design.title.trim(),
+        galleryDescription:
+          data.share.galleryDescription ?? design.description?.trim() ?? "",
       };
       setShare(newShare);
+      if (teamId)
+        setTeamShares((previous) => [
+          {
+            token: data.share.token,
+            title: design.title,
+            expiresAt: data.share.expiresAt,
+            shareType: data.share.shareType,
+            galleryState: newShare.galleryState,
+            galleryTitle: newShare.galleryTitle,
+            galleryDescription: newShare.galleryDescription,
+          },
+          ...previous.filter((s) => s.token !== data.share.token),
+        ]);
       setPublishedDesignToken(currentDesignToken);
 
       if (!userId || !projectId) {
@@ -561,17 +638,43 @@ export default function ShareDialog({
     }
   };
 
+  const mutateShare = (
+    token: string,
+    method: "DELETE" | "PATCH",
+    payload?: Record<string, unknown>
+  ) =>
+    fetch(
+      teamId
+        ? "/api/team-projects/publication"
+        : `/api/shares/${encodeURIComponent(token)}`,
+      {
+        method: teamId ? "POST" : method,
+        headers: { "Content-Type": "application/json" },
+        body: teamId
+          ? JSON.stringify({
+              ...payload,
+              action: method === "DELETE" ? "revoke" : payload?.action,
+              teamId,
+              projectId,
+              token,
+            })
+          : payload
+            ? JSON.stringify(payload)
+            : undefined,
+      }
+    );
+
   const handleRevoke = async () => {
     if (!share) return;
     setRevoking(true);
     try {
-      const res = await fetch(
-        `/api/shares/${encodeURIComponent(share.shareToken)}`,
-        { method: "DELETE" }
-      );
+      const res = await mutateShare(share.shareToken, "DELETE");
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (!data.ok) throw new Error(data.error ?? "Failed to revoke link");
 
+      setTeamShares((previous) =>
+        previous.filter((s) => s.token !== share.shareToken)
+      );
       setShare(null);
       setPublishedDesignToken(null);
       clearAnonShare();
@@ -600,25 +703,21 @@ export default function ShareDialog({
   };
 
   const handleListInGallery = async () => {
-    if (!share || !galleryPreviewDataUrl) return;
+    if (!share || (!teamId && !galleryPreviewDataUrl)) return;
     let failureCategory: ProductEventFailureCategory = "rendering";
     try {
-      const webpDataUrl = await convertPngToWebp(galleryPreviewDataUrl);
+      const webpDataUrl =
+        !teamId && galleryPreviewDataUrl
+          ? await convertPngToWebp(galleryPreviewDataUrl)
+          : undefined;
 
       setGalleryUpdating(true);
-      const res = await fetch(
-        `/api/shares/${encodeURIComponent(share.shareToken)}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "list",
-            title: galleryTitleInput.trim(),
-            description: galleryDescriptionInput.trim(),
-            previewDataUrl: webpDataUrl,
-          }),
-        }
-      );
+      const res = await mutateShare(share.shareToken, "PATCH", {
+        action: "list",
+        title: galleryTitleInput.trim(),
+        description: galleryDescriptionInput.trim(),
+        ...(!teamId ? { previewDataUrl: webpDataUrl } : {}),
+      });
       failureCategory = classifyProductOperationFailure(res);
       const data = (await res.json()) as
         | {
@@ -670,14 +769,9 @@ export default function ShareDialog({
     if (!share) return;
     setGalleryUpdating(true);
     try {
-      const res = await fetch(
-        `/api/shares/${encodeURIComponent(share.shareToken)}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "unlist" }),
-        }
-      );
+      const res = await mutateShare(share.shareToken, "PATCH", {
+        action: "unlist",
+      });
       const data = (await res.json()) as
         | {
             ok: true;
@@ -709,18 +803,11 @@ export default function ShareDialog({
     if (!share) return;
     setGalleryUpdating(true);
     try {
-      const res = await fetch(
-        `/api/shares/${encodeURIComponent(share.shareToken)}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "update",
-            title: galleryTitleInput.trim(),
-            description: galleryDescriptionInput.trim(),
-          }),
-        }
-      );
+      const res = await mutateShare(share.shareToken, "PATCH", {
+        action: "update",
+        title: galleryTitleInput.trim(),
+        description: galleryDescriptionInput.trim(),
+      });
       const data = (await res.json()) as
         | {
             ok: true;
@@ -930,13 +1017,15 @@ export default function ShareDialog({
   const contentMeta: Record<Tab, { title: string; description: string }> = {
     share: {
       title: t("share.content.share.title"),
-      description: existingShareMode
-        ? t("share.content.share.description.existing")
-        : isAuthenticated
-          ? isAccountProjectShare
-            ? t("share.content.share.description.account")
-            : t("share.content.share.description.separate")
-          : t("share.content.share.description.anonymous"),
+      description: teamId
+        ? t("teamPublication.description")
+        : existingShareMode
+          ? t("share.content.share.description.existing")
+          : isAuthenticated
+            ? isAccountProjectShare
+              ? t("share.content.share.description.account")
+              : t("share.content.share.description.separate")
+            : t("share.content.share.description.anonymous"),
     },
     gallery: {
       title: t("share.content.gallery.title"),
@@ -956,12 +1045,15 @@ export default function ShareDialog({
 
   return (
     <>
-      {isAccountProjectShare && showGalleryForm && !isGalleryVisible && (
-        <GalleryPreviewRenderer
-          onCapture={setGalleryPreviewDataUrl}
-          onFailure={handleGalleryPreviewFailure}
-        />
-      )}
+      {!teamId &&
+        isAccountProjectShare &&
+        showGalleryForm &&
+        !isGalleryVisible && (
+          <GalleryPreviewRenderer
+            onCapture={setGalleryPreviewDataUrl}
+            onFailure={handleGalleryPreviewFailure}
+          />
+        )}
 
       <SidebarDialog
         open={open}
@@ -979,6 +1071,59 @@ export default function ShareDialog({
         contentTitle={contentMeta[resolvedTab].title}
         contentDescription={contentMeta[resolvedTab].description}
       >
+        {teamId ? (
+          <div className="border-border mb-4 space-y-2 border-b pb-4 text-sm">
+            <p className="font-medium">{t("teamPublication.audience")}</p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {t("teamPublication.consequences")}
+            </p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {t("teamPublication.snapshot")}
+            </p>
+            {resolvedTab === "gallery" ? (
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                {t("teamPublication.galleryAudience")}
+              </p>
+            ) : null}
+            {teamShares.length > 0 && (teamShares.length > 1 || !share) ? (
+              <Select
+                value={share?.shareToken ?? ""}
+                onValueChange={(token) => {
+                  const selected = teamShares.find(
+                    (item) => item.token === token
+                  );
+                  if (!selected) return;
+                  setShare({
+                    url: new URL(
+                      buildStoredSharePath(token, currentView),
+                      window.location.origin
+                    ).toString(),
+                    shareToken: token,
+                    shareType: selected.shareType,
+                    expiresInDays: inferExpiryDays(selected.expiresAt),
+                    galleryState: parseGalleryState(selected.galleryState),
+                    galleryTitle: selected.galleryTitle ?? "",
+                    galleryDescription: selected.galleryDescription ?? "",
+                  });
+                }}
+              >
+                <SelectTrigger
+                  aria-label={t("teamPublication.selectLink")}
+                  className="w-full"
+                >
+                  <SelectValue placeholder={t("teamPublication.selectLink")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamShares.map((item) => (
+                    <SelectItem key={item.token} value={item.token}>
+                      {item.title} · {item.token}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : null}
+          </div>
+        ) : null}
         {resolvedTab === "share" && (
           <div className="space-y-4">
             {existingShareMode ? (
@@ -1052,12 +1197,20 @@ export default function ShareDialog({
                   <div className="border-border/60 bg-muted/18 rounded-xl border px-3 py-3">
                     <p className="text-foreground text-sm font-medium">
                       {isAccountProjectShare
-                        ? t("share.link.titles.savedProject")
+                        ? t(
+                            teamId
+                              ? "teamPublication.title"
+                              : "share.link.titles.savedProject"
+                          )
                         : t("share.link.titles.newShare")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                       {isAccountProjectShare
-                        ? t("share.link.descriptions.savedProject")
+                        ? t(
+                            teamId
+                              ? "teamPublication.description"
+                              : "share.link.descriptions.savedProject"
+                          )
                         : t("share.link.descriptions.newShare")}
                     </p>
                   </div>
@@ -1073,12 +1226,20 @@ export default function ShareDialog({
                         {share
                           ? share.shareType === "published"
                             ? isAccountProjectShare
-                              ? t("share.link.titles.savedProject")
+                              ? t(
+                                  teamId
+                                    ? "teamPublication.title"
+                                    : "share.link.titles.savedProject"
+                                )
                               : t("share.link.titles.separatePublished")
                             : t("share.link.titles.temporary")
                           : isAuthenticated
                             ? isAccountProjectShare
-                              ? t("share.link.titles.noSavedProject")
+                              ? t(
+                                  teamId
+                                    ? "teamPublication.noLink"
+                                    : "share.link.titles.noSavedProject"
+                                )
                               : t("share.link.titles.noSeparate")
                             : t("share.link.titles.noTemporary")}
                       </p>
@@ -1438,7 +1599,11 @@ export default function ShareDialog({
                   <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                     {isGalleryVisible
                       ? t("share.gallery.details.description")
-                      : t("share.gallery.list.description")}
+                      : t(
+                          teamId
+                            ? "teamPublication.galleryDescription"
+                            : "share.gallery.list.description"
+                        )}
                   </p>
                 </div>
 
@@ -1488,7 +1653,11 @@ export default function ShareDialog({
                     </p>
 
                     <div className="flex items-center gap-2">
-                      {galleryPreviewDataUrl === null ? (
+                      {teamId ? (
+                        <span className="text-muted-foreground text-[11px]">
+                          {t("teamPublication.galleryPreview")}
+                        </span>
+                      ) : galleryPreviewDataUrl === null ? (
                         <>
                           <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
                           <span className="text-muted-foreground text-[11px]">

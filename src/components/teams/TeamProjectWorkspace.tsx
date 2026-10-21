@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import {
   LockKeyhole,
   LogOut,
   PencilLine,
+  Share2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
@@ -23,6 +25,10 @@ import { TeamAvatar } from "./TeamAvatar";
 import { Button } from "@/components/ui/button";
 import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { useTeamProjectEditing } from "./useTeamProjectEditing";
+
+const ShareDialog = dynamic(() => import("@/components/dialogs/ShareDialog"), {
+  ssr: false,
+});
 
 const Viewer = dynamic(() => import("@/components/editor/viewer/EditorShell"), {
   ssr: false,
@@ -41,6 +47,7 @@ export default function TeamProjectWorkspace({
 }) {
   const t = useTranslations("dialogs.teamLibrary");
   const router = useRouter();
+  const [shareOpen, setShareOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user.id;
   const current = useTeamProjectEditing(userId, teamId, projectId);
@@ -208,6 +215,17 @@ export default function TeamProjectWorkspace({
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            {!editing && !recovery && loaded.team.role === "owner" ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                onClick={() => setShareOpen(true)}
+              >
+                <Share2 className="size-3.5" />
+                {t("publish")}
+              </Button>
+            ) : null}
             <Button
               size="sm"
               variant="ghost"
@@ -241,7 +259,12 @@ export default function TeamProjectWorkspace({
             ) : !recovery && loaded.team.role !== "viewer" ? (
               <Button
                 size="sm"
-                className="h-8 gap-1.5"
+                variant="ghost"
+                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                aria-label={t(
+                  status === "acquiring" ? "starting" : "startEditing"
+                )}
+                title={t("startEditing")}
                 disabled={status === "acquiring" || Boolean(editorName)}
                 onClick={() => void current.acquire()}
               >
@@ -253,7 +276,7 @@ export default function TeamProjectWorkspace({
                 ) : (
                   <PencilLine className="size-3.5" />
                 )}
-                {t(status === "acquiring" ? "starting" : "startEditing")}
+                {t(status === "acquiring" ? "starting" : "editShort")}
               </Button>
             ) : null}
           </div>
@@ -276,6 +299,16 @@ export default function TeamProjectWorkspace({
             {t("reloadLatest")}
           </Button>
         </div>
+      ) : null}
+      {shareOpen && !editing && !recovery && loaded.team.role === "owner" ? (
+        <ShareDialog
+          key={`${teamId}:${projectId}:${userId}`}
+          open
+          onOpenChange={setShareOpen}
+          teamId={teamId}
+          projectId={projectId}
+          revision={loaded.project.revision}
+        />
       ) : null}
       <div className="min-h-0 flex-1">
         {editing ? (
