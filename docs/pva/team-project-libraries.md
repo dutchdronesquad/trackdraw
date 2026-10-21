@@ -1,10 +1,10 @@
-# Personal And Team Project Libraries
+# Personal And Team Projects
 
 Implementation contract for [#1021](https://github.com/dutchdronesquad/trackdraw/issues/1021), under the [teams epic](https://github.com/dutchdronesquad/trackdraw/issues/1018).
 
 ## Studio workflow
 
-Projects → Account shows personal projects and teams in a compact desktop navigation column with initials. Mobile and tablet use the existing shadcn Select for the same locations. Project rows remain flat and show their last change; the primary creation action belongs to the selected location. Selection is persisted by account ID in `trackdraw.projectLibrary`; it contains no designs. Team pages use bounded metadata reads with cursor pagination, live membership checks and no-store responses. Personal/device/snapshot/shared-link flows retain their current behavior. Missing membership falls back to the personal library on reload/focus. Switching accounts remounts the list and ignores old in-flight responses.
+Projects → Account shows personal projects and teams in a compact desktop navigation column with initials. Mobile and tablet use the existing shadcn Select for the same locations. Project rows remain flat and show their last change; the primary creation action belongs to the selected location. Selection is persisted by account ID in `trackdraw.projectLibrary`; it contains no designs. Team pages use bounded metadata reads with cursor pagination, live membership checks and no-store responses. Personal/device/snapshot/shared-link flows retain their current behavior. Missing membership falls back to personal projects on reload/focus. Switching accounts remounts the list and ignores old in-flight responses.
 
 Owners/editors can create a blank version 2 project in an explicitly selected team; viewers cannot. Each project has exactly one owner and independent creator provenance. All roles currently open team projects read-only using `/studio?teamId=…&teamProject=…`. Owner/editor editing intentionally waits for the exclusive-session implementation in #1022: the server returns `editing: unavailable` and accepts no team design-update command. No feature flag or unsafe interim write path is introduced. Team editing does not ship until the epic's remaining requirements pass.
 

@@ -74,7 +74,7 @@ For email template styling in non-production environments, use `/dev/email-previ
 
 ## Team Management Preview
 
-Team management is available to signed-in users after applying migrations through `0032_team_project_libraries.sql`. For local validation, run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. The Projects dialog includes a personal/team library selector and creation of blank private team projects. Personal owners can explicitly move a synced personal project into a team they own. Team projects open read-only until editing leases ship in #1022; ownership transfer/deletion remains #1025. See [team project libraries](docs/pva/team-project-libraries.md).
+Team management is available to signed-in users after applying migrations through `0032_team_project_libraries.sql`. For local validation, run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. The Projects dialog includes a personal/team project selector and creation of blank private team projects. Personal owners can explicitly move a synced personal project into a team they own. Team projects open read-only until editing leases ship in #1022; ownership transfer/deletion remains #1025. See [personal and team projects](docs/pva/team-project-libraries.md).
 
 ## Roles And Dashboard Checks
 

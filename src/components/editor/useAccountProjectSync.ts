@@ -600,7 +600,7 @@ export function useAccountProjectSync({
     ) => {
       if (isMovedTeamProject(targetDesign.id))
         throw new Error(
-          "This project has moved to a team. Reopen it from the team library."
+          "This project has moved to a team. Reopen it from Cloud projects."
         );
       if (!cloudProjectsAvailable) {
         throw new Error(
