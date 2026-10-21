@@ -1,7 +1,13 @@
 "use client";
 
-import { useId, useState } from "react";
-import { Clipboard, LoaderCircle, Plus, MoreHorizontal } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import {
+  ArrowLeft,
+  Clipboard,
+  LoaderCircle,
+  Plus,
+  MoreHorizontal,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,31 +47,17 @@ function ApiKeyRow({
   isMobile,
   deleting,
   onDelete,
-  onUpdate,
+  onEdit,
 }: {
   apiKey: AccountApiKey;
   isMobile: boolean;
   deleting: boolean;
   onDelete: () => void;
-  onUpdate: (keyId: string, access: ApiKeyProjectAccess) => Promise<boolean>;
+  onEdit: () => void;
 }) {
   const t = useTranslations("dialogs.account.apiKeys");
   const tCommon = useTranslations("common");
   const [confirming, setConfirming] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [draftAccess, setDraftAccess] = useState<ApiKeyProjectAccess>(
-    apiKey.projectAccess ?? { mode: "all" }
-  );
-
-  async function saveAccess() {
-    setSaving(true);
-    try {
-      if (await onUpdate(apiKey.id, draftAccess)) setEditing(false);
-    } finally {
-      setSaving(false);
-    }
-  }
   const name = apiKey.name?.trim() || t("fallback.unnamed");
   const writeAccess = Boolean(apiKey.permissions?.projects?.length);
   const access = apiKey.projectAccess?.teamId
@@ -82,47 +74,7 @@ function ApiKeyRow({
         isMobile ? "grid-cols-[minmax(0,1fr)_auto]" : desktopColumns
       )}
     >
-      {editing ? (
-        <div role="cell" className="col-span-full space-y-4 px-2.5 py-2">
-          <div>
-            <p className="font-medium">{t("edit.title", { name })}</p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {t("edit.description")}
-            </p>
-          </div>
-          <div className="w-full sm:max-w-sm">
-            <ApiKeyProjectAccessSelector
-              value={draftAccess}
-              onChange={setDraftAccess}
-              disabled={saving}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={saving}
-              onClick={() => setEditing(false)}
-            >
-              {tCommon("actions.cancel")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              disabled={
-                saving ||
-                (draftAccess.mode === "selected" &&
-                  !draftAccess.projectIds.length)
-              }
-              onClick={() => void saveAccess()}
-            >
-              {saving && <LoaderCircle className="size-3.5 animate-spin" />}
-              {t(saving ? "edit.saving" : "edit.save")}
-            </Button>
-          </div>
-        </div>
-      ) : confirming ? (
+      {confirming ? (
         <div
           role="cell"
           className="col-span-full flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-2.5"
@@ -211,12 +163,7 @@ function ApiKeyRow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setDraftAccess(apiKey.projectAccess ?? { mode: "all" });
-                    setEditing(true);
-                  }}
-                >
+                <DropdownMenuItem onSelect={onEdit}>
                   {t("edit.action")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -260,6 +207,11 @@ type ApiKeysViewProps = {
   onCopyApiKey: (key: string) => void;
   onDeleteApiKey: (keyId: string) => void;
   onRefreshApiKeys: () => void;
+  editDraft: { keyId: string; projectAccess: ApiKeyProjectAccess } | null;
+  onEditDraftChange: (
+    draft: { keyId: string; projectAccess: ApiKeyProjectAccess } | null
+  ) => void;
+  updatingApiKey: boolean;
   onUpdateApiKeyAccess: (
     keyId: string,
     access: ApiKeyProjectAccess
@@ -289,12 +241,23 @@ export function AccountApiKeysView({
   onDeleteApiKey,
   onRefreshApiKeys,
   onUpdateApiKeyAccess,
+  editDraft,
+  onEditDraftChange,
+  updatingApiKey,
 }: ApiKeysViewProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const [writeAccess, setWriteAccess] = useState(false);
   const writeAccessId = useId();
   const writeHintId = useId();
+
+  const heading = useRef<HTMLHeadingElement>(null);
+  const hadEditor = useRef(false);
+  const editingKeyId = editDraft?.keyId;
+  useEffect(() => {
+    if (editingKeyId || hadEditor.current) heading.current?.focus();
+    hadEditor.current = Boolean(editingKeyId);
+  }, [editingKeyId]);
 
   if (isPending) return <AccountDialogLoading />;
   if (!user) return <AccountDialogNotSignedIn />;
@@ -309,6 +272,94 @@ export function AccountApiKeysView({
 
   async function createKey() {
     if (await onCreateApiKey(projectAccess, writeAccess)) resetDraft();
+  }
+
+  if (editDraft) {
+    const key = apiKeys.find((item) => item.id === editDraft.keyId);
+    const name = key?.name?.trim() || t("account.apiKeys.fallback.unnamed");
+    const cancel = () => onEditDraftChange(null);
+    return (
+      <form
+        className="flex w-full flex-col gap-3 sm:gap-4"
+        aria-label={t("account.apiKeys.edit.heading")}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (updatingApiKey) return;
+          void onUpdateApiKeyAccess(
+            editDraft.keyId,
+            editDraft.projectAccess
+          ).then((ok) => {
+            if (ok) onEditDraftChange(null);
+          });
+        }}
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={updatingApiKey}
+          onClick={cancel}
+          className="text-primary h-7 self-start px-0 text-xs hover:bg-transparent"
+        >
+          <ArrowLeft className="size-3.5" />
+          {t("account.apiKeys.edit.back")}
+        </Button>
+        <div className="space-y-1">
+          <h3
+            ref={heading}
+            tabIndex={-1}
+            className="text-base font-semibold outline-none"
+          >
+            {t("account.apiKeys.edit.heading")}
+          </h3>
+          <p className="text-muted-foreground text-xs">
+            {t("account.apiKeys.edit.keyName", { name })}
+          </p>
+          <p className="text-muted-foreground pt-1 text-xs">
+            {t("account.apiKeys.edit.description")}
+          </p>
+        </div>
+        <ApiKeyProjectAccessSelector
+          inline
+          value={editDraft.projectAccess}
+          disabled={updatingApiKey}
+          onChange={(projectAccess) =>
+            onEditDraftChange({ ...editDraft, projectAccess })
+          }
+          actions={
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={updatingApiKey}
+                onClick={cancel}
+              >
+                {tCommon("actions.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  updatingApiKey ||
+                  (editDraft.projectAccess.mode === "selected" &&
+                    !editDraft.projectAccess.projectIds.length)
+                }
+              >
+                {updatingApiKey && (
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                )}
+                {t(
+                  updatingApiKey
+                    ? "account.apiKeys.edit.saving"
+                    : "account.apiKeys.edit.save"
+                )}
+              </Button>
+            </div>
+          }
+        />
+        <AccountDialogError error={error} />
+      </form>
+    );
   }
 
   return (
@@ -511,7 +562,11 @@ export function AccountApiKeysView({
       {!draftOpen && (
         <section>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-medium">
+            <h3
+              ref={heading}
+              tabIndex={-1}
+              className="text-sm font-medium outline-none"
+            >
               {t("account.apiKeys.active.title")}
             </h3>
             <Button
@@ -572,7 +627,12 @@ export function AccountApiKeysView({
                   isMobile={isMobile}
                   deleting={deletingApiKeyId === apiKey.id}
                   onDelete={() => onDeleteApiKey(apiKey.id)}
-                  onUpdate={onUpdateApiKeyAccess}
+                  onEdit={() =>
+                    onEditDraftChange({
+                      keyId: apiKey.id,
+                      projectAccess: apiKey.projectAccess ?? { mode: "all" },
+                    })
+                  }
                 />
               ))
             )}

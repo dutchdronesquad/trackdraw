@@ -115,6 +115,7 @@ export default function AccountDialog({
     setCreatingApiKey(false);
     setCreatedApiKey(null);
     setDeletingApiKeyId(null);
+    setApiKeyEditDraft(null);
     setView(initialView);
   }, [initialView, open, user?.email, user?.name]);
 
@@ -466,10 +467,17 @@ export default function AccountDialog({
     }
   };
 
+  const [apiKeyEditDraft, setApiKeyEditDraft] = useState<{
+    keyId: string;
+    projectAccess: ApiKeyProjectAccess;
+  } | null>(null);
+  const [updatingApiKey, setUpdatingApiKey] = useState(false);
+
   const handleUpdateApiKeyAccess = async (
     keyId: string,
     projectAccess: ApiKeyProjectAccess
   ) => {
+    setUpdatingApiKey(true);
     setError(null);
     try {
       const response = await fetch(
@@ -498,6 +506,8 @@ export default function AccountDialog({
     } catch {
       setError(t("account.errors.apiKeyUpdateFailed"));
       return false;
+    } finally {
+      setUpdatingApiKey(false);
     }
   };
 
@@ -632,6 +642,12 @@ export default function AccountDialog({
       onApiKeyExpiryDaysChange={setApiKeyExpiryDays}
       onCreateApiKey={handleCreateApiKey}
       onUpdateApiKeyAccess={handleUpdateApiKeyAccess}
+      editDraft={apiKeyEditDraft}
+      onEditDraftChange={(draft) => {
+        setApiKeyEditDraft(draft);
+        setError(null);
+      }}
+      updatingApiKey={updatingApiKey}
       onCopyApiKey={(key) => void handleCopyApiKey(key)}
       onDeleteApiKey={(keyId) => void handleDeleteApiKey(keyId)}
       onRefreshApiKeys={refreshApiKeys}

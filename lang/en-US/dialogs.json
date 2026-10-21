@@ -220,7 +220,8 @@
         "allowWrites": "Allow project changes",
         "writeHint": "Let this integration create, edit and archive projects within your access.",
         "selectedWriteHint": "Let this integration edit and archive the selected projects.",
-        "writable": "Can edit"
+        "writable": "Can edit",
+        "ownerHint": "Choose personal or team projects."
       },
       "newKey": "New API key",
       "actionsFor": "Actions for {name}",
@@ -228,9 +229,12 @@
         "action": "Edit project access",
         "actions": "Actions for {name}",
         "title": "Project access for {name}",
-        "description": "Changes apply immediately. Your API key, expiry and read/write permissions stay the same.",
+        "description": "Changes apply after saving.",
         "save": "Save changes",
-        "saving": "Saving…"
+        "saving": "Saving…",
+        "heading": "Edit project access",
+        "back": "API keys",
+        "keyName": "{name} · API key"
       }
     },
     "danger": {

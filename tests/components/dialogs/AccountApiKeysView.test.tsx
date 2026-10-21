@@ -29,8 +29,15 @@ function renderView(
   function Harness() {
     const [access, setAccess] = useState<ApiKeyProjectAccess>({ mode: "all" });
     const [draft, setDraft] = useState(initialDraft);
+    const [editDraft, setEditDraft] =
+      useState<React.ComponentProps<typeof AccountApiKeysView>["editDraft"]>(
+        null
+      );
     return (
       <AccountApiKeysView
+        editDraft={editDraft}
+        onEditDraftChange={setEditDraft}
+        updatingApiKey={false}
         projectAccess={access}
         onProjectAccessChange={setAccess}
         draftOpen={draft}
@@ -357,10 +364,13 @@ it("edits an existing key scope, retains failed drafts and saves without creatin
   await user.click(
     screen.getByRole("menuitem", { name: "Edit project access" })
   );
-  await user.click(screen.getByRole("button", { name: "Project access" }));
+  expect(screen.queryByRole("table")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Done" })).toBeNull();
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "Edit project access" })
+  );
   await user.click(screen.getByRole("tab", { name: "Selected" }));
   await user.click(await screen.findByRole("checkbox", { name: "Race night" }));
-  await user.click(screen.getByRole("button", { name: "Done" }));
   await user.click(screen.getByRole("button", { name: "Save changes" }));
   expect(update).toHaveBeenLastCalledWith("key-1", {
     mode: "selected",
@@ -372,4 +382,25 @@ it("edits an existing key scope, retains failed drafts and saves without creatin
     expect(screen.queryByRole("button", { name: "Save changes" })).toBeNull()
   );
   expect(create).not.toHaveBeenCalled();
+});
+
+it("cancels scope edits without saving and returns focus to the key list", async () => {
+  stubProjects();
+  const update = vi.fn(async () => true);
+  renderView({ onUpdateApiKeyAccess: update }, false);
+  const user = userEvent.setup();
+  await user.click(
+    screen.getByRole("button", { name: "Actions for RotorHazard" })
+  );
+  await user.click(
+    screen.getByRole("menuitem", { name: "Edit project access" })
+  );
+  await user.click(screen.getByRole("tab", { name: "Selected" }));
+  await user.click(await screen.findByRole("checkbox", { name: "Race night" }));
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(update).not.toHaveBeenCalled();
+  expect(screen.getByRole("table", { name: "Active API keys" })).toBeTruthy();
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "Active API keys" })
+  );
 });
