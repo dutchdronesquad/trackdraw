@@ -115,9 +115,20 @@ it("requires confirmation to remove a member and does not offer owner promotion"
   const action = vi.fn();
   render(<TeamManagement team={team} busy={false} onCommand={action} />);
   const user = userEvent.setup();
+  await user.click(
+    screen.getByRole("combobox", { name: "Role for pilot@example.invalid" })
+  );
   expect(
     screen.getAllByRole("option").map((option) => option.textContent)
   ).not.toContain("Owner");
+  await user.click(screen.getByRole("option", { name: "Viewer" }));
+  expect(action).toHaveBeenCalledWith({
+    action: "role",
+    teamId: "team",
+    userId: "pilot",
+    role: "viewer",
+  });
+  action.mockClear();
   await user.click(
     screen.getByRole("button", { name: "Actions for pilot@example.invalid" })
   );
@@ -261,19 +272,16 @@ it("keeps the directory lean and preserves the invitation screen and draft acros
     await screen.findByRole("textbox", { name: "Email address" }),
     "draft@example.invalid"
   );
-  await user.selectOptions(
-    screen.getByRole("combobox", { name: /^Role$/ }),
-    "viewer"
-  );
+  await user.click(screen.getByRole("combobox", { name: /^Role$/ }));
+  await user.click(screen.getByRole("option", { name: "Viewer" }));
   rerender(<TeamsView key="mobile" />);
   expect(
     (screen.getByRole("textbox", { name: "Email address" }) as HTMLInputElement)
       .value
   ).toBe("draft@example.invalid");
   expect(
-    (screen.getByRole("combobox", { name: /^Role$/ }) as HTMLSelectElement)
-      .value
-  ).toBe("viewer");
+    screen.getByRole("combobox", { name: /^Role$/ }).textContent
+  ).toContain("Viewer");
   await user.click(screen.getByRole("button", { name: "Cancel" }));
   expect(await screen.findByRole("heading", { name: "Members" })).toBeTruthy();
   await user.click(screen.getByRole("button", { name: "Team actions" }));

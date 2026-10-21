@@ -1,4 +1,6 @@
 "use client";
+import { useId } from "react";
+import { TeamRoleSelect } from "./TeamRoleSelect";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +15,7 @@ export function TeamForms({
   onCancel: () => void;
 }) {
   const t = useTranslations("dialogs.teams");
+  const roleId = useId();
   const {
     screen,
     team,
@@ -62,18 +65,16 @@ export function TeamForms({
             />
           </label>
           <div className="space-y-2">
-            <label className="block space-y-2 text-sm font-medium">
-              <span>{t("role")}</span>
-              <select
-                className="border-input bg-background h-10 w-full rounded-md border px-3 font-normal"
-                value={role}
-                disabled={busy}
-                onChange={(e) => setRole(e.target.value as "editor" | "viewer")}
-              >
-                <option value="editor">{t("roles.editor")}</option>
-                <option value="viewer">{t("roles.viewer")}</option>
-              </select>
+            <label className="text-sm font-medium" htmlFor={roleId}>
+              {t("role")}
             </label>
+            <TeamRoleSelect
+              id={roleId}
+              label={t("role")}
+              value={role}
+              disabled={busy}
+              onValueChange={setRole}
+            />
             <p className="text-muted-foreground text-sm">
               {t(role === "editor" ? "editorHelp" : "viewerHelp")}
             </p>

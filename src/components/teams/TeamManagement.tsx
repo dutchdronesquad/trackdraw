@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useTeamDialogState } from "./TeamDialogState";
+import { TeamRoleSelect } from "./TeamRoleSelect";
 import { TeamAvatar } from "./TeamAvatar";
 import { TeamActions } from "./TeamActions";
 import type { TeamCommand, TeamDetails } from "@/lib/teams";
@@ -80,27 +81,22 @@ export function TeamManagement({
                   </span>
                 ) : (
                   <>
-                    <label className="hidden sm:block">
-                      <span className="sr-only">
-                        {t("memberRole", { email: member.email })}
-                      </span>
-                      <select
-                        className="bg-background text-muted-foreground h-10 rounded-md px-2 text-sm"
+                    <div className="hidden sm:block">
+                      <TeamRoleSelect
+                        label={t("memberRole", { email: member.email })}
                         value={member.role}
                         disabled={busy}
-                        onChange={(e) =>
+                        className="text-muted-foreground w-28 border-transparent shadow-none"
+                        onValueChange={(role) =>
                           onCommand({
                             action: "role",
                             teamId: team.id,
                             userId: member.userId,
-                            role: e.target.value as "editor" | "viewer",
+                            role,
                           })
                         }
-                      >
-                        <option value="editor">{t("roles.editor")}</option>
-                        <option value="viewer">{t("roles.viewer")}</option>
-                      </select>
-                    </label>
+                      />
+                    </div>
                     <TeamActions
                       label={t("memberActions", { email: member.email })}
                       busy={busy}
