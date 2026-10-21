@@ -4,7 +4,7 @@ Implementation contract for [#1020](https://github.com/dutchdronesquad/trackdraw
 
 ## Product And Scope
 
-The account dialog has a Teams section for creating/renaming teams, inviting editors/viewers, changing roles, removing members and leaving a team. An invitation page preserves its destination through existing-account or new-account sign-in and requires an explicit acceptance. Team owners cannot leave, demote themselves or delete their account. Ownership transfer and team deletion are #1025; project libraries, exclusive editing and credential expansion remain #1021/#1022/#1024.
+The account dialog has a Teams section for creating/renaming teams, inviting editors/viewers, changing roles, removing members and leaving a team. An invitation page preserves its destination through existing-account or new-account sign-in and requires an explicit acceptance. Team owners cannot leave, demote themselves or delete their account. Ownership transfer and team deletion are #1025; personal and team projects, exclusive editing and credential expansion remain #1021/#1022/#1024.
 
 Team management is directly available to signed-in users after applying its migrations, without runtime feature configuration or a capability request. This work targets development while the remaining epic issues are implemented. An invitation URL does not confer membership. No placeholder team projects or live collaboration are exposed.
 
