@@ -2,11 +2,11 @@
 
 Implementation contract for [#1020](https://github.com/dutchdronesquad/trackdraw/issues/1020), following the [ownership foundation](team-project-authorization.md).
 
-## Product And Activation
+## Product And Scope
 
 The account dialog has a Teams section for creating/renaming teams, inviting editors/viewers, changing roles, removing members and leaving a team. An invitation page preserves its destination through existing-account or new-account sign-in and requires an explicit acceptance. Team owners cannot leave, demote themselves or delete their account. Ownership transfer and team deletion are #1025; project libraries, exclusive editing and credential expansion remain #1021/#1022/#1024.
 
-`TRACKDRAW_TEAMS_ENABLED=true` enables management. It defaults off. The authenticated capability response controls account navigation; the same server flag guards reads/mutations. Keep production disabled until the epic's activation criteria are met. An invitation URL does not enable the feature or confer membership. No placeholder team projects or live collaboration are exposed.
+Team management is directly available to signed-in users after applying its migrations, without runtime feature configuration or a capability request. This work targets development while the remaining epic issues are implemented. An invitation URL does not confer membership. No placeholder team projects or live collaboration are exposed.
 
 ## Account Navigation
 
@@ -35,4 +35,4 @@ The installed Better Auth 1.7.11 organization plugin was inspected rather than e
 
 ## Validation
 
-Use the SQL-backed membership tests, team API tests and account/teams component tests. Validate a fresh/existing-account invite, resend/revoke, role downgrade, leave and wrong-account attempt against real authenticated local Cloudflare preview on desktop and mobile. Enable the local flag and apply both ownership migrations first; production mail acceptance and production activation remain separate evidence.
+Use the SQL-backed membership tests, team API tests and account/teams component tests. Validate a fresh/existing-account invite, resend/revoke, role downgrade, leave and wrong-account attempt against real authenticated local Cloudflare preview on desktop and mobile. Apply both ownership migrations first; local validation does not establish live mail delivery or production deployment.

@@ -10,8 +10,6 @@ import {
   type TeamInvitation,
 } from "@/lib/teams";
 
-export const teamsEnabled = () =>
-  process.env.TRACKDRAW_TEAMS_ENABLED === "true";
 export class TeamError extends Error {
   constructor(
     readonly code: TeamErrorCode,
@@ -84,7 +82,6 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
     )
     .all<TeamInvitation>();
   return {
-    enabled: true,
     teams: teams.results,
     invitations: invitations.results,
   };

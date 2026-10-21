@@ -4,6 +4,3 @@ BETTER_AUTH_SECRET=replace-with-a-long-random-string
 # Mail
 PLUNK_API_KEY=replace-with-your-plunk-server-key
 PLUNK_FROM_EMAIL=noreply@trackdraw.app
-
-# Keep disabled until the Teams epic is ready for activation.
-TRACKDRAW_TEAMS_ENABLED=false

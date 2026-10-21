@@ -89,7 +89,6 @@ it("creates a team in the account surface and loads its owner controls", async (
         ? { ok: true, team }
         : {
             ok: true,
-            enabled: true,
             teams: created
               ? [{ id: "team", name: "Race team", role: "owner" }]
               : [],
@@ -149,7 +148,6 @@ it("offers a member only their own role and a confirmed leave action", async () 
         ? { ok: true, team: { ...team, role: "viewer", members: [] } }
         : {
             ok: true,
-            enabled: true,
             teams: [{ id: "team", name: "Race team", role: "viewer" }],
             invitations: [],
           }
@@ -252,7 +250,6 @@ it("keeps the directory lean and preserves the invitation screen and draft acros
           ? { ok: true, team }
           : {
               ok: true,
-              enabled: true,
               teams: [{ id: team.id, name: team.name, role: "owner" }],
               invitations: [],
             }
@@ -312,7 +309,6 @@ it("returns to the team after sending an invitation and exposes resend and revok
             }
           : {
               ok: true,
-              enabled: true,
               teams: [{ id: team.id, name: team.name, role: "owner" }],
               invitations: [],
             }
@@ -365,7 +361,6 @@ it("keeps the form draft and offers retry after an invitation delivery failure",
               ? { ok: true, team }
               : {
                   ok: true,
-                  enabled: true,
                   teams: [{ id: team.id, name: team.name, role: "owner" }],
                   invitations: [],
                 }

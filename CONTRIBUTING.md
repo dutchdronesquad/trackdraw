@@ -74,7 +74,7 @@ For email template styling in non-production environments, use `/dev/email-previ
 
 ## Team Management Preview
 
-Team management is an unfinished-epic capability and remains disabled by default. For local validation, apply migrations through `0031_team_membership_management.sql`, set `TRACKDRAW_TEAMS_ENABLED=true` in ignored `.dev.vars`, then run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. Keep production off until ownership transfer/deletion and the remaining epic requirements are complete.
+Team management is available to signed-in users after applying migrations through `0031_team_membership_management.sql`. For local validation, run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. Project libraries, editing leases and ownership transfer/deletion follow in the remaining epic issues.
 
 ## Roles And Dashboard Checks
 

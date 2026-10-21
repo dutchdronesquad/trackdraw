@@ -32,7 +32,6 @@ export type TeamInvitation = {
   expiresAt: string;
 };
 export type TeamOverview = {
-  enabled: boolean;
   teams: TeamSummary[];
   invitations: TeamInvitation[];
 };
@@ -46,7 +45,6 @@ export type TeamDetails = TeamSummary & {
   invitations: (TeamInvitation & { email: string })[];
 };
 export const teamErrorCodes = [
-  "disabled",
   "unauthorized",
   "verification",
   "not_found",

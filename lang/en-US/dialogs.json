@@ -1059,7 +1059,6 @@
       "sending": "Sending"
     },
     "errors": {
-      "disabled": "Teams are not available yet.",
       "unauthorized": "Sign in again to continue.",
       "verification": "Verify your account email before creating a team or accepting invitations.",
       "not_found": "This team or invitation is no longer available to your account. Refresh and try again.",

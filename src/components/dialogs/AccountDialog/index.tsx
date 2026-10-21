@@ -43,7 +43,6 @@ export default function AccountDialog({
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const tTeams = useTranslations("dialogs.teams");
-  const [teamsAvailable, setTeamsAvailable] = useState(false);
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
@@ -82,23 +81,6 @@ export default function AccountDialog({
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
   const [deletingApiKeyId, setDeletingApiKeyId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!open || !userId) return;
-    void fetch("/api/teams?capabilities=1", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!cancelled)
-          setTeamsAvailable(response.ok && payload.enabled === true);
-      })
-      .catch(() => {
-        if (!cancelled) setTeamsAvailable(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, userId]);
 
   useEffect(() => {
     if (!open) return;
@@ -633,7 +615,7 @@ export default function AccountDialog({
       label: t("account.nav.apiKeys"),
       icon: <Braces className="size-4" />,
     },
-    ...(teamsAvailable
+    ...(user
       ? [
           {
             id: "teams" as AccountDialogView,

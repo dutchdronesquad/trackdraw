@@ -29,14 +29,12 @@ beforeEach(() => {
   mocks.db.mockResolvedValue(sqliteD1(db));
   mocks.user.mockResolvedValue({ id: "owner" });
   mocks.trusted.mockReturnValue(true);
-  vi.stubEnv("TRACKDRAW_TEAMS_ENABLED", "true");
   db.exec(
     "INSERT INTO users(id,email,emailVerified,createdAt,updatedAt) VALUES('owner','owner@example.invalid',1,'2026-10-21','2026-10-21')"
   );
 });
 afterEach(() => {
   db.close();
-  vi.unstubAllEnvs();
 });
 it("requires cookie authentication and trusted origins", async () => {
   mocks.user.mockResolvedValue(null);
@@ -45,18 +43,20 @@ it("requires cookie authentication and trusted origins", async () => {
   mocks.trusted.mockReturnValue(false);
   expect((await post({ action: "create", name: "Team" })).status).toBe(403);
 });
-it("exposes one server capability and blocks every mutation while disabled", async () => {
-  vi.stubEnv("TRACKDRAW_TEAMS_ENABLED", "");
-  const caps = await get("?capabilities=1");
-  expect(await caps.json()).toEqual({ ok: true, enabled: false });
+it("provides team management directly to signed-in users", async () => {
   expect(await (await get()).json()).toEqual({
     ok: true,
-    enabled: false,
     teams: [],
     invitations: [],
   });
-  expect((await post({ action: "create", name: "Hidden" })).status).toBe(404);
-  expect(db.prepare("SELECT * FROM teams").all()).toEqual([]);
+  const created = await post({ action: "create", name: "Club" });
+  expect(created.status).toBe(200);
+  const { teamId } = await created.json();
+  expect(await (await get()).json()).toEqual({
+    ok: true,
+    teams: [{ id: teamId, name: "Club", role: "owner" }],
+    invitations: [],
+  });
 });
 it("returns no-store private responses and safe errors without request data", async () => {
   const response = await post({ action: "create", name: "Club" });

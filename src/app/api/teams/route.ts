@@ -7,7 +7,6 @@ import {
   getTeamDetails,
   getTeamInvitationForUser,
   listTeams,
-  teamsEnabled,
   TeamError,
 } from "@/lib/server/teams";
 
@@ -27,13 +26,7 @@ export async function GET(request: Request) {
   try {
     const user = await getCurrentUserFromHeaders(request.headers);
     if (!user) return json({ ok: false, code: "unauthorized" }, 401);
-    const enabled = teamsEnabled(),
-      params = new URL(request.url).searchParams;
-    if (params.has("capabilities")) return json({ ok: true, enabled });
-    if (!enabled && (params.has("teamId") || params.has("invitationId")))
-      return json({ ok: false, code: "disabled" }, 404);
-    if (!enabled)
-      return json({ ok: true, enabled: false, teams: [], invitations: [] });
+    const params = new URL(request.url).searchParams;
     const invitationId = params.get("invitationId");
     if (invitationId)
       return json({
@@ -56,7 +49,6 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUserFromHeaders(request.headers);
     if (!user) return json({ ok: false, code: "unauthorized" }, 401);
-    if (!teamsEnabled()) return json({ ok: false, code: "disabled" }, 404);
     const body = await readBoundedRequestBody(request, 4096);
     if (body.tooLarge) return json({ ok: false, code: "invalid" }, 413);
     let input: unknown;

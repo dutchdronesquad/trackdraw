@@ -259,7 +259,7 @@ export function TeamsView() {
             </>
           )}
         </div>
-        {overview?.enabled && screen === "overview" && (
+        {overview && screen === "overview" && (
           <Button disabled={busy} onClick={() => navigate("create")}>
             <Plus className="size-4" />
             {t("create")}
@@ -304,8 +304,6 @@ export function TeamsView() {
         !error && (
           <p className="text-muted-foreground text-sm">{t("loading")}</p>
         )
-      ) : !overview.enabled ? (
-        <p className="text-muted-foreground text-sm">{t("errors.disabled")}</p>
       ) : (
         <>
           {screen === "overview" && (
