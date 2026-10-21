@@ -32,6 +32,8 @@ CREATE TABLE team_invitations (
   expiresAt TEXT NOT NULL,
   createdAt TEXT NOT NULL
 );
+CREATE INDEX team_invitations_team ON team_invitations(organizationId);
+CREATE INDEX team_invitations_inviter ON team_invitations(inviterId);
 CREATE UNIQUE INDEX team_invitations_pending_email ON team_invitations(organizationId, lower(email)) WHERE status = 'pending';
 
 -- Preserve applied AND pending history before dropping the parent: the old
@@ -69,6 +71,7 @@ DROP TABLE team_migration_edits;
 DROP TABLE team_migration_projects;
 
 CREATE INDEX projects_owner_user_id_idx ON projects(owner_user_id);
+CREATE INDEX projects_created_by_user_id_idx ON projects(created_by_user_id);
 CREATE INDEX projects_owner_team_id_idx ON projects(owner_team_id, archived_at, updated_at DESC, id);
 CREATE INDEX projects_updated_at_idx ON projects(updated_at);
 CREATE TRIGGER projects_revision_after_update
