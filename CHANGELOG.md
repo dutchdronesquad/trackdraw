@@ -16,7 +16,7 @@ Connect a supported MCP client by signing in to TrackDraw and approving its acce
 
 ### Project access for integrations
 
-Limit an API key to selected cloud projects, or allow all current and future projects you own. Search for projects when creating a key and see its access level in account settings. Existing keys keep access to all your projects.
+Limit an API key to selected cloud projects, or allow all current and future projects you own. Choose personal projects or a specific team, then search for projects when creating a key. Optional write access respects team roles and the same editing session as Studio. MCP clients can request explicit team consent and work with a team you select. Existing keys and connections remain personal.
 
 ## [1.18.0]
 

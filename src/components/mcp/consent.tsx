@@ -22,6 +22,7 @@ type ConsentRequest = {
   callbackHost: string;
   account: string;
   offlineAccess: boolean;
+  teamAccess?: boolean;
   projectReadAccess?: boolean;
   projectCreateAccess?: boolean;
   projectUpdateAccess?: boolean;
@@ -236,6 +237,14 @@ export function McpConsent({ request }: { request: ConsentRequest }) {
                   </div>
                 </li>
               ))}
+              {request.teamAccess && (
+                <li className="border-border/60 border-t pt-5 text-sm sm:text-base">
+                  <p className="font-medium">{t("teamPermissionTitle")}</p>
+                  <p className="text-muted-foreground mt-1 leading-5 sm:leading-6">
+                    {t("teamPermission")}
+                  </p>
+                </li>
+              )}
               {request.projectReadAccess && (
                 <li className="border-border/60 flex items-start gap-4 border-t pt-5">
                   <span className="bg-brand-primary/5 text-brand-primary flex size-9 shrink-0 items-center justify-center rounded-full sm:size-12">

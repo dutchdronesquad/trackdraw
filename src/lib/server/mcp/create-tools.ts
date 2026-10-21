@@ -12,7 +12,13 @@ import {
   ProjectCreateRequestError,
 } from "@/lib/server/projects";
 import { getSiteUrl } from "@/lib/seo";
-import { annotations, execute, ProjectToolError } from "./project-context";
+import {
+  annotations,
+  execute,
+  ProjectToolError,
+  mcpTeamActor,
+  projectId,
+} from "./project-context";
 
 export const CATALOG_TOOLS = ["get_track_catalog"] as const;
 export const CREATE_TOOLS = ["create_track"] as const;
@@ -20,7 +26,8 @@ const record = z.record(z.string(), z.unknown());
 export function registerCreateTools(
   server: McpServer,
   userId: string,
-  canCreate: boolean
+  canCreate: boolean,
+  teamConsent = false
 ) {
   server.registerTool(
     "get_track_catalog",
@@ -88,6 +95,7 @@ export function registerCreateTools(
       description:
         "Create a new track project in the authorized account from a proposed version-2 track and explicit field/inventory constraints. Requires projects:create consent; never edits, replaces or publishes an existing project. First get_track_catalog for schema, units and supported items. Use a unique idempotency_key for each new project and the SAME key+proposal when retrying; changed proposals require a new key. Returns actionable validation issues or a stable Studio opening URL. Field footprints and assembly counts are checked; clearance and flight safety require user review.",
       inputSchema: z.strictObject({
+        team_id: projectId.optional(),
         idempotency_key: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
         proposal: z.unknown(),
       }),
@@ -111,8 +119,9 @@ export function registerCreateTools(
         openWorldHint: false,
       },
     },
-    ({ idempotency_key, proposal }) =>
+    ({ idempotency_key, proposal, team_id }) =>
       execute(async () => {
+        const actor = mcpTeamActor(userId, team_id, teamConsent);
         const validated = validateTrackDraft(proposal);
         if (!validated.ok)
           throw new ProjectToolError(
@@ -121,7 +130,11 @@ export function registerCreateTools(
             validated.issues
           );
         const bytes = new TextEncoder().encode(
-          JSON.stringify(validated.proposal)
+          JSON.stringify(
+            actor
+              ? { proposal: validated.proposal, teamId: team_id }
+              : validated.proposal
+          )
         );
         const hash = [
           ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
@@ -129,19 +142,29 @@ export function registerCreateTools(
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
         try {
-          const { project, replayed } = await createMcpProjectForUser(
-            userId,
-            validated.design,
-            idempotency_key,
-            hash
-          );
+          const { project, replayed } = actor
+            ? await createMcpProjectForUser(
+                userId,
+                validated.design,
+                idempotency_key,
+                hash,
+                actor
+              )
+            : await createMcpProjectForUser(
+                userId,
+                validated.design,
+                idempotency_key,
+                hash
+              );
           return {
             type: "project",
             schema: "trackdraw.mcp.project-create.v1",
             project_id: project.id,
             title: project.title,
             studio_url: new URL(
-              `/studio/open/${encodeURIComponent(project.id)}`,
+              team_id
+                ? `/studio?teamId=${encodeURIComponent(team_id)}&teamProject=${encodeURIComponent(project.id)}`
+                : `/studio/open/${encodeURIComponent(project.id)}`,
               getSiteUrl()
             ).href,
             replayed,

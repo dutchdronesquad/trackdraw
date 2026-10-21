@@ -140,6 +140,7 @@ export async function createApiKeyForSession(options: {
   name: string;
   expiresInDays: ApiKeyExpiryDays;
   projectAccess?: ApiKeyProjectAccess;
+  writeAccess?: boolean;
 }) {
   const auth = await getAuth();
   return auth.api.createApiKey({
@@ -148,6 +149,14 @@ export async function createApiKeyForSession(options: {
       name: options.name,
       expiresIn: options.expiresInDays * 24 * 60 * 60,
       metadata: { projectAccess: options.projectAccess ?? { mode: "all" } },
+      ...(options.writeAccess
+        ? {
+            permissions: {
+              tracks: ["read"],
+              projects: ["create", "update", "archive"],
+            },
+          }
+        : {}),
     },
   });
 }

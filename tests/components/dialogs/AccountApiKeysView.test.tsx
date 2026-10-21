@@ -120,7 +120,7 @@ describe("compact API key settings", () => {
         screen.getByText(
           isMobile
             ? "This key stops working."
-            : "Integrations using this key lose read-only access."
+            : "Integrations using this key lose access."
         )
       ).toBeTruthy();
       await user.click(screen.getByRole("button", { name: "Revoke" }));
@@ -152,7 +152,20 @@ describe("compact API key settings", () => {
     expect(
       await screen.findByRole("button", { name: "New API key" })
     ).toBeTruthy();
-    expect(create).toHaveBeenLastCalledWith({ mode: "all" });
+    expect(create).toHaveBeenLastCalledWith({ mode: "all" }, false);
+  });
+
+  it("keeps write access off until explicitly selected", async () => {
+    const create = vi.fn(async () => false);
+    renderView({ apiKeyName: "Integration", onCreateApiKey: create });
+    const user = userEvent.setup();
+    const writes = screen.getByRole("checkbox", {
+      name: /Allow project changes/,
+    }) as HTMLInputElement;
+    expect(writes.checked).toBe(false);
+    await user.click(writes);
+    await user.click(screen.getByRole("button", { name: "Create key" }));
+    expect(create).toHaveBeenCalledWith({ mode: "all" }, true);
   });
 
   it("keeps the one-time secret visible and copyable after creation", async () => {
@@ -220,15 +233,18 @@ describe("project access popover", () => {
         screen.queryByRole("textbox", { name: "Search projects" })
       ).toBeNull();
       await user.click(screen.getByRole("button", { name: "Create key" }));
-      expect(create).toHaveBeenCalledWith({
-        mode: "selected",
-        projectIds: ["race"],
-      });
+      expect(create).toHaveBeenCalledWith(
+        {
+          mode: "selected",
+          projectIds: ["race"],
+        },
+        false
+      );
       await user.click(screen.getByRole("button", { name: "Project access" }));
       await user.click(screen.getByRole("radio", { name: "All projects" }));
       await user.keyboard("{Escape}");
       await user.click(screen.getByRole("button", { name: "Create key" }));
-      expect(create).toHaveBeenLastCalledWith({ mode: "all" });
+      expect(create).toHaveBeenLastCalledWith({ mode: "all" }, false);
     }
   );
 
@@ -261,7 +277,14 @@ describe("project access popover", () => {
         ok: true,
         json: async () => ({ ok: true, projects: [] }),
       });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", (url: string, init: RequestInit) =>
+      url === "/api/teams"
+        ? Promise.resolve({
+            ok: true,
+            json: async () => ({ ok: true, teams: [] }),
+          })
+        : fetchMock(url, init)
+    );
     renderView();
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Project access" }));

@@ -6,6 +6,25 @@ All-project keys include current and future owned projects. Selected-project key
 
 The account key-creation endpoint accepts `projectAccess: { mode: "all" }` or `projectAccess: { mode: "selected", projectIds: [...] }`. The selection is stored atomically with the hashed key in Better Auth metadata. Omitting this field keeps the existing all-project creation behavior. The normalized account key list and creation response include `projectAccess`.
 
-Keys without project-access metadata predate this feature and explicitly resolve to all owned projects. Invalid explicit access metadata fails closed to an empty selection. Existing permissions are retained; new keys default only to `tracks:read`. No database migration is needed. Project list filtering happens in SQL before pagination; every project representation checks the same selection and returns 404 for an inaccessible ID.
+Keys without project-access metadata predate this feature and explicitly resolve to all owned projects. Invalid explicit access metadata fails closed to an empty selection. Existing permissions are retained; new keys default only to `tracks:read`. Key metadata needs no migration; MCP context binding uses migration 0034. Project list filtering happens in SQL before pagination; every project representation checks the same selection and returns 404 for an inaccessible ID.
 
 Project access is account data covered by the existing privacy and terms provisions for cloud projects and API keys; this change adds no new recipient or data collection category.
+
+## Explicit team grants and writes
+
+Keys belong to individuals. When creating one, select **Personal projects** or a specific current team in Project access, then choose all projects or a fixed selection. The team grant is stored as `projectAccess: { mode: "all", teamId: "..." }` or `{ mode: "selected", teamId: "...", projectIds: [...] }`. A key is scoped to exactly one context. Existing keys remain personal, including keys with no project metadata. Invalid explicit metadata fails closed.
+
+`GET /api/v1/me` exposes the key’s normalized `project_access`, including its selected `teamId` and any project IDs, for integration setup. Treat that as the credential boundary; it does not grant membership. Team requests must include `?team_id=<the-granted-team-id>` on every project endpoint, including track, overlay and viewer-snapshot downloads. Omitting it means personal context and fails for a team key. Membership and role are checked live: viewers may read, owners/editors may mutate, removed members cannot access projects through an old key. Selecting a team never overrides a saved project selection.
+
+New keys remain read-only unless **Allow project changes** is explicitly enabled (`writeAccess: true` at key creation). This adds `projects:create`, `projects:update` and `projects:archive` alongside `tracks:read`. These permissions remain bounded by live team roles and project selection. Selected-project keys cannot create new projects. To change context or permissions, replace the key and revoke the old one. There are no team service credentials.
+
+| Request                              | Additional permission | Body                                                                 |
+| ------------------------------------ | --------------------- | -------------------------------------------------------------------- |
+| `POST /api/v1/projects`              | `projects:create`     | `idempotency_key`, bounded track-draft `proposal`                    |
+| `PUT /api/v1/projects/{id}`          | `projects:update`     | complete serialized `design`, `base_revision`, optional `session_id` |
+| `DELETE /api/v1/projects/{id}`       | `projects:archive`    | `base_revision`, optional `session_id`                               |
+| `POST /api/v1/projects/{id}/editing` | `projects:update`     | `action: acquire`, or `renew`/`release` with `session_id`            |
+
+Use metadata GET to read `revision`. Team writes briefly acquire Studio's exclusive lease and release it afterwards, or use the session acquired through `/editing` for a longer read/edit/save cycle. Acquisition returns the current design and revision, a session ID and expiry; renew before its 90-second expiry. Another Studio, REST or MCP editor blocks acquisition even for the same user. A stale revision returns `409 conflict`; `lease_unavailable` means wait for the active session, and `lease_lost` means acquire again and reread. Archiving revokes linked public snapshots and gallery listings in the same transaction. Reads and writes are private and uncached.
+
+RotorHazard (#857) and FPVScores (#862) must let the user explicitly select an authorized team and project, retain that context in subsequent requests, and handle loss of membership without falling back to personal or another team's data. Existing personal integrations retain their behavior. Portable package formats and canonical share links are unchanged; private team access is not a public share.

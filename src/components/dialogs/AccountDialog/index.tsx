@@ -409,7 +409,10 @@ export default function AccountDialog({
     setError(null);
   };
 
-  const handleCreateApiKey = async (projectAccess: ApiKeyProjectAccess) => {
+  const handleCreateApiKey = async (
+    projectAccess: ApiKeyProjectAccess,
+    writeAccess = false
+  ) => {
     const name = apiKeyName.trim();
     if (!name) {
       setError(t("account.errors.apiKeyNameRequired"));
@@ -430,6 +433,7 @@ export default function AccountDialog({
           name,
           expiresInDays: Number.parseInt(apiKeyExpiryDays, 10),
           projectAccess,
+          ...(writeAccess ? { writeAccess: true } : {}),
         }),
       });
       const payload = (await response.json()) as {

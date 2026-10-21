@@ -1,10 +1,16 @@
 import { z } from "zod";
 
 export const apiKeyProjectAccessSchema = z.discriminatedUnion("mode", [
-  z.object({ mode: z.literal("all") }).strict(),
+  z
+    .object({
+      mode: z.literal("all"),
+      teamId: z.string().trim().min(1).max(128).optional(),
+    })
+    .strict(),
   z
     .object({
       mode: z.literal("selected"),
+      teamId: z.string().trim().min(1).max(128).optional(),
       projectIds: z.array(z.string().trim().min(1).max(128)).max(100),
     })
     .strict(),

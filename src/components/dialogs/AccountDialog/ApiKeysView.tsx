@@ -42,8 +42,10 @@ function ApiKeyRow({
   const tCommon = useTranslations("common");
   const [confirming, setConfirming] = useState(false);
   const name = apiKey.name?.trim() || t("fallback.unnamed");
-  const access =
-    apiKey.projectAccess?.mode === "selected"
+  const writeAccess = Boolean(apiKey.permissions?.projects?.length);
+  const access = apiKey.projectAccess?.teamId
+    ? t("access.teamSelection")
+    : apiKey.projectAccess?.mode === "selected"
       ? t("access.trigger", { count: apiKey.projectAccess.projectIds.length })
       : t("access.all");
 
@@ -110,6 +112,7 @@ function ApiKeyRow({
             )}
           >
             {access}
+            {writeAccess ? ` · ${t("access.writable")}` : ""}
           </div>
           <div
             role="cell"
@@ -165,7 +168,10 @@ type ApiKeysViewProps = {
   error: string | null;
   onApiKeyNameChange: (value: string) => void;
   onApiKeyExpiryDaysChange: (value: string) => void;
-  onCreateApiKey: (projectAccess: ApiKeyProjectAccess) => Promise<boolean>;
+  onCreateApiKey: (
+    projectAccess: ApiKeyProjectAccess,
+    writeAccess?: boolean
+  ) => Promise<boolean>;
   onCopyApiKey: (key: string) => void;
   onDeleteApiKey: (keyId: string) => void;
   onRefreshApiKeys: () => void;
@@ -196,6 +202,7 @@ export function AccountApiKeysView({
 }: ApiKeysViewProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
+  const [writeAccess, setWriteAccess] = useState(false);
 
   if (isPending) return <AccountDialogLoading />;
   if (!user) return <AccountDialogNotSignedIn />;
@@ -205,10 +212,11 @@ export function AccountApiKeysView({
     onApiKeyExpiryDaysChange("90");
     onProjectAccessChange({ mode: "all" });
     onDraftOpenChange(false);
+    setWriteAccess(false);
   }
 
   async function createKey() {
-    if (await onCreateApiKey(projectAccess)) resetDraft();
+    if (await onCreateApiKey(projectAccess, writeAccess)) resetDraft();
   }
 
   return (
@@ -271,12 +279,15 @@ export function AccountApiKeysView({
               />
               <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
                 {t(
-                  projectAccess.mode === "all"
-                    ? "account.apiKeys.access.allHint"
-                    : "account.apiKeys.access.selectedHint"
+                  projectAccess.teamId
+                    ? "account.apiKeys.access.teamHint"
+                    : projectAccess.mode === "all"
+                      ? "account.apiKeys.access.allHint"
+                      : "account.apiKeys.access.selectedHint"
                 )}
               </p>
             </div>
+
             <div className="min-w-0">
               <p className="mb-2 text-sm font-medium">
                 {tCommon("labels.expires")}
@@ -303,6 +314,21 @@ export function AccountApiKeysView({
                 </SelectContent>
               </Select>
             </div>
+            <label className="flex items-start gap-2 text-sm sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={writeAccess}
+                disabled={creatingApiKey}
+                onChange={(event) => setWriteAccess(event.target.checked)}
+                className="accent-brand-primary mt-1"
+              />
+              <span>
+                {t("account.apiKeys.access.allowWrites")}
+                <span className="text-muted-foreground mt-1 block text-xs">
+                  {t("account.apiKeys.access.writeHint")}
+                </span>
+              </span>
+            </label>
           </div>
           <div className="flex items-center justify-end gap-3">
             <Button

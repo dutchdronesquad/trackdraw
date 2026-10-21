@@ -168,34 +168,42 @@ export async function getProjectForActor(
 /** Bounded metadata only; no design/history is loaded to populate a team list. */
 export async function listProjectSummariesForActor(
   actor: ProjectActor,
-  limit = 100
+  limit = 100,
+  afterId?: string
 ) {
-  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+  if (!Number.isInteger(limit) || limit < 1 || limit > 101)
     throw new Error("Invalid project page size");
-  }
   const db = await getDatabase();
   const access = projectAuthorizationPredicate(actor, "list");
+  const after = afterId
+    ? await db
+        .prepare(
+          `SELECT id,updated_at FROM projects WHERE id=? AND archived_at IS NULL AND ${access.sql}`
+        )
+        .bind(afterId, ...access.bindings)
+        .first<{ id: string; updated_at: string }>()
+    : null;
+  if (afterId && !after) throw new ProjectCursorError();
   const rows = await db
     .prepare(
-      `
-    SELECT id, owner_user_id, owner_team_id, created_by_user_id, title,
-      field_width, field_height, shape_count, created_at, updated_at
-    FROM projects WHERE ${access.sql} AND archived_at IS NULL
-    ORDER BY updated_at DESC, id ASC LIMIT ?
-  `
+      `SELECT id,owner_user_id,owner_team_id,created_by_user_id,title,field_width,field_height,shape_count,created_at,updated_at
+    FROM projects WHERE ${access.sql} AND archived_at IS NULL ${after ? "AND (updated_at < ? OR (updated_at = ? AND id > ?))" : ""}
+    ORDER BY updated_at DESC,id ASC LIMIT ?`
     )
-    .bind(...access.bindings, limit)
+    .bind(
+      ...access.bindings,
+      ...(after ? [after.updated_at, after.updated_at, after.id] : []),
+      limit
+    )
     .all<
       ProjectSummaryRow &
         Pick<ProjectRow, "owner_team_id" | "created_by_user_id">
     >();
-  return rows.results.map((row) => {
-    return {
-      ...mapProjectSummaryData(row),
-      owner: projectOwner(row),
-      createdByUserId: row.created_by_user_id,
-    };
-  });
+  return rows.results.map((row) => ({
+    ...mapProjectSummaryData(row),
+    owner: projectOwner(row),
+    createdByUserId: row.created_by_user_id,
+  }));
 }
 
 export async function saveProjectForUser(
@@ -341,12 +349,36 @@ export class ProjectCreateRequestError extends Error {
 }
 
 /** Atomic create-only persistence: retry receipts never overwrite a saved or edited project. */
-export async function createMcpProjectForUser(
+export function createMcpProjectForUser(
   ownerUserId: string,
   design: TrackDesign,
   requestKey: string,
   requestHash: string
+): Promise<{ project: StoredProject; replayed: boolean }>;
+export function createMcpProjectForUser(
+  ownerUserId: string,
+  design: TrackDesign,
+  requestKey: string,
+  requestHash: string,
+  actor: ProjectActor
+): Promise<{ project: StoredProject | AuthorizedProject; replayed: boolean }>;
+export async function createMcpProjectForUser(
+  ownerUserId: string,
+  design: TrackDesign,
+  requestKey: string,
+  requestHash: string,
+  actor?: ProjectActor
 ) {
+  if (actor && (actor.userId !== ownerUserId || actor.projectIds))
+    throw new ProjectCreateRequestError(
+      "project_unavailable",
+      "Creation requires all-project access in the selected context."
+    );
+  const teamId = actor?.scope.kind === "team" ? actor.scope.teamId : null;
+  const allowed = teamId
+    ? "EXISTS(SELECT 1 FROM team_members WHERE organizationId=? AND userId=? AND role IN ('owner','editor'))"
+    : "1";
+  const accessBindings = teamId ? [teamId, ownerUserId] : [];
   const db = await getDatabase();
   const projectId = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -359,18 +391,26 @@ export async function createMcpProjectForUser(
   await db.batch([
     db
       .prepare(
-        `INSERT INTO mcp_draft_requests(user_id,request_key,request_hash,project_id,created_at) VALUES(?,?,?,?,?) ON CONFLICT(user_id,request_key) DO NOTHING`
+        `INSERT INTO mcp_draft_requests(user_id,request_key,request_hash,project_id,created_at) SELECT ?,?,?,?,? WHERE ${allowed} ON CONFLICT(user_id,request_key) DO NOTHING`
       )
-      .bind(ownerUserId, requestKey, requestHash, projectId, now),
+      .bind(
+        ownerUserId,
+        requestKey,
+        requestHash,
+        projectId,
+        now,
+        ...accessBindings
+      ),
     db
       .prepare(
-        `INSERT INTO projects(id,owner_user_id,title,description,design_json,field_width,field_height,shape_count,created_at,updated_at,archived_at,created_by_user_id)
-      SELECT ?,?,?,?,?,?,?,?,?,?,NULL,? FROM mcp_draft_requests WHERE user_id=? AND request_key=? AND request_hash=? AND project_id=?
+        `INSERT INTO projects(id,owner_user_id,owner_team_id,title,description,design_json,field_width,field_height,shape_count,created_at,updated_at,archived_at,created_by_user_id)
+      SELECT ?,?,?,?,?,?,?,?,?,?,?,NULL,? FROM mcp_draft_requests WHERE user_id=? AND request_key=? AND request_hash=? AND project_id=? AND ${allowed}
       ON CONFLICT(id) DO NOTHING`
       )
       .bind(
         projectId,
-        ownerUserId,
+        teamId ? null : ownerUserId,
+        teamId,
         normalized.title,
         normalized.description ?? "",
         JSON.stringify(serializeDesign(normalized)),
@@ -383,7 +423,8 @@ export async function createMcpProjectForUser(
         ownerUserId,
         requestKey,
         requestHash,
-        projectId
+        projectId,
+        ...accessBindings
       ),
   ]);
   const receipt = await db
@@ -392,12 +433,20 @@ export async function createMcpProjectForUser(
     )
     .bind(ownerUserId, requestKey)
     .first<{ request_hash: string; project_id: string }>();
-  if (!receipt || receipt.request_hash !== requestHash)
+  if (!receipt)
+    throw new ProjectCreateRequestError(
+      "project_unavailable",
+      "The project context is unavailable. Check your current membership and permissions."
+    );
+  if (receipt.request_hash !== requestHash)
     throw new ProjectCreateRequestError(
       "idempotency_conflict",
       "This idempotency key was used for a different proposal. Use a new key for a new project."
     );
-  const project = await getProjectForUser(receipt.project_id, ownerUserId);
+  const project =
+    teamId && actor
+      ? await getProjectForActor(receipt.project_id, actor, "create")
+      : await getProjectForUser(receipt.project_id, ownerUserId);
   if (!project)
     throw new ProjectCreateRequestError(
       "project_unavailable",
@@ -411,6 +460,7 @@ export async function getProjectForUser(
   ownerUserId: string,
   projectAccess?: ApiKeyProjectAccess
 ) {
+  if (projectAccess?.teamId) return null;
   if (
     projectAccess?.mode === "selected" &&
     !projectAccess.projectIds.includes(projectId)
@@ -506,6 +556,7 @@ export async function listProjectSummariesForUser(
   projectAccess?: ApiKeyProjectAccess,
   page?: { afterId?: string; limit: number }
 ): Promise<StoredProjectSummary[]> {
+  if (projectAccess?.teamId) return [];
   const db = await getDatabase();
   if (
     page &&

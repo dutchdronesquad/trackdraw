@@ -224,3 +224,28 @@ describe("API key server helpers", () => {
     });
   });
 });
+
+it("issues mutation permissions only after explicit opt-in, preserving the selected team context", async () => {
+  const createApiKey = vi.fn(async () => ({ ...apiKeyRecord, key: "td_test" }));
+  vi.mocked(getAuth).mockResolvedValue({ api: { createApiKey } } as never);
+  const headers = new Headers();
+  const projectAccess = { mode: "all" as const, teamId: "club" };
+  await createApiKeyForSession({
+    headers,
+    name: "Team",
+    expiresInDays: 90,
+    projectAccess,
+    writeAccess: true,
+  });
+  expect(createApiKey).toHaveBeenCalledWith(
+    expect.objectContaining({
+      body: expect.objectContaining({
+        metadata: { projectAccess },
+        permissions: {
+          tracks: ["read"],
+          projects: ["create", "update", "archive"],
+        },
+      }),
+    })
+  );
+});

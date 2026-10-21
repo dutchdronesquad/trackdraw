@@ -80,7 +80,7 @@
       },
       "integrations": {
         "title": "Integrations",
-        "description": "Manage connected apps and read-only API access."
+        "description": "Manage connected apps and API access."
       }
     },
     "profile": {
@@ -172,7 +172,7 @@
       },
       "empty": {
         "title": "No API keys yet",
-        "description": "Create one when a trusted integration needs read-only access to your account projects."
+        "description": "Choose which projects a trusted integration can access."
       },
       "fallback": {
         "unnamed": "Unnamed API key"
@@ -186,7 +186,7 @@
         "tooltip": "Revoke",
         "ariaLabel": "Revoke {name}",
         "warningExpiring": "This key stops working.",
-        "warningNonExpiring": "Integrations using this key lose read-only access.",
+        "warningNonExpiring": "Integrations using this key lose access.",
         "revoking": "Revoking...",
         "action": "Revoke"
       },
@@ -207,7 +207,15 @@
         "trigger": "{count, plural, one {# project} other {# projects}}",
         "selectedCompactHint": "New projects are excluded.",
         "noMatches": "No matching projects.",
-        "limit": "100 projects selected. New projects are excluded."
+        "limit": "100 projects selected. New projects are excluded.",
+        "context": "Project location",
+        "personal": "Personal projects",
+        "teamSelection": "Team projects",
+        "teamHint": "Access follows your current team role. Leaving the team stops this key’s access.",
+        "more": "Load more projects",
+        "allowWrites": "Allow project changes",
+        "writeHint": "Allows creation, updates and archiving within this selection and your current role. Selected-project keys cannot create new projects.",
+        "writable": "Can edit"
       },
       "newKey": "New API key",
       "actionsFor": "Actions for {name}"

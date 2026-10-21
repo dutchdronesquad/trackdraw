@@ -119,3 +119,13 @@ To stop access, open **Connected apps** in TrackDraw account settings or [manage
 | HTTP 503 / Cloudflare 1102                                 | The server could not complete the request. Try again later; if it persists, report the failing tool to TrackDraw. Changing OAuth credentials does not resolve a server resource limit.                              |
 
 For protocol details, tool schemas and contributor testing, see the [MCP validation and technical reference](mcp-validation.md#technical-reference).
+
+## Team projects
+
+Personal projects remain the default. A connection only gains team capability when the client explicitly requests the optional OAuth scope `teams:access` and you approve it on the consent screen, alongside the required project read/create/update scopes. Existing connections do not inherit team access. Reconnect with the extra scope when needed; client support for requesting optional scopes varies.
+
+After consent, `list_teams` returns your current team IDs, names and roles without member details. Choose the team explicitly, then pass `team_id` on each project read, analysis, creation, preview, apply and version-list call. Omitting `team_id` always addresses personal projects. Project text cannot select a team. Team membership is checked on every call; viewers can inspect and analyze, owners/editors can create or change projects. Membership removal or demotion blocks old tokens and pending write proposals immediately.
+
+Team edits keep the existing preview/review/apply workflow. A proposal is permanently bound to the personal or team context in which it was prepared. Applying it rechecks your current role, the project revision and Studio's exclusive editing lease. If another session is editing, wait for that session to finish or expire; if the revision changed, read the project and prepare a new preview for review. A personal proposal cannot be reused after moving the project to a team. Team creation is idempotent within its explicit context and returns a team Studio URL. Publishing and deletion remain unavailable through MCP.
+
+These are individual user grants, not team service credentials. Live membership also governs version recovery and derived overlays/viewer snapshots. Teams do not expand existing API-key selections; REST keys require a separately selected team context. See [API-key project access](api-key-project-access.md).

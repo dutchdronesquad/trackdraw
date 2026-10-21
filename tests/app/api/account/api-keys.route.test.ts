@@ -23,6 +23,11 @@ vi.mock("@/lib/server/api-keys", () => ({
 
 vi.mock("@/lib/server/projects", () => ({
   listProjectSummariesForUser: vi.fn(),
+  getProjectForActor: vi.fn(),
+}));
+
+vi.mock("@/lib/server/project-authorization", () => ({
+  getAuthorizedTeam: vi.fn(),
 }));
 
 vi.mock("@/lib/server/audit", () => ({
@@ -37,7 +42,11 @@ import {
   getApiKeyForSession,
   listApiKeysForSession,
 } from "@/lib/server/api-keys";
-import { listProjectSummariesForUser } from "@/lib/server/projects";
+import { getAuthorizedTeam } from "@/lib/server/project-authorization";
+import {
+  getProjectForActor,
+  listProjectSummariesForUser,
+} from "@/lib/server/projects";
 import { createStoredProjectSummaryFixture } from "../../../helpers/api-routes";
 import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -329,5 +338,75 @@ describe("API key project selection", () => {
     expect(createApiKeyForSession).toHaveBeenCalledWith(
       expect.objectContaining({ projectAccess })
     );
+  });
+});
+
+describe("explicit team key creation", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(isTrustedRequest).mockReturnValue(true);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(createApiKeyForSession).mockResolvedValue(apiKey as never);
+  });
+  it("validates live team membership and preserves an explicit write opt-in", async () => {
+    vi.mocked(getAuthorizedTeam).mockResolvedValue({
+      id: "club",
+      name: "Club",
+      role: "editor",
+    });
+    vi.mocked(getProjectForActor).mockResolvedValue({ id: "race" } as never);
+    const projectAccess = {
+      mode: "selected",
+      teamId: "club",
+      projectIds: ["race"],
+    };
+    expect(
+      (
+        await POST(
+          postRequest({ name: "Team key", projectAccess, writeAccess: true })
+        )
+      ).status
+    ).toBe(201);
+    expect(createApiKeyForSession).toHaveBeenCalledWith(
+      expect.objectContaining({ projectAccess, writeAccess: true })
+    );
+    expect(getProjectForActor).toHaveBeenCalledWith("race", {
+      userId: user.id,
+      scope: { kind: "team", teamId: "club" },
+    });
+  });
+  it("rejects a foreign team or an out-of-context selected project before creating credentials", async () => {
+    vi.mocked(getAuthorizedTeam).mockResolvedValue(null);
+    expect(
+      (
+        await POST(
+          postRequest({
+            name: "Team",
+            projectAccess: { mode: "all", teamId: "club" },
+          })
+        )
+      ).status
+    ).toBe(400);
+    vi.mocked(getAuthorizedTeam).mockResolvedValue({
+      id: "club",
+      name: "Club",
+      role: "viewer",
+    });
+    vi.mocked(getProjectForActor).mockResolvedValue(null);
+    expect(
+      (
+        await POST(
+          postRequest({
+            name: "Team",
+            projectAccess: {
+              mode: "selected",
+              teamId: "club",
+              projectIds: ["other"],
+            },
+          })
+        )
+      ).status
+    ).toBe(400);
+    expect(createApiKeyForSession).not.toHaveBeenCalled();
   });
 });

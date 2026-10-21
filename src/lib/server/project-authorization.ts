@@ -9,6 +9,7 @@ export type ProjectOwner =
 /** Explicit context prevents old sessions/credentials expanding to every team. */
 export type ProjectActor = {
   userId: string;
+  projectIds?: readonly string[];
   scope: { kind: "personal" } | { kind: "team"; teamId: string };
 };
 
@@ -47,10 +48,16 @@ export function projectAuthorizationPredicate(
   actor: ProjectActor,
   action: ProjectAction
 ) {
+  const selection = actor.projectIds
+    ? " AND projects.id IN (SELECT value FROM json_each(?))"
+    : "";
+  const selectedBindings = actor.projectIds
+    ? [JSON.stringify(actor.projectIds)]
+    : [];
   if (actor.scope.kind === "personal") {
     return {
-      sql: "owner_user_id = ? AND owner_team_id IS NULL",
-      bindings: [actor.userId],
+      sql: "owner_user_id = ? AND owner_team_id IS NULL" + selection,
+      bindings: [actor.userId, ...selectedBindings],
     };
   }
   const roles = rolesFor(action);
@@ -59,8 +66,8 @@ export function projectAuthorizationPredicate(
       SELECT 1 FROM team_members
       WHERE organizationId = projects.owner_team_id AND userId = ?
         AND role IN (${roles.map(() => "?").join(", ")})
-    )`,
-    bindings: [actor.scope.teamId, actor.userId, ...roles],
+    )${selection}`,
+    bindings: [actor.scope.teamId, actor.userId, ...roles, ...selectedBindings],
   };
 }
 

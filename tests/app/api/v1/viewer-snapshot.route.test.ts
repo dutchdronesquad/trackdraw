@@ -21,7 +21,10 @@ vi.mock("@/lib/server/api-v1", () => ({
   apiProblem: (problem: { status: number }) =>
     Response.json(problem, { status: problem.status }),
 }));
-vi.mock("@/lib/server/projects", () => ({ getProjectForUser: vi.fn() }));
+vi.mock("@/lib/server/projects", async (original) => ({
+  ...(await original<typeof import("@/lib/server/projects")>()),
+  getProjectForUser: vi.fn(),
+}));
 
 import { GET } from "@/app/api/v1/projects/[projectId]/viewer-snapshot/route";
 import { authenticateApiRequest } from "@/lib/server/api-v1";

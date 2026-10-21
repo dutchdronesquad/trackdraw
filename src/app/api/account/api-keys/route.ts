@@ -1,5 +1,9 @@
 import { apiKeyProjectAccessSchema } from "@/lib/api/project-access";
-import { listProjectSummariesForUser } from "@/lib/server/projects";
+import {
+  getProjectForActor,
+  listProjectSummariesForUser,
+} from "@/lib/server/projects";
+import { getAuthorizedTeam } from "@/lib/server/project-authorization";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auditEventTypes } from "@/lib/audit-events";
@@ -19,6 +23,7 @@ const MAX_BODY_BYTES = 16384;
 
 const createApiKeyRequestSchema = z.object({
   projectAccess: apiKeyProjectAccessSchema.optional(),
+  writeAccess: z.boolean().optional(),
   name: z.string().trim().min(1).max(64),
   expiresInDays: z
     .union([
@@ -109,23 +114,39 @@ export async function POST(request: Request) {
     }
 
     const body = parseResult.data;
-    if (body.projectAccess?.mode === "selected") {
-      const ownedProjects = await listProjectSummariesForUser(
-        user.id,
-        body.projectAccess
-      );
-      const ownedIds = new Set(ownedProjects.map((project) => project.id));
-      if (body.projectAccess.projectIds.some((id) => !ownedIds.has(id))) {
+    const access = body.projectAccess;
+    if (access?.teamId) {
+      const actor = {
+        userId: user.id,
+        scope: { kind: "team" as const, teamId: access.teamId },
+      };
+      if (!(await getAuthorizedTeam(actor, "read")))
+        return NextResponse.json(
+          { ok: false, error: "Invalid project context" },
+          { status: 400 }
+        );
+      if (access.mode === "selected") {
+        for (const id of new Set(access.projectIds))
+          if (!(await getProjectForActor(id, actor)))
+            return NextResponse.json(
+              { ok: false, error: "Invalid project selection" },
+              { status: 400 }
+            );
+      }
+    } else if (access?.mode === "selected") {
+      const projects = await listProjectSummariesForUser(user.id, access);
+      const ids = new Set(projects.map((project) => project.id));
+      if (access.projectIds.some((id) => !ids.has(id)))
         return NextResponse.json(
           { ok: false, error: "Invalid project selection" },
           { status: 400 }
         );
-      }
     }
     const apiKey = await createApiKeyForSession({
       headers: request.headers,
       name: body.name,
       projectAccess: body.projectAccess ?? { mode: "all" },
+      ...(body.writeAccess ? { writeAccess: true } : {}),
       expiresInDays: normalizeApiKeyExpiryDays(body.expiresInDays),
     });
     const normalizedApiKey = normalizeCreatedApiKey(apiKey);

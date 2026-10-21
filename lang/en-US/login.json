@@ -121,6 +121,8 @@
     "disconnectConfirm": "Disconnect {app}?",
     "disconnectWarning": "This app will lose access to TrackDraw. You can connect it again later.",
     "cancel": "Cancel",
-    "setupGuide": "MCP docs"
+    "setupGuide": "MCP docs",
+    "teamPermissionTitle": "Access explicitly selected teams",
+    "teamPermission": "Use projects from teams you explicitly choose. Your current team role limits what this app can do. Leaving a team stops its access to that team. Publishing is excluded."
   }
 }

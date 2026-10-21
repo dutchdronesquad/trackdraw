@@ -1,3 +1,58 @@
+import { z } from "zod";
+import { apiKeyProjectAccessSchema } from "@/lib/api/project-access";
+import { draftProposalSchema } from "@/lib/track/draft";
+
+function projectMutation(
+  operationId: string,
+  summary: string,
+  description: string,
+  schema: object,
+  hasProject = true
+) {
+  return {
+    tags: ["Projects"],
+    operationId,
+    summary,
+    description,
+    security: [{ bearerAuth: [] }],
+    parameters: [
+      ...(hasProject ? [{ $ref: "#/components/parameters/ProjectId" }] : []),
+      { $ref: "#/components/parameters/TeamId" },
+    ],
+    requestBody: { required: true, content: jsonContent(schema) },
+    responses: {
+      [hasProject ? "200" : "201"]: {
+        description:
+          "Mutation result in data; save returns id/revision, archive returns archived, editing returns session fields or released. Creation returns id/revision/studio_url/replayed.",
+        content: jsonContent(envelope({ type: "object" })),
+      },
+      "400": { $ref: "#/components/responses/BadRequest" },
+      "401": { $ref: "#/components/responses/Unauthorized" },
+      "403": {
+        description:
+          "Credential permission is missing or a selected-project key cannot create.",
+      },
+      "404": { $ref: "#/components/responses/NotFound" },
+      "409": {
+        description:
+          "conflict: reread the revision; lease_unavailable: wait for the active editing session; lease_lost: acquire a new session; idempotency_conflict: use a new key for a different proposal.",
+        content: problemContent({
+          status: 409,
+          code: "conflict",
+          title: "Conflict",
+          detail: "Read the current revision before retrying.",
+        }),
+      },
+      "413": {
+        description:
+          "Request exceeds 2 MiB (design/draft) or 4 KiB (editing/archive).",
+      },
+      "429": { $ref: "#/components/responses/RateLimited" },
+      "500": { $ref: "#/components/responses/InternalError" },
+    },
+  };
+}
+
 const jsonMediaType = "application/json";
 const problemMediaType = "application/problem+json";
 
@@ -318,7 +373,7 @@ export const trackdrawOpenApiSchema = {
     {
       name: "Projects",
       description:
-        "Bearer-authenticated read endpoints for active projects owned by the API key account. These endpoints require the `tracks:read` permission and respect the key’s project access selection.",
+        "Bearer-authenticated endpoints for explicitly authorized personal or team projects. Reads require tracks:read. Mutations require explicit projects:create/update/archive permissions. Personal keys and existing grants remain personal. Every request intersects credential selection with live project ownership and team role.",
     },
     {
       name: "RotorHazard",
@@ -376,6 +431,24 @@ export const trackdrawOpenApiSchema = {
       },
     },
     "/api/v1/projects": {
+      post: projectMutation(
+        "createProject",
+        "Create a project",
+        "projects:create; selected-project keys cannot create. proposal uses the bounded track draft contract; retries with the same idempotency_key are safe.",
+        {
+          type: "object",
+          required: ["idempotency_key", "proposal"],
+          additionalProperties: false,
+          properties: {
+            idempotency_key: {
+              type: "string",
+              pattern: "^[A-Za-z0-9_-]{1,128}$",
+            },
+            proposal: z.toJSONSchema(draftProposalSchema),
+          },
+        },
+        false
+      ),
       get: {
         tags: ["Projects"],
         operationId: "listProjects",
@@ -384,6 +457,7 @@ export const trackdrawOpenApiSchema = {
           "Lists active account-backed projects owned by the API key account. Selected-project keys only return their allowed projects; all-project keys also include future projects. The endpoint does not include archived projects and does not expose projects owned by other accounts.",
         security: [{ bearerAuth: [] }],
         parameters: [
+          { $ref: "#/components/parameters/TeamId" },
           { $ref: "#/components/parameters/Limit" },
           { $ref: "#/components/parameters/Cursor" },
         ],
@@ -410,6 +484,39 @@ export const trackdrawOpenApiSchema = {
       },
     },
     "/api/v1/projects/{projectId}": {
+      put: projectMutation(
+        "updateProject",
+        "Save a project",
+        "projects:update. Team writes acquire the shared Studio lease unless session_id identifies an existing REST session. A stale base_revision returns conflict.",
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["base_revision", "design"],
+          properties: {
+            base_revision: { type: "integer", minimum: 1 },
+            design: {
+              type: "object",
+              description:
+                "Complete serialized TrackDraw design with matching project ID, version 2.",
+            },
+            session_id: { type: "string", format: "uuid" },
+          },
+        }
+      ),
+      delete: projectMutation(
+        "archiveProject",
+        "Archive a project",
+        "projects:archive. Requires the current revision and exclusive editing lease for teams. Revokes linked public snapshots and gallery listings atomically.",
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["base_revision"],
+          properties: {
+            base_revision: { type: "integer", minimum: 1 },
+            session_id: { type: "string", format: "uuid" },
+          },
+        }
+      ),
       get: {
         tags: ["Projects"],
         operationId: "getProject",
@@ -417,7 +524,10 @@ export const trackdrawOpenApiSchema = {
         description:
           "Returns ownership-safe metadata for one project owned by the API key account. Use this before downloading a full track package when an integration only needs project identity and timestamps.",
         security: [{ bearerAuth: [] }],
-        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        parameters: [
+          { $ref: "#/components/parameters/ProjectId" },
+          { $ref: "#/components/parameters/TeamId" },
+        ],
         responses: {
           "200": {
             description: "One project summary.",
@@ -437,6 +547,32 @@ export const trackdrawOpenApiSchema = {
         },
       },
     },
+    "/api/v1/projects/{projectId}/editing": {
+      post: projectMutation(
+        "editProjectSession",
+        "Manage an exclusive team editing session",
+        "projects:update and explicit team_id required. Acquire returns session_id, expires_at, revision and design. Renew before the 90-second expiry. Release affects only your exact session. A Studio or MCP lease blocks acquisition.",
+        {
+          oneOf: [
+            {
+              type: "object",
+              additionalProperties: false,
+              required: ["action"],
+              properties: { action: { const: "acquire" } },
+            },
+            ...["renew", "release"].map((action) => ({
+              type: "object",
+              additionalProperties: false,
+              required: ["action", "session_id"],
+              properties: {
+                action: { const: action },
+                session_id: { type: "string", format: "uuid" },
+              },
+            })),
+          ],
+        }
+      ),
+    },
     "/api/v1/projects/{projectId}/track": {
       get: {
         tags: ["Projects"],
@@ -445,7 +581,10 @@ export const trackdrawOpenApiSchema = {
         description:
           "Returns the integration-stable track package for one project owned by the API key account. The package includes sanitized shape geometry and excludes editor-only data.",
         security: [{ bearerAuth: [] }],
-        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        parameters: [
+          { $ref: "#/components/parameters/ProjectId" },
+          { $ref: "#/components/parameters/TeamId" },
+        ],
         responses: {
           "200": {
             description: "Track package for one project.",
@@ -475,7 +614,10 @@ export const trackdrawOpenApiSchema = {
         description:
           "Returns a compact route, obstacle, and timing package for livestream map overlays. This endpoint is designed for overlay consumers and excludes full editor JSON.",
         security: [{ bearerAuth: [] }],
-        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        parameters: [
+          { $ref: "#/components/parameters/ProjectId" },
+          { $ref: "#/components/parameters/TeamId" },
+        ],
         responses: {
           "200": {
             description: "Livestream overlay package for one project.",
@@ -503,7 +645,10 @@ export const trackdrawOpenApiSchema = {
         description:
           "Returns a portable, allowlisted course snapshot for one account-owned project, for rendering with the @trackdraw/viewer package. Excludes author name, inventory, tags, description, map reference, and any shape metadata beyond catalog provenance.",
         security: [{ bearerAuth: [] }],
-        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        parameters: [
+          { $ref: "#/components/parameters/ProjectId" },
+          { $ref: "#/components/parameters/TeamId" },
+        ],
         responses: {
           "200": {
             description: "Viewer snapshot package for one project.",
@@ -526,11 +671,19 @@ export const trackdrawOpenApiSchema = {
   },
   components: {
     parameters: {
+      TeamId: {
+        name: "team_id",
+        in: "query",
+        required: false,
+        schema: { type: "string", minLength: 1, maxLength: 128 },
+        description:
+          "Explicit team context. Required for keys created with this exact projectAccess.teamId; omitting it means personal projects. Team membership and selected project IDs are checked on every request. Legacy personal keys cannot use this parameter to gain team access.",
+      },
       ProjectId: {
         name: "projectId",
         in: "path",
         required: true,
-        description: "Account-backed TrackDraw project id.",
+        description: "Authorized personal or team TrackDraw project id.",
         schema: { type: "string" },
         example: "project_123",
       },
@@ -691,6 +844,7 @@ export const trackdrawOpenApiSchema = {
             ],
           },
           expires_at: { type: ["string", "null"], format: "date-time" },
+          project_access: z.toJSONSchema(apiKeyProjectAccessSchema),
         },
       },
       ProjectSummary: {
@@ -711,6 +865,12 @@ export const trackdrawOpenApiSchema = {
           id: { type: "string", description: "TrackDraw project id." },
           title: { type: "string", description: "Project title." },
           field: { $ref: "#/components/schemas/ProjectField" },
+          revision: {
+            type: "integer",
+            minimum: 1,
+            description:
+              "Returned by project metadata GET; use as base_revision for mutations.",
+          },
           shape_count: {
             type: "integer",
             minimum: 0,
