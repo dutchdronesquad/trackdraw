@@ -1,4 +1,6 @@
 "use client";
+import { LoaderCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useId } from "react";
 import { TeamRoleSelect } from "./TeamRoleSelect";
 import { useTranslations } from "next-intl";
@@ -16,6 +18,7 @@ export function TeamForms({
 }) {
   const t = useTranslations("dialogs.teams");
   const roleId = useId();
+  const nameHelpId = useId();
   const {
     screen,
     team,
@@ -30,10 +33,11 @@ export function TeamForms({
     busy,
   } = useTeamDialogState();
   const inviting = screen === "invite";
+  const creating = screen === "create";
   const draft = screen === "rename" ? (renameDraft ?? team?.name ?? "") : name;
   return (
     <form
-      className="space-y-5"
+      className={cn("space-y-5", creating && "w-full space-y-6")}
       onSubmit={(e) => {
         e.preventDefault();
         if (busy) return;
@@ -89,27 +93,50 @@ export function TeamForms({
           </div>
         </>
       ) : (
-        <label className="block space-y-2 text-sm font-medium">
-          <span>{t("teamName")}</span>
-          <Input
-            className="h-8 rounded-lg px-2.5 shadow-none"
-            value={draft}
-            maxLength={80}
-            required
-            disabled={busy}
-            onChange={(e) =>
-              screen === "rename"
-                ? setRenameDraft(e.target.value)
-                : setName(e.target.value)
-            }
-          />
-        </label>
+        <div className="space-y-2">
+          <label className="block space-y-2 text-sm font-medium">
+            <span className="block">{t("teamName")}</span>
+            <Input
+              className={cn(
+                "h-8 rounded-lg px-2.5 shadow-none",
+                creating && "h-10 px-3"
+              )}
+              aria-describedby={creating ? nameHelpId : undefined}
+              value={draft}
+              maxLength={80}
+              required
+              disabled={busy}
+              onChange={(e) =>
+                screen === "rename"
+                  ? setRenameDraft(e.target.value)
+                  : setName(e.target.value)
+              }
+            />
+          </label>
+          {creating && (
+            <span
+              id={nameHelpId}
+              className="text-muted-foreground block text-xs leading-relaxed font-normal"
+            >
+              {t("createNameHelp")}
+            </span>
+          )}
+        </div>
       )}
-      <div className="border-border/60 flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+      <div
+        className={cn(
+          "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+          !creating && "border-border/60 border-t pt-5"
+        )}
+      >
         <Button
           type="button"
-          variant="outline"
-          className="h-8 rounded-lg px-2.5"
+          variant={creating ? "ghost" : "outline"}
+          className={cn(
+            "h-8 rounded-lg px-2.5",
+            creating &&
+              "text-muted-foreground hover:text-foreground hover:bg-muted h-9 px-3"
+          )}
           disabled={busy}
           onClick={onCancel}
         >
@@ -117,7 +144,7 @@ export function TeamForms({
         </Button>
         <Button
           type="submit"
-          className="h-8 rounded-lg px-2.5"
+          className={cn("h-8 rounded-lg px-2.5", creating && "h-9 px-4")}
           disabled={
             busy ||
             (inviting
@@ -126,7 +153,18 @@ export function TeamForms({
                 (screen === "rename" && draft.trim() === team?.name))
           }
         >
-          {t(inviting ? "invite" : screen === "rename" ? "rename" : "create")}
+          {creating && busy && (
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+          )}
+          {t(
+            inviting
+              ? "invite"
+              : screen === "rename"
+                ? "rename"
+                : creating && busy
+                  ? "creating"
+                  : "create"
+          )}
         </Button>
       </div>
     </form>

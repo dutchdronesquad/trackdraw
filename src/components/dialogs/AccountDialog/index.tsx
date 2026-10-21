@@ -4,7 +4,7 @@ import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
 
 import { useEffect, useState } from "react";
 import {
-  Braces,
+  Plug,
   UsersRound,
   ChartNoAxesColumn,
   ShieldCheck,
@@ -12,12 +12,16 @@ import {
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
 import { TeamAccountDialog } from "@/components/teams/TeamAccountDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApiKeyActions } from "./ApiKeyActions";
 import { AccountApiKeysView } from "./ApiKeysView";
+import { IntegrationNavigation } from "./IntegrationNavigation";
+import { McpConnectionGuideLink } from "@/components/mcp/connection-guide-link";
+import { McpConnectionsContent } from "@/components/mcp/connections";
 import { AccountDangerView } from "./DangerView";
 import { AccountProfileView } from "./ProfileView";
 import { AccountSecurityView } from "./SecurityView";
@@ -76,7 +80,7 @@ export default function AccountDialog({
   const [apiKeyExpiryDays, setApiKeyExpiryDays] = useState("90");
   const [apiKeyProjectAccess, setApiKeyProjectAccess] =
     useState<ApiKeyProjectAccess>({ mode: "all" });
-  const [apiKeyDraftOpen, setApiKeyDraftOpen] = useState(true);
+  const [apiKeyDraftOpen, setApiKeyDraftOpen] = useState(false);
   const [creatingApiKey, setCreatingApiKey] = useState(false);
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
@@ -107,7 +111,7 @@ export default function AccountDialog({
     setApiKeyName("");
     setApiKeyExpiryDays("90");
     setApiKeyProjectAccess({ mode: "all" });
-    setApiKeyDraftOpen(true);
+    setApiKeyDraftOpen(false);
     setCreatingApiKey(false);
     setCreatedApiKey(null);
     setDeletingApiKeyId(null);
@@ -611,9 +615,9 @@ export default function AccountDialog({
       icon: <ChartNoAxesColumn className="size-4" />,
     },
     {
-      id: "apiKeys" as AccountDialogView,
-      label: t("account.nav.apiKeys"),
-      icon: <Braces className="size-4" />,
+      id: "connectedApps" as AccountDialogView,
+      label: t("account.nav.integrations"),
+      icon: <Plug className="size-4" />,
     },
     ...(user
       ? [
@@ -624,12 +628,16 @@ export default function AccountDialog({
           },
         ]
       : []),
-    {
-      id: "danger" as AccountDialogView,
-      label: t("account.nav.danger"),
-      icon: <ShieldAlert className="size-4" />,
-      tone: "danger" as const,
-    },
+    ...(isMobile
+      ? [
+          {
+            id: "danger" as AccountDialogView,
+            label: t("account.nav.danger"),
+            icon: <ShieldAlert className="size-4" />,
+            tone: "danger" as const,
+          },
+        ]
+      : []),
   ];
 
   const contentMap: Record<
@@ -652,9 +660,18 @@ export default function AccountDialog({
       content: privacyContent,
     },
     apiKeys: {
-      title: t("account.panels.apiKeys.title"),
-      description: t("account.panels.apiKeys.description"),
+      title: t("account.panels.integrations.title"),
+      description: t("account.panels.integrations.description"),
       content: apiKeysContent,
+    },
+    connectedApps: {
+      title: t("account.panels.integrations.title"),
+      description: t("account.panels.integrations.description"),
+      content: user ? (
+        <McpConnectionsContent key={user.id} />
+      ) : (
+        <AccountDialogNotSignedIn />
+      ),
     },
     teams: {
       title: tTeams("title"),
@@ -685,26 +702,65 @@ export default function AccountDialog({
           view === "teams" ? undefined : t("account.dialog.mobileSubtitle")
         }
         navItems={navItems}
-        activeItem={view}
+        activeItem={view === "apiKeys" ? "connectedApps" : view}
         onItemChange={(id) => {
           if (onViewChange) onViewChange(id as AccountDialogView);
           else setView(id as AccountDialogView);
           setError(null);
         }}
+        sidebarFooter={
+          !isMobile ? (
+            <button
+              type="button"
+              aria-current={view === "danger" ? "page" : undefined}
+              onClick={() => {
+                if (onViewChange) onViewChange("danger");
+                else setView("danger");
+                setError(null);
+              }}
+              className={cn(
+                "focus-visible:ring-ring flex h-9 w-full items-center gap-2.5 rounded-xl border border-transparent px-2 text-left text-[13px] text-rose-700 transition-colors outline-none hover:border-rose-500/20 hover:bg-rose-500/8 focus-visible:ring-2 dark:text-rose-300",
+                view === "danger" && "border-rose-500/20 bg-rose-500/8"
+              )}
+            >
+              <ShieldAlert className="size-4" aria-hidden="true" />
+              {t("account.nav.danger")}
+            </button>
+          ) : undefined
+        }
         contentTitle={current.title}
         contentDescription={current.description}
         contentActions={
-          view === "apiKeys" && user && !isMobile ? (
-            <ApiKeyActions
-              loading={apiKeysLoading}
-              onRefresh={refreshApiKeys}
-            />
+          user && !isMobile ? (
+            view === "apiKeys" ? (
+              <ApiKeyActions
+                loading={apiKeysLoading}
+                onRefresh={refreshApiKeys}
+              />
+            ) : view === "connectedApps" ? (
+              <McpConnectionGuideLink />
+            ) : undefined
           ) : undefined
         }
         maxWidth="max-w-6xl"
         height="h-[43rem] max-h-[calc(100dvh-2.5rem)]"
         mobileHeight="h-[92dvh]"
       >
+        {(view === "apiKeys" || view === "connectedApps") && (
+          <IntegrationNavigation
+            view={view}
+            onViewChange={(next) => {
+              if (onViewChange) onViewChange(next);
+              else setView(next);
+              setError(null);
+            }}
+          />
+        )}
+        {view === "connectedApps" && user && isMobile && (
+          <div className="mb-6 flex justify-end">
+            <McpConnectionGuideLink />
+          </div>
+        )}
         {current.content}
       </TeamAccountDialog>
     </TeamDialogState>

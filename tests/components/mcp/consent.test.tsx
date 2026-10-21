@@ -147,8 +147,12 @@ describe("MCP consent and connection management", () => {
         ]}
       />
     );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Disconnect Example app" })
+    );
+    expect(fetch).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Disconnect" }));
-    await screen.findByText("No connected apps.");
+    await screen.findByText("No connected apps yet");
     expect(fetch).toHaveBeenCalledWith(
       "/api/account/mcp-connections/consent-1",
       { method: "DELETE" }

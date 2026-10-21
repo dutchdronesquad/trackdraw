@@ -18,6 +18,7 @@ vi.mock("@/lib/auth-client", () => ({
     }),
   },
 }));
+vi.mock("@/components/LanguagePicker", () => ({ LanguagePicker: () => null }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => state.mobile }));
 vi.mock("@/components/ProductAnalyticsControl", () => ({
   ProductAnalyticsControl: () => null,
@@ -28,12 +29,14 @@ vi.mock("@/components/SidebarDialog", () => ({
     contentTitle,
     navItems,
     onItemChange,
+    sidebarFooter,
     children,
   }: {
     open: boolean;
     contentTitle: string;
     navItems: { id: string; label: string }[];
     onItemChange: (id: string) => void;
+    sidebarFooter?: ReactNode;
     children: ReactNode;
   }) =>
     open ? (
@@ -49,6 +52,7 @@ vi.mock("@/components/SidebarDialog", () => ({
             </button>
           ))}
         </nav>
+        {sidebarFooter && <footer>{sidebarFooter}</footer>}
         {children}
       </div>
     ) : null,
@@ -83,7 +87,7 @@ describe("account deep-link session boundary", () => {
         view: "apiKeys" as const,
       };
       const { rerender } = render(<AccountDialog {...props} />);
-      expect(screen.getByRole("dialog", { name: "API keys" })).toBeTruthy();
+      expect(screen.getByRole("dialog", { name: "Integrations" })).toBeTruthy();
       const link = screen.getByRole("link", { name: "Sign in" });
       expect(
         new URL(
@@ -99,7 +103,7 @@ describe("account deep-link session boundary", () => {
       };
       rerender(<AccountDialog {...props} />);
       await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-      expect(screen.getByRole("dialog", { name: "API keys" })).toBeTruthy();
+      expect(screen.getByRole("dialog", { name: "Integrations" })).toBeTruthy();
       expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
       for (const call of fetchMock.mock.calls) {
         expect(call).toEqual([
@@ -134,6 +138,7 @@ it("keeps restricted project access when the responsive dialog remounts its cont
   const props = { open: true, onOpenChange: vi.fn(), view: "apiKeys" as const };
   const { rerender } = render(<AccountDialog {...props} />);
   const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "New API key" }));
   await user.type(
     await screen.findByRole("textbox", { name: "Key name" }),
     "Integration"
@@ -171,12 +176,59 @@ it("shows Teams immediately after sign-in without a capability request", async (
   expect(screen.getByRole("button", { name: "Teams" })).toBeTruthy();
   expect(fetch).not.toHaveBeenCalled();
   await userEvent.setup().click(screen.getByRole("button", { name: "Teams" }));
-  expect(
-    await screen.findByText("You have not joined a team yet.")
-  ).toBeTruthy();
+  expect(await screen.findByText("Design tracks together")).toBeTruthy();
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(fetch).toHaveBeenCalledWith("/api/teams", {
     credentials: "same-origin",
     cache: "no-store",
   });
 });
+
+it("opens connected apps inside Integrations and switches to the existing API key flow", async () => {
+  state.user = {
+    id: "test-user",
+    name: "Test User",
+    email: "test@example.test",
+  };
+  const request = vi.fn(async (url: string) =>
+    Response.json(
+      url.includes("mcp-connections")
+        ? {
+            connections: [
+              {
+                id: "app-consent",
+                clientId: "app-client",
+                name: "Example app",
+                createdAt: "2026-10-20",
+              },
+            ],
+          }
+        : { ok: true, apiKeys: [] }
+    )
+  );
+  vi.stubGlobal("fetch", request);
+  render(<AccountDialog open onOpenChange={vi.fn()} />);
+  expect(screen.queryByRole("link", { name: "Connected apps" })).toBeNull();
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Integrations" }));
+  expect(await screen.findByText("Example app")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "API keys" }));
+  expect(screen.queryByRole("textbox", { name: "Key name" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "New API key" }));
+  expect(await screen.findByRole("textbox", { name: "Key name" })).toBeTruthy();
+  expect(request).toHaveBeenCalledWith("/api/account/api-keys", {
+    credentials: "same-origin",
+  });
+});
+
+it.each([false, true])(
+  "keeps Danger zone accessible in the correct location (mobile=%s)",
+  async (mobile) => {
+    state.mobile = mobile;
+    render(<AccountDialog open onOpenChange={vi.fn()} initialView="privacy" />);
+    const danger = screen.getByRole("button", { name: "Danger zone" });
+    expect(danger.closest(mobile ? "nav" : "footer")).not.toBeNull();
+    await userEvent.setup().click(danger);
+    expect(screen.getByRole("dialog", { name: "Danger zone" })).toBeTruthy();
+  }
+);

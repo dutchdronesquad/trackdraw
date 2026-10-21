@@ -53,7 +53,9 @@
       "security": "Security",
       "privacy": "Privacy",
       "apiKeys": "API keys",
-      "danger": "Danger zone"
+      "danger": "Danger zone",
+      "integrations": "Integrations",
+      "connectedApps": "Connected apps"
     },
     "panels": {
       "profile": {
@@ -75,6 +77,10 @@
       "danger": {
         "title": "Danger zone",
         "description": "Destructive and irreversible account actions."
+      },
+      "integrations": {
+        "title": "Integrations",
+        "description": "Manage connected apps and read-only API access."
       }
     },
     "profile": {
@@ -150,7 +156,8 @@
         "expiryDays": "{days} days",
         "expiryYear": "1 year",
         "namePlaceholder": "Integration name",
-        "create": "Create key"
+        "create": "Create key",
+        "description": "Give your key a name, choose its project access, and set an expiry."
       },
       "created": {
         "title": "API key created",
@@ -1083,7 +1090,13 @@
     "makeViewer": "Change to Viewer",
     "removeConfirm": "Remove {name} from this team? They will lose access to team tracks.",
     "inviteDelivery": "We’ll email an invitation valid for 7 days.",
-    "inviteSignIn": "They’ll need to sign in with this email address."
+    "inviteSignIn": "They’ll need to sign in with this email address.",
+    "emptyTitle": "Design tracks together",
+    "emptyDescription": "Create a team to share projects and collaborate using your own accounts. To join an existing team, ask its owner for an invitation.",
+    "emptyInvitationDescription": "Accept an invitation above to join a team, or create your own team to start sharing projects.",
+    "createDescription": "A shared space for your track projects and the people you design with.",
+    "createNameHelp": "Choose a name your teammates will recognize. You can invite them after creating the team.",
+    "creating": "Creating…"
   },
   "teamLibrary": {
     "library": "Show projects from",

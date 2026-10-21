@@ -23,11 +23,12 @@ const key: AccountApiKey = {
   projectAccess: { mode: "all" },
 };
 function renderView(
-  overrides: Partial<React.ComponentProps<typeof AccountApiKeysView>> = {}
+  overrides: Partial<React.ComponentProps<typeof AccountApiKeysView>> = {},
+  initialDraft = true
 ) {
   function Harness() {
     const [access, setAccess] = useState<ApiKeyProjectAccess>({ mode: "all" });
-    const [draft, setDraft] = useState(true);
+    const [draft, setDraft] = useState(initialDraft);
     return (
       <AccountApiKeysView
         projectAccess={access}
@@ -79,7 +80,7 @@ afterEach(() => {
 
 describe("compact API key settings", () => {
   it("shows aligned key metadata without exposing key prefixes or permission controls", () => {
-    renderView();
+    renderView({}, false);
     expect(
       screen.getByRole("columnheader", { name: "Project access" })
     ).toBeTruthy();
@@ -88,7 +89,7 @@ describe("compact API key settings", () => {
     expect(screen.queryByText("td_live")).toBeNull();
     expect(screen.queryByText(/tracks:read/i)).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Actions for RotorHazard" })
+      screen.getByRole("button", { name: "Revoke RotorHazard" })
     ).toBeTruthy();
   });
 
@@ -108,13 +109,10 @@ describe("compact API key settings", () => {
     "requires explicit confirmation to revoke a key (mobile=%s)",
     async (isMobile) => {
       const remove = vi.fn();
-      renderView({ isMobile, onDeleteApiKey: remove });
+      renderView({ isMobile, onDeleteApiKey: remove }, false);
       const user = userEvent.setup();
       await user.click(
-        screen.getByRole("button", { name: "Actions for RotorHazard" })
-      );
-      await user.click(
-        screen.getByRole("menuitem", { name: "Revoke RotorHazard" })
+        screen.getByRole("button", { name: "Revoke RotorHazard" })
       );
       expect(remove).not.toHaveBeenCalled();
       expect(screen.getByText("Revoke API key?")).toBeTruthy();
@@ -274,4 +272,16 @@ describe("project access popover", () => {
     ).toBeTruthy();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   });
+});
+
+it("keeps the key list primary and opens creation as a separate view", async () => {
+  renderView({}, false);
+  const user = userEvent.setup();
+  expect(screen.getByRole("table", { name: "Active API keys" })).toBeTruthy();
+  expect(screen.queryByRole("textbox", { name: "Key name" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "New API key" }));
+  expect(screen.getByRole("textbox", { name: "Key name" })).toBeTruthy();
+  expect(screen.queryByRole("table")).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(screen.getByRole("table", { name: "Active API keys" })).toBeTruthy();
 });
