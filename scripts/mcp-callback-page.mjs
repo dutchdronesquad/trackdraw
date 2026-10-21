@@ -1,21 +1,47 @@
+import { readFileSync } from "node:fs";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Check, X, CircleAlert } from "lucide-react";
+
+const statusIcon = (icon) =>
+  renderToStaticMarkup(
+    createElement(icon, { "aria-hidden": true, strokeWidth: 2 })
+  );
+
+// Embed the same first-party wordmarks as the consent page, without asset requests.
+const logoLight = readFileSync(
+  new URL(
+    "../public/assets/brand/trackdraw-logo-mono-lightbg.svg",
+    import.meta.url
+  ),
+  "utf8"
+);
+const logoDark = readFileSync(
+  new URL(
+    "../public/assets/brand/trackdraw-logo-mono-darkbg.svg",
+    import.meta.url
+  ),
+  "utf8"
+);
+
 const messages = {
   approved: {
     title: "Connection approved",
     body: "Return to your app to continue with TrackDraw.",
     detail: "You can close this window.",
-    icon: '<path d="m6 12 4 4 8-8"/>',
+    icon: statusIcon(Check),
   },
   declined: {
     title: "Connection declined",
     body: "You haven’t approved this connection to TrackDraw.",
     detail: "You can close this window, or return to your app to try again.",
-    icon: '<path d="m8 8 8 8M8 16l8-8"/>',
+    icon: statusIcon(X),
   },
   invalid: {
     title: "Unable to approve connection",
     body: "This authorization callback could not be verified.",
     detail: "Return to your app and start the connection again.",
-    icon: '<path d="M12 7v6m0 4h.01"/>',
+    icon: statusIcon(CircleAlert),
   },
 };
 
@@ -30,35 +56,70 @@ export function renderMcpCallbackPage(status) {
   <meta name="color-scheme" content="light dark">
   <title>${title} · TrackDraw</title>
   <style>
-    :root { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17191c; background: #fafafa; --muted: #5c6470; --brand: #147cb9; --border: #dde4e9; --tint: #e7f3fb; }
+    /* Match globals.css tokens and the MCP consent page shell. */
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: oklch(0.09 0 0); background: oklch(0.985 0 0); --muted: oklch(0.45 0 0); --brand: #1e93db; --secondary: #f0761d; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; background: radial-gradient(ellipse at 20% 25%, #1e93db0d, transparent 55%), radial-gradient(ellipse at 90% 90%, #1e93db0a, transparent 45%); }
-    header { padding: 32px clamp(24px, 5vw, 72px); font-size: 23px; font-weight: 750; letter-spacing: -1px; }
-    header span { color: var(--brand); }
-    main { flex: 1; display: grid; place-items: center; padding: 40px 24px 100px; }
-    section { width: 100%; max-width: 520px; text-align: center; }
-    .icon { display: grid; place-items: center; margin: 0 auto 28px; width: 72px; height: 72px; border-radius: 50%; background: var(--tint); color: var(--brand); }
-    svg { width: 32px; height: 32px; }
-    .eyebrow { color: var(--brand); font-size: 11px; font-weight: 650; letter-spacing: .18em; text-transform: uppercase; }
-    h1 { margin: 16px 0 20px; font-size: clamp(32px, 6vw, 46px); line-height: 1.12; letter-spacing: -.045em; font-weight: 650; }
-    p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; text-wrap: pretty; }
-    .detail { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; }
+    body { margin: 0; min-height: 100svh; -webkit-font-smoothing: antialiased; }
+    .shell { position: relative; isolation: isolate; overflow: hidden; min-height: 100svh; }
+    .glow { position: absolute; z-index: -1; border-radius: 50%; filter: blur(64px); opacity: .1; pointer-events: none; }
+    .glow-primary { top: 64px; left: 50%; width: 288px; height: 288px; transform: translateX(-135%); background: var(--brand); }
+    .glow-secondary { right: 0; bottom: 40px; width: 320px; height: 320px; transform: translateX(25%); background: var(--secondary); }
+    .layout { max-width: 1280px; min-height: 100svh; margin: 0 auto; display: flex; flex-direction: column; padding: 24px; }
+    header { height: 48px; display: flex; align-items: center; }
+    .logo { width: 144px; height: 32px; opacity: .9; }
+    .logo svg { display: block; width: 100%; height: 100%; }
+    .logo-dark { display: none; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 64px 0 112px; }
+    section { width: 100%; max-width: 760px; text-align: center; }
+    .icon { display: grid; place-items: center; margin: 0 auto 40px; width: 112px; height: 112px; border-radius: 28px; border: 1px solid color-mix(in srgb, var(--brand) 20%, transparent); background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); }
+    .icon svg { width: 56px; height: 56px; }
+    .eyebrow { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+    h1 { margin: 16px 0 24px; font-size: 36px; line-height: 1.03; letter-spacing: -.025em; font-weight: 600; text-wrap: balance; }
+    p { margin: 0; color: var(--muted); font-size: 14px; line-height: 28px; text-wrap: pretty; }
+    .detail { margin-top: 28px; font-size: 18px; }
+    @media (min-width: 640px) {
+      .layout { padding: 24px 32px; }
+      .logo { width: 180px; height: 36px; }
+      h1 { font-size: 48px; }
+      p { font-size: 22px; line-height: 32px; }
+    }
+    @media (min-width: 1024px) {
+      .layout { padding: 24px 32px; }
+      h1 { font-size: 56px; }
+    }
+    @media (max-width: 639px) {
+      .glow { display: none; }
+      .icon { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 32px; }
+      .icon svg { width: 40px; height: 40px; }
+      .detail { font-size: 14px; }
+    }
     @media (prefers-color-scheme: dark) {
-      :root { color: #f3f5f7; background: #1c2025; --muted: #aab4c0; --brand: #63b8ea; --border: #343e48; --tint: #253b4b; }
+      :root { color: oklch(0.96 0.004 245); background: oklch(0.155 0.012 245); --muted: oklch(0.68 0.014 245); --brand: #63b8ea; --secondary: #f08f47; }
+      .logo-light { display: none; }
+      .logo-dark { display: block; }
     }
   </style>
 </head>
 <body>
-  <header aria-label="TrackDraw">Track<span>Draw</span></header>
+  <div class="shell">
+    <div class="glow glow-primary" aria-hidden="true"></div>
+    <div class="glow glow-secondary" aria-hidden="true"></div>
+    <div class="layout">
+      <header aria-label="TrackDraw">
+        <span class="logo logo-light" aria-hidden="true">${logoLight}</span>
+        <span class="logo logo-dark" aria-hidden="true">${logoDark}</span>
+      </header>
   <main>
     <section aria-labelledby="title">
-      <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
+      <div class="icon" aria-hidden="true">${icon}</div>
       <div class="eyebrow">TrackDraw connection</div>
       <h1 id="title">${title}</h1>
       <p>${body}</p>
       <p class="detail">${detail}</p>
     </section>
   </main>
+    </div>
+  </div>
 </body>
 </html>`;
 }
