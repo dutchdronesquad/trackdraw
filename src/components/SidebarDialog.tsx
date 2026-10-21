@@ -32,6 +32,7 @@ export interface SidebarDialogProps {
   mobileContentOnly?: boolean;
   contentDescription?: string;
   contentActions?: React.ReactNode;
+  contentBodyClassName?: string;
   children: React.ReactNode;
   sidebarFooter?: React.ReactNode;
   maxWidth?: string;
@@ -209,6 +210,7 @@ export function SidebarDialog({
   mobileContentOnly = false,
   contentDescription,
   contentActions,
+  contentBodyClassName,
   children,
   sidebarFooter,
   maxWidth = "max-w-4xl",
@@ -262,7 +264,7 @@ export function SidebarDialog({
             {!mobileContentOnly && mobileNav}
           </div>
         }
-        bodyClassName="pt-4 pb-4"
+        bodyClassName={cn("pt-4 pb-4", contentBodyClassName)}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -427,7 +429,8 @@ export function SidebarDialog({
           <div
             className={cn(
               "min-h-0 flex-1 overflow-y-auto px-7 py-6",
-              contentHeaderless && "pt-14"
+              contentHeaderless && "pt-14",
+              contentBodyClassName
             )}
           >
             <AnimatedContentPanel activeItem={activeItem}>

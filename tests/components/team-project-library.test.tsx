@@ -14,7 +14,14 @@ beforeEach(() => {
   useProjectLibrary.setState({ byUser: { alice: "club" } });
   mocks.teams.mockResolvedValue({ teams: [club] });
   mocks.projects.mockResolvedValue({
-    projects: [{ id: "race", title: "Private race", shapeCount: 2 }],
+    projects: [
+      {
+        id: "race",
+        title: "Private race",
+        shapeCount: 2,
+        updatedAt: new Date().toISOString(),
+      },
+    ],
     nextCursor: null,
   });
 });
@@ -29,8 +36,8 @@ it("restores the selected team, opens the same project read-only and offers view
     "/studio?teamId=club&teamProject=race"
   );
   expect(screen.queryByText("Personal library")).toBeNull();
-  expect(screen.queryByRole("button", { name: "New team project" })).toBeNull();
-  expect(screen.getByText(/Team editing is coming next/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "New project" })).toBeNull();
+  expect(screen.getByText("Read-only")).toBeTruthy();
 });
 it("falls back after membership removal without reusing a team draft", async () => {
   mocks.teams.mockResolvedValue({ teams: [] });
@@ -62,4 +69,43 @@ it("does not apply a late team response after switching to another account", asy
   expect(screen.queryByText("Alice private")).toBeNull();
   expect(screen.getByText("Bob personal")).toBeTruthy();
   expect(useProjectLibrary.getState().byUser.bob).toBeUndefined();
+});
+
+it("switches between team and personal scopes without opening or saving a project", async () => {
+  mocks.teams.mockResolvedValue({
+    teams: [club, { id: "weekend", name: "Weekend Racers", role: "editor" }],
+  });
+  const createPersonal = vi.fn();
+  render(
+    <TeamLibrary
+      userId="alice"
+      personal={<p>Personal library</p>}
+      onNewPersonalProject={createPersonal}
+    />
+  );
+  await screen.findByRole("link", { name: /Private race/ });
+  await act(async () =>
+    screen.getByRole("button", { name: "Weekend Racers" }).click()
+  );
+  await waitFor(() =>
+    expect(useProjectLibrary.getState().byUser.alice).toBe("weekend")
+  );
+  expect(
+    screen
+      .getByRole("button", { name: "Weekend Racers" })
+      .getAttribute("aria-current")
+  ).toBe("page");
+  await screen.findByRole("button", { name: "New project" });
+  await act(async () =>
+    screen.getByRole("button", { name: "Personal projects" }).click()
+  );
+  await screen.findByText("Personal library");
+  await act(async () =>
+    screen.getByRole("button", { name: "New project" }).click()
+  );
+  expect(createPersonal).toHaveBeenCalledOnce();
+  expect(mocks.teams).toHaveBeenCalledOnce();
+  expect(
+    mocks.projects.mock.calls.every(([, command]) => command === undefined)
+  ).toBe(true);
 });

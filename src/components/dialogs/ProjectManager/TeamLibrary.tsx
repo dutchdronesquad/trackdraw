@@ -2,7 +2,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, File, LockKeyhole, Plus, UserRound } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { TeamAvatar } from "@/components/teams/TeamAvatar";
+import { formatRelativeTime } from "./shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,9 +27,11 @@ import type { TeamOverview, TeamSummary } from "@/lib/teams";
 export function TeamLibrary({
   userId,
   personal,
+  onNewPersonalProject,
 }: {
   userId: string;
   personal: ReactNode;
+  onNewPersonalProject?: () => void;
 }) {
   const t = useTranslations("dialogs.teamLibrary");
   const selected = useProjectLibrary(
@@ -46,9 +51,11 @@ export function TeamLibrary({
           setTeams(result.teams);
           setReady(true);
           setError(false);
+          const chosen =
+            useProjectLibrary.getState().byUser[userId] ?? "personal";
           if (
-            selected !== "personal" &&
-            !result.teams.some((item) => item.id === selected)
+            chosen !== "personal" &&
+            !result.teams.some((item) => item.id === chosen)
           )
             select(userId, "personal");
         })
@@ -66,42 +73,123 @@ export function TeamLibrary({
       active = false;
       window.removeEventListener("focus", load);
     };
-  }, [userId, selected, select]);
+  }, [userId, select]);
+  const choose = (value: string) => {
+    setError(false);
+    select(userId, value);
+  };
   return (
-    <div className="space-y-5">
-      <Select
-        value={team?.id ?? "personal"}
-        onValueChange={(value) => {
-          setError(false);
-          select(userId, value);
-        }}
-        disabled={!ready}
-      >
-        <SelectTrigger aria-label={t("library")} className="w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="personal">{t("personal")}</SelectItem>
-          {teams.map((item) => (
-            <SelectItem value={item.id} key={item.id}>
-              {item.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {t("failed")}
+    <section aria-label={t("panelTitle")}>
+      <header className="border-border/40 border-b px-5 pt-4 pb-5 lg:px-7 lg:py-5">
+        <h2 className="text-foreground text-xl font-semibold tracking-tight">
+          {t("panelTitle")}
+        </h2>
+        <p className="text-muted-foreground mt-1 hidden text-sm lg:block lg:pr-8">
+          {t("panelDescription")}
         </p>
-      ) : null}
-      {selected === "personal" ? (
-        personal
-      ) : team ? (
-        <TeamProjectList key={team.id} team={team} userId={userId} />
-      ) : !ready ? (
-        <p role="status">{t("loading")}</p>
-      ) : null}
-    </div>
+        <p className="text-muted-foreground mt-1 text-sm lg:hidden">
+          {t("panelMobileDescription")}
+        </p>
+      </header>
+      <div className="lg:grid lg:min-h-[26rem] lg:grid-cols-[14rem_minmax(0,1fr)]">
+        <nav
+          aria-label={t("library")}
+          className="border-border/40 hidden space-y-1 border-r px-3 py-5 lg:block"
+        >
+          <Button
+            variant="ghost"
+            onClick={() => choose("personal")}
+            aria-current={selected === "personal" ? "page" : undefined}
+            className={cn(
+              "h-11 w-full justify-start gap-3 px-2 text-left font-normal",
+              selected === "personal" && "bg-brand-primary/14 text-foreground"
+            )}
+          >
+            <UserRound className="text-muted-foreground size-5" />
+            <span className="truncate">{t("personal")}</span>
+          </Button>
+          {teams.length ? (
+            <p className="text-muted-foreground px-2 pt-5 pb-2 text-[10px] font-semibold tracking-[0.16em] uppercase">
+              {t("teams")}
+            </p>
+          ) : null}
+          {teams.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              onClick={() => choose(item.id)}
+              aria-current={selected === item.id ? "page" : undefined}
+              className={cn(
+                "h-12 w-full justify-start gap-2.5 px-2 text-left font-normal",
+                selected === item.id && "bg-brand-primary/14 text-foreground"
+              )}
+            >
+              <TeamAvatar name={item.name} compact />
+              <span className="min-w-0 truncate">{item.name}</span>
+            </Button>
+          ))}
+        </nav>
+        <div className="min-w-0 px-5 py-5 lg:px-6 lg:py-5">
+          <div className="mb-5 lg:hidden">
+            <Select
+              value={team?.id ?? "personal"}
+              onValueChange={choose}
+              disabled={!ready}
+            >
+              <SelectTrigger aria-label={t("library")} className="h-12 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="personal">
+                  <span className="flex items-center gap-2">
+                    <UserRound className="size-4" />
+                    {t("personal")}
+                  </span>
+                </SelectItem>
+                {teams.map((item) => (
+                  <SelectItem value={item.id} key={item.id}>
+                    <span className="flex items-center gap-2">
+                      <TeamAvatar name={item.name} compact />
+                      {item.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {error ? (
+            <p role="alert" className="text-destructive mb-4 text-sm">
+              {t("failed")}
+            </p>
+          ) : null}
+          {selected === "personal" ? (
+            <>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="hidden text-base font-semibold lg:block">
+                  {t("personal")}
+                </h3>
+                {onNewPersonalProject ? (
+                  <Button
+                    onClick={onNewPersonalProject}
+                    className="bg-brand-primary hover:bg-brand-primary/90 ml-auto text-slate-950"
+                  >
+                    <Plus />
+                    {t("create")}
+                  </Button>
+                ) : null}
+              </div>
+              {personal}
+            </>
+          ) : team ? (
+            <TeamProjectList key={team.id} team={team} userId={userId} />
+          ) : !ready ? (
+            <p role="status" className="text-muted-foreground text-sm">
+              {t("loading")}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -113,6 +201,7 @@ function TeamProjectList({
   userId: string;
 }) {
   const t = useTranslations("dialogs.teamLibrary");
+  const tDialogs = useTranslations("dialogs");
   const select = useProjectLibrary((state) => state.select);
   const [projects, setProjects] = useState<TeamProjectSummary[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -177,99 +266,116 @@ function TeamProjectList({
   }
   return (
     <>
-      {" "}
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive mb-4 text-sm">
           {t("failed")}
         </p>
-      ) : null}{" "}
-      <>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium">{team.name}</p>
-            <p className="text-muted-foreground mt-1 text-xs">{t("private")}</p>
-          </div>
-          {team.role !== "viewer" && title === null ? (
-            <Button variant="outline" size="sm" onClick={() => setTitle("")}>
-              <Plus />
-              {t("create")}
-            </Button>
-          ) : null}
+      ) : null}
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div className="w-full lg:w-auto lg:min-w-0 lg:flex-1">
+          <h3 className="hidden truncate text-base font-semibold lg:block">
+            {team.name}
+          </h3>
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-5 lg:mt-1.5">
+            <LockKeyhole className="size-3.5 shrink-0" />
+            <span>{t("private")}</span>
+            <span aria-hidden="true">·</span>
+            <span>{t("readOnly")}</span>
+          </p>
         </div>
-        <p className="text-muted-foreground text-xs">{t("editingSoon")}</p>
-        {title !== null ? (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void create();
-            }}
-            className="space-y-3 border-b pb-4"
-          >
-            <label className="text-sm" htmlFor="team-project-title">
-              {t("title")}
-            </label>
-            <Input
-              id="team-project-title"
-              value={title}
-              maxLength={160}
-              onChange={(event) => setTitle(event.target.value)}
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading || !title.trim()}>
-                {t("create")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setTitle(null)}
-              >
-                {t("cancel")}
-              </Button>
-            </div>
-          </form>
-        ) : null}
-        {loading ? (
-          <p role="status" className="text-muted-foreground text-sm">
-            {t("loading")}
-          </p>
-        ) : null}
-        {!loading && !projects.length ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
-            {t("empty")}
-          </p>
-        ) : null}
-        <ul className="divide-border divide-y">
-          {projects.map((project) => (
-            <li key={project.id}>
-              <Link
-                prefetch={false}
-                href={teamProjectHref(team.id, project.id)}
-                className="hover:bg-muted/40 flex min-h-16 items-center gap-3 rounded-lg px-2 py-3"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {project.title}
-                  </span>
-                  <span className="text-muted-foreground mt-1 block text-xs">
-                    {t("projectMeta", { count: project.shapeCount })}
-                  </span>
-                </span>
-                <ArrowRight className="text-muted-foreground size-4" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-        {cursor ? (
+        {team.role !== "viewer" && title === null ? (
           <Button
-            variant="outline"
-            onClick={() => void loadMore()}
-            disabled={loading}
+            onClick={() => setTitle("")}
+            className="bg-brand-primary hover:bg-brand-primary/90 ml-auto shrink-0 text-slate-950"
           >
-            {t("more")}
+            <Plus />
+            {t("create")}
           </Button>
         ) : null}
-      </>
+      </div>
+      {title !== null ? (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void create();
+          }}
+          className="border-border/40 mb-4 space-y-3 border-b pb-5"
+        >
+          <label className="text-sm" htmlFor="team-project-title">
+            {t("title")}
+          </label>
+          <Input
+            id="team-project-title"
+            value={title}
+            maxLength={160}
+            onChange={(event) => setTitle(event.target.value)}
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading || !title.trim()}>
+              {t("confirmCreate")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setTitle(null)}
+            >
+              {t("cancel")}
+            </Button>
+          </div>
+        </form>
+      ) : null}
+      {loading ? (
+        <p role="status" className="text-muted-foreground py-4 text-sm">
+          {t("loading")}
+        </p>
+      ) : null}
+      {!loading && !projects.length ? (
+        <p className="text-muted-foreground border-border/40 border-t py-10 text-center text-sm">
+          {t("empty")}
+        </p>
+      ) : null}
+      <ul className="divide-border/40 border-border/40 divide-y border-t">
+        {projects.map((project) => (
+          <li key={project.id}>
+            <Link
+              prefetch={false}
+              href={teamProjectHref(team.id, project.id)}
+              className="hover:bg-muted/30 focus-visible:ring-ring flex min-h-22 items-center gap-3 px-1 py-5 outline-none focus-visible:ring-2 focus-visible:ring-inset lg:gap-4"
+            >
+              <File className="text-muted-foreground size-5 shrink-0" />
+              <span className="min-w-0 flex-1">
+                <span className="text-foreground block truncate text-sm font-medium">
+                  {project.title}
+                </span>
+                <span className="text-muted-foreground mt-1 block text-xs">
+                  {t("projectMeta", { count: project.shapeCount })}
+                  {project.updatedAt ? (
+                    <>
+                      {" "}
+                      ·{" "}
+                      <time dateTime={project.updatedAt}>
+                        {formatRelativeTime(project.updatedAt, tDialogs)}
+                      </time>
+                    </>
+                  ) : null}
+                </span>
+              </span>
+              <ArrowRight className="text-muted-foreground size-4 shrink-0" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {cursor ? (
+        <Button
+          className="mt-4"
+          variant="outline"
+          onClick={() => void loadMore()}
+          disabled={loading}
+        >
+          {t("more")}
+        </Button>
+      ) : null}
     </>
   );
 }

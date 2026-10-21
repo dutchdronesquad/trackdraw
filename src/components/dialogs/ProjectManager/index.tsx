@@ -171,6 +171,7 @@ export default function ProjectManagerDialog({
   };
 
   const current = viewMeta[activeView];
+  const cloudView = activeView === "account" && !!userId && !movingProject;
 
   const tabContent = {
     device: (
@@ -246,7 +247,11 @@ export default function ProjectManagerDialog({
       activeItem={activeView}
       onItemChange={(id) => setView(id as View)}
       contentTitle={current.label}
-      contentDescription={current.description}
+      contentDescription={cloudView ? undefined : current.description}
+      contentHeaderless={cloudView}
+      contentBodyClassName={cloudView ? "p-0" : undefined}
+      maxWidth={activeView === "account" && userId ? "max-w-5xl" : undefined}
+      height={activeView === "account" && userId ? "h-[36rem]" : undefined}
     >
       {activeView === "account" && userId ? (
         movingProject ? (
@@ -261,6 +266,14 @@ export default function ProjectManagerDialog({
             key={userId}
             userId={userId}
             personal={tabContent.account}
+            onNewPersonalProject={
+              onOpenNewProject
+                ? () => {
+                    onOpenChange(false);
+                    onOpenNewProject();
+                  }
+                : undefined
+            }
           />
         )
       ) : (

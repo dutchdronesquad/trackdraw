@@ -1088,14 +1088,14 @@
   "teamLibrary": {
     "library": "Show projects from",
     "personal": "Personal projects",
-    "private": "Private · only team members have access",
-    "create": "New team project",
+    "private": "Private to team members",
+    "create": "New project",
     "title": "Project title",
     "cancel": "Cancel",
-    "failed": "Could not load this library. Reopen Projects to try again.",
+    "failed": "Could not load projects. Reopen Projects to try again.",
     "loading": "Loading projects…",
     "empty": "No team projects yet.",
-    "projectMeta": "{count, plural, one {# item} other {# items}} · Read-only",
+    "projectMeta": "{count, plural, one {# item} other {# items}}",
     "editingSoon": "Read-only for now. Team editing is coming next.",
     "more": "Load more",
     "move": "Move to team",
@@ -1108,7 +1108,7 @@
     "publicationImpact": "Existing access: {shares, plural, one {# active share link} other {# active share links}}, {gallery, plural, one {# public gallery entry} other {# public gallery entries}}.",
     "publicationUnchanged": "Existing published snapshots and links remain accessible and stay managed by their original publisher. Moving does not make them private or publish any new content.",
     "confirmMove": "Move project to team",
-    "moveFailed": "The project or its publication state changed, access was lost, or an editing session is active. Return to the library, sync any changes, and review the move again.",
+    "moveFailed": "The project or its publication state changed, access was lost, or an editing session is active. Return to Projects, sync any changes, and review the move again.",
     "back": "Back to projects",
     "viewer": "Private team project · Read-only",
     "export": "Export JSON",
@@ -1116,6 +1116,10 @@
     "signIn": "Sign in to access this private team project.",
     "signInAction": "Sign in",
     "panelTitle": "Cloud projects",
-    "panelDescription": "Your personal projects and tracks shared with your teams."
+    "panelDescription": "Your personal projects and tracks shared with your teams.",
+    "confirmCreate": "Create project",
+    "teams": "Teams",
+    "readOnly": "Read-only",
+    "panelMobileDescription": "Personal projects and team tracks."
   }
 }

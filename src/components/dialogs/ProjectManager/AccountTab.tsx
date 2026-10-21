@@ -108,7 +108,7 @@ export function ProjectManagerAccountTab({
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="divide-border/40 border-border/40 divide-y border-t">
       {sorted.map((proj) => {
         const isCurrent = proj.id === activeDesignId;
         const syncMeta = projectSyncMetaById[proj.id];
@@ -159,10 +159,8 @@ export function ProjectManagerAccountTab({
                 : undefined
             }
             className={cn(
-              "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
-              isCurrent
-                ? "border-border/70 bg-muted/45"
-                : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+              "flex min-h-22 items-start gap-3 px-1 py-5 transition-colors",
+              isCurrent ? "bg-muted/30" : "hover:bg-muted/30 cursor-pointer"
             )}
           >
             <ProjectAvatar id={proj.id} title={projectTitle} />
