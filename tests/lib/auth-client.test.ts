@@ -174,7 +174,11 @@ describe("authClient session resolution", () => {
 
     expect(fetch).toHaveBeenCalledTimes(1);
 
+    const { useProjectLibrary } = await import("@/store/project-library");
+    useProjectLibrary.getState().select("pilot", "private-team");
     await authClient.signOut();
+
+    expect(useProjectLibrary.getState().byUser).toEqual({});
 
     const second = renderHook(() => authClient.useSession());
 

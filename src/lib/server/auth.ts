@@ -216,7 +216,7 @@ function createAuth(
           if (ownsTeam)
             throw new APIError("CONFLICT", {
               message:
-                "Team ownership must be transferred before deleting this account.",
+                "Transfer team ownership or delete the team before deleting this account.",
             });
         },
         afterDelete: async () => {

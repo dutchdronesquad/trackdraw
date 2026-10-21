@@ -280,6 +280,12 @@ describe("team project access", () => {
         `INSERT INTO team_members SELECT 'duplicate',organizationId,userId,role,createdAt FROM team_members WHERE userId='viewer'`
       )
     ).toThrow();
-    expect(() => db.exec("DELETE FROM teams WHERE id='team-a'")).toThrow();
+    expect(() => db.exec("DELETE FROM users WHERE id='owner'")).toThrow(
+      "team_owner_required"
+    );
+    db.exec("DELETE FROM teams WHERE id='team-a'");
+    expect(
+      db.prepare("SELECT id FROM projects WHERE id='team-project'").get()
+    ).toBeUndefined();
   });
 });

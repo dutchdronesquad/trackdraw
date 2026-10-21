@@ -5,6 +5,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useTeamDialogState } from "./TeamDialogState";
 import { TeamRoleSelect } from "./TeamRoleSelect";
 import { TeamAvatar } from "./TeamAvatar";
+import { TeamDeletion } from "./TeamDeletion";
 import { TeamActions } from "./TeamActions";
 import type { TeamCommand, TeamDetails } from "@/lib/teams";
 
@@ -48,6 +49,8 @@ export function TeamManagement({
         )}
       </div>
     );
+  if (confirm === "delete")
+    return <TeamDeletion team={team} busy={busy} onCommand={onCommand} />;
   const invitations = team.invitations.filter((item) =>
     ["pending", "sending", "expired"].includes(item.status)
   );
@@ -128,6 +131,11 @@ export function TeamManagement({
                         {t("makeViewer")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onSelect={() => setConfirm(`transfer:${member.userId}`)}
+                      >
+                        {t("lifecycle.transferAction")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         className="text-destructive"
                         onSelect={() => setConfirm(member.userId)}
                       >
@@ -137,6 +145,38 @@ export function TeamManagement({
                   </>
                 )}
               </div>
+              {confirm === `transfer:${member.userId}` && (
+                <div className="mt-4 space-y-3 sm:pl-13">
+                  <p className="text-sm">
+                    {t("lifecycle.transferConfirm", {
+                      name: member.name || member.email,
+                    })}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      disabled={busy}
+                      onClick={() =>
+                        onCommand({
+                          action: "transfer-owner",
+                          teamId: team.id,
+                          userId: member.userId,
+                        })
+                      }
+                    >
+                      {t("lifecycle.transferAction")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busy}
+                      onClick={() => setConfirm(null)}
+                    >
+                      {t("cancel")}
+                    </Button>
+                  </div>
+                </div>
+              )}
               {confirm === member.userId && (
                 <div className="mt-4 space-y-3 pl-0 sm:pl-13">
                   <p className="text-sm">

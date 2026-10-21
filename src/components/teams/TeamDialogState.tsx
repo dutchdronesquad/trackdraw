@@ -16,6 +16,7 @@ function useDialogState() {
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("editor");
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [confirm, setConfirm] = useState<string | null>(null);
   return {
     screen,
@@ -40,6 +41,8 @@ function useDialogState() {
     setEmail,
     role,
     setRole,
+    deleteConfirmation,
+    setDeleteConfirmation,
     confirm,
     setConfirm,
   };

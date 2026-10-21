@@ -210,7 +210,9 @@
       "galleryEntryDeleted": "Entry deleted",
       "signedUp": "Signed up",
       "system": "System",
-      "apiKeyAccessUpdated": "API key project access updated"
+      "apiKeyAccessUpdated": "API key project access updated",
+      "teamOwnershipTransferred": "Team ownership transferred",
+      "teamDeleted": "Team deleted"
     },
     "relativeTime": {
       "minutes": "{count}m ago",
@@ -1435,7 +1437,9 @@
       "shareRevoked": "Share revoked",
       "sharePurged": "Share permanently deleted",
       "metricsMaintenanceCompleted": "Metrics maintenance completed",
-      "apiKeyAccessUpdated": "API key project access updated"
+      "apiKeyAccessUpdated": "API key project access updated",
+      "teamOwnershipTransferred": "Team ownership transferred",
+      "teamDeleted": "Team deleted"
     },
     "entityLabels": {
       "accountRole": "Account role",

@@ -8,6 +8,7 @@ import {
   type TeamOverview,
   type TeamDetails,
   type TeamInvitation,
+  type TeamDeletionImpact,
 } from "@/lib/teams";
 
 export class TeamError extends Error {
@@ -103,6 +104,29 @@ export async function getTeamInvitationForUser(
   return invitation;
 }
 
+const impactQueries = {
+  projects: "SELECT count(*) FROM projects WHERE owner_team_id = teams.id",
+  members: "SELECT count(*) FROM team_members WHERE organizationId = teams.id",
+  invitations:
+    "SELECT count(*) FROM team_invitations WHERE organizationId = teams.id AND status = 'pending' AND expiresAt > strftime('%Y-%m-%dT%H:%M:%fZ','now')",
+  shares:
+    "SELECT count(*) FROM shares s JOIN projects p ON p.id = s.project_id WHERE p.owner_team_id = teams.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now'))",
+  galleryEntries:
+    "SELECT count(*) FROM gallery_entries g JOIN shares s ON s.token = g.share_token JOIN projects p ON p.id = s.project_id WHERE p.owner_team_id = teams.id",
+  editingSessions:
+    "SELECT count(*) FROM project_edit_leases l JOIN projects p ON p.id = l.project_id WHERE p.owner_team_id = teams.id AND l.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')",
+} satisfies Record<keyof TeamDeletionImpact, string>;
+async function deletionImpact(db: Db, userId: string, teamId: string) {
+  return db
+    .prepare(
+      `SELECT ${Object.entries(impactQueries)
+        .map(([key, query]) => `(${query}) AS ${key}`)
+        .join(",")} FROM teams WHERE id=? AND ${ownerSQL}`
+    )
+    .bind(teamId, teamId, userId)
+    .first<TeamDeletionImpact>();
+}
+
 export async function getTeamDetails(
   userId: string,
   teamId: string
@@ -127,6 +151,7 @@ export async function getTeamDetails(
     .all<TeamDetails["invitations"][number]>();
   return {
     ...team,
+    deletionImpact: (await deletionImpact(db, userId, teamId)) ?? undefined,
     members: members.results,
     invitations: invitations.results,
   };
@@ -281,6 +306,46 @@ export async function executeTeamCommand(userId: string, input: unknown) {
     return { teamId: command.teamId };
   }
   await owner(userId, command.teamId);
+  if (command.action === "transfer-owner") {
+    if (command.userId === userId) throw new TeamError("transfer_invalid", 409);
+    try {
+      const row = await db
+        .prepare(
+          `INSERT INTO team_owner_transfers(team_id,from_user_id,to_user_id)
+        SELECT ?,?,? WHERE ${ownerSQL} RETURNING team_id`
+        )
+        .bind(command.teamId, userId, command.userId, command.teamId, userId)
+        .first();
+      if (!row) throw new TeamError("not_found", 404);
+    } catch (error) {
+      if (error instanceof TeamError) throw error;
+      if (String(error).includes("team_transfer_invalid"))
+        throw new TeamError("transfer_invalid", 409);
+      throw error;
+    }
+    return { teamId: command.teamId };
+  }
+  if (command.action === "delete") {
+    const row = await db
+      .prepare(
+        `DELETE FROM teams WHERE id=? AND name=? AND ${ownerSQL}
+      AND ${Object.values(impactQueries)
+        .map((query) => `(${query}) = ?`)
+        .join(" AND ")} RETURNING id`
+      )
+      .bind(
+        command.teamId,
+        command.confirmation,
+        command.teamId,
+        userId,
+        ...Object.keys(impactQueries).map(
+          (key) => command.impact[key as keyof TeamDeletionImpact]
+        )
+      )
+      .first();
+    if (!row) throw new TeamError("impact_changed", 409);
+    return { teamId: command.teamId };
+  }
   if (command.action === "invite")
     return invite(db, userId, command.teamId, command.email, command.role);
   if (command.action === "resend") {

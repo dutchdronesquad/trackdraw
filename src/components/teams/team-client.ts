@@ -37,5 +37,18 @@ export async function teamRequest<T>({
     throw new TeamRequestError(
       teamErrorCodes.includes(body.code) ? body.code : "failed"
     );
+  if (
+    command &&
+    ["leave", "remove", "role", "transfer-owner", "delete"].includes(
+      command.action
+    )
+  ) {
+    window.dispatchEvent(new Event("trackdraw:team-access-changed"));
+    if (typeof BroadcastChannel !== "undefined") {
+      const channel = new BroadcastChannel("trackdraw.teams");
+      channel.postMessage("changed");
+      channel.close();
+    }
+  }
   return body as T;
 }

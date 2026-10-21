@@ -385,3 +385,75 @@ it("keeps the form draft and offers retry after an invitation delivery failure",
   ).toBe("draft@example.invalid");
   expect(screen.getByRole("button", { name: "Send invitation" })).toBeTruthy();
 });
+
+it("reviews team deletion impact and requires the exact team name", async () => {
+  const impact = {
+    projects: 3,
+    members: 2,
+    invitations: 1,
+    shares: 2,
+    galleryEntries: 1,
+    editingSessions: 1,
+  };
+  let deleted = false;
+  const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      expect(JSON.parse(String(init.body))).toEqual({
+        action: "delete",
+        teamId: "team",
+        confirmation: "Race team",
+        impact,
+      });
+      deleted = true;
+      return response({ ok: true, teamId: "team" });
+    }
+    return response(
+      url.includes("teamId=")
+        ? { ok: true, team: { ...team, deletionImpact: impact } }
+        : {
+            ok: true,
+            teams: deleted
+              ? []
+              : [{ id: "team", name: "Race team", role: "owner" }],
+            invitations: [],
+          }
+    );
+  });
+  vi.stubGlobal("fetch", fetch);
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  await user.click(await screen.findByRole("button", { name: "Team actions" }));
+  await user.click(screen.getByRole("menuitem", { name: "Delete team" }));
+  expect(screen.getByText("Projects, including archived")).toBeTruthy();
+  const remove = screen.getByRole("button", {
+    name: "Delete team",
+  }) as HTMLButtonElement;
+  expect(remove.disabled).toBe(true);
+  await user.type(
+    screen.getByLabelText("Type “Race team” to confirm"),
+    "Race team"
+  );
+  expect(remove.disabled).toBe(false);
+  await user.click(remove);
+  await waitFor(() => expect(deleted).toBe(true));
+});
+
+it("requires explicit confirmation before transferring ownership to an accepted member", async () => {
+  const send = vi.fn();
+  render(<TeamManagement team={team} busy={false} onCommand={send} />);
+  const user = userEvent.setup();
+  await user.click(
+    screen.getByRole("button", { name: "Actions for pilot@example.invalid" })
+  );
+  await user.click(
+    screen.getByRole("menuitem", { name: "Transfer ownership" })
+  );
+  expect(send).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "Transfer ownership" }));
+  expect(send).toHaveBeenCalledWith({
+    action: "transfer-owner",
+    teamId: "team",
+    userId: "pilot",
+  });
+});

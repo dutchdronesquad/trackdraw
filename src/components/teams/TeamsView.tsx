@@ -36,6 +36,7 @@ export function TeamsView() {
     setEmail,
     setRole,
     setConfirm,
+    setDeleteConfirmation,
   } = useTeamDialogState();
   const heading = useRef<HTMLHeadingElement>(null);
   const initialSelection = useRef(selected);
@@ -253,9 +254,20 @@ export function TeamsView() {
                   {t("refresh")}
                 </DropdownMenuItem>
                 {team.role === "owner" ? (
-                  <DropdownMenuItem onSelect={() => navigate("rename")}>
-                    {t("renameTitle")}
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onSelect={() => navigate("rename")}>
+                      {t("renameTitle")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onSelect={() => {
+                        setDeleteConfirmation("");
+                        setConfirm("delete");
+                      }}
+                    >
+                      {t("lifecycle.deleteAction")}
+                    </DropdownMenuItem>
+                  </>
                 ) : (
                   <DropdownMenuItem
                     className="text-destructive"

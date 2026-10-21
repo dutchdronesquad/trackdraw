@@ -273,3 +273,21 @@ it("allows recovery download links while blocking navigation", async () => {
   anchor.dispatchEvent(event);
   anchor.remove();
 });
+
+it("scrubs the private canvas, recovery and selected team after confirmed membership loss", async () => {
+  await start();
+  act(() =>
+    useEditor.getState().updateDesignMeta({ title: "Private unsaved changes" })
+  );
+  mocks.read.mockRejectedValue(new TeamProjectRequestError("not_found"));
+  mocks.edit.mockRejectedValue(new TeamProjectRequestError("lease_lost"));
+  await act(async () => latest.save());
+  await screen.findByText("unavailable");
+  expect(latest.loaded).toBeNull();
+  expect(latest.recovery).toBeNull();
+  expect(latest.dirty).toBe(false);
+  expect(useEditor.getState().track.design.title).not.toBe(
+    "Private unsaved changes"
+  );
+  expect(useEditor.temporal.getState().pastStates).toHaveLength(0);
+});

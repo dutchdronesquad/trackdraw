@@ -1069,7 +1069,7 @@
     "confirmRemove": "Confirm removal",
     "cancel": "Cancel",
     "leave": "Leave team",
-    "leaveConfirm": "You will lose access to this team. You will need a new invitation to rejoin.",
+    "leaveConfirm": "Leave this team? Your team access and editing session will stop. Team projects stay with the team. Previously downloaded or exported files cannot be recalled.",
     "saved": "Changes saved.",
     "loading": "Loading teams…",
     "invitationTitle": "Team invitation",
@@ -1098,9 +1098,11 @@
       "not_found": "This team or invitation is no longer available to your account. Refresh and try again.",
       "invalid": "Check the name, email address and role, then try again.",
       "limit": "A team or invitation limit was reached, or this email is already a member or invited. Try again later or send a new invitation from the existing entry.",
-      "owner_required": "The team owner cannot leave or be removed. Ownership must be transferred first.",
+      "owner_required": "Transfer ownership to a member or delete the team before leaving or deleting your account.",
       "delivery": "The invitation could not be delivered and was revoked. Try sending a new invitation.",
-      "failed": "Something went wrong. Refresh and try again."
+      "failed": "Something went wrong. Refresh and try again.",
+      "impact_changed": "The team changed since this review. Refresh and review its current impact before deleting.",
+      "transfer_invalid": "Choose an accepted, verified team member who can own another team."
     },
     "switchAccount": "Use another account",
     "invitationSending": "This invitation is still being sent. Reload this page shortly.",
@@ -1123,7 +1125,24 @@
     "emptyInvitationDescription": "Accept an invitation above to join a team, or create your own team to start sharing projects.",
     "createDescription": "A shared space for your track projects and the people you design with.",
     "createNameHelp": "Choose a name your teammates will recognize. You can invite them after creating the team.",
-    "creating": "Creating…"
+    "creating": "Creating…",
+    "lifecycle": {
+      "transferAction": "Transfer ownership",
+      "transferConfirm": "Make {name} the team owner? They will control members, publishing and team deletion. You will become an editor. Existing public links stay available.",
+      "deleteTitle": "Delete this team?",
+      "deleteAction": "Delete team",
+      "deleteDescription": "This permanently deletes the team and all its projects, removes its members and invitations, stops editing sessions and takes its public shares and gallery entries offline. This cannot be undone.",
+      "downloads": "Copies that members previously downloaded or exported cannot be recalled.",
+      "confirmName": "Type “{name}” to confirm",
+      "impact": {
+        "projects": "Projects, including archived",
+        "members": "Members",
+        "invitations": "Pending invitations",
+        "shares": "Active public links",
+        "galleryEntries": "Gallery entries",
+        "editingSessions": "Active editing sessions"
+      }
+    }
   },
   "teamLibrary": {
     "library": "Show projects from",
