@@ -59,13 +59,16 @@ export function TeamManagement({
     <div className="space-y-6">
       <TeamOwnershipTransfer team={team} busy={busy} onCommand={onCommand} />
       <section aria-label={t("members")}>
-        <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
-          {t("members")}
-        </h3>
+        <div className="text-muted-foreground border-border/60 grid grid-cols-1 items-center gap-x-3 border-b pb-3 text-sm font-medium sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem_2.5rem]">
+          <h3 className="sm:col-span-2">{t("members")}</h3>
+          <span className="hidden px-3 sm:col-start-3 sm:block">
+            {t("role")}
+          </span>
+        </div>
         <ul className="divide-border/60 divide-y">
           {team.members.map((member) => (
             <li key={member.userId} className="py-3">
-              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)_7rem_auto]">
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem_2.5rem]">
                 <div className="col-start-1 row-start-1">
                   <TeamAvatar name={member.name || member.email} />
                 </div>
@@ -80,7 +83,7 @@ export function TeamManagement({
                   )}
                 </div>
                 {member.role === "owner" ? (
-                  <span className="text-muted-foreground col-start-2 row-start-2 text-sm sm:col-start-3 sm:row-start-1 sm:text-right">
+                  <span className="text-muted-foreground col-start-2 row-start-2 text-sm sm:col-start-3 sm:row-start-1 sm:px-3">
                     {t("roles.owner")}
                   </span>
                 ) : (
