@@ -1,5 +1,6 @@
 "use client";
 
+import { accountInteractionClassName } from "./interaction-style";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -142,7 +143,10 @@ function ApiKeyRow({
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            className={accountInteractionClassName}
+          >
             <DropdownMenuItem onSelect={onEdit}>
               {t("edit.action")}
             </DropdownMenuItem>
@@ -434,7 +438,10 @@ export function AccountApiKeysView({
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent align="start">
+                <SelectContent
+                  align="start"
+                  className={accountInteractionClassName}
+                >
                   {[7, 30, 90, 365].map((days) => (
                     <SelectItem key={days} value={String(days)}>
                       {days === 365

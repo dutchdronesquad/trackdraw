@@ -1,3 +1,4 @@
+import { accountInteractionClassName } from "./interaction-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -130,7 +131,11 @@ export function AccountProfileView({
             {t("account.profile.language.description")}
           </p>
         </div>
-        <LanguagePicker variant="full" className="h-9 w-40" />
+        <LanguagePicker
+          variant="full"
+          className="h-9 w-40"
+          contentClassName={accountInteractionClassName}
+        />
       </div>
     </div>
   );

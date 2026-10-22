@@ -1,5 +1,6 @@
 "use client";
 
+import { accountInteractionClassName } from "./interaction-style";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Search, UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -173,7 +174,7 @@ export function ApiKeyProjectAccessSelector({
               <SelectValue />
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className={accountInteractionClassName}>
             <SelectItem value="personal">{t("personal")}</SelectItem>
             {teams.map((team) => (
               <SelectItem key={team.id} value={team.id}>
@@ -418,7 +419,7 @@ export function ApiKeyProjectAccessSelector({
         collisionPadding={16}
         onClick={(event) => event.stopPropagation()}
         aria-label={t("label")}
-        className="border-border/70 flex max-h-[min(34rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg"
+        className={`border-border/70 flex max-h-[min(34rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-hidden rounded-xl p-4 shadow-lg ${accountInteractionClassName}`}
       >
         {content}
       </PopoverContent>

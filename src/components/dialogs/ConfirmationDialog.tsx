@@ -1,5 +1,6 @@
 "use client";
 
+import { accountInteractionClassName } from "./AccountDialog/interaction-style";
 import { useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function ConfirmationDialog({
     >
       <DialogContent
         role="alertdialog"
-        className="max-w-[calc(100%-2rem)] rounded-2xl sm:max-w-md"
+        className={`max-w-[calc(100%-2rem)] rounded-2xl sm:max-w-md ${accountInteractionClassName}`}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           cancel.current?.focus();
