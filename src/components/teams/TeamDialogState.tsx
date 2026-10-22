@@ -12,7 +12,6 @@ function useDialogState() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<TeamErrorCode | null>(null);
-  const [notice, setNotice] = useState(false);
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("editor");
@@ -33,8 +32,6 @@ function useDialogState() {
     setBusy,
     error,
     setError,
-    notice,
-    setNotice,
     renameDraft,
     setRenameDraft,
     email,

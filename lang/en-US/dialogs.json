@@ -1071,6 +1071,7 @@
     "leave": "Leave team",
     "leaveConfirm": "Leave this team? Your team access and editing session will stop. Team projects stay with the team. Previously downloaded or exported files cannot be recalled.",
     "saved": "Changes saved.",
+    "roleUpdated": "Role updated",
     "loading": "Loading teams…",
     "invitationTitle": "Team invitation",
     "invitationHelp": "Sign in with the email address that received this invitation, then choose whether to join.",

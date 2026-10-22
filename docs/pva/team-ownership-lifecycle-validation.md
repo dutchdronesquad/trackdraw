@@ -23,7 +23,9 @@ All migrations through `0035_team_ownership_lifecycle.sql` were applied to local
 
 ## Desktop and mobile
 
-The account Teams surface was checked in the authenticated preview at the normal desktop viewport and at 390 × 844. A separate disposable team with two blank projects and an accepted member exercised the actual owner menus, transfer confirmation and deletion impact form. The destructive submit stayed disabled until the exact name matched. The form and typed confirmation survived the responsive portal change; counts, labels and action buttons remained readable without horizontal overflow. Transfer confirmation stayed inline with the selected member. The viewport was restored and the disposable team, projects and account were removed; existing user teams were preserved.
+The account Teams surface was checked in the authenticated preview at the normal desktop viewport and at 390 × 844. A separate disposable team with two blank projects and an accepted member exercised the actual owner menus, transfer confirmation and deletion impact form. The destructive submit stayed disabled until the exact name matched. The form and typed confirmation survived the responsive portal change; counts, labels and action buttons remained readable without horizontal overflow. Transfer confirmation opens a focused dialog with Cancel initially focused; the member role selector is available on desktop and mobile and the action menu contains only transfer/removal. The viewport was restored and the disposable team, projects and account were removed; existing user teams were preserved.
+
+A follow-up account UI check verified uniform 36 px input/select heights, a member menu without duplicate role actions, and the Sonner success toast after a role change in a separate empty local test team. The transfer dialog initially focused Cancel and remained usable after switching to the mobile viewport. That disposable team and member were removed afterwards. Team creation and other management successes also use toasts rather than inserting a saved notice above the form.
 
 ## Automated coverage and limits
 

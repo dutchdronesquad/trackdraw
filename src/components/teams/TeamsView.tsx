@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, ChevronRight, Plus, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { TeamCommand, TeamDetails, TeamOverview } from "@/lib/teams";
@@ -30,8 +31,6 @@ export function TeamsView() {
     setBusy,
     error,
     setError,
-    notice,
-    setNotice,
     setRenameDraft,
     setEmail,
     setRole,
@@ -104,7 +103,6 @@ export function TeamsView() {
   function navigate(next: typeof screen) {
     if (busy) return;
     setError(null);
-    setNotice(false);
     setConfirm(null);
     setScreen(next);
   }
@@ -119,7 +117,6 @@ export function TeamsView() {
     setTeam(null);
     setBusy(true);
     setError(null);
-    setNotice(false);
     setScreen("detail");
     try {
       setTeam((await teamRequest<{ team: TeamDetails }>({ teamId: id })).team);
@@ -134,7 +131,6 @@ export function TeamsView() {
     requestVersion.current += 1;
     setBusy(true);
     setError(null);
-    setNotice(false);
     try {
       const result = await teamRequest<{ teamId: string }>({ command: input });
       await load(result.teamId);
@@ -145,7 +141,7 @@ export function TeamsView() {
       if (input.action === "invite") setEmail("");
       if (["invite", "rename", "create", "accept"].includes(input.action))
         setScreen("detail");
-      setNotice(true);
+      toast.success(t(input.action === "role" ? "roleUpdated" : "saved"));
     } catch (e) {
       const code = e instanceof TeamRequestError ? e.code : "failed";
       if (code === "not_found" || code === "unauthorized") {
@@ -319,11 +315,6 @@ export function TeamsView() {
             {t("refresh")}
           </Button>
         </div>
-      )}
-      {notice && (
-        <p className="text-muted-foreground text-sm" role="status">
-          {t("saved")}
-        </p>
       )}
       {!overview ? (
         !error && (

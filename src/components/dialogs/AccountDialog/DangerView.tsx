@@ -51,7 +51,7 @@ export function AccountDangerView({
             value={deleteConfirmation}
             onChange={(event) => onDeleteConfirmationChange(event.target.value)}
             placeholder={t("account.danger.confirm.placeholder")}
-            className="h-8 rounded-lg px-2.5 shadow-none"
+            className="h-9 rounded-lg px-3 shadow-none"
           />
         </label>
 

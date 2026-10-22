@@ -5,6 +5,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useTeamDialogState } from "./TeamDialogState";
 import { TeamRoleSelect } from "./TeamRoleSelect";
 import { TeamAvatar } from "./TeamAvatar";
+import { TeamOwnershipTransfer } from "./TeamOwnershipTransfer";
 import { TeamDeletion } from "./TeamDeletion";
 import { TeamActions } from "./TeamActions";
 import type { TeamCommand, TeamDetails } from "@/lib/teams";
@@ -56,6 +57,7 @@ export function TeamManagement({
   );
   return (
     <div className="space-y-6">
+      <TeamOwnershipTransfer team={team} busy={busy} onCommand={onCommand} />
       <section aria-label={t("members")}>
         <h3 className="text-muted-foreground border-border/60 border-b pb-3 text-sm font-medium">
           {t("members")}
@@ -63,9 +65,11 @@ export function TeamManagement({
         <ul className="divide-border/60 divide-y">
           {team.members.map((member) => (
             <li key={member.userId} className="py-3">
-              <div className="flex items-center gap-3">
-                <TeamAvatar name={member.name || member.email} />
-                <div className="min-w-0 flex-1">
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)_7rem_auto]">
+                <div className="col-start-1 row-start-1">
+                  <TeamAvatar name={member.name || member.email} />
+                </div>
+                <div className="col-start-2 row-start-1 min-w-0">
                   <p className="text-sm font-medium break-words">
                     {member.name || member.email}
                   </p>
@@ -74,17 +78,14 @@ export function TeamManagement({
                       {member.email}
                     </p>
                   )}
-                  <p className="text-muted-foreground mt-1 text-xs sm:hidden">
-                    {t(`roles.${member.role}`)}
-                  </p>
                 </div>
                 {member.role === "owner" ? (
-                  <span className="text-muted-foreground hidden text-sm sm:block">
+                  <span className="text-muted-foreground col-start-2 row-start-2 text-sm sm:col-start-3 sm:row-start-1 sm:text-right">
                     {t("roles.owner")}
                   </span>
                 ) : (
                   <>
-                    <div className="hidden sm:block">
+                    <div className="col-start-2 row-start-2 max-w-28 sm:col-start-3 sm:row-start-1">
                       <TeamRoleSelect
                         label={t("memberRole", { email: member.email })}
                         value={member.role}
@@ -100,83 +101,29 @@ export function TeamManagement({
                         }
                       />
                     </div>
-                    <TeamActions
-                      label={t("memberActions", { email: member.email })}
-                      busy={busy}
-                    >
-                      <DropdownMenuItem
-                        disabled={member.role === "editor"}
-                        onSelect={() =>
-                          onCommand({
-                            action: "role",
-                            teamId: team.id,
-                            userId: member.userId,
-                            role: "editor",
-                          })
-                        }
+                    <div className="col-start-3 row-start-1 sm:col-start-4">
+                      <TeamActions
+                        label={t("memberActions", { email: member.email })}
+                        busy={busy}
                       >
-                        {t("makeEditor")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={member.role === "viewer"}
-                        onSelect={() =>
-                          onCommand({
-                            action: "role",
-                            teamId: team.id,
-                            userId: member.userId,
-                            role: "viewer",
-                          })
-                        }
-                      >
-                        {t("makeViewer")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setConfirm(`transfer:${member.userId}`)}
-                      >
-                        {t("lifecycle.transferAction")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onSelect={() => setConfirm(member.userId)}
-                      >
-                        {t("remove")}
-                      </DropdownMenuItem>
-                    </TeamActions>
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            setConfirm(`transfer:${member.userId}`)
+                          }
+                        >
+                          {t("lifecycle.transferAction")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onSelect={() => setConfirm(member.userId)}
+                        >
+                          {t("remove")}
+                        </DropdownMenuItem>
+                      </TeamActions>
+                    </div>
                   </>
                 )}
               </div>
-              {confirm === `transfer:${member.userId}` && (
-                <div className="mt-4 space-y-3 sm:pl-13">
-                  <p className="text-sm">
-                    {t("lifecycle.transferConfirm", {
-                      name: member.name || member.email,
-                    })}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      disabled={busy}
-                      onClick={() =>
-                        onCommand({
-                          action: "transfer-owner",
-                          teamId: team.id,
-                          userId: member.userId,
-                        })
-                      }
-                    >
-                      {t("lifecycle.transferAction")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={busy}
-                      onClick={() => setConfirm(null)}
-                    >
-                      {t("cancel")}
-                    </Button>
-                  </div>
-                </div>
-              )}
               {confirm === member.userId && (
                 <div className="mt-4 space-y-3 pl-0 sm:pl-13">
                   <p className="text-sm">

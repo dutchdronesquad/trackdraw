@@ -5,6 +5,7 @@ import {
   render as renderComponent,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TeamsView } from "@/components/teams/TeamsView";
@@ -23,6 +24,8 @@ const render = (ui: ReactElement) => {
     rerender: (child: ReactElement) => result.rerender(wrap(child)),
   };
 };
+const toastSuccess = vi.hoisted(() => vi.fn());
+vi.mock("sonner", () => ({ toast: { success: toastSuccess } }));
 const state = vi.hoisted(() => ({
   user: null as { id: string; email: string } | null,
   signOut: vi.fn(),
@@ -67,6 +70,7 @@ const invitation = {
 const response = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });
 beforeEach(() => {
+  toastSuccess.mockClear();
   state.user = null;
 });
 afterEach(() => {
@@ -326,7 +330,9 @@ it("returns to the team after sending an invitation and exposes resend and revok
     "noor@example.invalid"
   );
   await user.click(screen.getByRole("button", { name: "Send invitation" }));
-  expect(await screen.findByRole("status")).toBeTruthy();
+  await waitFor(() =>
+    expect(toastSuccess).toHaveBeenCalledWith("Changes saved.")
+  );
   expect(screen.queryByRole("textbox", { name: "Email address" })).toBeNull();
   expect(
     fetch.mock.calls.some(
@@ -450,10 +456,58 @@ it("requires explicit confirmation before transferring ownership to an accepted 
     screen.getByRole("menuitem", { name: "Transfer ownership" })
   );
   expect(send).not.toHaveBeenCalled();
+  const dialog = screen.getByRole("alertdialog", {
+    name: "Transfer ownership",
+  });
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      within(dialog).getByRole("button", { name: "Cancel" })
+    )
+  );
+  await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(send).not.toHaveBeenCalled();
+  await user.click(
+    screen.getByRole("button", { name: "Actions for pilot@example.invalid" })
+  );
+  expect(
+    screen.getAllByRole("menuitem").map((item) => item.textContent)
+  ).toEqual(["Transfer ownership", "Remove"]);
+  await user.click(
+    screen.getByRole("menuitem", { name: "Transfer ownership" })
+  );
   await user.click(screen.getByRole("button", { name: "Transfer ownership" }));
   expect(send).toHaveBeenCalledWith({
     action: "transfer-owner",
     teamId: "team",
     userId: "pilot",
   });
+});
+
+it("uses a toast after changing a member role without adding a saved notice to the roster", async () => {
+  const fetch = vi.fn(async (url: string, init?: RequestInit) =>
+    response(
+      init?.method === "POST"
+        ? { ok: true, teamId: "team" }
+        : url.includes("teamId=")
+          ? { ok: true, team }
+          : {
+              ok: true,
+              teams: [{ id: team.id, name: team.name, role: "owner" }],
+              invitations: [],
+            }
+    )
+  );
+  vi.stubGlobal("fetch", fetch);
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  await user.click(
+    screen.getByRole("combobox", { name: "Role for pilot@example.invalid" })
+  );
+  await user.click(screen.getByRole("option", { name: "Viewer" }));
+  await waitFor(() =>
+    expect(toastSuccess).toHaveBeenCalledWith("Role updated")
+  );
+  expect(screen.queryByText("Changes saved.")).toBeNull();
 });

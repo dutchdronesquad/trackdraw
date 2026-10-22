@@ -97,10 +97,7 @@ export function TeamForms({
           <label className="block space-y-2 text-sm font-medium">
             <span className="block">{t("teamName")}</span>
             <Input
-              className={cn(
-                "h-8 rounded-lg px-2.5 shadow-none",
-                creating && "h-10 px-3"
-              )}
+              className="h-9 rounded-lg px-3 shadow-none"
               aria-describedby={creating ? nameHelpId : undefined}
               value={draft}
               maxLength={80}

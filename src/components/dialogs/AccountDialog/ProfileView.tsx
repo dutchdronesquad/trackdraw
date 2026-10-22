@@ -82,7 +82,7 @@ export function AccountProfileView({
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder={t("account.profile.displayName.placeholder")}
-            className="h-8 rounded-lg px-2.5 shadow-none"
+            className="h-9 rounded-lg px-3 shadow-none"
           />
         </label>
 
@@ -130,7 +130,7 @@ export function AccountProfileView({
             {t("account.profile.language.description")}
           </p>
         </div>
-        <LanguagePicker variant="full" className="w-40" />
+        <LanguagePicker variant="full" className="h-9 w-40" />
       </div>
     </div>
   );

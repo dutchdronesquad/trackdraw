@@ -37,7 +37,7 @@ export function TeamRoleSelect({
       <SelectTrigger
         id={id}
         aria-label={label}
-        className={cn("h-10", className)}
+        className={cn("h-9", className)}
       >
         <SelectValue />
       </SelectTrigger>
