@@ -137,6 +137,23 @@ it("requires confirmation to remove a member and does not offer owner promotion"
   );
   await user.click(await screen.findByRole("menuitem", { name: "Remove" }));
   expect(action).not.toHaveBeenCalled();
+  const removalDialog = screen.getByRole("alertdialog", {
+    name: "Confirm removal",
+  });
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      within(removalDialog).getByRole("button", { name: "Cancel" })
+    )
+  );
+  await user.click(
+    within(removalDialog).getByRole("button", { name: "Cancel" })
+  );
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(action).not.toHaveBeenCalled();
+  await user.click(
+    screen.getByRole("button", { name: "Actions for pilot@example.invalid" })
+  );
+  await user.click(screen.getByRole("menuitem", { name: "Remove" }));
   await user.click(screen.getByRole("button", { name: "Confirm removal" }));
   expect(action).toHaveBeenCalledWith({
     action: "remove",
@@ -165,6 +182,7 @@ it("offers a member only their own role and a confirmed leave action", async () 
   expect(screen.queryByRole("button", { name: "Invite member" })).toBeNull();
   await user.click(screen.getByRole("button", { name: "Team actions" }));
   await user.click(await screen.findByRole("menuitem", { name: "Leave team" }));
+  expect(screen.getByRole("alertdialog", { name: "Leave team" })).toBeTruthy();
   expect(fetch.mock.calls.some((call) => call[1]?.method === "POST")).toBe(
     false
   );

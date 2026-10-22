@@ -126,13 +126,11 @@ describe("compact API key settings", () => {
         screen.getByRole("menuitem", { name: "Revoke RotorHazard" })
       );
       expect(remove).not.toHaveBeenCalled();
-      expect(screen.getByText("Revoke API key?")).toBeTruthy();
       expect(
-        screen.getByText(
-          isMobile
-            ? "This key stops working."
-            : "Integrations using this key lose access."
-        )
+        screen.getByRole("alertdialog", { name: "Revoke API key?" })
+      ).toBeTruthy();
+      expect(
+        screen.getByText("Integrations using this key lose access.")
       ).toBeTruthy();
       await user.click(screen.getByRole("button", { name: "Revoke" }));
       expect(remove).toHaveBeenCalledWith("key-1");

@@ -1,11 +1,10 @@
 "use client";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useTeamDialogState } from "./TeamDialogState";
 import { TeamRoleSelect } from "./TeamRoleSelect";
 import { TeamAvatar } from "./TeamAvatar";
-import { TeamOwnershipTransfer } from "./TeamOwnershipTransfer";
+import { TeamActionConfirmation } from "./TeamActionConfirmation";
 import { TeamDeletion } from "./TeamDeletion";
 import { TeamActions } from "./TeamActions";
 import type { TeamCommand, TeamDetails } from "@/lib/teams";
@@ -27,27 +26,7 @@ export function TeamManagement({
         <p className="text-muted-foreground text-sm">
           {t("yourRole", { role: t(`roles.${team.role}`) })}
         </p>
-        {confirm === "leave" && (
-          <div className="space-y-3">
-            <p className="text-sm leading-relaxed">{t("leaveConfirm")}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="destructive"
-                disabled={busy}
-                onClick={() => onCommand({ action: "leave", teamId: team.id })}
-              >
-                {t("leave")}
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={busy}
-                onClick={() => setConfirm(null)}
-              >
-                {t("cancel")}
-              </Button>
-            </div>
-          </div>
-        )}
+        <TeamActionConfirmation team={team} busy={busy} onCommand={onCommand} />
       </div>
     );
   if (confirm === "delete")
@@ -57,7 +36,7 @@ export function TeamManagement({
   );
   return (
     <div className="space-y-6">
-      <TeamOwnershipTransfer team={team} busy={busy} onCommand={onCommand} />
+      <TeamActionConfirmation team={team} busy={busy} onCommand={onCommand} />
       <section aria-label={t("members")}>
         <div className="text-muted-foreground border-border/60 grid grid-cols-1 items-center gap-x-3 border-b pb-3 text-sm font-medium sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem_2.5rem]">
           <h3 className="sm:col-span-2">{t("members")}</h3>
@@ -127,37 +106,6 @@ export function TeamManagement({
                   </>
                 )}
               </div>
-              {confirm === member.userId && (
-                <div className="mt-4 space-y-3 pl-0 sm:pl-13">
-                  <p className="text-sm">
-                    {t("removeConfirm", { name: member.name || member.email })}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() =>
-                        onCommand({
-                          action: "remove",
-                          teamId: team.id,
-                          userId: member.userId,
-                        })
-                      }
-                    >
-                      {t("confirmRemove")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => setConfirm(null)}
-                    >
-                      {t("cancel")}
-                    </Button>
-                  </div>
-                </div>
-              )}
             </li>
           ))}
         </ul>

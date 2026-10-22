@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LoaderCircle, Plug } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { ConfirmationDialog } from "@/components/dialogs/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { McpConnectionGuideLink } from "./connection-guide-link";
 
@@ -107,7 +108,7 @@ export function McpConnectionsContent({
       <p className="text-muted-foreground text-sm leading-relaxed">
         {t("connectionsBody")}
       </p>
-      {error && (
+      {error && !confirming && (
         <p className="text-destructive mt-5 text-sm" role="alert">
           {t("disconnectFailed")}
         </p>
@@ -134,81 +135,62 @@ export function McpConnectionsContent({
                 key={connection.id}
                 className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between"
               >
-                {confirming === connection.id ? (
-                  <>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium break-words">
-                        {t("disconnectConfirm", { app: name })}
+                <ConfirmationDialog
+                  open={confirming === connection.id}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setConfirming(null);
+                      setError(false);
+                    }
+                  }}
+                  title={t("disconnectConfirm", { app: name })}
+                  description={t("disconnectWarning")}
+                  confirmLabel={
+                    pending === connection.id
+                      ? t("disconnecting")
+                      : t("disconnect")
+                  }
+                  busy={pending !== null}
+                  error={error ? t("disconnectFailed") : null}
+                  onConfirm={() => void disconnect(connection.id)}
+                />
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+                    <Plug className="size-4" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium break-words">{name}</p>
+                    {!Number.isNaN(date.valueOf()) && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {t("connectedOn", {
+                          date: new Intl.DateTimeFormat(locale, {
+                            dateStyle: "medium",
+                          }).format(date),
+                        })}
                       </p>
-                      <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                        {t("disconnectWarning")}
+                    )}
+                    <details className="text-muted-foreground mt-2 text-xs">
+                      <summary className="cursor-pointer">
+                        {t("connectionDetails")}
+                      </summary>
+                      <p className="mt-2 break-all">
+                        {t("clientId", { id: connection.clientId })}
                       </p>
-                    </div>
-                    <div className="flex shrink-0 gap-2">
-                      <Button
-                        variant="ghost"
-                        disabled={pending !== null}
-                        onClick={() => {
-                          setConfirming(null);
-                          setError(false);
-                        }}
-                      >
-                        {t("cancel")}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={pending !== null}
-                        onClick={() => void disconnect(connection.id)}
-                      >
-                        {pending === connection.id
-                          ? t("disconnecting")
-                          : t("disconnect")}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex min-w-0 items-start gap-3">
-                      <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
-                        <Plug className="size-4" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium break-words">
-                          {name}
-                        </p>
-                        {!Number.isNaN(date.valueOf()) && (
-                          <p className="text-muted-foreground mt-1 text-xs">
-                            {t("connectedOn", {
-                              date: new Intl.DateTimeFormat(locale, {
-                                dateStyle: "medium",
-                              }).format(date),
-                            })}
-                          </p>
-                        )}
-                        <details className="text-muted-foreground mt-2 text-xs">
-                          <summary className="cursor-pointer">
-                            {t("connectionDetails")}
-                          </summary>
-                          <p className="mt-2 break-all">
-                            {t("clientId", { id: connection.clientId })}
-                          </p>
-                        </details>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      disabled={pending !== null}
-                      onClick={() => {
-                        setConfirming(connection.id);
-                        setError(false);
-                      }}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 focus-visible:ring-destructive/30 h-9 shrink-0 self-start rounded-lg px-3 text-xs"
-                      aria-label={`${t("disconnect")} ${name}`}
-                    >
-                      {t("disconnect")}
-                    </Button>
-                  </>
-                )}
+                    </details>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  disabled={pending !== null}
+                  onClick={() => {
+                    setConfirming(connection.id);
+                    setError(false);
+                  }}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 focus-visible:ring-destructive/30 h-9 shrink-0 self-start rounded-lg px-3 text-xs"
+                  aria-label={`${t("disconnect")} ${name}`}
+                >
+                  {t("disconnect")}
+                </Button>
               </li>
             );
           })}
