@@ -79,22 +79,14 @@ export function TeamLibrary({
     select(userId, value);
   };
   return (
-    <section aria-label={t("panelTitle")}>
-      <header className="border-border/40 border-b px-5 pt-4 pb-5 lg:px-7 lg:py-5">
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          {t("panelTitle")}
-        </h2>
-        <p className="text-muted-foreground mt-1 hidden text-sm lg:block lg:pr-8">
-          {t("panelDescription")}
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm lg:hidden">
-          {t("panelMobileDescription")}
-        </p>
-      </header>
-      <div className="lg:grid lg:min-h-[26rem] lg:grid-cols-[14rem_minmax(0,1fr)]">
+    <section
+      aria-label={t("panelTitle")}
+      className="flex h-full min-h-0 flex-col"
+    >
+      <div className="min-h-0 flex-1 overflow-hidden lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
         <nav
           aria-label={t("library")}
-          className="border-border/40 hidden space-y-1 border-r px-3 py-5 lg:block"
+          className="border-border/40 hidden min-h-0 space-y-1 overflow-y-auto overscroll-contain border-r px-3 py-5 lg:block"
         >
           <Button
             variant="ghost"
@@ -129,7 +121,7 @@ export function TeamLibrary({
             </Button>
           ))}
         </nav>
-        <div className="min-w-0 px-5 py-5 lg:px-6 lg:py-5">
+        <div className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-5 lg:px-6 lg:py-5">
           <div className="mb-5 lg:hidden">
             <Select
               value={team?.id ?? "personal"}

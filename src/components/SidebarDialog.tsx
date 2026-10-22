@@ -31,6 +31,7 @@ export interface SidebarDialogProps {
   contentTitle?: string;
   contentHeaderless?: boolean;
   mobileContentOnly?: boolean;
+  mobileContentHeader?: boolean;
   contentDescription?: string;
   contentActions?: React.ReactNode;
   contentBodyClassName?: string;
@@ -211,6 +212,7 @@ export function SidebarDialog({
   contentTitle,
   contentHeaderless = false,
   mobileContentOnly = false,
+  mobileContentHeader = false,
   contentDescription,
   contentActions,
   contentBodyClassName,
@@ -252,6 +254,7 @@ export function SidebarDialog({
         subtitle={mobileSubtitle}
         contentClassName={cn(
           "max-h-[92dvh]",
+          mobileContentHeader && "overflow-clip",
           mobileHeight ?? (contentHeaderless && "h-[92dvh]")
         )}
         pinnedContent={
@@ -261,7 +264,7 @@ export function SidebarDialog({
               !mobileContentOnly && "border-b"
             )}
           >
-            {contentHeaderless && (
+            {(contentHeaderless || mobileContentHeader) && (
               <div className="absolute top-6 right-3 z-10">
                 <CloseDialogButton
                   onClick={() => onOpenChange(false)}
@@ -270,6 +273,18 @@ export function SidebarDialog({
               </div>
             )}
             {!mobileContentOnly && mobileNav}
+            {!mobileContentOnly && mobileContentHeader && (
+              <div className="border-border/30 flex h-[86px] shrink-0 flex-col justify-center border-t px-5 py-3">
+                <h2 className="text-foreground text-[15px] leading-5 font-semibold tracking-[-0.01em]">
+                  {resolvedContentTitle}
+                </h2>
+                {contentDescription && (
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-[13px] leading-5">
+                    {contentDescription}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         }
         bodyClassName={cn("pt-4 pb-4", contentBodyClassName)}

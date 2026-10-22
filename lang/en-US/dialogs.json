@@ -1168,7 +1168,7 @@
     "chooseTeam": "Choose a team you own",
     "noOwnedTeam": "You must own a team to move a project into it.",
     "publicationImpact": "Existing access: {shares, plural, one {# active share link} other {# active share links}}, {gallery, plural, one {# public gallery entry} other {# public gallery entries}}.",
-    "publicationUnchanged": "Existing published snapshots and links remain accessible. The team owner manages them separately. Moving does not make them private or publish any new content.",
+    "publicationUnchanged": "The team owner manages these shares and gallery entries.",
     "confirmMove": "Move project to team",
     "moveFailed": "The project or its publication state changed, access was lost, or an editing session is active. Return to Projects, sync any changes, and review the move again.",
     "back": "Back to projects",
@@ -1206,7 +1206,21 @@
     "unsavedShort": "Unsaved",
     "youAreEditing": "You are editing",
     "publish": "Share",
-    "editShort": "Edit"
+    "editShort": "Edit",
+    "moveDialog": {
+      "title": "Move project to a team",
+      "personal": "Personal projects",
+      "ownership": "The team becomes the owner.",
+      "accessTitle": "All team members can access this project",
+      "accessBody": "Current and future team members can view this project. Owners and editors can edit it.",
+      "removedTitle": "Removed from your personal projects",
+      "removedBody": "The project will be transferred to the team and removed from your personal projects.",
+      "warningTitle": "You can’t move it back.",
+      "warningBody": "Your local device copy and snapshots will be removed.",
+      "publicationsTitle": "Public links and gallery entries",
+      "publicationsSummary": "Existing published content stays accessible.",
+      "confirm": "Move project"
+    }
   },
   "teamPublication": {
     "audience": "Anyone with the link can view this snapshot.",
