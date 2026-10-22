@@ -730,7 +730,7 @@ it("shows a compact owner-only avatar stack with a remaining-member counter in t
     screen.getByRole("button", { name: "Race team Owner 3 projects 7 members" })
   ).toBeTruthy();
   expect(screen.getByText("3 projects")).toBeTruthy();
-  expect(screen.getByText("7 members")).toBeTruthy();
+  expect(screen.queryByText("7 members")).toBeNull();
   expect(screen.getByText("+4")).toBeTruthy();
   expect(screen.getByText("EP")).toBeTruthy();
   expect(screen.queryByText("Emma Pilot")).toBeNull();

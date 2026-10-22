@@ -388,17 +388,29 @@ export function TeamsView() {
                   hasInvitations={received.length > 0}
                 />
               ) : (
-                <ul className="divide-border/60 border-border/60 divide-y border-y">
-                  {overview.teams.map((item) => (
-                    <li key={item.id}>
-                      <TeamOverviewRow
-                        team={item}
-                        busy={busy}
-                        onSelect={() => void choose(item.id)}
-                      />
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <div className="text-muted-foreground hidden grid-cols-[minmax(0,1fr)_5.5rem_7rem_1rem] items-center gap-4 px-3 pb-3 text-xs sm:grid">
+                    <span>{t("teamName")}</span>
+                    <span>{t("projects")}</span>
+                    <span className="text-right">
+                      {overview.teams.some((item) => item.memberPreview)
+                        ? t("members")
+                        : null}
+                    </span>
+                    <span />
+                  </div>
+                  <ul className="divide-border/60 border-border/60 divide-y border-y">
+                    {overview.teams.map((item) => (
+                      <li key={item.id}>
+                        <TeamOverviewRow
+                          team={item}
+                          busy={busy}
+                          onSelect={() => void choose(item.id)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           )}

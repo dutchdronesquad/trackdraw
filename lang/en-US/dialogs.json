@@ -1072,6 +1072,7 @@
     "leaveConfirm": "Leave this team? Your team access and editing session will stop. Team projects stay with the team. Previously downloaded or exported files cannot be recalled.",
     "saved": "Changes saved.",
     "roleUpdated": "Role updated",
+    "projects": "Projects",
     "projectCount": "{count, plural, one {# project} other {# projects}}",
     "memberCount": "{count, plural, one {# member} other {# members}}",
     "loading": "Loading teams…",
