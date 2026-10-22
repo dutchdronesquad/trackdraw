@@ -171,9 +171,9 @@ export function TeamLibrary({
                 {onNewPersonalProject ? (
                   <Button
                     onClick={onNewPersonalProject}
-                    className="bg-brand-primary hover:bg-brand-primary/90 ml-auto text-slate-950"
+                    className="ml-auto h-8 shrink-0 rounded-lg px-2.5"
                   >
-                    <Plus />
+                    <Plus className="size-4" aria-hidden="true" />
                     {t("create")}
                   </Button>
                 ) : null}
@@ -279,18 +279,20 @@ function TeamProjectList({
           <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-5 lg:mt-1.5">
             <LockKeyhole className="size-3.5 shrink-0" />
             <span>{t("private")}</span>
-            <span aria-hidden="true">·</span>
-            <span>
-              {t(team.role === "viewer" ? "readOnly" : "editingInTurns")}
-            </span>
+            {team.role === "viewer" && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{t("readOnly")}</span>
+              </>
+            )}
           </p>
         </div>
         {team.role !== "viewer" && title === null ? (
           <Button
             onClick={() => setTitle("")}
-            className="bg-brand-primary hover:bg-brand-primary/90 ml-auto shrink-0 text-slate-950"
+            className="ml-auto h-8 shrink-0 rounded-lg px-2.5"
           >
-            <Plus />
+            <Plus className="size-4" aria-hidden="true" />
             {t("create")}
           </Button>
         ) : null}

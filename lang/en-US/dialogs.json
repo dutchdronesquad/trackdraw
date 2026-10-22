@@ -1198,7 +1198,6 @@
     "exportRecovery": "Export unsaved changes",
     "finishBeforeLeaving": "Finish editing before leaving",
     "recoverBeforeLeaving": "Export or discard your unsaved changes before leaving",
-    "editingInTurns": "Edit in turns",
     "save": "Save changes",
     "workspaceContext": "Team project context",
     "projectsShort": "Projects",
