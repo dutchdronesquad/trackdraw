@@ -4,7 +4,7 @@ import type { TeamDetails, TeamOverview, TeamErrorCode } from "@/lib/teams";
 
 function useDialogState() {
   const [screen, setScreen] = useState<
-    "overview" | "detail" | "create" | "rename" | "invite"
+    "overview" | "detail" | "create" | "invite"
   >("overview");
   const [overview, setOverview] = useState<TeamOverview | null>(null);
   const [team, setTeam] = useState<TeamDetails | null>(null);

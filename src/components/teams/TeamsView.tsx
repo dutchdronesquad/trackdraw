@@ -4,7 +4,6 @@ import { ArrowLeft, ChevronRight, Plus, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { TeamCommand, TeamDetails, TeamOverview } from "@/lib/teams";
 import { teamRequest, TeamRequestError } from "./team-client";
 import { Invitations } from "./Invitations";
@@ -13,10 +12,11 @@ import { TeamManagement } from "./TeamManagement";
 import { TeamForms } from "./TeamForms";
 import { TeamEmptyState } from "./TeamEmptyState";
 import { TeamAvatar } from "./TeamAvatar";
-import { TeamActions } from "./TeamActions";
+import { TeamName } from "./TeamName";
 
 export function TeamsView() {
   const t = useTranslations("dialogs.teams");
+  const tCommon = useTranslations("common");
   const {
     screen,
     setScreen,
@@ -34,6 +34,7 @@ export function TeamsView() {
     setRenameDraft,
     setEmail,
     setRole,
+    confirm,
     setConfirm,
     setDeleteConfirmation,
   } = useTeamDialogState();
@@ -97,6 +98,75 @@ export function TeamsView() {
     };
   }, [setOverview, setError, setSelected, setTeam, setScreen]);
   useEffect(() => {
+    let active = true;
+    const revalidate = async () => {
+      if (busy || document.visibilityState === "hidden") return;
+      const version = ++requestVersion.current;
+      try {
+        const data = await teamRequest<TeamOverview>();
+        if (!active || version !== requestVersion.current) return;
+        setOverview(data);
+        setError((current) => (current === "failed" ? null : current));
+        const current = data.teams.find((item) => item.id === selected);
+        if (selected && !current) {
+          setTeam(null);
+          setSelected("");
+          setScreen("overview");
+          setConfirm(null);
+          setRenameDraft(null);
+          return;
+        }
+        if (!current) return;
+        if (current.role !== "owner") setTeam(null);
+        const detail = await teamRequest<{ team: TeamDetails }>({
+          teamId: current.id,
+        });
+        if (active && version === requestVersion.current) setTeam(detail.team);
+      } catch (error) {
+        if (!active || version !== requestVersion.current) return;
+        if (
+          error instanceof TeamRequestError &&
+          ["not_found", "unauthorized"].includes(error.code)
+        ) {
+          setTeam(null);
+          setSelected("");
+          setScreen("overview");
+          setConfirm(null);
+          setRenameDraft(null);
+        }
+        setError("failed");
+      }
+    };
+    const update = () => {
+      void revalidate();
+    };
+    const channel =
+      typeof BroadcastChannel !== "undefined"
+        ? new BroadcastChannel("trackdraw.teams")
+        : null;
+    if (channel) channel.onmessage = update;
+    window.addEventListener("focus", update);
+    window.addEventListener("trackdraw:team-access-changed", update);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      active = false;
+      channel?.close();
+      window.removeEventListener("focus", update);
+      window.removeEventListener("trackdraw:team-access-changed", update);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [
+    busy,
+    selected,
+    setOverview,
+    setTeam,
+    setSelected,
+    setScreen,
+    setConfirm,
+    setRenameDraft,
+    setError,
+  ]);
+  useEffect(() => {
     if (mounted.current) heading.current?.focus({ preventScroll: true });
     mounted.current = true;
   }, [screen]);
@@ -104,6 +174,7 @@ export function TeamsView() {
     if (busy) return;
     setError(null);
     setConfirm(null);
+    setRenameDraft(null);
     setScreen(next);
   }
   async function choose(id: string) {
@@ -167,18 +238,15 @@ export function TeamsView() {
       setBusy(false);
     }
   }
-  const form =
-    screen === "create" || screen === "rename" || screen === "invite";
+  const form = screen === "create" || screen === "invite";
   const title =
     screen === "overview"
       ? t("title")
       : screen === "create"
         ? t("createTitle")
-        : screen === "rename"
-          ? t("renameTitle")
-          : screen === "invite"
-            ? t("inviteTitle")
-            : (team?.name ?? t("title"));
+        : screen === "invite"
+          ? t("inviteTitle")
+          : (team?.name ?? t("title"));
   const received =
     overview?.invitations.filter(
       (item) =>
@@ -194,16 +262,10 @@ export function TeamsView() {
           size="sm"
           className="text-muted-foreground -ml-2 h-8 gap-2 rounded-lg px-2.5 text-xs"
           disabled={busy}
-          onClick={() =>
-            navigate(
-              screen === "invite" || screen === "rename" ? "detail" : "overview"
-            )
-          }
+          onClick={() => navigate(screen === "invite" ? "detail" : "overview")}
         >
           <ArrowLeft className="size-4" />
-          {screen === "invite" || screen === "rename"
-            ? (team?.name ?? t("title"))
-            : t("title")}
+          {screen === "invite" ? (team?.name ?? t("title")) : t("title")}
         </Button>
       )}
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -219,13 +281,24 @@ export function TeamsView() {
           <div
             className={screen === "overview" ? "min-w-0 md:hidden" : "min-w-0"}
           >
-            <h2
-              ref={heading}
-              tabIndex={-1}
-              className="text-foreground text-[15px] leading-snug font-semibold tracking-[-0.01em] break-words outline-none"
-            >
-              {title}
-            </h2>
+            {screen === "detail" &&
+            team?.role === "owner" &&
+            confirm !== "delete" ? (
+              <TeamName
+                team={team}
+                busy={busy}
+                headingRef={heading}
+                onCommand={(input) => void command(input)}
+              />
+            ) : (
+              <h2
+                ref={heading}
+                tabIndex={-1}
+                className="text-foreground text-[15px] leading-snug font-semibold tracking-[-0.01em] break-words outline-none"
+              >
+                {title}
+              </h2>
+            )}
             {screen === "overview" && (
               <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed">
                 {t("description")}
@@ -242,39 +315,6 @@ export function TeamsView() {
               </p>
             )}
           </div>
-          {screen === "detail" && team && (
-            <>
-              {" "}
-              <TeamActions label={t("teamActions")} busy={busy}>
-                <DropdownMenuItem onSelect={() => void refresh()}>
-                  {t("refresh")}
-                </DropdownMenuItem>
-                {team.role === "owner" ? (
-                  <>
-                    <DropdownMenuItem onSelect={() => navigate("rename")}>
-                      {t("renameTitle")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onSelect={() => {
-                        setDeleteConfirmation("");
-                        setConfirm("delete");
-                      }}
-                    >
-                      {t("lifecycle.deleteAction")}
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onSelect={() => setConfirm("leave")}
-                  >
-                    {t("leave")}
-                  </DropdownMenuItem>
-                )}
-              </TeamActions>{" "}
-            </>
-          )}
         </div>
         {overview && overview.teams.length > 0 && screen === "overview" && (
           <Button
@@ -312,7 +352,7 @@ export function TeamsView() {
             disabled={busy}
             onClick={() => void refresh()}
           >
-            {t("refresh")}
+            {tCommon("actions.tryAgain")}
           </Button>
         </div>
       )}
@@ -373,11 +413,35 @@ export function TeamsView() {
           )}
           {screen === "detail" &&
             (team ? (
-              <TeamManagement
-                team={team}
-                busy={busy}
-                onCommand={(input) => void command(input)}
-              />
+              <>
+                <TeamManagement
+                  team={team}
+                  busy={busy}
+                  onCommand={(input) => void command(input)}
+                />
+                {confirm !== "delete" && (
+                  <div className="border-border/60 border-t pt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 -ml-2 h-8 px-2 text-xs"
+                      disabled={busy}
+                      onClick={() => {
+                        setRenameDraft(null);
+                        setError(null);
+                        setDeleteConfirmation("");
+                        setConfirm(team.role === "owner" ? "delete" : "leave");
+                      }}
+                    >
+                      {t(
+                        team.role === "owner"
+                          ? "lifecycle.deleteAction"
+                          : "leave"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               !error && (
                 <p className="text-muted-foreground text-sm">{t("loading")}</p>

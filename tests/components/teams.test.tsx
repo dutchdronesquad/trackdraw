@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   cleanup,
+  act,
   render as renderComponent,
   screen,
   waitFor,
@@ -180,8 +181,8 @@ it("offers a member only their own role and a confirmed leave action", async () 
   await user.click(await screen.findByRole("button", { name: /Race team/ }));
   expect(await screen.findByText("Your role: Viewer")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Invite member" })).toBeNull();
-  await user.click(screen.getByRole("button", { name: "Team actions" }));
-  await user.click(await screen.findByRole("menuitem", { name: "Leave team" }));
+  expect(screen.queryByRole("button", { name: /Rename team:/ })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Leave team" }));
   expect(screen.getByRole("alertdialog", { name: "Leave team" })).toBeTruthy();
   expect(fetch.mock.calls.some((call) => call[1]?.method === "POST")).toBe(
     false
@@ -303,9 +304,8 @@ it("keeps the directory lean and preserves the invitation screen and draft acros
   ).toContain("Viewer");
   await user.click(screen.getByRole("button", { name: "Cancel" }));
   expect(await screen.findByRole("heading", { name: "Members" })).toBeTruthy();
-  await user.click(screen.getByRole("button", { name: "Team actions" }));
   await user.click(
-    await screen.findByRole("menuitem", { name: "Rename team" })
+    screen.getByRole("button", { name: "Rename team: Race team" })
   );
   const input = screen.getByRole("textbox", { name: "Team name" });
   await user.clear(input);
@@ -447,8 +447,7 @@ it("reviews team deletion impact and requires the exact team name", async () => 
   render(<TeamsView />);
   const user = userEvent.setup();
   await user.click(await screen.findByRole("button", { name: /Race team/ }));
-  await user.click(await screen.findByRole("button", { name: "Team actions" }));
-  await user.click(screen.getByRole("menuitem", { name: "Delete team" }));
+  await user.click(screen.getByRole("button", { name: "Delete team" }));
   expect(screen.getByText("Projects, including archived")).toBeTruthy();
   const remove = screen.getByRole("button", {
     name: "Delete team",
@@ -528,4 +527,104 @@ it("uses a toast after changing a member role without adding a saved notice to t
     expect(toastSuccess).toHaveBeenCalledWith("Role updated")
   );
   expect(screen.queryByText("Changes saved.")).toBeNull();
+});
+
+it("renames through the heading, keeps members visible and supports Enter, Escape and toast feedback", async () => {
+  let name = team.name;
+  const commands: unknown[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "POST") {
+        const command = JSON.parse(String(init.body));
+        commands.push(command);
+        name = command.name;
+        return response({ ok: true, teamId: team.id });
+      }
+      return response(
+        url.includes("teamId=")
+          ? { ok: true, team: { ...team, name } }
+          : {
+              ok: true,
+              teams: [{ id: team.id, name, role: "owner" }],
+              invitations: [],
+            }
+      );
+    })
+  );
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  expect(screen.queryByRole("button", { name: "Team actions" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
+  await user.click(
+    screen.getByRole("button", { name: "Rename team: Race team" })
+  );
+  const input = screen.getByRole("textbox", { name: "Team name" });
+  expect(document.activeElement).toBe(input);
+  expect(screen.getByRole("heading", { name: "Members" })).toBeTruthy();
+  await user.clear(input);
+  await user.type(input, "Cancelled name");
+  await user.keyboard("{Escape}");
+  expect(commands).toEqual([]);
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Rename team: Race team" })
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Rename team: Race team" })
+  );
+  await user.clear(screen.getByRole("textbox", { name: "Team name" }));
+  await user.type(
+    screen.getByRole("textbox", { name: "Team name" }),
+    "Updated team{Enter}"
+  );
+  await screen.findByRole("button", { name: "Rename team: Updated team" });
+  expect(commands).toEqual([
+    { action: "rename", teamId: "team", name: "Updated team" },
+  ]);
+  expect(toastSuccess).toHaveBeenCalledWith("Changes saved.");
+});
+
+it("refreshes live membership on return without replacing an unsent rename draft", async () => {
+  let present = true;
+  let name = team.name;
+  const request = vi.fn(async (url: string) =>
+    response(
+      url.includes("teamId=")
+        ? { ok: true, team: { ...team, name } }
+        : {
+            ok: true,
+            teams: present ? [{ id: team.id, name, role: "owner" }] : [],
+            invitations: [],
+          }
+    )
+  );
+  vi.stubGlobal("fetch", request);
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: /Race team/ }));
+  await user.click(
+    screen.getByRole("button", { name: "Rename team: Race team" })
+  );
+  await user.clear(screen.getByRole("textbox", { name: "Team name" }));
+  await user.type(
+    screen.getByRole("textbox", { name: "Team name" }),
+    "Unsent draft"
+  );
+  name = "Changed elsewhere";
+  await act(async () => {
+    window.dispatchEvent(new Event("focus"));
+  });
+  await screen.findByRole("heading", { name: "Changed elsewhere" });
+  expect(
+    (screen.getByRole("textbox", { name: "Team name" }) as HTMLInputElement)
+      .value
+  ).toBe("Unsent draft");
+  present = false;
+  await act(async () => {
+    window.dispatchEvent(new Event("focus"));
+  });
+  await screen.findByRole("heading", { name: "Design tracks together" });
+  expect(screen.queryByText("owner@example.invalid")).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "Team name" })).toBeNull();
 });
