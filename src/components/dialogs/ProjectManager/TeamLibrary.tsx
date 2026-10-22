@@ -345,7 +345,7 @@ function TeamProjectList({
             <Link
               prefetch={false}
               href={teamProjectHref(team.id, project.id)}
-              className="hover:bg-muted/30 focus-visible:ring-ring flex min-h-22 items-center gap-3 px-1 py-5 outline-none focus-visible:ring-2 focus-visible:ring-inset lg:gap-4"
+              className="hover:bg-muted/30 focus-visible:ring-ring flex min-h-16 items-center gap-3 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-inset lg:gap-4"
             >
               <File className="text-muted-foreground size-5 shrink-0" />
               <span className="min-w-0 flex-1">
