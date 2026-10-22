@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 interface MobileDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   title: string;
   subtitle?: string;
   headerless?: boolean;
@@ -65,6 +66,7 @@ export function MobileDrawerHeader({
 export function MobileDrawer({
   open,
   onOpenChange,
+  onEscapeKeyDown,
   title,
   subtitle,
   headerless = false,
@@ -88,6 +90,7 @@ export function MobileDrawer({
         )}
       />
       <DrawerPrimitive.Content
+        onEscapeKeyDown={onEscapeKeyDown}
         data-slot="mobile-drawer-content"
         className={cn(
           "group/drawer-content border-border/50 bg-card fixed inset-x-0 bottom-0 z-50 flex h-auto max-h-[85dvh] flex-col gap-0 overflow-hidden rounded-t-[1.35rem] border text-sm shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden",

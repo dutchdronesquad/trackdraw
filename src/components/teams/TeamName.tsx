@@ -65,7 +65,7 @@ export function TeamName({
         {team.name}
       </h2>
       <form
-        className="flex w-full max-w-sm items-center gap-1"
+        className="flex w-full max-w-lg items-center gap-1"
         onSubmit={(event) => {
           event.preventDefault();
           if (!busy && renameDraft.trim() && renameDraft.trim() !== team.name)

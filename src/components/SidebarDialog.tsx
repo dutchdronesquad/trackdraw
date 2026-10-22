@@ -20,6 +20,7 @@ export interface SidebarDialogNavItem {
 export interface SidebarDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   eyebrow?: string;
   title: string;
   subtitle?: string;
@@ -199,6 +200,7 @@ function NavButton({
 export function SidebarDialog({
   open,
   onOpenChange,
+  onEscapeKeyDown,
   eyebrow,
   title,
   subtitle,
@@ -244,6 +246,7 @@ export function SidebarDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
+        onEscapeKeyDown={onEscapeKeyDown}
         title={title}
         headerless={mobileContentOnly}
         subtitle={mobileSubtitle}

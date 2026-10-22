@@ -1,6 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
-import { ArrowLeft, ChevronRight, Plus, UsersRound } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Plus,
+  Trash2,
+  UsersRound,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -279,7 +285,9 @@ export function TeamsView() {
             <TeamAvatar name={team.name} square />
           )}
           <div
-            className={screen === "overview" ? "min-w-0 md:hidden" : "min-w-0"}
+            className={
+              screen === "overview" ? "min-w-0 md:hidden" : "min-w-0 flex-1"
+            }
           >
             {screen === "detail" &&
             team?.role === "owner" &&
@@ -422,9 +430,13 @@ export function TeamsView() {
                 {confirm !== "delete" && (
                   <div className="border-border/60 border-t pt-4">
                     <Button
-                      variant="ghost"
+                      variant={team.role === "owner" ? "outline" : "ghost"}
                       size="sm"
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 -ml-2 h-8 px-2 text-xs"
+                      className={
+                        team.role === "owner"
+                          ? "border-destructive/25 text-destructive hover:bg-destructive/5 hover:text-destructive h-9 rounded-lg px-3 text-sm"
+                          : "text-muted-foreground hover:text-destructive hover:bg-destructive/5 h-9 px-3 text-sm"
+                      }
                       disabled={busy}
                       onClick={() => {
                         setRenameDraft(null);
@@ -433,6 +445,9 @@ export function TeamsView() {
                         setConfirm(team.role === "owner" ? "delete" : "leave");
                       }}
                     >
+                      {team.role === "owner" && (
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      )}
                       {t(
                         team.role === "owner"
                           ? "lifecycle.deleteAction"
