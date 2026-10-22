@@ -628,3 +628,23 @@ it("refreshes live membership on return without replacing an unsent rename draft
   expect(screen.queryByText("owner@example.invalid")).toBeNull();
   expect(screen.queryByRole("textbox", { name: "Team name" })).toBeNull();
 });
+
+it("offers a translated retry action only after loading fails", async () => {
+  const request = vi
+    .fn()
+    .mockResolvedValueOnce(response({ ok: false }, 503))
+    .mockResolvedValue(
+      response({
+        ok: true,
+        teams: [{ id: team.id, name: team.name, role: "owner" }],
+        invitations: [],
+      })
+    );
+  vi.stubGlobal("fetch", request);
+  render(<TeamsView />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: "Try again" }));
+  await screen.findByRole("button", { name: /Race team/ });
+  expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
+  expect(request).toHaveBeenCalledTimes(2);
+});
