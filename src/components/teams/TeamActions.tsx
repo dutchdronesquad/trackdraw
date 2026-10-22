@@ -1,4 +1,5 @@
 "use client";
+import { accountInteractionClassName } from "@/components/dialogs/AccountDialog/interaction-style";
 import type { ReactNode } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,9 @@ export function TeamActions({
           <MoreHorizontal className="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">{children}</DropdownMenuContent>
+      <DropdownMenuContent align="end" className={accountInteractionClassName}>
+        {children}
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }

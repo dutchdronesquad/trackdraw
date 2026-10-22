@@ -1,5 +1,6 @@
 "use client";
 
+import { accountInteractionClassName } from "./interaction-style";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -9,6 +10,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { ConfirmationDialog } from "@/components/dialogs/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -48,15 +50,16 @@ function ApiKeyRow({
   deleting,
   onDelete,
   onEdit,
+  error,
 }: {
   apiKey: AccountApiKey;
   isMobile: boolean;
   deleting: boolean;
   onDelete: () => void;
   onEdit: () => void;
+  error: string | null;
 }) {
   const t = useTranslations("dialogs.account.apiKeys");
-  const tCommon = useTranslations("common");
   const [confirming, setConfirming] = useState(false);
   const name = apiKey.name?.trim() || t("fallback.unnamed");
   const writeAccess = Boolean(apiKey.permissions?.projects?.length);
@@ -74,110 +77,89 @@ function ApiKeyRow({
         isMobile ? "grid-cols-[minmax(0,1fr)_auto]" : desktopColumns
       )}
     >
-      {confirming ? (
-        <div
-          role="cell"
-          className="col-span-full flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-2.5"
-        >
-          <div className="min-w-0">
-            <p className="font-medium">{t("revoke.confirmTitle")}</p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              {t(
-                isMobile
-                  ? "revoke.warningExpiring"
-                  : "revoke.warningNonExpiring"
-              )}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={deleting}
-              className="h-8 px-2 text-xs"
-              onClick={() => setConfirming(false)}
-            >
-              {tCommon("actions.cancel")}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={deleting}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
-              onClick={onDelete}
-            >
-              {deleting && <LoaderCircle className="size-3.5 animate-spin" />}
-              {t(deleting ? "revoke.revoking" : "revoke.action")}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div role="cell" className="min-w-0 px-2.5">
-            <p className="truncate font-medium" title={name}>
+      <ConfirmationDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t("revoke.confirmTitle")}
+        description={
+          <>
+            <span className="text-foreground mb-2 block font-medium">
               {name}
-            </p>
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">
-              {t("meta.lastUsed", { date: formatDate(apiKey.lastRequest) })}
-            </p>
-          </div>
-          <div
-            role="cell"
-            className={cn(
-              "text-muted-foreground min-w-0 px-2.5",
-              isMobile && "col-start-1 row-start-2 text-xs"
-            )}
+            </span>
+            {t("revoke.warningNonExpiring")}
+          </>
+        }
+        confirmLabel={t(deleting ? "revoke.revoking" : "revoke.action")}
+        busy={deleting}
+        error={error}
+        onConfirm={onDelete}
+      />
+      <div role="cell" className="min-w-0 px-2.5">
+        <p className="truncate font-medium" title={name}>
+          {name}
+        </p>
+        <p className="text-muted-foreground mt-0.5 truncate text-xs">
+          {t("meta.lastUsed", { date: formatDate(apiKey.lastRequest) })}
+        </p>
+      </div>
+      <div
+        role="cell"
+        className={cn(
+          "text-muted-foreground min-w-0 px-2.5",
+          isMobile && "col-start-1 row-start-2 text-xs"
+        )}
+      >
+        {access}
+        {writeAccess ? ` · ${t("access.writable")}` : ""}
+      </div>
+      <div
+        role="cell"
+        className={cn(
+          "text-muted-foreground px-2.5 text-xs tabular-nums",
+          isMobile && "col-start-1 row-start-3"
+        )}
+      >
+        {isMobile
+          ? t("meta.expiresOn", { date: formatDate(apiKey.expiresAt) })
+          : formatDate(apiKey.expiresAt)}
+      </div>
+      <div
+        role="cell"
+        className={cn(
+          "self-start",
+          isMobile && "col-start-2 row-span-3 row-start-1"
+        )}
+      >
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled={deleting}
+              aria-label={t("edit.actions", { name })}
+              className="size-9"
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className={accountInteractionClassName}
           >
-            {access}
-            {writeAccess ? ` · ${t("access.writable")}` : ""}
-          </div>
-          <div
-            role="cell"
-            className={cn(
-              "text-muted-foreground px-2.5 text-xs tabular-nums",
-              isMobile && "col-start-1 row-start-3"
-            )}
-          >
-            {isMobile
-              ? t("meta.expiresOn", { date: formatDate(apiKey.expiresAt) })
-              : formatDate(apiKey.expiresAt)}
-          </div>
-          <div
-            role="cell"
-            className={cn(
-              "self-start",
-              isMobile && "col-start-2 row-span-3 row-start-1"
-            )}
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={deleting}
-                  aria-label={t("edit.actions", { name })}
-                  className="size-9"
-                >
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={onEdit}>
-                  {t("edit.action")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onSelect={() => setConfirming(true)}
-                  aria-label={t("revoke.ariaLabel", { name })}
-                >
-                  {t("revoke.action")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </>
-      )}
+            <DropdownMenuItem onSelect={onEdit}>
+              {t("edit.action")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={() => setConfirming(true)}
+              aria-label={t("revoke.ariaLabel", { name })}
+            >
+              {t("revoke.action")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
@@ -456,7 +438,10 @@ export function AccountApiKeysView({
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent align="start">
+                <SelectContent
+                  align="start"
+                  className={accountInteractionClassName}
+                >
                   {[7, 30, 90, 365].map((days) => (
                     <SelectItem key={days} value={String(days)}>
                       {days === 365
@@ -622,6 +607,7 @@ export function AccountApiKeysView({
             ) : (
               apiKeys.map((apiKey) => (
                 <ApiKeyRow
+                  error={error}
                   key={apiKey.id}
                   apiKey={apiKey}
                   isMobile={isMobile}

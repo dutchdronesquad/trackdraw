@@ -54,7 +54,15 @@ it("provides team management directly to signed-in users", async () => {
   const { teamId } = await created.json();
   expect(await (await get()).json()).toEqual({
     ok: true,
-    teams: [{ id: teamId, name: "Club", role: "owner" }],
+    teams: [
+      {
+        id: teamId,
+        name: "Club",
+        role: "owner",
+        projectCount: 0,
+        memberPreview: { total: 1, names: ["owner@example.invalid"] },
+      },
+    ],
     invitations: [],
   });
 });

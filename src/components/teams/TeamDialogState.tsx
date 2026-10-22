@@ -4,7 +4,7 @@ import type { TeamDetails, TeamOverview, TeamErrorCode } from "@/lib/teams";
 
 function useDialogState() {
   const [screen, setScreen] = useState<
-    "overview" | "detail" | "create" | "rename" | "invite"
+    "overview" | "detail" | "create" | "invite"
   >("overview");
   const [overview, setOverview] = useState<TeamOverview | null>(null);
   const [team, setTeam] = useState<TeamDetails | null>(null);
@@ -12,10 +12,10 @@ function useDialogState() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<TeamErrorCode | null>(null);
-  const [notice, setNotice] = useState(false);
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("editor");
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [confirm, setConfirm] = useState<string | null>(null);
   return {
     screen,
@@ -32,14 +32,14 @@ function useDialogState() {
     setBusy,
     error,
     setError,
-    notice,
-    setNotice,
     renameDraft,
     setRenameDraft,
     email,
     setEmail,
     role,
     setRole,
+    deleteConfirmation,
+    setDeleteConfirmation,
     confirm,
     setConfirm,
   };

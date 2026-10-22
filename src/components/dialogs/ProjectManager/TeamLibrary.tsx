@@ -79,22 +79,14 @@ export function TeamLibrary({
     select(userId, value);
   };
   return (
-    <section aria-label={t("panelTitle")}>
-      <header className="border-border/40 border-b px-5 pt-4 pb-5 lg:px-7 lg:py-5">
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          {t("panelTitle")}
-        </h2>
-        <p className="text-muted-foreground mt-1 hidden text-sm lg:block lg:pr-8">
-          {t("panelDescription")}
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm lg:hidden">
-          {t("panelMobileDescription")}
-        </p>
-      </header>
-      <div className="lg:grid lg:min-h-[26rem] lg:grid-cols-[14rem_minmax(0,1fr)]">
+    <section
+      aria-label={t("panelTitle")}
+      className="flex h-full min-h-0 flex-col"
+    >
+      <div className="min-h-0 flex-1 overflow-hidden lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
         <nav
           aria-label={t("library")}
-          className="border-border/40 hidden space-y-1 border-r px-3 py-5 lg:block"
+          className="border-border/40 hidden min-h-0 space-y-1 overflow-y-auto overscroll-contain border-r px-3 py-5 lg:block"
         >
           <Button
             variant="ghost"
@@ -129,7 +121,7 @@ export function TeamLibrary({
             </Button>
           ))}
         </nav>
-        <div className="min-w-0 px-5 py-5 lg:px-6 lg:py-5">
+        <div className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-5 lg:px-6 lg:py-5">
           <div className="mb-5 lg:hidden">
             <Select
               value={team?.id ?? "personal"}
@@ -171,9 +163,9 @@ export function TeamLibrary({
                 {onNewPersonalProject ? (
                   <Button
                     onClick={onNewPersonalProject}
-                    className="bg-brand-primary hover:bg-brand-primary/90 ml-auto text-slate-950"
+                    className="ml-auto h-8 shrink-0 rounded-lg px-2.5"
                   >
-                    <Plus />
+                    <Plus className="size-4" aria-hidden="true" />
                     {t("create")}
                   </Button>
                 ) : null}
@@ -279,18 +271,20 @@ function TeamProjectList({
           <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-5 lg:mt-1.5">
             <LockKeyhole className="size-3.5 shrink-0" />
             <span>{t("private")}</span>
-            <span aria-hidden="true">·</span>
-            <span>
-              {t(team.role === "viewer" ? "readOnly" : "editingInTurns")}
-            </span>
+            {team.role === "viewer" && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{t("readOnly")}</span>
+              </>
+            )}
           </p>
         </div>
         {team.role !== "viewer" && title === null ? (
           <Button
             onClick={() => setTitle("")}
-            className="bg-brand-primary hover:bg-brand-primary/90 ml-auto shrink-0 text-slate-950"
+            className="ml-auto h-8 shrink-0 rounded-lg px-2.5"
           >
-            <Plus />
+            <Plus className="size-4" aria-hidden="true" />
             {t("create")}
           </Button>
         ) : null}
@@ -343,7 +337,7 @@ function TeamProjectList({
             <Link
               prefetch={false}
               href={teamProjectHref(team.id, project.id)}
-              className="hover:bg-muted/30 focus-visible:ring-ring flex min-h-22 items-center gap-3 px-1 py-5 outline-none focus-visible:ring-2 focus-visible:ring-inset lg:gap-4"
+              className="hover:bg-muted/30 focus-visible:ring-ring flex min-h-16 items-center gap-3 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-inset lg:gap-4"
             >
               <File className="text-muted-foreground size-5 shrink-0" />
               <span className="min-w-0 flex-1">

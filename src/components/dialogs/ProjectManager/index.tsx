@@ -3,6 +3,7 @@
 import { useProjectLibrary } from "@/store/project-library";
 import { TeamLibrary } from "./TeamLibrary";
 import { MoveProject } from "./MoveProject";
+import { useProjectMove } from "./useProjectMove";
 import { useState } from "react";
 import { Cloud, Clock, FolderOpen, Link2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -98,6 +99,7 @@ export default function ProjectManagerDialog({
   );
 
   const [movingProject, setMovingProject] = useState<string | null>(null);
+  const moveReview = useProjectMove(movingProject, userId);
 
   const hasAccountSection = Boolean(onSyncProject);
 
@@ -171,7 +173,7 @@ export default function ProjectManagerDialog({
   };
 
   const current = viewMeta[activeView];
-  const cloudView = activeView === "account" && !!userId && !movingProject;
+  const cloudView = activeView === "account" && !!userId;
 
   const tabContent = {
     device: (
@@ -202,7 +204,14 @@ export default function ProjectManagerDialog({
         syncingProjectId={syncingProjectId}
         projectSyncMetaById={projectSyncMetaById}
         moveBlockedProjectId={moveBlockedProjectId}
-        onMoveProject={userId ? (id) => setMovingProject(id) : undefined}
+        onMoveProject={
+          userId
+            ? (id) => {
+                moveReview.reset();
+                setMovingProject(id);
+              }
+            : undefined
+        }
         onOpenAccountProject={onOpenAccountProject}
         onSyncProject={onSyncProject}
         onDuplicateAccountProject={onDuplicateAccountProject}
@@ -229,56 +238,66 @@ export default function ProjectManagerDialog({
     ),
   };
 
-  void isMobile; // used by tab components via useIsMobile()
-
   return (
-    <SidebarDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      eyebrow={t("projectManager.dialog.eyebrow")}
-      title={t("projectManager.dialog.title")}
-      mobileSubtitle={t("projectManager.dialog.mobileSubtitle")}
-      navItems={navItems.map((item) => ({
-        id: item.id,
-        label: item.label,
-        icon: item.icon,
-        badge: item.count,
-      }))}
-      activeItem={activeView}
-      onItemChange={(id) => setView(id as View)}
-      contentTitle={current.label}
-      contentDescription={cloudView ? undefined : current.description}
-      contentHeaderless={cloudView}
-      contentBodyClassName={cloudView ? "p-0" : undefined}
-      maxWidth={activeView === "account" && userId ? "max-w-5xl" : undefined}
-      height={activeView === "account" && userId ? "h-[36rem]" : undefined}
-    >
-      {activeView === "account" && userId ? (
-        movingProject ? (
-          <MoveProject
-            key={`${userId}:${movingProject}`}
-            projectId={movingProject}
-            userId={userId}
-            onCancel={() => setMovingProject(null)}
-          />
+    <>
+      <SidebarDialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!next && movingProject && userId && activeView === "account")
+            return;
+          onOpenChange(next);
+        }}
+        eyebrow={t("projectManager.dialog.eyebrow")}
+        title={t("projectManager.dialog.title")}
+        mobileSubtitle={t("projectManager.dialog.mobileSubtitle")}
+        navItems={navItems.map((item) => ({
+          id: item.id,
+          label: item.label,
+          icon: item.icon,
+          badge: item.count,
+        }))}
+        activeItem={activeView}
+        onItemChange={(id) => setView(id as View)}
+        contentTitle={current.label}
+        contentDescription={
+          isMobile && cloudView
+            ? t("teamLibrary.panelMobileDescription")
+            : current.description
+        }
+        mobileContentHeader
+        contentBodyClassName={
+          cloudView ? "overflow-y-hidden p-0 [&>div]:h-full" : undefined
+        }
+        maxWidth="max-w-5xl"
+        height="h-[36rem]"
+        mobileHeight="h-[92dvh]"
+      >
+        {activeView === "account" && userId ? (
+          <>
+            <TeamLibrary
+              key={userId}
+              userId={userId}
+              personal={tabContent.account}
+              onNewPersonalProject={
+                onOpenNewProject
+                  ? () => {
+                      onOpenChange(false);
+                      onOpenNewProject();
+                    }
+                  : undefined
+              }
+            />
+            {movingProject && (
+              <MoveProject
+                review={moveReview}
+                onCancel={() => setMovingProject(null)}
+              />
+            )}
+          </>
         ) : (
-          <TeamLibrary
-            key={userId}
-            userId={userId}
-            personal={tabContent.account}
-            onNewPersonalProject={
-              onOpenNewProject
-                ? () => {
-                    onOpenChange(false);
-                    onOpenNewProject();
-                  }
-                : undefined
-            }
-          />
-        )
-      ) : (
-        tabContent[activeView]
-      )}
-    </SidebarDialog>
+          tabContent[activeView]
+        )}
+      </SidebarDialog>
+    </>
   );
 }

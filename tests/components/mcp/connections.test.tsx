@@ -41,6 +41,9 @@ it("requires confirmation and retains the connection when disconnect fails", asy
     screen.getByRole("button", { name: "Disconnect Example app" })
   );
   expect(request).not.toHaveBeenCalled();
+  expect(
+    screen.getByRole("alertdialog", { name: "Disconnect Example app?" })
+  ).toBeTruthy();
   await user.click(screen.getByRole("button", { name: "Cancel" }));
   expect(screen.getByText("Example app")).toBeTruthy();
   await user.click(

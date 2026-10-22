@@ -19,22 +19,11 @@ export function TeamForms({
   const t = useTranslations("dialogs.teams");
   const roleId = useId();
   const nameHelpId = useId();
-  const {
-    screen,
-    team,
-    name,
-    setName,
-    renameDraft,
-    setRenameDraft,
-    email,
-    setEmail,
-    role,
-    setRole,
-    busy,
-  } = useTeamDialogState();
+  const { screen, team, name, setName, email, setEmail, role, setRole, busy } =
+    useTeamDialogState();
   const inviting = screen === "invite";
   const creating = screen === "create";
-  const draft = screen === "rename" ? (renameDraft ?? team?.name ?? "") : name;
+  const draft = name;
   return (
     <form
       className={cn("space-y-5", creating && "w-full space-y-6")}
@@ -48,8 +37,6 @@ export function TeamForms({
             email: email.trim(),
             role,
           });
-        else if (screen === "rename" && team)
-          onCommand({ action: "rename", teamId: team.id, name: draft });
         else if (screen === "create")
           onCommand({ action: "create", name: draft });
       }}
@@ -60,7 +47,7 @@ export function TeamForms({
             <label className="block space-y-2 text-sm font-medium">
               <span className="block">{t("email")}</span>
               <Input
-                className="h-8 rounded-lg px-2.5 shadow-none"
+                className="h-9 rounded-lg px-3 shadow-none"
                 type="email"
                 value={email}
                 maxLength={254}
@@ -77,7 +64,7 @@ export function TeamForms({
               <TeamRoleSelect
                 id={roleId}
                 label={t("role")}
-                className="h-8 rounded-lg px-2.5 shadow-none"
+                className="h-9 rounded-lg px-3 shadow-none"
                 value={role}
                 disabled={busy}
                 onValueChange={setRole}
@@ -97,20 +84,13 @@ export function TeamForms({
           <label className="block space-y-2 text-sm font-medium">
             <span className="block">{t("teamName")}</span>
             <Input
-              className={cn(
-                "h-8 rounded-lg px-2.5 shadow-none",
-                creating && "h-10 px-3"
-              )}
+              className="h-9 rounded-lg px-3 shadow-none"
               aria-describedby={creating ? nameHelpId : undefined}
               value={draft}
               maxLength={80}
               required
               disabled={busy}
-              onChange={(e) =>
-                screen === "rename"
-                  ? setRenameDraft(e.target.value)
-                  : setName(e.target.value)
-              }
+              onChange={(e) => setName(e.target.value)}
             />
           </label>
           {creating && (
@@ -145,26 +125,12 @@ export function TeamForms({
         <Button
           type="submit"
           className={cn("h-8 rounded-lg px-2.5", creating && "h-9 px-4")}
-          disabled={
-            busy ||
-            (inviting
-              ? !email.trim()
-              : !draft.trim() ||
-                (screen === "rename" && draft.trim() === team?.name))
-          }
+          disabled={busy || (inviting ? !email.trim() : !draft.trim())}
         >
           {creating && busy && (
             <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
           )}
-          {t(
-            inviting
-              ? "invite"
-              : screen === "rename"
-                ? "rename"
-                : creating && busy
-                  ? "creating"
-                  : "create"
-          )}
+          {t(inviting ? "invite" : creating && busy ? "creating" : "create")}
         </Button>
       </div>
     </form>

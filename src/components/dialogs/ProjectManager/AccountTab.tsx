@@ -159,7 +159,7 @@ export function ProjectManagerAccountTab({
                 : undefined
             }
             className={cn(
-              "flex min-h-22 items-start gap-3 px-1 py-5 transition-colors",
+              "flex min-h-16 items-start gap-3 px-1 py-3 transition-colors",
               isCurrent ? "bg-muted/30" : "hover:bg-muted/30 cursor-pointer"
             )}
           >

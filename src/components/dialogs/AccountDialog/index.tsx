@@ -1,5 +1,6 @@
 "use client";
 
+import { accountInteractionClassName } from "./interaction-style";
 import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
 
 import { useEffect, useState } from "react";
@@ -797,6 +798,7 @@ export default function AccountDialog({
             ) : undefined
           ) : undefined
         }
+        contentBodyClassName={accountInteractionClassName}
         maxWidth="max-w-6xl"
         height="h-[43rem] max-h-[calc(100dvh-2.5rem)]"
         mobileHeight="h-[92dvh]"

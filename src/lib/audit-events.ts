@@ -15,6 +15,8 @@ export const auditEventCategories = [
 export type AuditEventCategory = (typeof auditEventCategories)[number];
 
 export const auditEventTypes = {
+  teamOwnershipTransferred: "team.ownership_transferred",
+  teamDeleted: "team.deleted",
   accountBanned: "account.banned",
   accountDeleted: "account.deleted",
   accountRetentionNoticeAttempted: "account.retention.notice.attempted",
@@ -51,6 +53,8 @@ export type AuditEventType =
   (typeof auditEventTypes)[keyof typeof auditEventTypes];
 
 export const auditEventTitleKeys: Record<string, string> = {
+  [auditEventTypes.teamOwnershipTransferred]: "teamOwnershipTransferred",
+  [auditEventTypes.teamDeleted]: "teamDeleted",
   [auditEventTypes.accountRoleChanged]: "accountRoleChanged",
   [auditEventTypes.accountBanned]: "accountBanned",
   [auditEventTypes.accountUnbanned]: "accountUnbanned",
@@ -92,6 +96,7 @@ export function getAuditEventCategory(eventType: string): AuditEventCategory {
   if (eventType.startsWith("api_key.") || eventType.startsWith("credential.")) {
     return "Credentials";
   }
+  if (eventType.startsWith("team.")) return "Account";
   if (eventType.startsWith("project.")) return "Projects";
   if (eventType.startsWith("gallery.")) return "Gallery";
   if (eventType.startsWith("share.")) return "Share";

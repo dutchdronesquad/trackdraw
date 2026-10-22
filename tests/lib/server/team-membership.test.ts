@@ -53,7 +53,13 @@ afterEach(() => {
 describe("team membership management", () => {
   it("creates an owner and renames only with live owner rights", async () => {
     expect((await listTeams("owner")).teams).toEqual([
-      { id: teamId, name: "Race team", role: "owner" },
+      {
+        id: teamId,
+        name: "Race team",
+        role: "owner",
+        projectCount: 0,
+        memberPreview: { total: 1, names: ["owner@example.invalid"] },
+      },
     ]);
     await command("owner", { action: "rename", teamId, name: "Race crew" });
     expect((await getTeamDetails("owner", teamId)).name).toBe("Race crew");
@@ -302,4 +308,50 @@ describe("team membership management", () => {
       command("owner", { action: "create", name: "Team", userId: "outsider" })
     ).rejects.toMatchObject({ code: "invalid" });
   });
+});
+
+it("returns a bounded accepted-member preview only to the current owner", async () => {
+  for (const id of ["pilot", "second", "third", "fourth"]) {
+    if (id !== "pilot") user(id);
+    db.prepare(
+      "INSERT INTO team_members(id,organizationId,userId,role,createdAt) VALUES(?,?,?,'viewer',?)"
+    ).run(id, teamId, id, new Date().toISOString());
+  }
+  await invite("unverified@example.invalid");
+  const preview = (await listTeams("owner")).teams[0].memberPreview!;
+  expect(preview.total).toBe(5);
+  expect(preview.names).toHaveLength(3);
+  expect(preview.names[0]).toBe("owner@example.invalid");
+  expect(preview.names).not.toContain("unverified@example.invalid");
+  expect((await listTeams("pilot")).teams[0]).not.toHaveProperty(
+    "memberPreview"
+  );
+  expect((await listTeams("outsider")).teams).toEqual([]);
+  await command("owner", { action: "transfer-owner", teamId, userId: "pilot" });
+  expect((await listTeams("owner")).teams[0]).not.toHaveProperty(
+    "memberPreview"
+  );
+  expect((await listTeams("pilot")).teams[0].memberPreview?.total).toBe(5);
+});
+
+it("counts only active projects in the member's own teams", async () => {
+  const otherTeamId = (
+    await command("outsider", { action: "create", name: "Other team" })
+  ).teamId;
+  const insert = db.prepare(
+    "INSERT INTO projects(id,owner_team_id,owner_user_id,created_by_user_id,title,design_json,created_at,updated_at,archived_at) VALUES(?,?,?,?,?,'{}',?,?,?)"
+  );
+  const now = new Date().toISOString();
+  insert.run("active", teamId, null, "owner", "Active", now, now, null);
+  insert.run("archived", teamId, null, "owner", "Archived", now, now, now);
+  insert.run("personal", null, "owner", "owner", "Personal", now, now, null);
+  insert.run("other", otherTeamId, null, "outsider", "Other", now, now, null);
+  const invitationId = await invite("pilot@example.invalid", "viewer");
+  await command("pilot", { action: "accept", invitationId });
+  expect((await listTeams("owner")).teams[0].projectCount).toBe(1);
+  expect((await listTeams("pilot")).teams).toEqual([
+    { id: teamId, name: "Race team", role: "viewer", projectCount: 1 },
+  ]);
+  expect((await listTeams("outsider")).teams).toHaveLength(1);
+  expect((await listTeams("outsider")).teams[0].id).toBe(otherTeamId);
 });

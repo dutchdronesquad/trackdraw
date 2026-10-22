@@ -1,4 +1,5 @@
 "use client";
+import { accountInteractionClassName } from "@/components/dialogs/AccountDialog/interaction-style";
 import { useTranslations } from "next-intl";
 import {
   Select,
@@ -37,11 +38,11 @@ export function TeamRoleSelect({
       <SelectTrigger
         id={id}
         aria-label={label}
-        className={cn("h-10", className)}
+        className={cn("h-9", className)}
       >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent align="start">
+      <SelectContent align="start" className={accountInteractionClassName}>
         <SelectItem value="editor">{t("roles.editor")}</SelectItem>
         <SelectItem value="viewer">{t("roles.viewer")}</SelectItem>
       </SelectContent>

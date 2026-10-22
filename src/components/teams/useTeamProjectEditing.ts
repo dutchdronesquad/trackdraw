@@ -88,17 +88,6 @@ export function useTeamProjectEditing(
         }),
       }).catch(() => {});
     };
-    const lose = (error: unknown) => {
-      if (!active) return;
-      if (dirty) recovery = useEditor.getState().track.design;
-      lease = null;
-      clearTimeout(debounce);
-      status =
-        error instanceof TeamProjectRequestError && error.code === "conflict"
-          ? "conflict"
-          : "lost";
-      publish();
-    };
     const read = async () => {
       if (!active || reading || lease || acquiring) return;
       reading = true;
@@ -114,8 +103,15 @@ export function useTeamProjectEditing(
         useProjectLibrary.getState().select(userId, teamId);
         if (!recovery) status = "viewing";
         publish();
-      } catch {
+      } catch (error) {
         if (!active || lease || acquiring) return;
+        if (
+          error instanceof TeamProjectRequestError &&
+          ["unauthorized", "not_found"].includes(error.code)
+        ) {
+          recovery = null;
+          useProjectLibrary.getState().forget(userId);
+        }
         loaded = null;
         status = "unavailable";
         replace(createDefaultDesign());
@@ -123,6 +119,18 @@ export function useTeamProjectEditing(
       } finally {
         reading = false;
       }
+    };
+    const lose = (error: unknown) => {
+      if (!active) return;
+      if (dirty) recovery = useEditor.getState().track.design;
+      lease = null;
+      clearTimeout(debounce);
+      status =
+        error instanceof TeamProjectRequestError && error.code === "conflict"
+          ? "conflict"
+          : "lost";
+      publish();
+      if (error instanceof TeamProjectRequestError) void read();
     };
     const save = async () => {
       if (!active || !lease || busy || !dirty || !loaded) return;
@@ -338,6 +346,12 @@ export function useTeamProjectEditing(
     };
     document.addEventListener("click", click, true);
     window.addEventListener("keydown", keydown);
+    const channel =
+      typeof BroadcastChannel !== "undefined"
+        ? new BroadcastChannel("trackdraw.teams")
+        : null;
+    if (channel) channel.onmessage = focus;
+    window.addEventListener("trackdraw:team-access-changed", focus);
     window.addEventListener("focus", focus);
     window.addEventListener("offline", offline);
     window.addEventListener("beforeunload", beforeUnload);
@@ -354,6 +368,8 @@ export function useTeamProjectEditing(
       clearInterval(heartbeat);
       document.removeEventListener("click", click, true);
       window.removeEventListener("keydown", keydown);
+      channel?.close();
+      window.removeEventListener("trackdraw:team-access-changed", focus);
       window.removeEventListener("focus", focus);
       window.removeEventListener("offline", offline);
       window.removeEventListener("beforeunload", beforeUnload);
