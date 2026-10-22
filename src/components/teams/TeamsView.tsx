@@ -1,12 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
-import {
-  ArrowLeft,
-  ChevronRight,
-  Plus,
-  Trash2,
-  UsersRound,
-} from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,7 +13,7 @@ import { TeamForms } from "./TeamForms";
 import { TeamEmptyState } from "./TeamEmptyState";
 import { TeamAvatar } from "./TeamAvatar";
 import { TeamName } from "./TeamName";
-import { TeamMembersPreview } from "./TeamMembersPreview";
+import { TeamOverviewRow } from "./TeamOverviewRow";
 
 export function TeamsView() {
   const t = useTranslations("dialogs.teams");
@@ -397,26 +391,11 @@ export function TeamsView() {
                 <ul className="divide-border/60 border-border/60 divide-y border-y">
                   {overview.teams.map((item) => (
                     <li key={item.id}>
-                      <button
-                        type="button"
-                        className="hover:bg-muted/40 focus-visible:ring-ring flex w-full cursor-pointer items-center gap-3 rounded-sm py-3 text-left transition-colors outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-50"
-                        disabled={busy}
-                        onClick={() => void choose(item.id)}
-                      >
-                        <TeamAvatar name={item.name} square />
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-medium break-words">
-                            {item.name}
-                          </span>
-                          <span className="text-muted-foreground mt-0.5 block text-xs">
-                            {t(`roles.${item.role}`)}
-                          </span>
-                        </span>
-                        {item.memberPreview && (
-                          <TeamMembersPreview preview={item.memberPreview} />
-                        )}
-                        <ChevronRight className="text-muted-foreground mr-1 size-4 shrink-0" />
-                      </button>
+                      <TeamOverviewRow
+                        team={item}
+                        busy={busy}
+                        onSelect={() => void choose(item.id)}
+                      />
                     </li>
                   ))}
                 </ul>

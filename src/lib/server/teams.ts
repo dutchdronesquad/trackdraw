@@ -67,6 +67,7 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
   const teams = await db
     .prepare(
       `SELECT t.id,t.name,m.role,
+        (SELECT count(*) FROM projects p WHERE p.owner_team_id=t.id AND p.archived_at IS NULL) AS projectCount,
         CASE WHEN m.role='owner' THEN (SELECT count(*) FROM team_members member WHERE member.organizationId=t.id) END AS member_count,
         CASE WHEN m.role='owner' THEN (
           SELECT json_group_array(display_name) FROM (

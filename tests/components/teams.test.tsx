@@ -95,7 +95,14 @@ it("creates a team in the account surface and loads its owner controls", async (
         : {
             ok: true,
             teams: created
-              ? [{ id: "team", name: "Race team", role: "owner" }]
+              ? [
+                  {
+                    id: "team",
+                    name: "Race team",
+                    role: "owner",
+                    projectCount: 0,
+                  },
+                ]
               : [],
             invitations: [],
           }
@@ -170,7 +177,14 @@ it("offers a member only their own role and a confirmed leave action", async () 
         ? { ok: true, team: { ...team, role: "viewer", members: [] } }
         : {
             ok: true,
-            teams: [{ id: "team", name: "Race team", role: "viewer" }],
+            teams: [
+              {
+                id: "team",
+                name: "Race team",
+                role: "viewer",
+                projectCount: 0,
+              },
+            ],
             invitations: [],
           }
     );
@@ -273,7 +287,14 @@ it("keeps the directory lean and preserves the invitation screen and draft acros
           ? { ok: true, team }
           : {
               ok: true,
-              teams: [{ id: team.id, name: team.name, role: "owner" }],
+              teams: [
+                {
+                  id: team.id,
+                  name: team.name,
+                  role: "owner",
+                  projectCount: 0,
+                },
+              ],
               invitations: [],
             }
       )
@@ -331,7 +352,14 @@ it("returns to the team after sending an invitation and exposes resend and revok
             }
           : {
               ok: true,
-              teams: [{ id: team.id, name: team.name, role: "owner" }],
+              teams: [
+                {
+                  id: team.id,
+                  name: team.name,
+                  role: "owner",
+                  projectCount: 0,
+                },
+              ],
               invitations: [],
             }
     )
@@ -385,7 +413,14 @@ it("keeps the form draft and offers retry after an invitation delivery failure",
               ? { ok: true, team }
               : {
                   ok: true,
-                  teams: [{ id: team.id, name: team.name, role: "owner" }],
+                  teams: [
+                    {
+                      id: team.id,
+                      name: team.name,
+                      role: "owner",
+                      projectCount: 0,
+                    },
+                  ],
                   invitations: [],
                 }
           )
@@ -438,7 +473,14 @@ it("reviews team deletion impact and requires the exact team name", async () => 
             ok: true,
             teams: deleted
               ? []
-              : [{ id: "team", name: "Race team", role: "owner" }],
+              : [
+                  {
+                    id: "team",
+                    name: "Race team",
+                    role: "owner",
+                    projectCount: 0,
+                  },
+                ],
             invitations: [],
           }
     );
@@ -510,7 +552,14 @@ it("uses a toast after changing a member role without adding a saved notice to t
           ? { ok: true, team }
           : {
               ok: true,
-              teams: [{ id: team.id, name: team.name, role: "owner" }],
+              teams: [
+                {
+                  id: team.id,
+                  name: team.name,
+                  role: "owner",
+                  projectCount: 0,
+                },
+              ],
               invitations: [],
             }
     )
@@ -546,7 +595,7 @@ it("renames through the heading, keeps members visible and supports Enter, Escap
           ? { ok: true, team: { ...team, name } }
           : {
               ok: true,
-              teams: [{ id: team.id, name, role: "owner" }],
+              teams: [{ id: team.id, name, role: "owner", projectCount: 0 }],
               invitations: [],
             }
       );
@@ -594,7 +643,9 @@ it("refreshes live membership on return without replacing an unsent rename draft
         ? { ok: true, team: { ...team, name } }
         : {
             ok: true,
-            teams: present ? [{ id: team.id, name, role: "owner" }] : [],
+            teams: present
+              ? [{ id: team.id, name, role: "owner", projectCount: 0 }]
+              : [],
             invitations: [],
           }
     )
@@ -636,7 +687,9 @@ it("offers a translated retry action only after loading fails", async () => {
     .mockResolvedValue(
       response({
         ok: true,
-        teams: [{ id: team.id, name: team.name, role: "owner" }],
+        teams: [
+          { id: team.id, name: team.name, role: "owner", projectCount: 0 },
+        ],
         invitations: [],
       })
     );
@@ -660,6 +713,7 @@ it("shows a compact owner-only avatar stack with a remaining-member counter in t
             id: "team",
             name: "Race team",
             role: "owner",
+            projectCount: 3,
             memberPreview: {
               total: 7,
               names: ["Owner", "Emma Pilot", "Lucas Racer"],
@@ -672,6 +726,11 @@ it("shows a compact owner-only avatar stack with a remaining-member counter in t
   );
   render(<TeamsView />);
   expect(await screen.findByRole("img", { name: "7 members" })).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Race team Owner 3 projects 7 members" })
+  ).toBeTruthy();
+  expect(screen.getByText("3 projects")).toBeTruthy();
+  expect(screen.getByText("7 members")).toBeTruthy();
   expect(screen.getByText("+4")).toBeTruthy();
   expect(screen.getByText("EP")).toBeTruthy();
   expect(screen.queryByText("Emma Pilot")).toBeNull();

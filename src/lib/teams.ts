@@ -57,7 +57,7 @@ export type TeamInvitation = {
   expiresAt: string;
 };
 export type TeamOverview = {
-  teams: TeamSummary[];
+  teams: (TeamSummary & { projectCount: number })[];
   invitations: TeamInvitation[];
 };
 export type TeamDetails = TeamSummary & {
