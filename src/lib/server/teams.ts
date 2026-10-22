@@ -66,10 +66,25 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
   const db = await getDatabase();
   const teams = await db
     .prepare(
-      `SELECT t.id,t.name,m.role FROM teams t JOIN team_members m ON m.organizationId=t.id WHERE m.userId=? ORDER BY t.name,t.id LIMIT 20`
+      `SELECT t.id,t.name,m.role,
+        CASE WHEN m.role='owner' THEN (SELECT count(*) FROM team_members member WHERE member.organizationId=t.id) END AS member_count,
+        CASE WHEN m.role='owner' THEN (
+          SELECT json_group_array(display_name) FROM (
+            SELECT coalesce(nullif(trim(u.name),''),u.email) AS display_name
+            FROM team_members member JOIN users u ON u.id=member.userId
+            WHERE member.organizationId=t.id
+            ORDER BY CASE WHEN member.role='owner' THEN 0 ELSE 1 END,member.createdAt,member.id LIMIT 3
+          )
+        ) END AS member_names
+      FROM teams t JOIN team_members m ON m.organizationId=t.id WHERE m.userId=? ORDER BY t.name,t.id LIMIT 20`
     )
     .bind(userId)
-    .all<TeamOverview["teams"][number]>();
+    .all<
+      Omit<TeamOverview["teams"][number], "memberPreview"> & {
+        member_count: number | null;
+        member_names: string | null;
+      }
+    >();
   const invitations = await db
     .prepare(
       `SELECT ${invitationColumns} FROM team_invitations i JOIN teams t ON t.id=i.organizationId
@@ -83,7 +98,17 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
     )
     .all<TeamInvitation>();
   return {
-    teams: teams.results,
+    teams: teams.results.map(({ member_count, member_names, ...team }) =>
+      member_count === null
+        ? team
+        : {
+            ...team,
+            memberPreview: {
+              total: member_count,
+              names: JSON.parse(member_names ?? "[]") as string[],
+            },
+          }
+    ),
     invitations: invitations.results,
   };
 }

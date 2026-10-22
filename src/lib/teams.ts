@@ -41,7 +41,12 @@ export const teamCommandSchema = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("accept"), invitationId: id }),
 ]);
 export type TeamCommand = z.infer<typeof teamCommandSchema>;
-export type TeamSummary = { id: string; name: string; role: TeamRole };
+export type TeamSummary = {
+  id: string;
+  name: string;
+  role: TeamRole;
+  memberPreview?: { total: number; names: string[] };
+};
 export type TeamInvitation = {
   id: string;
   teamId: string;

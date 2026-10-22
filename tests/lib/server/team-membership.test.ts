@@ -53,7 +53,12 @@ afterEach(() => {
 describe("team membership management", () => {
   it("creates an owner and renames only with live owner rights", async () => {
     expect((await listTeams("owner")).teams).toEqual([
-      { id: teamId, name: "Race team", role: "owner" },
+      {
+        id: teamId,
+        name: "Race team",
+        role: "owner",
+        memberPreview: { total: 1, names: ["owner@example.invalid"] },
+      },
     ]);
     await command("owner", { action: "rename", teamId, name: "Race crew" });
     expect((await getTeamDetails("owner", teamId)).name).toBe("Race crew");
@@ -302,4 +307,28 @@ describe("team membership management", () => {
       command("owner", { action: "create", name: "Team", userId: "outsider" })
     ).rejects.toMatchObject({ code: "invalid" });
   });
+});
+
+it("returns a bounded accepted-member preview only to the current owner", async () => {
+  for (const id of ["pilot", "second", "third", "fourth"]) {
+    if (id !== "pilot") user(id);
+    db.prepare(
+      "INSERT INTO team_members(id,organizationId,userId,role,createdAt) VALUES(?,?,?,'viewer',?)"
+    ).run(id, teamId, id, new Date().toISOString());
+  }
+  await invite("unverified@example.invalid");
+  const preview = (await listTeams("owner")).teams[0].memberPreview!;
+  expect(preview.total).toBe(5);
+  expect(preview.names).toHaveLength(3);
+  expect(preview.names[0]).toBe("owner@example.invalid");
+  expect(preview.names).not.toContain("unverified@example.invalid");
+  expect((await listTeams("pilot")).teams[0]).not.toHaveProperty(
+    "memberPreview"
+  );
+  expect((await listTeams("outsider")).teams).toEqual([]);
+  await command("owner", { action: "transfer-owner", teamId, userId: "pilot" });
+  expect((await listTeams("owner")).teams[0]).not.toHaveProperty(
+    "memberPreview"
+  );
+  expect((await listTeams("pilot")).teams[0].memberPreview?.total).toBe(5);
 });

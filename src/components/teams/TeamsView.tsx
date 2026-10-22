@@ -19,6 +19,7 @@ import { TeamForms } from "./TeamForms";
 import { TeamEmptyState } from "./TeamEmptyState";
 import { TeamAvatar } from "./TeamAvatar";
 import { TeamName } from "./TeamName";
+import { TeamMembersPreview } from "./TeamMembersPreview";
 
 export function TeamsView() {
   const t = useTranslations("dialogs.teams");
@@ -411,6 +412,9 @@ export function TeamsView() {
                             {t(`roles.${item.role}`)}
                           </span>
                         </span>
+                        {item.memberPreview && (
+                          <TeamMembersPreview preview={item.memberPreview} />
+                        )}
                         <ChevronRight className="text-muted-foreground mr-1 size-4 shrink-0" />
                       </button>
                     </li>

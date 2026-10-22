@@ -648,3 +648,31 @@ it("offers a translated retry action only after loading fails", async () => {
   expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
   expect(request).toHaveBeenCalledTimes(2);
 });
+
+it("shows a compact owner-only avatar stack with a remaining-member counter in the directory", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response({
+        ok: true,
+        teams: [
+          {
+            id: "team",
+            name: "Race team",
+            role: "owner",
+            memberPreview: {
+              total: 7,
+              names: ["Owner", "Emma Pilot", "Lucas Racer"],
+            },
+          },
+        ],
+        invitations: [],
+      })
+    )
+  );
+  render(<TeamsView />);
+  expect(await screen.findByRole("img", { name: "7 members" })).toBeTruthy();
+  expect(screen.getByText("+4")).toBeTruthy();
+  expect(screen.getByText("EP")).toBeTruthy();
+  expect(screen.queryByText("Emma Pilot")).toBeNull();
+});
