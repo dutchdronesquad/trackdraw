@@ -8,8 +8,8 @@ import landing from "@lang/en-US/landing.json";
 import BioPage from "@/components/bio/BioPage";
 import { bioConfig, bioConfigSchema } from "@/lib/bio";
 
-vi.mock("@/components/bio/BioTrackViewer", () => ({
-  default: () => <section aria-label="Interactive track" />,
+vi.mock("next/dynamic", () => ({
+  default: () => () => <section aria-label="Interactive track" />,
 }));
 
 vi.mock("next/image", () => ({

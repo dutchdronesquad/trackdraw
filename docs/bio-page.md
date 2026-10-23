@@ -10,7 +10,7 @@ English labels and descriptions live under `bio` in `lang/en-US/landing.json`. A
 
 ## Interactive example
 
-`src/components/bio/BioTrackViewer.tsx` mounts the published `@trackdraw/viewer` package in an isolated container. The package loads when the preview approaches the viewport; its 3D renderer loads when the visitor selects 3D. Controls are keyboard-accessible and reflect the effective view. Devices without WebGL retain 2D and show an explanation. A loading failure offers a retry while all product links remain usable. Unmounting destroys the viewer and releases its resources.
+A client-only Next.js boundary keeps the bundled rendering runtime out of the OpenNext Worker. `src/components/bio/BioTrackViewer.tsx` mounts the published `@trackdraw/viewer` package in an isolated container. The package loads when the preview approaches the viewport; its 3D renderer loads when the visitor selects 3D. Controls are keyboard-accessible and reflect the effective view. Devices without WebGL retain 2D and show an explanation. A loading failure offers a retry while all product links remain usable. Unmounting destroys the viewer and releases its resources.
 
 `src/lib/bio-track.ts` owns Skyline Circuit, a version-2 portable example with an elevated crossover, stacked gates, a dive and a slalom. It uses generic obstacles without remote catalog artwork, account data or database reads. This is a visual demonstration, not a certified event layout. Both views use the same track data; neither can modify the visitor's Studio projects.
 

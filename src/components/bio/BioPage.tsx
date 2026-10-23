@@ -2,11 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { BioConfig } from "@/lib/bio";
 import { cn } from "@/lib/utils";
-import BioTrackViewer from "./BioTrackViewer";
+
+// Keep the package's bundled rendering runtime out of the OpenNext Worker.
+const BioTrackViewer = dynamic(() => import("./BioTrackViewer"), {
+  ssr: false,
+  loading: BioTrackPlaceholder,
+});
+
+function BioTrackPlaceholder() {
+  const t = useTranslations("landing.bio.track");
+  return (
+    <section aria-labelledby="bio-track-heading" className="mt-8">
+      <h2
+        id="bio-track-heading"
+        className="mb-4 text-lg font-semibold tracking-tight"
+      >
+        {t("heading")}
+      </h2>
+      <div
+        role="status"
+        className="border-border bg-muted text-muted-foreground flex h-[322px] items-center justify-center rounded-lg border px-6 text-center text-sm sm:h-[362px]"
+      >
+        {t("loading")}
+      </div>
+      <p className="text-muted-foreground mt-3 text-xs leading-5">
+        {t("hint2D")}
+      </p>
+    </section>
+  );
+}
 
 const focus =
   "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring";
