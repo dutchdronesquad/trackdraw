@@ -271,7 +271,7 @@ function TeamProjectList({
           <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-5 lg:mt-1.5">
             <LockKeyhole className="size-3.5 shrink-0" />
             <span>{t("private")}</span>
-            {team.role === "viewer" && (
+            {(team.role === "viewer" || team.recovery) && (
               <>
                 <span aria-hidden="true">·</span>
                 <span>{t("readOnly")}</span>
@@ -279,7 +279,7 @@ function TeamProjectList({
             )}
           </p>
         </div>
-        {team.role !== "viewer" && title === null ? (
+        {team.role !== "viewer" && !team.recovery && title === null ? (
           <Button
             onClick={() => setTitle("")}
             className="ml-auto h-8 shrink-0 rounded-lg px-2.5"

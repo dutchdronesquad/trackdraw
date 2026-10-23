@@ -45,6 +45,7 @@ export type TeamSummary = {
   id: string;
   name: string;
   role: TeamRole;
+  recovery?: boolean;
   memberPreview?: { total: number; names: string[] };
 };
 export type TeamInvitation = {

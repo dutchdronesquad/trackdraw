@@ -4,7 +4,7 @@ Validation for [#1025](https://github.com/dutchdronesquad/trackdraw/issues/1025)
 
 ## Lifecycle contract
 
-An owner transfers ownership to an accepted, verified, non-banned member. One atomic D1 statement demotes the previous owner to editor, promotes the recipient, moves public-share/gallery attribution and records the audit event. Failure rolls back the complete transfer. Exactly one owner remains. Direct owner removal, demotion and personal account deletion remain blocked, and owner accounts stay excluded from inactivity deletion.
+An owner transfers ownership to an accepted, verified, non-banned member. One atomic D1 statement demotes the previous owner to editor, promotes the recipient, moves public-share/gallery attribution and records the audit event. Failure rolls back the complete transfer. Exactly one owner remains. Direct owner removal, demotion and personal account deletion remain blocked, and owner accounts were excluded from inactivity deletion at that time. [Issue #1043](team-ownership-recovery.md) supersedes that inactivity exemption with notified succession and bounded team recovery.
 
 Team deletion is an explicit permanent operation, with no trash or recovery period. The owner reviews project/member/invitation/share/gallery/session counts and types the exact team name. The deletion statement rechecks ownership, name and those counts. It cancels invitations and editing sessions, removes public shares and gallery entries, then purges the team's projects, memberships and invitation history. Existing durable media cleanup retries physical R2 removal through the hourly job. A failed audit write rolls back the D1 deletion. Other teams and personal projects remain intact.
 

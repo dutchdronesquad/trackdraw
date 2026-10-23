@@ -61,12 +61,13 @@ export function projectAuthorizationPredicate(
     };
   }
   const roles = rolesFor(action);
+  const writable = !["list", "read", "export"].includes(action);
   return {
     sql: `owner_user_id IS NULL AND owner_team_id = ? AND EXISTS (
       SELECT 1 FROM team_members
       WHERE organizationId = projects.owner_team_id AND userId = ?
         AND role IN (${roles.map(() => "?").join(", ")})
-    )${selection}`,
+    )${writable ? " AND NOT EXISTS (SELECT 1 FROM team_succession_cases c WHERE c.team_id=projects.owner_team_id AND c.state='recovery')" : ""}${selection}`,
     bindings: [actor.scope.teamId, actor.userId, ...roles, ...selectedBindings],
   };
 }
@@ -79,15 +80,19 @@ export async function getAuthorizedTeam(
   if (actor.scope.kind !== "team") return null;
   const db = await getDatabase();
   const roles = rolesFor(action);
-  return db
+  const row = await db
     .prepare(
       `
-    SELECT teams.id, teams.name, team_members.role FROM teams
+    SELECT teams.id, teams.name, team_members.role, EXISTS(SELECT 1 FROM team_succession_cases c WHERE c.team_id=teams.id AND c.state='recovery') AS recovery FROM teams
     JOIN team_members ON team_members.organizationId = teams.id
     WHERE teams.id = ? AND team_members.userId = ?
       AND team_members.role IN (${roles.map(() => "?").join(", ")})
+      ${!["list", "read", "export"].includes(action) ? "AND NOT EXISTS (SELECT 1 FROM team_succession_cases c WHERE c.team_id=teams.id AND c.state='recovery')" : ""}
   `
     )
     .bind(actor.scope.teamId, actor.userId, ...roles)
-    .first<{ id: string; name: string; role: TeamRole }>();
+    .first<{ id: string; name: string; role: TeamRole; recovery?: boolean }>();
+  if (!row) return null;
+  const { recovery, ...team } = row;
+  return { ...team, ...(recovery ? { recovery: true } : {}) };
 }

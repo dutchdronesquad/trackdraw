@@ -26,7 +26,7 @@ export type GalleryState = (typeof galleryStates)[number];
 type GalleryEntryRow = {
   id: string;
   share_token: string;
-  owner_user_id: string;
+  owner_user_id: string | null;
   gallery_state: string;
   gallery_title: string;
   gallery_description: string;
@@ -40,7 +40,7 @@ type GalleryEntryRow = {
 export type StoredGalleryEntry = {
   id: string;
   shareToken: string;
-  ownerUserId: string;
+  ownerUserId: string | null;
   galleryState: GalleryState;
   galleryTitle: string;
   galleryDescription: string;
@@ -54,7 +54,7 @@ export type StoredGalleryEntry = {
 type DashboardGalleryEntryRow = {
   id: string;
   share_token: string;
-  owner_user_id: string;
+  owner_user_id: string | null;
   gallery_state: string;
   gallery_title: string;
   gallery_description: string;
@@ -95,7 +95,7 @@ export type DashboardGalleryEntry = StoredGalleryEntry & {
 type PublicGalleryEntryRow = {
   id: string;
   share_token: string;
-  owner_user_id: string;
+  owner_user_id: string | null;
   gallery_state: string;
   gallery_title: string;
   gallery_description: string;
@@ -282,7 +282,7 @@ export async function listGalleryEntriesForDashboard(options?: {
           g.moderation_hidden_at,
           g.created_at,
           g.updated_at,
-          u.name as owner_name,
+          coalesce((SELECT t.name FROM teams t JOIN projects p ON p.owner_team_id=t.id WHERE p.id=s.project_id),u.name) as owner_name,
           u.email as owner_email,
           s.title as share_title,
           s.expires_at as share_expires_at,
@@ -372,7 +372,7 @@ export async function listPublicGalleryEntries(limit = 48) {
           g.moderation_hidden_at,
           g.created_at,
           g.updated_at,
-          u.name as owner_name,
+          coalesce((SELECT t.name FROM teams t JOIN projects p ON p.owner_team_id=t.id WHERE p.id=s.project_id),u.name) as owner_name,
           s.title as share_title,
           s.field_width,
           s.field_height,

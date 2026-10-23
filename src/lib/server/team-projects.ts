@@ -94,7 +94,7 @@ export async function createTeamProject(
   const row = await db
     .prepare(
       `INSERT INTO projects (id,owner_team_id,created_by_user_id,title,design_json,field_width,field_height,shape_count,created_at,updated_at)
-    SELECT ?,?,?,?,?,?,?,0,?,? WHERE EXISTS (SELECT 1 FROM team_members WHERE organizationId=? AND userId=? AND role IN ('owner','editor'))
+    SELECT ?,?,?,?,?,?,?,0,?,? WHERE EXISTS (SELECT 1 FROM team_members WHERE organizationId=? AND userId=? AND role IN ('owner','editor') AND NOT EXISTS(SELECT 1 FROM team_succession_cases c WHERE c.team_id=team_members.organizationId AND c.state='recovery'))
     RETURNING id`
     )
     .bind(

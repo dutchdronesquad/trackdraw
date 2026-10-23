@@ -67,6 +67,7 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
   const teams = await db
     .prepare(
       `SELECT t.id,t.name,m.role,
+        CASE WHEN EXISTS(SELECT 1 FROM team_succession_cases c WHERE c.team_id=t.id AND c.state='recovery') THEN 1 ELSE NULL END AS recovery,
         (SELECT count(*) FROM projects p WHERE p.owner_team_id=t.id AND p.archived_at IS NULL) AS projectCount,
         CASE WHEN m.role='owner' THEN (SELECT count(*) FROM team_members member WHERE member.organizationId=t.id) END AS member_count,
         CASE WHEN m.role='owner' THEN (
@@ -99,16 +100,19 @@ export async function listTeams(userId: string): Promise<TeamOverview> {
     )
     .all<TeamInvitation>();
   return {
-    teams: teams.results.map(({ member_count, member_names, ...team }) =>
-      member_count === null
-        ? team
-        : {
-            ...team,
-            memberPreview: {
-              total: member_count,
-              names: JSON.parse(member_names ?? "[]") as string[],
-            },
-          }
+    teams: teams.results.map(
+      ({ member_count, member_names, recovery, ...rest }) => {
+        const team = { ...rest, ...(recovery ? { recovery: true } : {}) };
+        return member_count === null
+          ? team
+          : {
+              ...team,
+              memberPreview: {
+                total: member_count,
+                names: JSON.parse(member_names ?? "[]") as string[],
+              },
+            };
+      }
     ),
     invitations: invitations.results,
   };
@@ -315,7 +319,7 @@ export async function executeTeamCommand(userId: string, input: unknown) {
   if (command.action === "leave") {
     const removed = await db
       .prepare(
-        "DELETE FROM team_members WHERE organizationId=? AND userId=? AND role<>'owner' RETURNING id"
+        "DELETE FROM team_members WHERE organizationId=? AND userId=? AND role<>'owner' AND NOT EXISTS(SELECT 1 FROM team_succession_cases c WHERE c.team_id=team_members.organizationId AND c.state='recovery') RETURNING id"
       )
       .bind(command.teamId, userId)
       .first();
