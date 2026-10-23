@@ -120,3 +120,58 @@ it("closes review actions after the recovery deadline while explaining a pending
     screen.queryByRole("button", { name: "Request ownership" })
   ).toBeNull();
 });
+it("groups pending delivery by event and reveals an uncertain reference only on request", async () => {
+  const user = userEvent.setup();
+  const fetcher = vi.fn(
+    async () =>
+      new Response(
+        JSON.stringify({
+          ok: true,
+          cases: [
+            {
+              ...base,
+              notices: [
+                {
+                  id: "pending",
+                  event: "risk",
+                  sentAt: null,
+                  uncertain: 0,
+                  recipient: "editor@example.invalid",
+                  deliveryKey: "pending-provider-reference",
+                },
+                {
+                  id: "uncertain",
+                  event: "application",
+                  sentAt: null,
+                  uncertain: 1,
+                  recipient: "owner@example.invalid",
+                  deliveryKey: "uncertain-provider-reference",
+                },
+              ],
+            },
+          ],
+        })
+      )
+  );
+  vi.stubGlobal("fetch", fetcher);
+  render(<TeamSuccession admin teamId="team" />);
+  await user.click(
+    await screen.findByRole("button", { name: "Notice delivery 2 pending" })
+  );
+  expect(
+    screen.getByRole("heading", { name: "Ownership warning" })
+  ).toBeTruthy();
+  expect(
+    screen.getByRole("heading", { name: "Ownership request" })
+  ).toBeTruthy();
+  expect(screen.getByText("Pending", { exact: true })).toBeTruthy();
+  expect(screen.getByText("Check delivery", { exact: true })).toBeTruthy();
+  expect(screen.queryByText("pending-provider-reference")).toBeNull();
+  expect(screen.queryByText("uncertain-provider-reference")).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Delivery reference" }));
+  expect(screen.getByText("uncertain-provider-reference")).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Confirm provider delivery" })
+  ).toBeTruthy();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});

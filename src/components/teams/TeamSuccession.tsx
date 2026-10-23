@@ -13,6 +13,16 @@ import {
 import ToneBadge from "@/components/dashboard/ToneBadge";
 import { ConfirmationDialog } from "@/components/dialogs/ConfirmationDialog";
 import type { SuccessionCase, SuccessionCommand } from "@/lib/team-succession";
+function groupPendingNotices(notices: NonNullable<SuccessionCase["notices"]>) {
+  const groups = new Map<string, typeof notices>();
+  for (const notice of notices) {
+    if (notice.sentAt) continue;
+    const group = groups.get(notice.event) ?? [];
+    group.push(notice);
+    groups.set(notice.event, group);
+  }
+  return [...groups];
+}
 const expired = (c: SuccessionCase) =>
   c.state === "recovery" && !!c.purgeAt && Date.parse(c.purgeAt) <= Date.now();
 export function TeamSuccession({
@@ -272,47 +282,75 @@ export function TeamSuccession({
                   <ChevronDown className="text-muted-foreground size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="divide-y">
-                {c.notices
-                  .filter((n) => !n.sentAt)
-                  .map((n) => (
-                    <div key={n.id} className="space-y-1.5 py-3 text-xs">
-                      <p className="text-sm font-medium break-all">
-                        {n.recipient}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {t(n.uncertain ? "uncertain" : "queued", {
-                          event: t(`events.${n.event}`),
-                        })}
-                      </p>
-                      <code className="text-muted-foreground/70 block text-[11px] break-all">
-                        {n.deliveryKey}
-                      </code>
-                      {n.uncertain === 1 && (
-                        <div className="flex flex-wrap gap-2">
-                          {(["confirm-notice", "retry-notice"] as const).map(
-                            (action) => (
-                              <Button
-                                key={action}
-                                variant="outline"
-                                size="sm"
-                                disabled={busy}
-                                onClick={() =>
-                                  setPending({
-                                    caseId: c.id,
-                                    action,
-                                    noticeId: n.id,
-                                  })
-                                }
-                              >
-                                {t(action)}
-                              </Button>
-                            )
+              <CollapsibleContent className="space-y-4 pt-2">
+                {groupPendingNotices(c.notices).map(([event, notices]) => (
+                  <section key={event} className="space-y-1">
+                    <h4 className="text-muted-foreground text-xs font-medium">
+                      {t(`events.${event}`)}
+                    </h4>
+                    <ul className="divide-y">
+                      {notices.map((n) => (
+                        <li key={n.id} className="space-y-2 py-2.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="min-w-0 text-sm break-all">
+                              {n.recipient}
+                            </span>
+                            <ToneBadge
+                              tone={n.uncertain ? "amber" : "neutral"}
+                              className="shrink-0 text-[11px] font-normal tracking-normal normal-case"
+                            >
+                              {t(
+                                n.uncertain
+                                  ? "deliveryCheck"
+                                  : "deliveryPending"
+                              )}
+                            </ToneBadge>
+                          </div>
+                          {n.uncertain === 1 && (
+                            <>
+                              <Collapsible>
+                                <CollapsibleTrigger asChild>
+                                  <Button
+                                    variant="link"
+                                    className="text-muted-foreground h-auto p-0 text-xs font-normal"
+                                  >
+                                    {t("deliveryReference")}
+                                  </Button>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="pt-2">
+                                  <code className="text-muted-foreground block text-[11px] break-all">
+                                    {n.deliveryKey}
+                                  </code>
+                                </CollapsibleContent>
+                              </Collapsible>
+                              <div className="flex flex-wrap gap-2">
+                                {(
+                                  ["confirm-notice", "retry-notice"] as const
+                                ).map((action) => (
+                                  <Button
+                                    key={action}
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      setPending({
+                                        caseId: c.id,
+                                        action,
+                                        noticeId: n.id,
+                                      })
+                                    }
+                                  >
+                                    {t(action)}
+                                  </Button>
+                                ))}
+                              </div>
+                            </>
                           )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
               </CollapsibleContent>
             </Collapsible>
           )}

@@ -1187,6 +1187,9 @@
       "waitingPeriod": "Waiting period",
       "transfer": "Ownership transfer",
       "deliveryTitle": "Notice delivery",
+      "deliveryPending": "Pending",
+      "deliveryCheck": "Check delivery",
+      "deliveryReference": "Delivery reference",
       "pendingNotices": "{count} pending",
       "awaitingDelivery": "Waiting for notice delivery",
       "deliveryPeriod": "The 30-day waiting period starts after notices are delivered."
