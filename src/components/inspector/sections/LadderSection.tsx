@@ -43,6 +43,14 @@ export function LadderDimensionFields({
           minMeters={0.5}
         />
       </Row>
+      <Row label={t("dimensions.thicknessLabel", { unit: unitLabel })}>
+        <MeasurementNum
+          valueMeters={shape.thick ?? 0.2}
+          unitSystem={unitSystem}
+          onChange={(value) => updateShape(shape.id, { thick: value })}
+          minMeters={0.05}
+        />
+      </Row>
       <Row label={t("dimensions.elevationLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.elevation ?? 0}
@@ -76,14 +84,13 @@ export function LadderSection({
         <Num
           value={shape.rungs}
           onChange={(value) => {
-            const clampedRungs = Math.round(Math.max(3, Math.min(5, value)));
+            const clampedRungs = Math.round(Math.max(1, Math.min(5, value)));
             updateShape(shape.id, {
               rungs: clampedRungs,
-              height: clampedRungs * 2,
             });
           }}
           step={1}
-          min={3}
+          min={1}
           max={5}
         />
       </Row>

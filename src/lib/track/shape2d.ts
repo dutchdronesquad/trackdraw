@@ -160,7 +160,12 @@ export function getStartFinish2DShape(shape: StartFinishShape, ppm: number) {
 export function getLadder2DShape(shape: LadderShape, ppm: number) {
   const ladderVisual = getLadderVisualSpec(shape);
   const openingWidth = m2px(shape.width ?? 2, ppm);
-  const depth = m2px(TRACKDRAW_FRAME_2D_DEPTH_METERS, ppm);
+  const depth = m2px(
+    ladderVisual?.variant === "panel-frame"
+      ? TRACKDRAW_FRAME_2D_DEPTH_METERS
+      : (shape.thick ?? TRACKDRAW_FRAME_2D_DEPTH_METERS),
+    ppm
+  );
 
   if (ladderVisual?.variant === "panel-frame") {
     const leftPanelWidth = m2px(ladderVisual.panels.left.widthMeters, ppm);
