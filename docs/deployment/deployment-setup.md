@@ -17,11 +17,11 @@ TrackDraw uses a split runtime setup:
 
 ### Static public shell
 
-The production build must pre-render `/`, `/studio`, `/privacy`, and `/terms`. OpenNext cache interception reads these four prerenders from the read-only Workers Static Assets incremental cache without loading `NextServer` or executing page rendering. The lightweight Worker routing layer is still invoked for page URLs; this distinction matters when interpreting invocation metrics. Their initial HTML uses the English catalog; a client provider loads the saved or browser locale from `/locales/{locale}/{namespace}.json` after hydration. Theme preference is applied by an inline bootstrap in the document head before the page paints.
+The production build must pre-render `/`, `/studio`, `/bio`, `/privacy`, and `/terms`. OpenNext cache interception reads these five prerenders from the read-only Workers Static Assets incremental cache without loading `NextServer` or executing page rendering. The lightweight Worker routing layer is still invoked for page URLs; this distinction matters when interpreting invocation metrics. Their initial HTML uses the English catalog; a client provider loads the saved or browser locale from `/locales/{locale}/{namespace}.json` after hydration. Theme preference is applied by an inline bootstrap in the document head before the page paints.
 
 Do not move request-time auth, database, gallery, share, or embed reads into this shell. `/gallery`, `/share/[token]`, `/embed/[token]`, dashboard/account pages, auth handlers, and API routes must remain dynamic.
 
-Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the four public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
+Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the five public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/bio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
 
 ### Auth schema checks
 
@@ -253,7 +253,7 @@ During the Crowdin pilot, target catalogs may temporarily omit new English keys.
 
 OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, `zh-CN`, `es`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, `zh-CN`, and `es-ES`), while frontend product locale identifiers remain stable. The shared i18n policy maps Spanish product locale `es` to `es-ES`, so its generated assets are served under `public/locales/es-ES/`. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle. If a static shell is rendered inside a Worker after a cache miss, it falls back to the shared catalog loader and the `ASSETS` binding, where the generated English catalogs remain available.
 
-The static shell cache filter uses OpenNext's route-cache key helper to recognize `/`, `/studio`, `/privacy`, and `/terms` in both legacy and scoped Next.js cache keys. Other routes and fetch entries remain outside this read-only cache.
+The static shell cache filter uses OpenNext's route-cache key helper to recognize `/`, `/studio`, `/bio`, `/privacy`, and `/terms` in both legacy and scoped Next.js cache keys. Other routes and fetch entries remain outside this read-only cache.
 
 `dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en-US/`.
 

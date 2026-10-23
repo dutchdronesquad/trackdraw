@@ -71,6 +71,7 @@ describe("sitemap metadata", () => {
       "https://trackdraw.test",
       "https://trackdraw.test/gallery",
       "https://trackdraw.test/studio",
+      "https://trackdraw.test/bio",
       "https://trackdraw.test/privacy",
       "https://trackdraw.test/terms",
     ]);
