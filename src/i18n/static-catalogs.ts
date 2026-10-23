@@ -71,3 +71,13 @@ export async function getStaticLegalMetadata(
   >;
   return catalog[page];
 }
+
+export async function getStaticBioMetadata(): Promise<{
+  title: string;
+  description: string;
+}> {
+  const catalog = (await readEnglishNamespace("landing")) as {
+    bio: { metadata: { title: string; description: string } };
+  };
+  return catalog.bio.metadata;
+}

@@ -10,6 +10,7 @@ import type {
 const staticShellCacheKeys = new Set([
   "/index",
   "/studio",
+  "/bio",
   "/privacy",
   "/terms",
 ]);

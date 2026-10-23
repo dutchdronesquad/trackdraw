@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### TrackDraw links and live preview
+
+Find the editor, community gallery and companion tools at `/bio`, with an interactive example track you can explore in 2D and 3D.
+
 ### Private team projects and public snapshots
 
 Team owners can deliberately share saved track snapshots, embed them or list them in the gallery. Internal changes stay private until the owner updates the link, and publication controls explain what recipients can view, copy and export. Account settings keep the same dialog size when switching sections.

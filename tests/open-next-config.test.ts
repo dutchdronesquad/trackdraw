@@ -20,7 +20,7 @@ async function getCache() {
 }
 
 describe("static shell cache", () => {
-  it.each(["index", "studio", "privacy", "terms"])(
+  it.each(["index", "studio", "bio", "privacy", "terms"])(
     "loads the generated route cache for %s",
     async (route) => {
       const cache = await getCache();
