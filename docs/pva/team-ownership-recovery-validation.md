@@ -15,7 +15,7 @@ Fixture clock changes and delivery acknowledgements establish runtime transition
 
 ## Dashboard interaction and responsive layout
 
-The Teams directory was checked with search, empty results and Needs attention filtering. Team details use the shadcn Sheet with the selected design's floating panel, team heading, inline metadata, member table and fixed owner-action footer. The component supplies the portal, dismissal and focus behavior; its appearance is customized rather than copied from Users/Gallery. The desktop directory reserves space beside the non-modal panel.
+The Teams directory was checked with search, empty results and Needs attention filtering. Team details use the same shadcn Sheet frame as Users/Gallery: default full-height square edges, 448 px desktop width, dark backdrop, close control and modal focus behavior. Inside that frame, the selected team design is retained: larger team heading, inline metadata, member table, recovery details and fixed owner-action footer. The directory keeps its normal full width behind the overlay.
 
 Desktop at 1440 × 1024 and mobile at 390 × 844 were checked in authenticated Chrome. Mobile uses an 88dvh bottom drawer, a fixed header and scrollable content; recovery details, notice delivery and owner actions remain reachable without horizontal overflow. Expanded delivery identifiers wrap within the drawer. The owner confirmation exposes only eligible editors, requires an audit reason, and cancel returns to the team details without changing ownership. The temporary viewport override was reset afterwards.
 

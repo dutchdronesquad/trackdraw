@@ -335,19 +335,14 @@ export default function TeamsManager() {
   );
   return (
     <>
-      <div
-        className={cn(
-          "space-y-6 transition-[padding]",
-          current && !mobile && "lg:pr-[36vw] xl:pr-[512px]"
-        )}
-      >
+      <div className="space-y-6">
         <div>
           <h1 className="text-[32px] leading-tight font-bold tracking-tight">
             {t("title")}
           </h1>
           <p className="text-muted-foreground mt-1 text-base">{t("intro")}</p>
         </div>
-        <div className={cn("relative max-w-lg", current && "max-w-none")}>
+        <div className="relative max-w-lg">
           <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-3.5 size-4" />
           <Input
             className="h-11 pl-10 text-base shadow-none md:text-base"
@@ -399,20 +394,10 @@ export default function TeamsManager() {
                   <TableHead className="hidden sm:table-cell">
                     {t("owner")}
                   </TableHead>
-                  <TableHead
-                    className={cn(
-                      "hidden text-right tabular-nums sm:table-cell",
-                      current && "lg:hidden xl:table-cell"
-                    )}
-                  >
+                  <TableHead className="hidden text-right tabular-nums sm:table-cell">
                     {t("members")}
                   </TableHead>
-                  <TableHead
-                    className={cn(
-                      "hidden text-right tabular-nums sm:table-cell",
-                      current && "lg:hidden xl:table-cell"
-                    )}
-                  >
+                  <TableHead className="hidden text-right tabular-nums sm:table-cell">
                     {t("projects")}
                   </TableHead>
                   <TableHead>{t("statusLabel")}</TableHead>
@@ -449,20 +434,10 @@ export default function TeamsManager() {
                     <TableCell className="text-muted-foreground hidden sm:table-cell">
                       {team.ownerName || t("noOwner")}
                     </TableCell>
-                    <TableCell
-                      className={cn(
-                        "hidden text-right tabular-nums sm:table-cell",
-                        current && "lg:hidden xl:table-cell"
-                      )}
-                    >
+                    <TableCell className="hidden text-right tabular-nums sm:table-cell">
                       {team.memberCount}
                     </TableCell>
-                    <TableCell
-                      className={cn(
-                        "hidden text-right tabular-nums sm:table-cell",
-                        current && "lg:hidden xl:table-cell"
-                      )}
-                    >
+                    <TableCell className="hidden text-right tabular-nums sm:table-cell">
                       {team.projectCount}
                     </TableCell>
                     <TableCell>{status(team)}</TableCell>
@@ -537,14 +512,13 @@ export default function TeamsManager() {
         </Drawer>
       ) : (
         <Sheet
-          modal={false}
           open={!!current}
           onOpenChange={(open) => {
             if (!open) close();
           }}
         >
           <SheetContent
-            className="inset-y-2 right-2 flex h-[calc(100dvh-1rem)] w-[calc(100vw-17rem)] max-w-[calc(100vw-17rem)] flex-col gap-0 rounded-2xl border p-0 shadow-lg sm:max-w-[512px] lg:w-[36vw] xl:w-[512px] [&>button]:top-8 [&>button]:right-6"
+            className="flex w-full flex-col gap-0 p-0 sm:max-w-md"
             onInteractOutside={(event) => {
               if (changing) event.preventDefault();
             }}
