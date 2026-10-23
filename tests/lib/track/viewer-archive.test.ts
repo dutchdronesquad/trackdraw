@@ -15,6 +15,7 @@ import { viewerSnapshotFromApi } from "@trackdraw/schema/snapshot/api";
 import { toApiViewerSnapshotPackage } from "@/lib/server/api-projects";
 import { VIEWER_SNAPSHOT_SCHEMA } from "@trackdraw/schema/snapshot/types";
 import { OBSTACLE_ASSETS_URL } from "@trackdraw/schema/assets/asset-url";
+import type { LadderShape } from "@/lib/types";
 import type { StoredProject } from "@/lib/server/projects";
 
 vi.mock("server-only", () => ({}));
@@ -47,6 +48,40 @@ const texture = new Uint8Array(
 );
 
 describe("viewer course export integration", () => {
+  it.each([1, 2])(
+    "preserves a suspended %i-gate ladder and frame thickness in snapshots and offline archives",
+    async (rungs) => {
+      const ladder: LadderShape = {
+        id: "ladder",
+        kind: "ladder",
+        x: 4,
+        y: 6,
+        rotation: 0,
+        width: 2,
+        height: 10,
+        rungs,
+        thick: 0.4,
+        elevation: 4,
+      };
+      const design = {
+        ...createDefaultDesign(),
+        shapeOrder: [ladder.id],
+        shapeById: { [ladder.id]: ladder },
+      };
+      const snapshot = toViewerDesignSnapshot(design);
+      expect(snapshot.design.shapes).toEqual([ladder]);
+      expect(snapshot.requiredViewer.capabilities).toContain(
+        "shape:ladder:thickness"
+      );
+      const fetchAsset = vi.fn<typeof fetch>();
+      const archive = readViewerArchive(
+        await buildViewerArchive(design, fetchAsset)
+      );
+      expect(archive.snapshot.design.shapes).toEqual([ladder]);
+      expect(archive.snapshot.requiredViewer).toEqual(snapshot.requiredViewer);
+      expect(fetchAsset).not.toHaveBeenCalled();
+    }
+  );
   it("exports a complete offline course with the actual catalog texture bytes", async () => {
     const design = designFixture();
     const fetchAsset = vi.fn<typeof fetch>(
