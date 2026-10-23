@@ -16,7 +16,7 @@ const ladder: LadderShape = {
   y: 0,
   rotation: 0,
   width: 2,
-  height: 10,
+  height: 6,
   rungs: 3,
   elevation: 4,
 };
@@ -24,7 +24,7 @@ afterEach(cleanup);
 
 describe("custom ladder controls", () => {
   it.each([1, 2, 5])(
-    "allows %i gates without resetting custom height or elevation",
+    "scales the default ladder height to two meters per gate for %i gates",
     (rungs) => {
       const updateShape = vi.fn();
       render(
@@ -39,9 +39,53 @@ describe("custom ladder controls", () => {
       expect(input.getAttribute("min")).toBe("1");
       expect(input.getAttribute("max")).toBe("5");
       fireEvent.change(input, { target: { value: String(rungs) } });
-      expect(updateShape).toHaveBeenLastCalledWith("ladder", { rungs });
+      expect(updateShape).toHaveBeenLastCalledWith("ladder", {
+        rungs,
+        height: rungs * 2,
+      });
     }
   );
+
+  it.each([1, 3, 5])(
+    "preserves a custom five-meter opening height when changing to %i gates",
+    (rungs) => {
+      const updateShape = vi.fn();
+      render(
+        <LadderSection
+          shape={{ ...ladder, rungs: 2, height: 10 }}
+          updateShape={updateShape}
+          hasFixedCatalogDimensions={false}
+          defaultOpen
+        />
+      );
+      fireEvent.change(screen.getByRole("spinbutton", { name: "Gates" }), {
+        target: { value: String(rungs) },
+      });
+      expect(updateShape).toHaveBeenLastCalledWith("ladder", {
+        rungs,
+        height: rungs * 5,
+      });
+    }
+  );
+
+  it("keeps the total height at the inspector minimum for very short openings", () => {
+    const updateShape = vi.fn();
+    render(
+      <LadderSection
+        shape={{ ...ladder, rungs: 5, height: 0.5 }}
+        updateShape={updateShape}
+        hasFixedCatalogDimensions={false}
+        defaultOpen
+      />
+    );
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Gates" }), {
+      target: { value: "1" },
+    });
+    expect(updateShape).toHaveBeenLastCalledWith("ladder", {
+      rungs: 1,
+      height: 0.5,
+    });
+  });
 
   it.each(["metric", "imperial"] as const)(
     "edits frame thickness in %s units",

@@ -87,6 +87,10 @@ export function LadderSection({
             const clampedRungs = Math.round(Math.max(1, Math.min(5, value)));
             updateShape(shape.id, {
               rungs: clampedRungs,
+              height: Math.max(
+                0.5,
+                (shape.height / Math.max(1, shape.rungs)) * clampedRungs
+              ),
             });
           }}
           step={1}
