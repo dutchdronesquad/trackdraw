@@ -8,6 +8,7 @@ import type { TeamCommand, TeamDetails, TeamOverview } from "@/lib/teams";
 import { teamRequest, TeamRequestError } from "./team-client";
 import { Invitations } from "./Invitations";
 import { useTeamDialogState } from "./TeamDialogState";
+import { TeamSuccession } from "./TeamSuccession";
 import { TeamManagement } from "./TeamManagement";
 import { TeamForms } from "./TeamForms";
 import { TeamEmptyState } from "./TeamEmptyState";
@@ -417,12 +418,13 @@ export function TeamsView() {
           {screen === "detail" &&
             (team ? (
               <>
+                <TeamSuccession teamId={team.id} />
                 <TeamManagement
                   team={team}
                   busy={busy}
                   onCommand={(input) => void command(input)}
                 />
-                {confirm !== "delete" && (
+                {confirm !== "delete" && !team.recovery && (
                   <div className="border-border/60 border-t pt-4">
                     <Button
                       variant={team.role === "owner" ? "outline" : "ghost"}

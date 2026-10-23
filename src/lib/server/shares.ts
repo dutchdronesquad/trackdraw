@@ -470,7 +470,7 @@ export async function listSharesForDashboard(
           s.revoked_at,
           s.share_type,
           s.owner_user_id,
-          u.name as owner_name,
+          coalesce((SELECT t.name FROM teams t JOIN projects p ON p.owner_team_id=t.id WHERE p.id=s.project_id),u.name) as owner_name,
           u.email as owner_email,
           g.gallery_state
         from shares s

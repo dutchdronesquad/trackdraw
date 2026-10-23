@@ -256,7 +256,9 @@ export default function TeamProjectWorkspace({
                   {t("finishEditing")}
                 </Button>
               </>
-            ) : !recovery && loaded.team.role !== "viewer" ? (
+            ) : !recovery &&
+              !loaded.team.recovery &&
+              loaded.team.role !== "viewer" ? (
               <Button
                 size="sm"
                 variant="ghost"

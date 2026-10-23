@@ -362,3 +362,39 @@ describe("individual integrations in explicit team context", () => {
     ).rejects.toMatchObject({ code: "not_found" });
   });
 });
+it("preserves authorized REST reads but blocks REST and MCP writes during ownerless recovery", async () => {
+  const now = new Date().toISOString();
+  db.prepare(
+    "INSERT INTO team_succession_cases(id,team_id,activity_at,removal_at,state,opened_at,recovery_at,purge_at) VALUES('recovery','club',?,?,'recovery',?,?,?)"
+  ).run(now, now, now, now, new Date(Date.now() + 90 * 86400000).toISOString());
+  expect(await externalProject(request(), identity(), "race")).toBeTruthy();
+  expect(
+    (
+      await updateExternalProject(
+        request({ design: serializeDesign(design), base_revision: 1 }),
+        context
+      )
+    ).status
+  ).toBe(404);
+  expect(
+    (await archiveExternalProject(request({ base_revision: 1 }), context))
+      .status
+  ).toBe(404);
+  expect(
+    (await externalEditing(request({ action: "acquire" }), context)).status
+  ).toBe(404);
+  await expect(
+    previewProjectEdit(
+      "editor",
+      "race",
+      1,
+      { changes: [{ shape_id: "gate", patch: { x: 8 } }] },
+      actor
+    )
+  ).rejects.toMatchObject({ code: "not_found" });
+  expect(db.prepare("SELECT * FROM mcp_project_edits").all()).toEqual([]);
+  expect(db.prepare("SELECT * FROM project_edit_leases").all()).toEqual([]);
+  expect(
+    db.prepare("SELECT revision FROM projects WHERE id='race'").get()
+  ).toEqual({ revision: 1 });
+});

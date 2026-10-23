@@ -52,6 +52,7 @@ export default async function DashboardLayout({
         style={
           {
             "--header-height": "calc(var(--spacing) * 12)",
+            "--sidebar-width": "17rem",
             "--radius": "0.625rem",
           } as React.CSSProperties
         }

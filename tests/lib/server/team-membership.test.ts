@@ -263,13 +263,13 @@ describe("team membership management", () => {
     ).toBeTruthy();
     expect(db.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
   });
-  it("excludes team owners from destructive inactivity cleanup and notices", async () => {
+  it("warns inactive team owners and preserves the normal notice response period", async () => {
     db.exec(
       "UPDATE users SET last_active_at='2020-01-01T00:00:00.000Z' WHERE id='owner'"
     );
     const mailer = { isConfigured: () => true, send: vi.fn(async () => {}) };
     await sendAccountRetentionNotices(sqliteD1(db), { mailer });
-    expect(mailer.send).not.toHaveBeenCalled();
+    expect(mailer.send).toHaveBeenCalledOnce();
     await cleanupInactiveAccounts(sqliteD1(db), null);
     expect(
       db.prepare("SELECT id FROM users WHERE id='owner'").get()

@@ -1146,6 +1146,50 @@
         "galleryEntries": "Gallery entries",
         "editingSessions": "Active editing sessions"
       }
+    },
+    "succession": {
+      "title": "Ownership recovery",
+      "risk": "The owner’s account may be removed on or after {date}. An existing editor can request ownership.",
+      "recovery": "This team has no owner. Recovery and export are available until {date}.",
+      "readOnly": "Projects are read-only. Existing published links remain accessible until final team removal. Export any projects you want to keep.",
+      "apply": "Request ownership",
+      "withdraw": "Withdraw request",
+      "response": "Ownership can transfer from {date}",
+      "sending": "Waiting for notice delivery; the 30-day waiting period has not started.",
+      "saved": "Team ownership request updated",
+      "failed": "The request could not be completed. Refresh and check the current status.",
+      "retry": "Try again",
+      "reason": "Delivery evidence (required)",
+      "confirm": {
+        "apply": "You accept responsibility for this team. The owner and all members will be notified. The first eligible editor to complete the 30-day waiting period becomes owner.",
+        "withdraw": "Withdraw your ownership request? Another eligible editor may complete their request and become owner.",
+        "confirm-notice": "First verify in the mail provider that this exact notice was delivered. Record the provider receipt or delivery evidence below. Confirming starts the full response or reminder lead time from now. Do not confirm an unverified delivery.",
+        "retry-notice": "Use this only after the mail provider confirms that the previous request was never accepted or sent. Record that evidence below. This authorizes a new delivery attempt with a new idempotency key; do not retry an ambiguous accepted request."
+      },
+      "confirm-notice": "Confirm provider delivery",
+      "queued": "{event}: awaiting delivery",
+      "uncertain": "{event}: delivery needs provider reconciliation",
+      "retry-notice": "Retry verified unsent notice",
+      "resolved": "Ownership has been transferred. Outstanding delivery needs administrator attention.",
+      "events": {
+        "risk": "Ownership warning",
+        "application": "Ownership request",
+        "ownerless": "Recovery started",
+        "reminder30": "30-day reminder",
+        "reminder7": "7-day reminder",
+        "outcome": "Transfer outcome"
+      },
+      "deadlinePassed": "The recovery deadline has passed. Removal is awaiting scheduled cleanup and any required notice periods. You can still export while access is available; new requests and ownership changes are closed.",
+      "firstCompleted": "The first eligible editor to complete the 30-day waiting period becomes owner. No member approval is required.",
+      "support": "Questions about the new owner? <link>Contact TrackDraw</link> so an administrator can review ownership.",
+      "requestedBy": "{name} requested ownership",
+      "requestReceived": "Request received",
+      "waitingPeriod": "Waiting period",
+      "transfer": "Ownership transfer",
+      "deliveryTitle": "Notice delivery",
+      "pendingNotices": "{count} pending",
+      "awaitingDelivery": "Waiting for notice delivery",
+      "deliveryPeriod": "The 30-day waiting period starts after notices are delivered."
     }
   },
   "teamLibrary": {

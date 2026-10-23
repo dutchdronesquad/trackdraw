@@ -38,7 +38,8 @@ import {
 import type { DashboardModule } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
-type SidebarNavKey = DashboardModule | "email-preview" | "metrics-planning";
+type SidebarNavKey =
+  DashboardModule | "email-preview" | "metrics-planning" | "teams";
 
 type DashboardAppSidebarProps = {
   currentUser: {
@@ -135,6 +136,13 @@ const insightsNavItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
   {
+    key: "teams",
+    titleKey: "teams",
+    href: "/dashboard/teams",
+    icon: Users,
+    activePrefix: "/dashboard/teams",
+  },
+  {
     key: "users",
     titleKey: "users",
     href: "/dashboard/users",
@@ -204,7 +212,10 @@ function NavMenuItem({
         }}
         isActive={isActive}
         className={cn(
-          "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
+          "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground text-[15px]",
+          ["overview", "gallery", "shares"].includes(item.key)
+            ? "h-10"
+            : "h-11",
           typeof badge === "number" && "pr-9"
         )}
         asChild
@@ -278,23 +289,24 @@ export default function DashboardAppSidebar({
     if (item.key === "users") return visibleModules.includes("users");
     if (item.key === "audit") return visibleModules.includes("audit");
     if (item.key === "api-keys") return visibleModules.includes("api-keys");
+    if (item.key === "teams") return currentUser.role === "admin";
     if (item.key === "email-preview") return currentUser.role === "admin";
     return true;
   });
 
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className="hover:bg-transparent active:bg-transparent"
+              className="h-14 hover:bg-transparent active:bg-transparent"
             >
               <Link href="/dashboard" prefetch={false}>
                 <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
-                  <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
+                  <span className="relative block h-10 w-52 group-data-[collapsible=icon]:hidden">
                     <Image
                       src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                       alt={t("logoAlt")}
@@ -334,8 +346,10 @@ export default function DashboardAppSidebar({
           </SidebarGroup>
         )}
         {filteredInsightsItems.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{t("insightsGroup")}</SidebarGroupLabel>
+          <SidebarGroup className="mt-2">
+            <SidebarGroupLabel className="mb-1 h-10 text-sm">
+              {t("insightsGroup")}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredInsightsItems.map((item) => (
@@ -354,7 +368,9 @@ export default function DashboardAppSidebar({
         )}
         {filteredAdminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>{t("adminGroup")}</SidebarGroupLabel>
+            <SidebarGroupLabel className="h-10 text-sm">
+              {t("adminGroup")}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredAdminItems.map((item) => (
@@ -371,36 +387,38 @@ export default function DashboardAppSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+        <SidebarGroup className="pt-0">
+          <SidebarMenu className="gap-1">
+            {footerNavItems.map((item) => {
+              const Icon = item.icon;
+              const label = t(`nav.${item.titleKey}`);
+
+              return (
+                <SidebarMenuItem key={item.titleKey}>
+                  <SidebarMenuButton
+                    tooltip={{
+                      children: label,
+                      className: appTooltipContentClassName,
+                    }}
+                    className="hover:bg-muted/80 hover:text-foreground h-11 text-[15px]"
+                    asChild
+                  >
+                    <Link
+                      href={item.href}
+                      prefetch={false}
+                      onClick={closeMobileSidebar}
+                    >
+                      <Icon className="group-data-[collapsible=icon]:size-4.5" />
+                      <span>{label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu className="gap-1">
-          {footerNavItems.map((item) => {
-            const Icon = item.icon;
-            const label = t(`nav.${item.titleKey}`);
-
-            return (
-              <SidebarMenuItem key={item.titleKey}>
-                <SidebarMenuButton
-                  tooltip={{
-                    children: label,
-                    className: appTooltipContentClassName,
-                  }}
-                  className="hover:bg-muted/80 hover:text-foreground"
-                  asChild
-                >
-                  <Link
-                    href={item.href}
-                    prefetch={false}
-                    onClick={closeMobileSidebar}
-                  >
-                    <Icon className="group-data-[collapsible=icon]:size-4.5" />
-                    <span>{label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
         <SidebarSeparator className="bg-border my-1 h-px group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8" />
         <DashboardNavUser user={currentUser} />
       </SidebarFooter>

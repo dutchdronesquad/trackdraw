@@ -340,7 +340,7 @@ export default function DashboardGalleryManager({
       return (
         entry.galleryTitle.toLowerCase().includes(q) ||
         entry.galleryDescription.toLowerCase().includes(q) ||
-        getOwnerLabel(entry).toLowerCase().includes(q)
+        (getOwnerLabel(entry) ?? "").toLowerCase().includes(q)
       );
     },
   });
@@ -798,10 +798,11 @@ export default function DashboardGalleryManager({
                           variant="ghost"
                           size="icon"
                           className="size-5 shrink-0"
+                          disabled={!inspectCandidate.ownerUserId}
                           aria-label={t("inspect.copyOwnerId")}
                           onClick={() =>
                             void copyToClipboard(
-                              inspectCandidate.ownerUserId,
+                              inspectCandidate.ownerUserId ?? "",
                               t("inspect.ownerId")
                             )
                           }

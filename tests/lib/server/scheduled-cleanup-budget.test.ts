@@ -10,16 +10,31 @@ vi.mock("server-only", () => ({}));
 afterEach(() => vi.useRealTimers());
 
 it.each([
+  {
+    cron: "15,30,45 * * * *",
+    minute: 45,
+    sent: 0,
+    removed: 0,
+    media: 0,
+    sql: 6,
+  },
   { cron: "0 0 * * *", minute: 0, sent: 0, removed: 0, media: 0, sql: 24 },
   {
-    cron: "15,30 * * * *",
+    cron: "15,30,45 * * * *",
     minute: 15,
     sent: 0,
     removed: 10,
     media: 100,
     sql: 43,
   },
-  { cron: "15,30 * * * *", minute: 30, sent: 5, removed: 0, media: 0, sql: 27 },
+  {
+    cron: "15,30,45 * * * *",
+    minute: 30,
+    sent: 5,
+    removed: 0,
+    media: 0,
+    sql: 27,
+  },
 ])(
   "keeps $cron at minute $minute within its own Free budget without dropping its backlog",
   async ({ cron, minute, sent, removed, media, sql }) => {
@@ -152,7 +167,7 @@ it.each([
               .prepare("SELECT count(*) n FROM account_deletion_media")
               .get()
           ).toEqual({ n: 0 });
-        } else {
+        } else if (sent) {
           expect(
             sqlite
               .prepare(
