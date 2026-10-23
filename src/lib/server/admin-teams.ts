@@ -1,5 +1,6 @@
 import "server-only";
-import type { getDatabase } from "./db";
+import { cache } from "react";
+import { getDatabase } from "./db";
 import {
   adminOwnerChangeSchema,
   type AdminTeam,
@@ -7,6 +8,13 @@ import {
 } from "@/lib/admin-teams";
 import { readSuccessionCases, SuccessionError } from "./team-succession";
 type Db = Awaited<ReturnType<typeof getDatabase>>;
+export const countTeamsForAdmin = cache(async function countTeamsForAdmin() {
+  const db = await getDatabase();
+  const row = await db
+    .prepare("SELECT count(*) AS count FROM teams")
+    .first<{ count: number }>();
+  return Number(row?.count ?? 0);
+});
 async function requireAdmin(db: Db, userId: string) {
   if (
     !(await db

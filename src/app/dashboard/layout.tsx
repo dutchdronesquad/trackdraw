@@ -12,6 +12,7 @@ import {
 import { countActiveApiKeysForAdmin } from "@/lib/server/api-keys";
 import { getGalleryOverviewStats } from "@/lib/server/gallery";
 import { countActiveSharesForAdmin } from "@/lib/server/shares";
+import { countTeamsForAdmin } from "@/lib/server/admin-teams";
 import { countUsersForAdmin } from "@/lib/server/users";
 import LanguageProvider from "@/i18n/LanguageProvider";
 
@@ -36,7 +37,7 @@ export default async function DashboardLayout({
     user.name?.trim() || user.email?.trim() || t("fallbackUserName");
   const currentUserEmail = user.email?.trim() || "dashboard@trackdraw.local";
   const visibleModules = getVisibleDashboardModules(user.role);
-  const [galleryStats, totalUsers, activeApiKeys, activeShares] =
+  const [galleryStats, totalUsers, activeApiKeys, activeShares, totalTeams] =
     await Promise.all([
       visibleModules.includes("gallery") ? getGalleryOverviewStats() : null,
       hasCapability(user.role, "admin.users.read")
@@ -44,6 +45,7 @@ export default async function DashboardLayout({
         : null,
       visibleModules.includes("api-keys") ? countActiveApiKeysForAdmin() : null,
       visibleModules.includes("shares") ? countActiveSharesForAdmin() : null,
+      user.role === "admin" ? countTeamsForAdmin() : null,
     ]);
 
   return (
@@ -67,6 +69,7 @@ export default async function DashboardLayout({
           itemBadges={{
             ...(galleryStats ? { gallery: galleryStats.public } : {}),
             ...(totalUsers !== null ? { users: totalUsers } : {}),
+            ...(totalTeams !== null ? { teams: totalTeams } : {}),
             ...(activeApiKeys !== null ? { "api-keys": activeApiKeys } : {}),
             ...(activeShares !== null ? { shares: activeShares } : {}),
           }}
