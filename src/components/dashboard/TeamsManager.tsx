@@ -6,7 +6,6 @@ import {
   CalendarDays,
   Folder,
   ChevronRight,
-  Info,
   Loader2,
   Search,
   Users,
@@ -235,6 +234,40 @@ export default function TeamsManager() {
             </span>
           )}
         </div>
+        <section
+          className="flex items-center justify-between gap-4 border-b py-4"
+          aria-label={t("owner")}
+        >
+          <div className="min-w-0 space-y-1">
+            <h3 className="text-muted-foreground text-xs font-medium">
+              {t("owner")}
+            </h3>
+            <p className="text-sm font-medium break-words">
+              {current.ownerName || t("noOwner")}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 shadow-none"
+            disabled={
+              detailLoading ||
+              detailError ||
+              !members.some((m) => m.canOwn) ||
+              (current.state === "recovery" &&
+                !!current.deadline &&
+                Date.parse(current.deadline) <= now)
+            }
+            onClick={() => {
+              setTarget("");
+              setReason("");
+              setChangeError(false);
+              setChanging(true);
+            }}
+          >
+            {t("changeOwner")}
+          </Button>
+        </section>
         <section className="border-b pt-5 pb-0">
           <h3 className="mb-3 text-lg font-semibold">{t("members")}</h3>
           {detailLoading ? (
@@ -296,32 +329,6 @@ export default function TeamsManager() {
             onChange={refresh}
           />
         </div>
-      </div>
-      <div className="shrink-0 space-y-3 border-t px-6 py-5">
-        <Button
-          variant="outline"
-          className="border-primary text-primary hover:bg-primary/5 hover:text-primary h-11 px-5 text-base shadow-none"
-          disabled={
-            detailLoading ||
-            detailError ||
-            !members.some((m) => m.canOwn) ||
-            (current.state === "recovery" &&
-              !!current.deadline &&
-              Date.parse(current.deadline) <= now)
-          }
-          onClick={() => {
-            setTarget("");
-            setReason("");
-            setChangeError(false);
-            setChanging(true);
-          }}
-        >
-          {t("changeOwner")}
-        </Button>
-        <p className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Info className="size-4 shrink-0" />
-          {t("auditHint")}
-        </p>
       </div>
     </>
   );
