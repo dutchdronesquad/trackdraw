@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Circle,
+  CalendarDays,
+  Folder,
   ChevronRight,
   Info,
   Loader2,
@@ -53,11 +55,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DetailStats,
-  DetailSection,
-  DetailNotice,
-} from "@/components/dashboard/DetailSheet";
 import ToneBadge from "@/components/dashboard/ToneBadge";
 import UserAvatar from "@/components/UserAvatar";
 import { TeamSuccession } from "@/components/teams/TeamSuccession";
@@ -159,6 +156,7 @@ export default function TeamsManager() {
   const current = teams.find((team) => team.id === selectedId) ?? selected;
   const status = (team: AdminTeam) => (
     <ToneBadge
+      className="gap-1 rounded-full px-2.5 py-1 text-xs font-medium tracking-normal normal-case"
       tone={
         team.state === "open"
           ? "amber"
@@ -217,21 +215,28 @@ export default function TeamsManager() {
   }
   const detail = current && (
     <>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <DetailStats
-          items={[
-            { label: t("members"), value: current.memberCount },
-            { label: t("projects"), value: current.projectCount },
-          ]}
-        />
-        {current.deadline && (
-          <DetailNotice tone="amber">
-            {t(current.state === "recovery" ? "recoveryEnds" : "ownerRemoval", {
-              date: new Date(current.deadline).toLocaleDateString(),
-            })}
-          </DetailNotice>
-        )}
-        <DetailSection title={t("members")}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6">
+        <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 border-b py-4 text-sm">
+          <span className="flex items-center gap-2">
+            <Users className="size-4" />
+            {t("memberCount", { count: current.memberCount })}
+          </span>
+          <span className="flex items-center gap-2">
+            <Folder className="size-4" />
+            {t("projectCount", { count: current.projectCount })}
+          </span>
+          {current.deadline && (
+            <span className="flex items-center gap-2">
+              <CalendarDays className="size-4" />
+              {t(
+                current.state === "recovery" ? "recoveryEnds" : "ownerRemoval",
+                { date: new Date(current.deadline).toLocaleDateString() }
+              )}
+            </span>
+          )}
+        </div>
+        <section className="border-b py-6">
+          <h3 className="mb-4 text-xl font-semibold">{t("members")}</h3>
           {detailLoading ? (
             <p
               className="text-muted-foreground flex items-center gap-2 text-sm"
@@ -248,7 +253,7 @@ export default function TeamsManager() {
               </Button>
             </p>
           ) : (
-            <Table className="text-sm">
+            <Table className="text-[15px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="pl-0">{t("name")}</TableHead>
@@ -258,12 +263,12 @@ export default function TeamsManager() {
               <TableBody>
                 {members.map((m) => (
                   <TableRow key={m.id}>
-                    <TableCell className="py-2.5 pl-0">
+                    <TableCell className="py-3 pl-0">
                       <div className="flex items-center gap-3">
                         <UserAvatar
                           name={m.name}
                           className={cn(
-                            "size-8 text-xs",
+                            "size-9 text-xs",
                             m.role === "owner"
                               ? "bg-muted text-muted-foreground"
                               : m.role === "editor"
@@ -282,8 +287,8 @@ export default function TeamsManager() {
               </TableBody>
             </Table>
           )}
-        </DetailSection>
-        <div className="border-b px-6 py-5 empty:hidden">
+        </section>
+        <div className="py-6 empty:hidden">
           <TeamSuccession
             key={`${current.id}-${revision}`}
             admin
@@ -291,58 +296,58 @@ export default function TeamsManager() {
             onChange={refresh}
           />
         </div>
-        <DetailSection className="space-y-3">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={
-              detailLoading ||
-              detailError ||
-              !members.some((m) => m.canOwn) ||
-              (current.state === "recovery" &&
-                !!current.deadline &&
-                Date.parse(current.deadline) <= now)
-            }
-            onClick={() => {
-              setTarget("");
-              setReason("");
-              setChangeError(false);
-              setChanging(true);
-            }}
-          >
-            {t("changeOwner")}
-          </Button>
-          <p className="text-muted-foreground flex items-start gap-2 text-xs leading-relaxed">
-            <Info className="size-4 shrink-0" />
-            {t("auditHint")}
-          </p>
-        </DetailSection>
+      </div>
+      <div className="shrink-0 space-y-3 border-t px-6 py-5">
+        <Button
+          variant="outline"
+          className="border-primary text-primary hover:bg-primary/5 hover:text-primary h-11 px-5 text-base shadow-none"
+          disabled={
+            detailLoading ||
+            detailError ||
+            !members.some((m) => m.canOwn) ||
+            (current.state === "recovery" &&
+              !!current.deadline &&
+              Date.parse(current.deadline) <= now)
+          }
+          onClick={() => {
+            setTarget("");
+            setReason("");
+            setChangeError(false);
+            setChanging(true);
+          }}
+        >
+          {t("changeOwner")}
+        </Button>
+        <p className="text-muted-foreground flex items-center gap-2 text-sm">
+          <Info className="size-4 shrink-0" />
+          {t("auditHint")}
+        </p>
       </div>
     </>
   );
   const title = current && (
-    <div className="flex items-start gap-4">
-      <div className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-lg">
-        <Users className="size-5" />
-      </div>
-      <div className="min-w-0 flex-1 space-y-2">
-        <span className="block truncate text-base leading-tight font-semibold">
-          {current.name}
-        </span>
-        {status(current)}
-      </div>
+    <div className="space-y-3">
+      <span className="block truncate pr-8 text-2xl font-bold">
+        {current.name}
+      </span>
+      {status(current)}
     </div>
   );
   return (
     <>
-      <div className="space-y-6">
+      <div
+        className={cn(
+          "space-y-6 transition-[padding]",
+          current && !mobile && "lg:pr-[36vw] xl:pr-[512px]"
+        )}
+      >
         <div>
           <h1 className="text-[32px] leading-tight font-bold tracking-tight">
             {t("title")}
           </h1>
           <p className="text-muted-foreground mt-1 text-base">{t("intro")}</p>
         </div>
-        <div className="relative max-w-lg">
+        <div className={cn("relative max-w-lg", current && "max-w-none")}>
           <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-3.5 size-4" />
           <Input
             className="h-11 pl-10 text-base shadow-none md:text-base"
@@ -394,10 +399,20 @@ export default function TeamsManager() {
                   <TableHead className="hidden sm:table-cell">
                     {t("owner")}
                   </TableHead>
-                  <TableHead className="hidden text-right tabular-nums sm:table-cell">
+                  <TableHead
+                    className={cn(
+                      "hidden text-right tabular-nums sm:table-cell",
+                      current && "lg:hidden xl:table-cell"
+                    )}
+                  >
                     {t("members")}
                   </TableHead>
-                  <TableHead className="hidden text-right tabular-nums sm:table-cell">
+                  <TableHead
+                    className={cn(
+                      "hidden text-right tabular-nums sm:table-cell",
+                      current && "lg:hidden xl:table-cell"
+                    )}
+                  >
                     {t("projects")}
                   </TableHead>
                   <TableHead>{t("statusLabel")}</TableHead>
@@ -434,10 +449,20 @@ export default function TeamsManager() {
                     <TableCell className="text-muted-foreground hidden sm:table-cell">
                       {team.ownerName || t("noOwner")}
                     </TableCell>
-                    <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                    <TableCell
+                      className={cn(
+                        "hidden text-right tabular-nums sm:table-cell",
+                        current && "lg:hidden xl:table-cell"
+                      )}
+                    >
                       {team.memberCount}
                     </TableCell>
-                    <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                    <TableCell
+                      className={cn(
+                        "hidden text-right tabular-nums sm:table-cell",
+                        current && "lg:hidden xl:table-cell"
+                      )}
+                    >
                       {team.projectCount}
                     </TableCell>
                     <TableCell>{status(team)}</TableCell>
@@ -489,7 +514,7 @@ export default function TeamsManager() {
           }}
         >
           <DrawerContent className="h-[88dvh] data-[vaul-drawer-direction=bottom]:max-h-[88dvh]">
-            <DrawerHeader className="relative border-b p-6 pr-12 text-left">
+            <DrawerHeader className="relative border-b px-6 py-5 text-left">
               <DrawerTitle asChild>
                 <div>{title}</div>
               </DrawerTitle>
@@ -512,13 +537,14 @@ export default function TeamsManager() {
         </Drawer>
       ) : (
         <Sheet
+          modal={false}
           open={!!current}
           onOpenChange={(open) => {
             if (!open) close();
           }}
         >
           <SheetContent
-            className="flex w-full flex-col gap-0 p-0 sm:max-w-md"
+            className="inset-y-2 right-2 flex h-[calc(100dvh-1rem)] w-[calc(100vw-17rem)] max-w-[calc(100vw-17rem)] flex-col gap-0 rounded-2xl border p-0 shadow-lg sm:max-w-[512px] lg:w-[36vw] xl:w-[512px] [&>button]:top-8 [&>button]:right-6"
             onInteractOutside={(event) => {
               if (changing) event.preventDefault();
             }}
@@ -527,7 +553,7 @@ export default function TeamsManager() {
               trigger.current?.focus();
             }}
           >
-            <SheetHeader className="shrink-0 border-b p-6 pr-12 text-left">
+            <SheetHeader className="shrink-0 px-6 pt-10 pb-2 text-left">
               <SheetTitle asChild>
                 <div>{title}</div>
               </SheetTitle>

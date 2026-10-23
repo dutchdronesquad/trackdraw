@@ -15,14 +15,14 @@ Fixture clock changes and delivery acknowledgements establish runtime transition
 
 ## Dashboard interaction and responsive layout
 
-The Teams directory was checked with search, empty results and Needs attention filtering. Team details now reuse the existing Users/Gallery Sheet dimensions, header, `DetailStats`, `DetailSection`, `DetailNotice` and normal outline actions. This intentionally replaces the selected mockup's floating panel with the established dashboard pattern requested during review. The directory retains its width behind the modal overlay.
+The Teams directory was checked with search, empty results and Needs attention filtering. Team details use the shadcn Sheet with the selected design's floating panel, team heading, inline metadata, member table and fixed owner-action footer. The component supplies the portal, dismissal and focus behavior; its appearance is customized rather than copied from Users/Gallery. The desktop directory reserves space beside the non-modal panel.
 
 Desktop at 1440 × 1024 and mobile at 390 × 844 were checked in authenticated Chrome. Mobile uses an 88dvh bottom drawer, a fixed header and scrollable content; recovery details, notice delivery and owner actions remain reachable without horizontal overflow. Expanded delivery identifiers wrap within the drawer. The owner confirmation exposes only eligible editors, requires an audit reason, and cancel returns to the team details without changing ownership. The temporary viewport override was reset afterwards.
 
 ## Automated checks
 
 - `npm run lint`, `npm run type`, `npm run i18n:check` and `npm run i18n:scan-hardcoded` passed. Hardcoded-copy scanning found zero new findings; the existing baseline remains.
-- Full Vitest suite: 267 files and 1,831 tests passed. After the final Sheet layout change, all six focused dashboard/sidebar/recovery component tests passed again.
+- Full Vitest suite: 267 files and 1,831 tests passed. The focused dashboard/sidebar/recovery component tests also passed.
 - The production Next.js/OpenNext Cloudflare build passed after the final Sheet change.
 - `git diff --check` passed.
 

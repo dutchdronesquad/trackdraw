@@ -94,13 +94,7 @@ export function TeamSuccession({
   if (!cases.length && !error) return null;
   return (
     <section aria-label={t("title")} className="space-y-4">
-      <h3
-        className={
-          admin
-            ? "text-muted-foreground text-[10px] font-medium tracking-wide uppercase"
-            : "text-sm font-semibold"
-        }
-      >
+      <h3 className={admin ? "text-xl font-semibold" : "text-sm font-semibold"}>
         {t("title")}
       </h3>
       {error && !pending && (
@@ -162,7 +156,13 @@ export function TeamSuccession({
                   className="flex items-start justify-between gap-3"
                 >
                   <div className="min-w-0 space-y-1">
-                    <p className="text-sm font-medium break-words">
+                    <p
+                      className={
+                        admin
+                          ? "text-base font-medium break-words"
+                          : "text-sm font-medium break-words"
+                      }
+                    >
                       {t("requestedBy", { name: a.name })}
                     </p>
                     <p className="text-muted-foreground text-sm">
@@ -170,7 +170,10 @@ export function TeamSuccession({
                     </p>
                     {admin && !a.responseAt ? (
                       <div className="space-y-2 pt-2">
-                        <ToneBadge tone="sky">
+                        <ToneBadge
+                          tone="sky"
+                          className="gap-1 rounded-full px-2.5 py-1 text-sm font-medium tracking-normal normal-case"
+                        >
                           <Circle
                             className="size-2 fill-current stroke-none"
                             aria-hidden="true"
