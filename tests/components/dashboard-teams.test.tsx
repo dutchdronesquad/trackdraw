@@ -64,12 +64,12 @@ function mockFetch() {
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
-it("opens team details and requires an explicit editor selection and audit reason before owner correction", async () => {
+it("opens team details from another cell in the row and requires explicit owner correction", async () => {
   const user = userEvent.setup(),
     fetcher = mockFetch();
   render(<TeamsManager />);
   await user.click(
-    await screen.findByRole("button", { name: "Practice collective" })
+    await screen.findByRole("cell", { name: "Old Owner", exact: true })
   );
   await screen.findByText("Alex Pilot");
   await user.click(screen.getByRole("button", { name: "Change owner" }));

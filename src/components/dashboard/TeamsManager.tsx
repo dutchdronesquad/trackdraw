@@ -410,20 +410,23 @@ export default function TeamsManager() {
                 {teams.map((team) => (
                   <TableRow
                     key={team.id}
-                    className="data-[state=selected]:bg-primary/5"
+                    className="data-[state=selected]:bg-primary/5 cursor-pointer"
                     data-state={selectedId === team.id ? "selected" : undefined}
+                    onClick={(event) => {
+                      trigger.current =
+                        event.currentTarget.querySelector<HTMLButtonElement>(
+                          "button"
+                        );
+                      setDetailLoading(true);
+                      setDetailError(false);
+                      setMembers([]);
+                      setSelected(team);
+                    }}
                   >
                     <TableCell className="py-4 font-medium">
                       <Button
                         variant="link"
                         className="text-foreground h-auto max-w-64 justify-start p-0 text-left text-[15px] font-normal whitespace-normal hover:no-underline"
-                        onClick={(event) => {
-                          trigger.current = event.currentTarget;
-                          setDetailLoading(true);
-                          setDetailError(false);
-                          setMembers([]);
-                          setSelected(team);
-                        }}
                       >
                         {team.name}
                       </Button>
