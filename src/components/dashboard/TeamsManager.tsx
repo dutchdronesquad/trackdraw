@@ -235,7 +235,7 @@ export default function TeamsManager() {
             </span>
           )}
         </div>
-        <section className="border-b pt-5 pb-2">
+        <section className="border-b pt-5 pb-0">
           <h3 className="mb-3 text-lg font-semibold">{t("members")}</h3>
           {detailLoading ? (
             <p
