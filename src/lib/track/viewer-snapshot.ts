@@ -43,6 +43,8 @@ function computeRequiredViewer(shapes: readonly Shape[]): RequiredViewer {
   const used = new Set<string>();
   for (const shape of shapes) {
     used.add(shapeCapability(shape));
+    if (shape.kind === "ladder" && shape.thick !== undefined)
+      used.add("shape:ladder:thickness");
     if (shape.appearance?.source === "registry")
       used.add(
         `appearance:${shape.appearance.source}:${shape.appearance.templateId}`

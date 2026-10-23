@@ -79,6 +79,26 @@ function createVelocidroneReadyDesign() {
 }
 
 describe("exportVelocidroneTrk", () => {
+  it.each([1, 2])(
+    "exports a %i-gate ladder without adding extra gates",
+    (rungs) => {
+      const design = createVelocidroneReadyDesign();
+      design.shapeOrder.push("ladder");
+      design.shapeById.ladder = {
+        id: "ladder",
+        kind: "ladder",
+        x: 10,
+        y: 10,
+        rotation: 0,
+        width: 2,
+        height: 10,
+        elevation: 4,
+        rungs,
+        thick: 0.4,
+      };
+      expect(buildVelocidroneValueJson(design).gates).toHaveLength(2 + rungs);
+    }
+  );
   afterEach(() => {
     vi.restoreAllMocks();
   });
