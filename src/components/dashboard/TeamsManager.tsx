@@ -235,8 +235,8 @@ export default function TeamsManager() {
             </span>
           )}
         </div>
-        <section className="border-b py-6">
-          <h3 className="mb-4 text-xl font-semibold">{t("members")}</h3>
+        <section className="border-b pt-5 pb-2">
+          <h3 className="mb-3 text-lg font-semibold">{t("members")}</h3>
           {detailLoading ? (
             <p
               className="text-muted-foreground flex items-center gap-2 text-sm"
@@ -253,7 +253,7 @@ export default function TeamsManager() {
               </Button>
             </p>
           ) : (
-            <Table className="text-[15px]">
+            <Table className="text-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead className="pl-0">{t("name")}</TableHead>
@@ -263,12 +263,12 @@ export default function TeamsManager() {
               <TableBody>
                 {members.map((m) => (
                   <TableRow key={m.id}>
-                    <TableCell className="py-3 pl-0">
+                    <TableCell className="py-2.5 pl-0">
                       <div className="flex items-center gap-3">
                         <UserAvatar
                           name={m.name}
                           className={cn(
-                            "size-9 text-xs",
+                            "size-8 text-xs",
                             m.role === "owner"
                               ? "bg-muted text-muted-foreground"
                               : m.role === "editor"
@@ -288,7 +288,7 @@ export default function TeamsManager() {
             </Table>
           )}
         </section>
-        <div className="py-6 empty:hidden">
+        <div className="py-5 empty:hidden">
           <TeamSuccession
             key={`${current.id}-${revision}`}
             admin

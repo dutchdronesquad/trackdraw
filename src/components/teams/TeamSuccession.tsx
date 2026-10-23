@@ -94,7 +94,7 @@ export function TeamSuccession({
   if (!cases.length && !error) return null;
   return (
     <section aria-label={t("title")} className="space-y-4">
-      <h3 className={admin ? "text-xl font-semibold" : "text-sm font-semibold"}>
+      <h3 className={admin ? "text-lg font-semibold" : "text-sm font-semibold"}>
         {t("title")}
       </h3>
       {error && !pending && (
@@ -253,36 +253,39 @@ export function TeamSuccession({
               </ol>
             )}
           {admin && c.notices && (
-            <Collapsible>
+            <Collapsible className="border-t pt-1">
               <CollapsibleTrigger asChild>
                 <Button
-                  variant="outline"
-                  className="h-auto w-full justify-between gap-3 py-3 text-left text-sm font-normal shadow-none"
+                  variant="ghost"
+                  disabled={!c.notices.some((n) => !n.sentAt)}
+                  className="group hover:bg-muted/50 hover:text-foreground h-11 w-full justify-between gap-2 px-2 text-left text-sm font-normal shadow-none"
                 >
-                  <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex min-w-0 items-center gap-2">
                     <Mail className="size-4 shrink-0" />
                     <span className="font-medium">{t("deliveryTitle")}</span>
                   </span>
-                  <span className="text-muted-foreground ml-auto text-sm">
+                  <span className="bg-muted text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs tabular-nums">
                     {t("pendingNotices", {
                       count: c.notices.filter((n) => !n.sentAt).length,
                     })}
                   </span>
-                  <ChevronDown className="size-4 shrink-0" />
+                  <ChevronDown className="text-muted-foreground size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="mt-3 space-y-4">
+              <CollapsibleContent className="divide-y">
                 {c.notices
                   .filter((n) => !n.sentAt)
                   .map((n) => (
-                    <div key={n.id} className="space-y-2 text-xs">
-                      <p className="break-all">{n.recipient}</p>
+                    <div key={n.id} className="space-y-1.5 py-3 text-xs">
+                      <p className="text-sm font-medium break-all">
+                        {n.recipient}
+                      </p>
                       <p className="text-muted-foreground">
                         {t(n.uncertain ? "uncertain" : "queued", {
                           event: t(`events.${n.event}`),
                         })}
                       </p>
-                      <code className="text-muted-foreground block break-all">
+                      <code className="text-muted-foreground/70 block text-[11px] break-all">
                         {n.deliveryKey}
                       </code>
                       {n.uncertain === 1 && (
