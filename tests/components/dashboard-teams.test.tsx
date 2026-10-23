@@ -68,9 +68,7 @@ it("opens team details from another cell in the row and requires explicit owner 
   const user = userEvent.setup(),
     fetcher = mockFetch();
   render(<TeamsManager />);
-  await user.click(
-    await screen.findByRole("cell", { name: "Old Owner" })
-  );
+  await user.click(await screen.findByRole("cell", { name: "Old Owner" }));
   await screen.findByText("Alex Pilot");
   await user.click(screen.getByRole("button", { name: "Change owner" }));
   const confirmation = screen.getByRole("alertdialog");
