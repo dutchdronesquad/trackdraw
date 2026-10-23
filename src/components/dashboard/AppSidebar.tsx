@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import {
   Bell,
   BarChart2,
+  Building2,
   Home,
   Image as ImageIcon,
   KeyRound,
@@ -139,7 +140,7 @@ const adminNavItems: NavItem[] = [
     key: "teams",
     titleKey: "teams",
     href: "/dashboard/teams",
-    icon: Users,
+    icon: Building2,
     activePrefix: "/dashboard/teams",
   },
   {
