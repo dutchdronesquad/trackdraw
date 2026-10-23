@@ -213,10 +213,7 @@ function NavMenuItem({
         }}
         isActive={isActive}
         className={cn(
-          "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground text-[15px]",
-          ["overview", "gallery", "shares"].includes(item.key)
-            ? "h-10"
-            : "h-11",
+          "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
           typeof badge === "number" && "pr-9"
         )}
         asChild
@@ -297,17 +294,17 @@ export default function DashboardAppSidebar({
 
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader className="p-3">
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className="h-14 hover:bg-transparent active:bg-transparent"
+              className="hover:bg-transparent active:bg-transparent"
             >
               <Link href="/dashboard" prefetch={false}>
                 <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
-                  <span className="relative block h-10 w-52 group-data-[collapsible=icon]:hidden">
+                  <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
                     <Image
                       src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                       alt={t("logoAlt")}
@@ -347,10 +344,8 @@ export default function DashboardAppSidebar({
           </SidebarGroup>
         )}
         {filteredInsightsItems.length > 0 && (
-          <SidebarGroup className="mt-2">
-            <SidebarGroupLabel className="mb-1 h-10 text-sm">
-              {t("insightsGroup")}
-            </SidebarGroupLabel>
+          <SidebarGroup>
+            <SidebarGroupLabel>{t("insightsGroup")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredInsightsItems.map((item) => (
@@ -369,9 +364,7 @@ export default function DashboardAppSidebar({
         )}
         {filteredAdminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="h-10 text-sm">
-              {t("adminGroup")}
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>{t("adminGroup")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredAdminItems.map((item) => (
@@ -388,38 +381,36 @@ export default function DashboardAppSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-        <SidebarGroup className="pt-0">
-          <SidebarMenu className="gap-1">
-            {footerNavItems.map((item) => {
-              const Icon = item.icon;
-              const label = t(`nav.${item.titleKey}`);
-
-              return (
-                <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton
-                    tooltip={{
-                      children: label,
-                      className: appTooltipContentClassName,
-                    }}
-                    className="hover:bg-muted/80 hover:text-foreground h-11 text-[15px]"
-                    asChild
-                  >
-                    <Link
-                      href={item.href}
-                      prefetch={false}
-                      onClick={closeMobileSidebar}
-                    >
-                      <Icon className="group-data-[collapsible=icon]:size-4.5" />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu className="gap-1">
+          {footerNavItems.map((item) => {
+            const Icon = item.icon;
+            const label = t(`nav.${item.titleKey}`);
+
+            return (
+              <SidebarMenuItem key={item.titleKey}>
+                <SidebarMenuButton
+                  tooltip={{
+                    children: label,
+                    className: appTooltipContentClassName,
+                  }}
+                  className="hover:bg-muted/80 hover:text-foreground"
+                  asChild
+                >
+                  <Link
+                    href={item.href}
+                    prefetch={false}
+                    onClick={closeMobileSidebar}
+                  >
+                    <Icon className="group-data-[collapsible=icon]:size-4.5" />
+                    <span>{label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
         <SidebarSeparator className="bg-border my-1 h-px group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8" />
         <DashboardNavUser user={currentUser} />
       </SidebarFooter>

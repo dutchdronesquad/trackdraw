@@ -1,3 +1,5 @@
+import { Building2 } from "lucide-react";
+import DashboardPageIntro from "@/components/dashboard/PageIntro";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -12,10 +14,14 @@ export default async function TeamsPage() {
   const t = await getTranslations("dashboard.teams");
   return (
     <>
-      <div className="[&>header]:h-18">
-        <DashboardSiteHeader title={t("title")} />
-      </div>
-      <div className="flex flex-1 flex-col p-6 pt-4">
+      <DashboardSiteHeader title={t("title")} />
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        <DashboardPageIntro
+          icon={Building2}
+          title={t("title")}
+          description={t("intro")}
+          accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+        />
         <LanguageProvider namespaces={["common", "dashboard", "dialogs"]}>
           <TeamsManager />
         </LanguageProvider>

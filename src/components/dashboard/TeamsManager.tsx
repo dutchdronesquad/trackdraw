@@ -7,7 +7,6 @@ import {
   Folder,
   ChevronRight,
   Loader2,
-  Search,
   Users,
   X,
 } from "lucide-react";
@@ -54,6 +53,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import ToneBadge from "@/components/dashboard/ToneBadge";
 import UserAvatar from "@/components/UserAvatar";
 import { TeamSuccession } from "@/components/teams/TeamSuccession";
@@ -343,26 +343,14 @@ export default function TeamsManager() {
   return (
     <>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-[32px] leading-tight font-bold tracking-tight">
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-base">{t("intro")}</p>
-        </div>
-        <div className="relative max-w-lg">
-          <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-3.5 size-4" />
-          <Input
-            className="h-11 pl-10 text-base shadow-none md:text-base"
-            aria-label={t("search")}
-            placeholder={t("search")}
-            value={search}
-            maxLength={200}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCursor("");
-            }}
-          />
-        </div>
+        <DataTableToolbar
+          searchValue={search}
+          searchPlaceholder={t("search")}
+          onSearchChange={(value) => {
+            setSearch(value.slice(0, 200));
+            setCursor("");
+          }}
+        />
         <Tabs
           value={attention ? "attention" : "all"}
           onValueChange={(value) => {
