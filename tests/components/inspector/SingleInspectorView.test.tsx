@@ -299,9 +299,7 @@ describe("custom ladder mobile inspector", () => {
       { mobileInline: true, updateShape }
     );
     expect(screen.getByRole("textbox", { name: /Thickness/ })).toBeTruthy();
-    await user.click(
-      screen.getByRole("button", { name: /^Ladder$/ })
-    );
+    await user.click(screen.getByRole("button", { name: /^Ladder$/ }));
     expect(
       screen.getByRole("spinbutton", { name: "Gates" }).getAttribute("min")
     ).toBe("1");
