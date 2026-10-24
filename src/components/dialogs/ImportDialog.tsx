@@ -19,7 +19,7 @@ interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBackupCurrent?: () => void;
-  onBeforeConfirm?: () => void;
+  onBeforeConfirm?: () => void | Promise<void>;
 }
 
 type ParsedFile = { design: TrackDesign; shapeCount: number };
@@ -48,11 +48,15 @@ export default function ImportDialog({
   const { unitSystem } = useMeasurementUnitSystem();
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importAttempt = useRef(0);
+  const [confirming, setConfirming] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [parsed, setParsed] = useState<ParsedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
+    importAttempt.current += 1;
+    setConfirming(false);
     setParsed(null);
     setError(null);
   };
@@ -136,9 +140,21 @@ export default function ImportDialog({
     e.target.value = "";
   };
 
-  const handleConfirm = () => {
-    if (!parsed) return;
-    onBeforeConfirm?.();
+  const handleConfirm = async () => {
+    if (!parsed || confirming) return;
+    const attempt = ++importAttempt.current;
+    setConfirming(true);
+    try {
+      await onBeforeConfirm?.();
+    } catch (error) {
+      setConfirming(false);
+      reportImportError(
+        t("import.toastImportFailed"),
+        error instanceof Error ? error.message : t("import.errorReadFailedHelp")
+      );
+      return;
+    }
+    if (attempt !== importAttempt.current) return;
     replaceDesign(parsed.design);
     trackProductEvent("project.imported", {
       projectId: parsed.design.id,
@@ -239,6 +255,7 @@ export default function ImportDialog({
             </button>
             <button
               onClick={handleConfirm}
+              disabled={confirming}
               className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
               {t("import.replaceProject")}

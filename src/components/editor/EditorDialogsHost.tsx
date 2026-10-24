@@ -78,7 +78,7 @@ export interface EditorDialogsHostProps {
   // Import
   importOpen: boolean;
   onImportOpenChange: (open: boolean) => void;
-  onImportBeforeConfirm: () => void;
+  onImportBeforeConfirm: () => void | Promise<void>;
   onImportBackupCurrent: () => void;
 
   // Export

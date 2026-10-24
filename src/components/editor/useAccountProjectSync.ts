@@ -94,7 +94,7 @@ type UseAccountProjectSyncOptions = {
   interactionSessionDepth: number;
   projects: ProjectMeta[];
   initialized: boolean;
-  snapshotCurrentDesign: () => void;
+  snapshotCurrentDesign: () => void | Promise<void>;
   replaceDesign: (design: TrackDesign) => void;
   setProjects: (projects: ProjectMeta[]) => void;
   setRestorePoints: (restorePoints: RestorePointMeta[]) => void;
@@ -1030,7 +1030,7 @@ export function useAccountProjectSync({
           revision: payload.project.revision,
           designUpdatedAt: projectDesign.updatedAt,
         };
-        snapshotCurrentDesign();
+        await snapshotCurrentDesign();
         replaceDesign(projectDesign);
         saveProject(projectDesign);
         const openedSignature = `${projectDesign.id}:${projectDesign.updatedAt}`;

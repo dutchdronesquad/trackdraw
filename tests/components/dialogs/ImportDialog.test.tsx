@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
@@ -164,5 +164,81 @@ describe("ImportDialog", () => {
       expect.objectContaining({ title: "Race day layout" })
     );
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+  it("waits for durable preservation before replacing a project", async () => {
+    const user = userEvent.setup();
+    let completeSave!: () => void;
+    const onBeforeConfirm = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          completeSave = resolve;
+        })
+    );
+    const onOpenChange = vi.fn();
+    const design = createDefaultDesign();
+    const utils = render(
+      <ImportDialog
+        open
+        onOpenChange={onOpenChange}
+        onBeforeConfirm={onBeforeConfirm}
+      />
+    );
+    const input = utils.container.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    await user.upload(
+      input,
+      new File([JSON.stringify(serializeDesign(design))], "track.json", {
+        type: "application/json",
+      })
+    );
+    await user.click(screen.getByRole("button", { name: "Replace project" }));
+    expect(mocks.replaceDesign).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Replace project",
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+    await act(async () => {
+      completeSave();
+    });
+    expect(mocks.replaceDesign).toHaveBeenCalledOnce();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("retains the current design when preservation fails", async () => {
+    const user = userEvent.setup();
+    const onBeforeConfirm = vi
+      .fn()
+      .mockRejectedValue(new Error("Desktop write failed"));
+    const onOpenChange = vi.fn();
+    const utils = render(
+      <ImportDialog
+        open
+        onOpenChange={onOpenChange}
+        onBeforeConfirm={onBeforeConfirm}
+      />
+    );
+    const input = utils.container.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    await user.upload(
+      input,
+      new File(
+        [JSON.stringify(serializeDesign(createDefaultDesign()))],
+        "track.json",
+        { type: "application/json" }
+      )
+    );
+    await user.click(screen.getByRole("button", { name: "Replace project" }));
+    expect(mocks.replaceDesign).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(
+      "Import failed",
+      expect.objectContaining({ description: "Desktop write failed" })
+    );
   });
 });
