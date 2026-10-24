@@ -25,13 +25,13 @@ Exit gate for account-only authoring: working login/recovery, robust account syn
 
 ## Product contract
 
-| Surface | Primary role | Required behavior |
-| --- | --- | --- |
-| Desktop | Regular design, project organization, offline work, exports, and local file integration | Open a project library at startup, resume work, save locally before syncing, and support long editing sessions. |
-| Web Studio | Immediate access, access from another computer, and editing without installation | Retain the shared editor and project compatibility. Preserve the current guest contract during the account transition; apply any later authoring entitlement consistently across web and desktop. |
-| Mobile web | Venue-side access, review, and editing | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app. |
-| Public web | Discovery, gallery, sharing, and embeds | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy. |
-| Cloud | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability. |
+| Surface    | Primary role                                                                              | Required behavior                                                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop    | Regular design, project organization, offline work, exports, and local file integration   | Open a project library at startup, resume work, save locally before syncing, and support long editing sessions.                                                                                   |
+| Web Studio | Immediate access, access from another computer, and editing without installation          | Retain the shared editor and project compatibility. Preserve the current guest contract during the account transition; apply any later authoring entitlement consistently across web and desktop. |
+| Mobile web | Venue-side access, review, and editing                                                    | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app.                                                                                       |
+| Public web | Discovery, gallery, sharing, and embeds                                                   | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy.                                       |
+| Cloud      | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability.                                                                             |
 
 ### Accounts and project ownership
 
@@ -61,14 +61,14 @@ Locally commit edits and pending sync operations while endpoints are blocked. Wh
 
 Required acceptance scenarios, to be implemented as the relevant phases land:
 
-| Scenario | Required result |
-| --- | --- |
-| Internet fully disconnected before launch | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss. |
-| Venue Wi-Fi reports online but TrackDraw domains are blocked | The same local workflow works without waiting for cloud requests to time out. |
-| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite. |
-| Update service is blocked or unreachable | The installed compatible editor starts and local work remains available. |
-| A project or required asset was not downloaded | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness. |
-| Network access returns after offline edits and a concurrent desktop/web/MCP update | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry. |
+| Scenario                                                                                  | Required result                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Internet fully disconnected before launch                                                 | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss.                                                                     |
+| Venue Wi-Fi reports online but TrackDraw domains are blocked                              | The same local workflow works without waiting for cloud requests to time out.                                                                                    |
+| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite.                                        |
+| Update service is blocked or unreachable                                                  | The installed compatible editor starts and local work remains available.                                                                                         |
+| A project or required asset was not downloaded                                            | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness. |
+| Network access returns after offline edits and a concurrent desktop/web/MCP update        | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry.                                                                   |
 
 Repeat the blocked-endpoint scenarios on each supported desktop platform. The current offline POC does not yet validate account-expiry behavior because it has no account integration.
 
@@ -90,15 +90,15 @@ Keep `src/` in place and continue importing the editor into a separate local fro
 
 The POC's aliases are temporary integration points. Replace only the required runtime seams with small explicit interfaces for project persistence, navigation, and native file actions. Start with persistence; introduce other interfaces when their production behavior is implemented. Do not build a general plugin framework.
 
-| Existing owner | Bounded change |
-| --- | --- |
-| `experiments/electron-desktop/` | Keep the working POC reproducible while production behavior is introduced incrementally. Promote it to a dedicated desktop directory only after the storage and runtime boundaries are accepted; moving this small folder must not require moving `src/`. |
-| `src/components/editor/EditorShell.tsx` and `StudioDialogsProvider.tsx` | Introduce the minimum host/navigation integration needed to retain web behavior and remove production dependence on history monkey patches. |
-| `src/hooks/editor/useEditorProjects.ts` and `src/lib/projects.ts` | Retain the browser persistence path and introduce an awaited desktop repository for loading, autosave, restore points, and project management. Audit synchronous callers before changing signatures. |
-| `src/store/editor.ts` and editor action hooks | Preserve current editing semantics. Document tabs require isolated project state and history; do not mount several shells against the current singleton store. |
-| `src/components/editor/useAccountProjectSync.ts` | Separate the project transport from browser-relative fetches while retaining revision conflicts and recovery. |
-| `src/lib/server/projects.ts`, project/share routes, and auth helpers | Reuse ownership and revision rules. Add only the authentication/API changes required for an installed client. |
-| `src/lib/track/`, canvas renderers, and `src/lib/export/` | Continue sharing behavior. Add native file output at the boundary without duplicating geometry or export implementations. |
+| Existing owner                                                          | Bounded change                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `experiments/electron-desktop/`                                         | Keep the working POC reproducible while production behavior is introduced incrementally. Promote it to a dedicated desktop directory only after the storage and runtime boundaries are accepted; moving this small folder must not require moving `src/`. |
+| `src/components/editor/EditorShell.tsx` and `StudioDialogsProvider.tsx` | Introduce the minimum host/navigation integration needed to retain web behavior and remove production dependence on history monkey patches.                                                                                                               |
+| `src/hooks/editor/useEditorProjects.ts` and `src/lib/projects.ts`       | Retain the browser persistence path and introduce an awaited desktop repository for loading, autosave, restore points, and project management. Audit synchronous callers before changing signatures.                                                      |
+| `src/store/editor.ts` and editor action hooks                           | Preserve current editing semantics. Document tabs require isolated project state and history; do not mount several shells against the current singleton store.                                                                                            |
+| `src/components/editor/useAccountProjectSync.ts`                        | Separate the project transport from browser-relative fetches while retaining revision conflicts and recovery.                                                                                                                                             |
+| `src/lib/server/projects.ts`, project/share routes, and auth helpers    | Reuse ownership and revision rules. Add only the authentication/API changes required for an installed client.                                                                                                                                             |
+| `src/lib/track/`, canvas renderers, and `src/lib/export/`               | Continue sharing behavior. Add native file output at the boundary without duplicating geometry or export implementations.                                                                                                                                 |
 
 Use SQLite as the proposed durable desktop project store, with transactions for the working design, project metadata, restore points, and eventual pending sync operations. Put binary assets in an application-managed directory. Database migration and packaging must work on all supported platforms. Keep normal JSON import/export compatibility; do not introduce a mandatory new archive format in the first release.
 
