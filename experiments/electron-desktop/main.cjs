@@ -14,13 +14,18 @@ const { pathToFileURL } = require("node:url");
 
 const scheme = "trackdraw-poc";
 const origin = `${scheme}://desktop`;
-const dist = path.join(__dirname, "dist");
+const dist =
+  process.env.TRACKDRAW_POC_SMOKE && process.env.TRACKDRAW_POC_SMOKE_BUNDLE
+    ? path.resolve(process.env.TRACKDRAW_POC_SMOKE_BUNDLE)
+    : path.join(__dirname, "dist");
 const maxBytes = 16 * 1024 * 1024;
 let window;
 let repository;
 let approvedClose = false;
 let wantsQuit = false;
 const { openRepository } = require("./repository.cjs");
+const { openOfflineAssets } = require("./offline-assets.cjs");
+let offlineAssets;
 
 // The removable POC never shares storage with the browser or another Electron app.
 app.setName("TrackDraw Desktop Alpha");
@@ -87,8 +92,13 @@ app.whenReady().then(async () => {
   if (!singleInstance) return;
   try {
     await fs.mkdir(app.getPath("userData"), { recursive: true });
+    offlineAssets = openOfflineAssets(
+      dist,
+      path.join(app.getPath("userData"), "offline-assets")
+    );
     repository = openRepository(
-      path.join(app.getPath("userData"), "projects.sqlite")
+      path.join(app.getPath("userData"), "projects.sqlite"),
+      offlineAssets
     );
   } catch (error) {
     dialog.showErrorBox(
@@ -127,7 +137,9 @@ app.whenReady().then(async () => {
     if (!filename.startsWith(`${dist}${path.sep}`))
       return new Response("Forbidden", { status: 403 });
     try {
-      const response = await net.fetch(pathToFileURL(filename).href);
+      const response = await net.fetch(
+        pathToFileURL(offlineAssets.fileFor(pathname) || filename).href
+      );
       const headers = new Headers(response.headers);
       headers.set(
         "Content-Security-Policy",

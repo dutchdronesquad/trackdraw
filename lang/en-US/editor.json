@@ -621,6 +621,28 @@
     "flip": "flip"
   },
   "desktopWorkspace": {
+    "offlineProjects": "For offline use",
+    "offlineEmptyTitle": "No prepared tracks yet",
+    "offlineLimitation": {
+      "map": "Map imagery is not stored offline; the track remains editable without its background map.",
+      "appearance": "External appearances are not stored offline; the track remains editable with its local geometry."
+    },
+    "prepareOffline": "Make available offline",
+    "prepareAgain": "Prepare latest version",
+    "removeOffline": "Remove offline preparation",
+    "verifyOffline": "Check offline files",
+    "preparing": "Preparing…",
+    "prepareFailed": "Preparation failed: retry",
+    "preparedVersion": "Prepared {prepared}. Track saved {saved}. Version {revision}.",
+    "offlineEmpty": "Use a project's menu to prepare it for the field. Removing preparation keeps the project and its local edits.",
+    "offlineHelp": "Prepared tracks keep a local version and verified files. Recheck after changes or app updates. Track-only preparation excludes online map imagery and external appearances; those tracks remain editable with their local geometry.",
+    "offlineStatus": {
+      "ready": "Ready offline",
+      "limited": "Track only",
+      "changed": "Track changed: recheck",
+      "missing": "Offline files missing",
+      "update": "App updated: recheck"
+    },
     "desktopAlpha": "Desktop Alpha",
     "workspace": "Track workspace",
     "libraryTitle": "Your track library",
@@ -644,7 +666,7 @@
     "rename": "Rename project",
     "duplicate": "Duplicate",
     "delete": "Delete project",
-    "deleteWarning": "Delete this project and its local restore points? This cannot be undone.",
+    "deleteWarning": "Delete this project, its offline preparation and local restore points? This cannot be undone.",
     "cancel": "Cancel",
     "save": "Save",
     "projectName": "Project name",

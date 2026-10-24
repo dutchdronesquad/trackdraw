@@ -19,6 +19,10 @@ import {
   Check,
   LoaderCircle,
   TriangleAlert,
+  Download,
+  ShieldCheck,
+  RefreshCw,
+  PinOff,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
@@ -46,6 +50,9 @@ import {
   renameDocument,
   duplicateDocument,
   deleteDocument,
+  prepareOffline,
+  removeOffline,
+  checkOfflineProjects,
 } from "./workspace.mjs";
 
 function Preview({ design }) {
@@ -73,6 +80,41 @@ function Library({ onNew, onImport, onSample, run }) {
   const [title, setTitle] = useState("");
   const [menu, setMenu] = useState(null);
   const [working, setWorking] = useState(false);
+  const [preparingId, setPreparingId] = useState(null);
+  const [failedPreparations, setFailedPreparations] = useState(new Set());
+  const prepared = new Map(
+    (repository.offlinePreparations || []).map((item) => [item.projectId, item])
+  );
+  function offlineDescription(record) {
+    return [
+      t("preparedVersion", {
+        prepared: new Date(record.preparedAt).toLocaleString(locale),
+        saved: new Date(record.designUpdatedAt).toLocaleString(locale),
+        revision: record.revision.slice(0, 8),
+      }),
+      ...record.limitations.map((reason) => t(`offlineLimitation.${reason}`)),
+    ].join(" ");
+  }
+  useEffect(() => {
+    run(checkOfflineProjects);
+  }, [run]);
+  function prepare(id) {
+    setMenu(null);
+    run(async () => {
+      setPreparingId(id);
+      try {
+        await prepareOffline(id);
+        setFailedPreparations(
+          (previous) => new Set([...previous].filter((item) => item !== id))
+        );
+      } catch (error) {
+        setFailedPreparations((previous) => new Set([...previous, id]));
+        throw error;
+      } finally {
+        setPreparingId(null);
+      }
+    });
+  }
   const designs = [...repository.designs]
     .sort((a, b) =>
       filter === "recent"
@@ -81,8 +123,10 @@ function Library({ onNew, onImport, onSample, run }) {
           b.updatedAt.localeCompare(a.updatedAt)
         : b.updatedAt.localeCompare(a.updatedAt)
     )
-    .filter((design) =>
-      design.title.toLowerCase().includes(query.toLowerCase())
+    .filter(
+      (design) =>
+        design.title.toLowerCase().includes(query.toLowerCase()) &&
+        (filter !== "offline" || prepared.has(design.id))
     );
   const submit = async (event) => {
     event.preventDefault();
@@ -126,6 +170,17 @@ function Library({ onNew, onImport, onSample, run }) {
           <FolderOpen size={16} />
           {t("allProjects")}
         </button>
+        <button
+          className={filter === "offline" ? "selected" : ""}
+          aria-pressed={filter === "offline"}
+          onClick={() => {
+            setFilter("offline");
+            run(checkOfflineProjects);
+          }}
+        >
+          <ShieldCheck size={16} />
+          {t("offlineProjects")}
+        </button>
         <div className="library-sidebar-bottom">
           <HardDrive size={18} aria-hidden="true" />
           <strong>{t("localWorkspace")}</strong>
@@ -151,7 +206,15 @@ function Library({ onNew, onImport, onSample, run }) {
           </div>
         </header>
         <div className="library-toolbar">
-          <h2>{t(filter === "recent" ? "recent" : "allProjects")}</h2>
+          <h2>
+            {t(
+              filter === "recent"
+                ? "recent"
+                : filter === "offline"
+                  ? "offlineProjects"
+                  : "allProjects"
+            )}
+          </h2>
           <span className="library-count">
             {t("projectCount", { count: designs.length })}
           </span>
@@ -165,17 +228,57 @@ function Library({ onNew, onImport, onSample, run }) {
             />
           </div>
         </div>
+        {filter === "offline" && (
+          <p className="offline-help">
+            {t("offlineHelp")}{" "}
+            <button onClick={() => run(checkOfflineProjects)}>
+              <RefreshCw size={13} />
+              {t("verifyOffline")}
+            </button>
+          </p>
+        )}
         {designs.length ? (
           <div className="project-grid">
             {designs.map((design) => (
               <article className="project-tile" key={design.id}>
                 <button
                   className="project-open"
+                  aria-describedby={
+                    prepared.has(design.id)
+                      ? `offline-details-${design.id}`
+                      : undefined
+                  }
                   aria-label={t("openProject", { title: design.title })}
                   onClick={() => run(() => openDocument(design.id))}
                 >
                   <div className="project-preview">
                     <Preview design={design} />
+                    {(prepared.has(design.id) ||
+                      preparingId === design.id ||
+                      failedPreparations.has(design.id)) && (
+                      <span
+                        className={`project-offline offline-${failedPreparations.has(design.id) ? "missing" : prepared.get(design.id)?.status || "checking"}`}
+                        title={
+                          prepared.has(design.id)
+                            ? offlineDescription(prepared.get(design.id))
+                            : undefined
+                        }
+                      >
+                        {prepared.get(design.id)?.status === "ready" &&
+                        !failedPreparations.has(design.id) ? (
+                          <ShieldCheck size={12} />
+                        ) : (
+                          <TriangleAlert size={12} />
+                        )}
+                        {t(
+                          preparingId === design.id
+                            ? "preparing"
+                            : failedPreparations.has(design.id)
+                              ? "prepareFailed"
+                              : `offlineStatus.${prepared.get(design.id).status}`
+                        )}
+                      </span>
+                    )}
                     <span className="project-field-size">
                       <Ruler size={12} aria-hidden="true" />
                       {formatCompactFieldSize(
@@ -207,6 +310,14 @@ function Library({ onNew, onImport, onSample, run }) {
                       })}
                     </span>
                   </span>
+                  {prepared.has(design.id) && (
+                    <span
+                      className="sr-only"
+                      id={`offline-details-${design.id}`}
+                    >
+                      {offlineDescription(prepared.get(design.id))}
+                    </span>
+                  )}
                 </button>
                 <button
                   className="project-menu-trigger"
@@ -218,6 +329,28 @@ function Library({ onNew, onImport, onSample, run }) {
                 </button>
                 {menu === design.id && (
                   <div className="project-menu">
+                    <button
+                      disabled={Boolean(preparingId)}
+                      onClick={() => prepare(design.id)}
+                    >
+                      <Download size={14} />
+                      {t(
+                        prepared.has(design.id)
+                          ? "prepareAgain"
+                          : "prepareOffline"
+                      )}
+                    </button>
+                    {prepared.has(design.id) && (
+                      <button
+                        onClick={() => {
+                          setMenu(null);
+                          run(() => removeOffline(design.id));
+                        }}
+                      >
+                        <PinOff size={14} />
+                        {t("removeOffline")}
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setDialog({ kind: "rename", id: design.id });
@@ -259,9 +392,27 @@ function Library({ onNew, onImport, onSample, run }) {
         ) : (
           <div className="library-empty">
             <LayoutGrid size={36} />
-            <h2>{t(query ? "noResults" : "emptyTitle")}</h2>
-            <p>{t(query ? "trySearch" : "emptyDescription")}</p>
-            {!query && <button onClick={onSample}>{t("sample")}</button>}
+            <h2>
+              {t(
+                query
+                  ? "noResults"
+                  : filter === "offline"
+                    ? "offlineEmptyTitle"
+                    : "emptyTitle"
+              )}
+            </h2>
+            <p>
+              {t(
+                query
+                  ? "trySearch"
+                  : filter === "offline"
+                    ? "offlineEmpty"
+                    : "emptyDescription"
+              )}
+            </p>
+            {!query && filter !== "offline" && (
+              <button onClick={onSample}>{t("sample")}</button>
+            )}
           </div>
         )}
       </main>

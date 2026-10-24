@@ -133,10 +133,15 @@ The POC's existing test results establish this baseline. The first native-storag
 - [ ] Preserve native open/save cancellation and invalid-file recovery. Save a disk backup even when local autosave fails.
 - [ ] Bundle catalog assets reproducibly and identify network-dependent features. Persist downloaded assets needed by the accepted offline workflow.
 - [ ] Add explicit offline preparation with verified project/assets, a prepared revision indicator, and retention of pinned data. Verify cold startup with all TrackDraw network access blocked while the operating system still reports online.
+  - [x] Add explicit preparation for local/imported projects, a retained snapshot and verified bundled files, readiness/limitations, recheck and removal without deleting projects.
+  - [x] Exercise cold startup, retained asset loading after a bundled texture is removed, missing retained-file detection/repair and renewed preparation after editing in the Electron smoke flow.
+  - [ ] Validate the complete venue matrix across supported platforms, including future account expiry and cloud project preparation. The parent gate remains open.
 - [ ] Define the explicit import flow from POC/browser JSON copies and retain their originals.
 - [ ] Run the portable-copy home-to-field-to-home journey: browser JSON export, desktop import/offline changes/reopen/export, then browser import and continued editing. Record content compatibility and which offline assets/formats were accepted.
 
 Exit gate: complete real track design sessions offline, including close/reopen, process interruption after confirmed save, full-disk/write failure recovery, schema migration, and JSON round-trip. Web editing and persistence checks remain green. Stop for reassessment if this requires moving the editor or replacing its state architecture.
+
+The offline-preparation increment retains a full prepared project snapshot in SQLite schema two and shares content-addressed copies of the installed runtime/catalog assets between prepared projects. Readiness is verified on startup and explicit recheck, becomes stale after project/app changes, and is withheld for missing files or online-resource limitations. Map imagery and registry appearances are not downloaded; affected projects are explicitly track-only. There is no automatic asset eviction or cloud-project download in this increment. See the [desktop runbook](../../experiments/electron-desktop/README.md#prepare-projects-for-the-field) for recovery and storage behavior.
 
 ### Phase 2 Add the desktop workspace
 
@@ -216,7 +221,7 @@ Open these as dependent draft PRs so each diff contains only its own slice. Revi
 
 The initial integration seed is `a780c72d`, the existing pre-desktop baseline. It predates newer `main` changes and contains MCP callback history inherited from the original checkout; that history is not part of the desktop review slices. After the initial stack landed, `main` at `b071bb76` was merged directly into the integration branch at the maintainer's request. The editor retains both desktop starter suppression and the newer managed team-project behavior; the desktop persistence adapter exposes the new project-move guard and rejects unsupported team-move cleanup. Keep future `main` refreshes explicit, resolve browser/desktop compatibility before committing, and rerun web and desktop acceptance. Preserve unrelated working checkouts.
 
-Keep future PRs to one behavior or boundary, for example offline preparation, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, but the native repository tests and real Electron smoke flow still require explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
+Keep future PRs to one behavior or boundary, for example offline preparation, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, including native SQLite/offline-asset tests on Linux. The real Electron smoke flow still requires explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
 
 Keep production delivery incremental too: identify small reusable changes suitable for `main` separately, and retain the isolated desktop runtime until its release gates pass. Do not use a single final merge of the long-lived branch as a substitute for reviewing shared-code changes and compatibility with current `main`.
 

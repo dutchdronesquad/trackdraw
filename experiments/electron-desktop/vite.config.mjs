@@ -8,6 +8,9 @@ import { assetOrigin, prepareAssets } from "./assets.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const requireRoot = createRequire(path.join(root, "package.json"));
+const { buildManifest, manifestName } = createRequire(import.meta.url)(
+  "./offline-assets.cjs"
+);
 const shim = (name) => path.join(here, "renderer/shims", name);
 
 export default defineConfig({
@@ -35,6 +38,11 @@ export default defineConfig({
           names.map((name) =>
             copyFile(path.join(cache, name), path.join(destination, name))
           )
+        );
+        const { writeFile } = await import("node:fs/promises");
+        await writeFile(
+          path.join(here, "dist", manifestName),
+          JSON.stringify(buildManifest(path.join(here, "dist")))
         );
       },
     },
