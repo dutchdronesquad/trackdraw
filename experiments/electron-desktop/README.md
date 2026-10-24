@@ -1,6 +1,6 @@
 # TrackDraw Electron desktop development build
 
-This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron on the `codex/desktop-app` branch. It has a project library, document tabs, and native SQLite storage for projects, the current draft, and restore points. The existing web build and project storage remain in place.
+This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron. During the initial PR stack, `codex/desktop-identity` contains the complete preview; accepted changes land on `codex/desktop-integration`. The earlier `codex/desktop-app` branch is superseded by this stack. The build has a project library, document tabs, and native SQLite storage for projects, the current draft, and restore points. The existing web build and project storage remain in place.
 
 ## Run
 
@@ -73,3 +73,5 @@ Each document owns a separate instance of the existing editor store and temporal
 Open tab IDs, recent ordering, selection and view preferences use Zustand persist under `trackdraw.desktopWorkspace`; project payloads stay in SQLite. Startup shows Home and restores open tabs from available local projects. View preferences survive close/reopen and application restart. Undo/redo history stays in memory for open tabs and resets when a document is closed or the app restarts; SQLite restore points provide durable recovery. Inactive canvases are unmounted rather than kept consuming GPU resources.
 
 Desktop smoke coverage includes two independently edited documents, separate undo/redo histories, selection and 2D viewport preservation, a rendered-image comparison for 3D camera/pan restoration, close/reopen, library search/rename/duplicate/delete, persisted tabs, and save-on-close. The browser keeps its existing default editor store and starter experience.
+
+The workspace uses TrackDraw's existing color logo, theme tokens and system typography. Blue identifies navigation and primary actions; orange identifies the active track tab. The library presents field dimensions in the selected measurement system, item counts and update dates alongside the shared SVG previews. Light/dark preview colors follow the app theme. The document workflow takes inspiration from familiar design tools, while its branding, copy and track presentation belong to TrackDraw. All styling is scoped to the desktop experiment.

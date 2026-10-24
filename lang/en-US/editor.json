@@ -620,6 +620,11 @@
     "flip": "flip"
   },
   "desktopWorkspace": {
+    "desktopAlpha": "Desktop Alpha",
+    "workspace": "Track workspace",
+    "libraryTitle": "Your track library",
+    "localWorkspace": "Built to work offline",
+    "updated": "Updated {date}",
     "home": "Home",
     "documents": "Open documents",
     "recent": "Recents",

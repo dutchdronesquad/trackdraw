@@ -2,13 +2,13 @@
 
 Date: October 24, 2026
 
-Status: proposed delivery plan following the working Electron POC and the user's positive hands-on evaluation. Desktop is the requested primary workspace; implementation has started on `codex/desktop-app` in an isolated worktree. The first increment adds native SQLite persistence and asynchronous save preservation; later phase gates remain open.
+Status: delivery plan revised after community feedback. The browser remains a full workspace; desktop primarily adds dependable offline work at event venues. Implementation has started on `codex/desktop-app` in an isolated worktree, including native SQLite persistence, a project library and document tabs. Cloud continuity and later release gates remain open.
 
 ## Direction
 
-Make desktop the preferred workspace for regular track design on macOS, Windows, and Linux. Follow Figma's product model: a project library, recent documents, document tabs, automatic saving, account continuity, and links that also work in the browser. Preserve one shared editor and the existing web routes. The [desktop concept](../research/in-progress/electron-desktop-concept.md) owns the product rationale and POC evidence.
+Keep browser and desktop as full editing workspaces around one shared editor. The browser supports complete track design without installation; desktop primarily supports creating and adjusting tracks offline at the field on macOS, Windows, and Linux. Use Figma's project-library, document-tab, automatic-saving and account-continuity workflow as a reference, with TrackDraw's own visual identity. Preserve the existing web routes. The [desktop concept](../research/in-progress/electron-desktop-concept.md) owns the product rationale and POC evidence.
 
-Desktop becomes the primary workspace through reliability, file integration, and a better sustained design workflow. Browser editing remains a supported way to work with the same projects. Move gradually toward account-centered authoring, with a later decision on requiring accounts for new authoring. Preserve the current guest contract during the desktop build and transition; do not treat it as a permanent requirement for every future authoring feature. Installation remains optional for browser access.
+The reference journey is **prepare at home, adjust at the field, continue at home**. Users can choose either host for complete design sessions; desktop adoption must not be achieved by reducing browser capabilities or making desktop installation a requirement for normal editing. Prioritize local startup, file handling, project preparation and recovery in desktop. Implement shared editing features for both hosts. Account-centered continuity remains useful, but any future account requirement is a separate product decision. Preserve the current guest contract while building this workflow.
 
 ## Account transition
 
@@ -19,19 +19,27 @@ The current homepage already distinguishes guest design/2D/3D/export and tempora
 3. **Evaluate an account requirement for new authoring.** Before changing guest entitlements, inspect aggregate sign-in completion, continued editing after sign-in, guest abandonment, auth/support failures, and successful local-project imports. Establish a comparable baseline and acceptance thresholds before the experiment. Do not equate anonymous sessions with unique people or introduce fingerprinting to measure conversion.
 4. **Roll out any authoring requirement separately.** If that gate is accepted, announce the boundary and transition period, update the homepage and editor consistently, and enable it through a reversible rollout. New authoring may then require an account on both desktop and web. Existing local tracks must remain openable and exportable, with a supported path into an account; sign-in must not retroactively lock their data away. Account-required authoring must still support offline editing of available projects after an initial authenticated setup.
 
-Guest trial scope at the eventual account-only stage remains a separate entitlement decision. Public gallery, published share viewing, and embeds stay accessible without login. Account requirements do not introduce pricing or paid subscriptions. Desktop development does not depend on deciding the final guest cutoff now.
+Guest trial scope at any possible account-only stage remains a separate entitlement decision. Public gallery, published share viewing, and embeds stay accessible without login. Account requirements do not introduce pricing or paid subscriptions. Desktop development does not depend on deciding the final guest cutoff now. The venue feedback supports browser choice and offline desktop availability; it does not establish demand for mandatory accounts or authorize restricting browser authoring.
 
 Exit gate for account-only authoring: working login/recovery, robust account sync, no-loss guest import, retained access to existing work, aligned user-facing copy, and observed adoption meeting the thresholds agreed before rollout. A rollback restores the prior guest entitlement without undoing users' new account projects. The current accountless core-editing repository convention remains in force until that separate product change explicitly updates it.
 
 ## Product contract
 
-| Surface    | Primary role                                                                              | Required behavior                                                                                                                                                                                 |
-| ---------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Desktop    | Regular design, project organization, offline work, exports, and local file integration   | Open a project library at startup, resume work, save locally before syncing, and support long editing sessions.                                                                                   |
-| Web Studio | Immediate access, access from another computer, and editing without installation          | Retain the shared editor and project compatibility. Preserve the current guest contract during the account transition; apply any later authoring entitlement consistently across web and desktop. |
-| Mobile web | Venue-side access, review, and editing                                                    | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app.                                                                                       |
-| Public web | Discovery, gallery, sharing, and embeds                                                   | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy.                                       |
-| Cloud      | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability.                                                                             |
+| Surface    | Primary role                                                                                          | Required behavior                                                                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop    | Offline creation and venue-side changes, project preparation, exports, and local file integration     | Open a project library at startup, resume prepared/downloaded tracks, create local tracks, save locally before syncing, and support complete editing sessions without reachable website or login services.        |
+| Web Studio | Full track design at home or elsewhere, including continued work after an event, without installation | Retain creation, 2D/3D editing, autosave, recovery, import/export and existing account project features. Keep direct browser editing available and preserve project compatibility and the current guest contract. |
+| Mobile web | Venue-side access, review, and editing                                                                | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app.                                                                                                       |
+| Public web | Discovery, gallery, sharing, and embeds                                                               | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy.                                                       |
+| Cloud      | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP             | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability.                                                                                             |
+
+### Home to field to home acceptance journey
+
+1. **Prepare at home in the browser.** Create or edit a real track using the full Web Studio. With the current alpha, export a JSON copy and import it into desktop. With future account transport, open the same account project in desktop and explicitly prepare it for offline use. Keep the browser original and explain whether the transfer is a portable copy or the same synchronized project.
+2. **Adjust at the field.** Cold-start desktop with no internet, or with TrackDraw and sign-in blocked while venue Wi-Fi still reports online. Open the prepared track, change the layout in 2D/3D, undo/redo, save, close/reopen and export a local copy. Also create a new local track. No website visit, successful login, token refresh or online entitlement check may be required for these local operations.
+3. **Continue at home in the browser.** Before account transport exists, export the edited JSON from desktop and import it as a copy in Web Studio. Verify the layout, field settings and supported design data survive the round-trip, then continue editing and exporting in the browser without desktop running. After account transport lands, sync the same project identity and revision back to Web Studio; confirm pending field changes arrive and resolve any concurrent web/MCP revision through review while retaining both versions.
+
+This is a required practical acceptance journey, not evidence that cloud sync already works. JSON transfer remains a supported fallback after synchronization is added. Validate the portable-copy journey first, then the account-continuity journey in Phase 3. Browser-only users must also be able to complete the full create/edit/save/reopen/export journey without installing desktop.
 
 ### Accounts and project ownership
 
@@ -61,14 +69,16 @@ Locally commit edits and pending sync operations while endpoints are blocked. Wh
 
 Required acceptance scenarios, to be implemented as the relevant phases land:
 
-| Scenario                                                                                  | Required result                                                                                                                                                  |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Internet fully disconnected before launch                                                 | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss.                                                                     |
-| Venue Wi-Fi reports online but TrackDraw domains are blocked                              | The same local workflow works without waiting for cloud requests to time out.                                                                                    |
-| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite.                                        |
-| Update service is blocked or unreachable                                                  | The installed compatible editor starts and local work remains available.                                                                                         |
-| A project or required asset was not downloaded                                            | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness. |
-| Network access returns after offline edits and a concurrent desktop/web/MCP update        | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry.                                                                   |
+| Scenario                                                                                  | Required result                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Browser-only use without desktop installed                                                | Complete creation, 2D/3D editing, save/reopen, recovery and import/export; existing account and public sharing flows remain usable.                                        |
+| Browser preparation, offline desktop changes at the venue, then browser continuation      | Preserve track content through the explicit JSON-copy flow first, and through the same account project after sync lands. Continue browser editing without desktop running. |
+| Internet fully disconnected before launch                                                 | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss.                                                                               |
+| Venue Wi-Fi reports online but TrackDraw domains are blocked                              | The same local workflow works without waiting for cloud requests to time out.                                                                                              |
+| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite.                                                  |
+| Update service is blocked or unreachable                                                  | The installed compatible editor starts and local work remains available.                                                                                                   |
+| A project or required asset was not downloaded                                            | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness.           |
+| Network access returns after offline edits and a concurrent desktop/web/MCP update        | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry.                                                                             |
 
 Repeat the blocked-endpoint scenarios on each supported desktop platform. The current offline POC does not yet validate account-expiry behavior because it has no account integration.
 
@@ -124,6 +134,7 @@ The POC's existing test results establish this baseline. The first native-storag
 - [ ] Bundle catalog assets reproducibly and identify network-dependent features. Persist downloaded assets needed by the accepted offline workflow.
 - [ ] Add explicit offline preparation with verified project/assets, a prepared revision indicator, and retention of pinned data. Verify cold startup with all TrackDraw network access blocked while the operating system still reports online.
 - [ ] Define the explicit import flow from POC/browser JSON copies and retain their originals.
+- [ ] Run the portable-copy home-to-field-to-home journey: browser JSON export, desktop import/offline changes/reopen/export, then browser import and continued editing. Record content compatibility and which offline assets/formats were accepted.
 
 Exit gate: complete real track design sessions offline, including close/reopen, process interruption after confirmed save, full-disk/write failure recovery, schema migration, and JSON round-trip. Web editing and persistence checks remain green. Stop for reassessment if this requires moving the editor or replacing its state architecture.
 
@@ -152,7 +163,7 @@ Exit gate: use several real projects across repeated sessions without lost state
 - [ ] Let a project link open the matching desktop project when installed, with a normal web fallback and no automatic editing rights derived from a public share token.
 - [ ] Validate the MCP-to-desktop flows: create/open, reviewed remote edit with a clean local document, and conflicting MCP/offline desktop edits. Keep assistant consent separate from desktop login and retain the hosted MCP/client acceptance gate.
 
-Exit gate: create in desktop, open/edit in web, return to desktop, edit on mobile, and verify continuity. Exercise simultaneous offline edits, lost responses/retries, archive/delete conflicts, sign-out, and expired credentials. Check runtime deployment guidance and legal text for any changed data flows. Use Cloudflare preview for server/auth acceptance.
+Exit gate: prepare an account project in the browser, make it available offline in desktop, edit at the venue with endpoints blocked, then reopen and continue the same project in the browser after sync. Also create in desktop, open/edit in web, return to desktop and edit on mobile. Exercise simultaneous offline edits, lost responses/retries, archive/delete conflicts, sign-out, and expired credentials. Keep the JSON-copy fallback working. Check runtime deployment guidance and legal text for any changed data flows. Use Cloudflare preview for server/auth acceptance.
 
 ### Phase 4 Deliver macOS Windows and Linux builds
 
@@ -166,16 +177,16 @@ Exit gate: create in desktop, open/edit in web, return to desktop, edit on mobil
 
 Exit gate: a user installs and upgrades without Node.js or a source checkout, and existing projects remain usable. A platform stays explicitly experimental until its declared matrix passes. Use a minimum supported client policy that retains offline access to local work when cloud access requires an update.
 
-### Phase 5 Make desktop the preferred entry point
+### Phase 5 Validate the browser and offline desktop workflow
 
 - [ ] Run a small beta with regular designers and venue-side users. Track issues by workflow and platform.
-- [ ] Add desktop download/open actions to the website and account project library, with browser editing still directly available.
+- [ ] Add optional desktop download/open actions to the website and account project library alongside a clear continue-in-browser action. Explain offline venue use; do not route browser users through an install requirement.
 - [ ] Document the storage model, offline availability, project-copy import, device switching, and published-share behavior in user-facing help.
 - [ ] Introduce the account-first entry and no-loss guest-to-account flow while retaining current guest capabilities. Evaluate any account-only authoring rollout against the separate transition gate above.
-- [ ] Give desktop workspace improvements priority while implementing shared track features once for both runtimes. Keep existing browser core capabilities available throughout the transition.
-- [ ] Review actual cloud requests, bytes, storage, recovery issues, and support effort before any later web-scope reduction.
+- [ ] Prioritize desktop offline reliability and native file handling while implementing shared track features once for both runtimes. Validate full browser editing without desktop installed alongside the venue journey.
+- [ ] Review actual cloud requests, bytes, storage, recovery issues, support effort, and whether users successfully move between home and field. Do not reduce browser scope to encourage desktop adoption or assume infrastructure savings.
 
-Exit gate: repeat users choose desktop for complete projects, cloud continuity works across devices, and public/mobile web access remains dependable. Continue the current web editor if desktop adoption or maintenance cost does not justify a stronger shift.
+Exit gate: users who prefer the browser can complete their projects there, while venue users can prepare, work offline and resume at home without losing content or being blocked by authentication. Account continuity works when selected, and public/mobile web access remains dependable. Evaluate desktop by the usefulness and reliability of offline venue work, not by how many users migrate away from the browser. Rescope or park desktop if its maintenance cost outweighs that value.
 
 ## Cloud load and maintenance
 
@@ -188,6 +199,26 @@ Candidate reductions are coalescing pending revisions, using cached assets, avoi
 Evaluate product reliability and maintenance cost separately from infrastructure savings. If desktop improves the main workflow but backend traffic remains similar, report that result explicitly. Desktop investment must stand on that evidence rather than an assumed hosting reduction.
 
 ## Change discipline and stopping points
+
+### Branch and pull request workflow
+
+Use `codex/desktop-integration` as the review destination for desktop development, separate from `main`. While the initial review stack is outstanding, `codex/desktop-identity` is the complete runnable preview. The earlier `codex/desktop-app` branch can be removed after verifying all of its commits are ancestors of that stack tip and the complete preview still works. Removing the redundant branch must not remove the worktree, application-data database or exported projects. Do not reset or force-push branches to manufacture smaller diffs. After the stack lands, create each new feature branch from the accepted integration tip and open a bounded PR back to that integration branch.
+
+The initial work is split along its existing commit boundaries:
+
+| Review slice                     | Head branch                | Initial PR base             | Scope                                                                                                    |
+| -------------------------------- | -------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Desktop foundation               | `codex/desktop-foundation` | `codex/desktop-integration` | Isolated Electron runtime, native JSON files, durable SQLite projects, restore points and awaited saves. |
+| Project workspace                | `codex/desktop-workspace`  | `codex/desktop-foundation`  | Project library, isolated document stores, tabs and per-document view/history behavior.                  |
+| TrackDraw identity and direction | `codex/desktop-identity`   | `codex/desktop-workspace`   | TrackDraw visual styling, browser/offline role clarification and this review workflow.                   |
+
+Open these as dependent draft PRs so each diff contains only its own slice. Review and merge from foundation upward. Use merge commits for this initial stack to preserve ancestry, then retarget the next PR to `codex/desktop-integration` after its predecessor lands. Do not squash a parent and retarget a child without first rebuilding the child's base; that would reintroduce already-reviewed changes into its diff. No merges or automatic merges are part of setting up this review stack.
+
+The initial integration seed is `a780c72d`, the existing pre-desktop baseline. It predates newer `main` changes and contains MCP callback history inherited from the original checkout; that history is not part of the desktop review slices. Bring current `main` into the integration branch in a separately reviewed compatibility change before a release candidate. Recheck browser/team project flows and desktop persistence after resolving any conflicts. Preserve unrelated working checkouts.
+
+Keep future PRs to one behavior or boundary, for example offline preparation, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, but the native repository tests and real Electron smoke flow still require explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
+
+Keep production delivery incremental too: identify small reusable changes suitable for `main` separately, and retain the isolated desktop runtime until its release gates pass. Do not use a single final merge of the long-lived branch as a substitute for reviewing shared-code changes and compatibility with current `main`.
 
 Deliver small changes in this order: persistence seam, durable desktop repository, workspace/library, document isolation, desktop auth/transport, sync recovery, platform delivery, then website entry points. Each change must have a bounded diff and relevant behavior checks. Shared-code changes run the normal lint, tests, type, and build checks; copy changes also run the i18n checks.
 

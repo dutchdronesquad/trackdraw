@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useSyncExternalStore } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 import {
   Home,
   Plus,
@@ -11,7 +12,17 @@ import {
   Pencil,
   Copy,
   Trash2,
+  HardDrive,
+  Route,
+  Ruler,
+  ArrowUpRight,
+  Check,
+  LoaderCircle,
+  TriangleAlert,
 } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
+import { formatCompactFieldSize } from "@/lib/track/units";
 import {
   Dialog,
   DialogContent,
@@ -38,10 +49,11 @@ import {
 } from "./workspace.mjs";
 
 function Preview({ design }) {
+  const theme = useTheme();
   const src = useMemo(
     () =>
-      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designToSvg(parseDesign(design), "light"))}`,
-    [design]
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designToSvg(parseDesign(design), theme))}`,
+    [design, theme]
   );
   // Local SVG output from the shared exporter needs no Next image service.
   // oxlint-disable-next-line nextjs/no-img-element
@@ -50,6 +62,9 @@ function Preview({ design }) {
 
 function Library({ onNew, onImport, onSample, run }) {
   const t = useTranslations("editor.desktopWorkspace");
+  const locale = useLocale();
+  const theme = useTheme();
+  const { unitSystem } = useMeasurementUnitSystem();
   const repository = useSyncExternalStore(subscribe, getState);
   const recentIds = useWorkspace((state) => state.recentIds);
   const [query, setQuery] = useState("");
@@ -85,11 +100,19 @@ function Library({ onNew, onImport, onSample, run }) {
     <div className="desktop-library">
       <aside className="library-sidebar">
         <div className="library-brand">
-          TrackDraw <span>Desktop</span>
+          <Image
+            src={`/assets/brand/trackdraw-logo-color-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+            alt="TrackDraw"
+            width={164}
+            height={32}
+            unoptimized
+          />
+          <span>{t("desktopAlpha")}</span>
         </div>
-        <p className="library-device">{t("onDevice")}</p>
+        <p className="library-device">{t("workspace")}</p>
         <button
           className={filter === "recent" ? "selected" : ""}
+          aria-pressed={filter === "recent"}
           onClick={() => setFilter("recent")}
         >
           <Home size={16} />
@@ -97,36 +120,50 @@ function Library({ onNew, onImport, onSample, run }) {
         </button>
         <button
           className={filter === "all" ? "selected" : ""}
+          aria-pressed={filter === "all"}
           onClick={() => setFilter("all")}
         >
           <FolderOpen size={16} />
           {t("allProjects")}
         </button>
-        <div className="library-sidebar-bottom">{t("offlineNotice")}</div>
+        <div className="library-sidebar-bottom">
+          <HardDrive size={18} aria-hidden="true" />
+          <strong>{t("localWorkspace")}</strong>
+          <p>{t("offlineNotice")}</p>
+        </div>
       </aside>
       <main className="library-content">
         <header className="library-heading">
           <div>
-            <h1>{t(filter === "recent" ? "recent" : "allProjects")}</h1>
+            <span className="library-eyebrow">{t("workspace")}</span>
+            <h1>{t("libraryTitle")}</h1>
             <p>{t("description")}</p>
           </div>
           <div className="library-actions">
-            <button onClick={onImport}>{t("import")}</button>
+            <button onClick={onImport}>
+              <FolderOpen size={16} aria-hidden="true" />
+              {t("import")}
+            </button>
             <button className="primary" onClick={onNew}>
               <Plus size={16} />
               {t("newProject")}
             </button>
           </div>
         </header>
-        <div className="library-search">
-          <Search size={16} />
-          <input
-            aria-label={t("search")}
-            placeholder={t("search")}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <span>{t("projectCount", { count: designs.length })}</span>
+        <div className="library-toolbar">
+          <h2>{t(filter === "recent" ? "recent" : "allProjects")}</h2>
+          <span className="library-count">
+            {t("projectCount", { count: designs.length })}
+          </span>
+          <div className="library-search">
+            <Search size={16} aria-hidden="true" />
+            <input
+              aria-label={t("search")}
+              placeholder={t("search")}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
         </div>
         {designs.length ? (
           <div className="project-grid">
@@ -139,11 +176,36 @@ function Library({ onNew, onImport, onSample, run }) {
                 >
                   <div className="project-preview">
                     <Preview design={design} />
+                    <span className="project-field-size">
+                      <Ruler size={12} aria-hidden="true" />
+                      {formatCompactFieldSize(
+                        design.field.width,
+                        design.field.height,
+                        unitSystem
+                      )}
+                    </span>
+                    <span className="project-open-hint" aria-hidden="true">
+                      <ArrowUpRight size={18} />
+                    </span>
                   </div>
                   <strong>{design.title || t("untitled")}</strong>
-                  <span>
-                    {t("obstacles", { count: design.shapes.length })} ·{" "}
-                    {new Date(design.updatedAt).toLocaleDateString()}
+                  <span className="project-details">
+                    <Route size={13} aria-hidden="true" />
+                    {t("obstacles", { count: design.shapes.length })}
+                    <span
+                      className="project-detail-separator"
+                      aria-hidden="true"
+                    >
+                      ·
+                    </span>
+                    <span>
+                      {t("updated", {
+                        date: new Date(design.updatedAt).toLocaleDateString(
+                          locale,
+                          { month: "short", day: "numeric" }
+                        ),
+                      })}
+                    </span>
                   </span>
                 </button>
                 <button
@@ -263,7 +325,9 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   const state = useWorkspace();
   const repository = useSyncExternalStore(subscribe, getState);
   const document = getDocument(state.activeId);
+  const saveFailed = Boolean(getError());
   const [status, setStatus] = useState("");
+  const saving = state.busy || status === t("saving");
   useEffect(() => {
     if (!document) return;
     const update = () => {
@@ -349,7 +413,13 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           onKeyDown={(event) => keyDown(event, null)}
           onClick={() => change(null)}
         >
-          <Home size={16} />
+          <Image
+            src="/assets/pwa/icon-192.png"
+            alt=""
+            width={22}
+            height={22}
+            unoptimized
+          />
           {t("home")}
         </button>
         {state.openIds.map((id) => {
@@ -369,7 +439,14 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                 onKeyDown={(event) => keyDown(event, id)}
                 onClick={() => change(id)}
               >
-                {design?.title || t("untitled")}
+                <Route
+                  size={14}
+                  className="document-tab-icon"
+                  aria-hidden="true"
+                />
+                <span className="document-tab-title">
+                  {design?.title || t("untitled")}
+                </span>
                 {design &&
                   repository.designs.find((item) => item.id === id)
                     ?.updatedAt !== design.updatedAt && (
@@ -397,8 +474,30 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
         >
           <Plus size={16} />
         </button>
-        <span className="workspace-status" role="status">
-          {state.busy ? t("saving") : state.home ? t("onDevice") : status}
+        <span
+          className={`workspace-status ${saveFailed ? "save-failed" : ""}`}
+          role="status"
+        >
+          {saveFailed ? (
+            <TriangleAlert size={13} aria-hidden="true" />
+          ) : saving && !state.home ? (
+            <LoaderCircle
+              size={13}
+              className="saving-indicator"
+              aria-hidden="true"
+            />
+          ) : state.home ? (
+            <HardDrive size={13} aria-hidden="true" />
+          ) : (
+            <Check size={13} aria-hidden="true" />
+          )}
+          {saveFailed
+            ? t("saveFailed")
+            : state.busy
+              ? t("saving")
+              : state.home
+                ? t("onDevice")
+                : status}
         </span>
       </div>
       {state.home || !document ? (

@@ -2,17 +2,17 @@
 
 Date: October 24, 2026
 
-Status: an isolated Electron POC exists in `experiments/electron-desktop/` and received positive hands-on feedback. Desktop is the requested primary workspace direction. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the proposed next delivery phases; production release and broader platform acceptance remain open.
+Status: an isolated Electron POC exists in `experiments/electron-desktop/` and received positive hands-on feedback. Community feedback refines the direction: retain the browser as a full workspace and focus desktop on reliable offline creation and venue-side changes. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the next delivery phases; production release and broader platform acceptance remain open.
 
 ## Desktop and web product direction
 
-Use Figma as the reference for project organization and continuity: a desktop project library, recent documents, document tabs, automatic saving, and the same account projects available through the browser. Desktop becomes the preferred environment for regular design, while Web Studio remains a supported editor and the entry point for immediate use without installation. Public shares, gallery, embeds, and mobile access retain their web role.
+Use Figma as the reference for project organization and continuity: a desktop project library, recent documents, document tabs, automatic saving, and the same account projects available through the browser. Retain TrackDraw's own visual identity. Web Studio remains a full editor for complete design sessions without installation. Desktop primarily adds dependable offline creation, changes to downloaded tracks, and local file handling at the field. Users may choose either host for regular design. Public shares, gallery, embeds, and mobile access retain their web role.
 
 Figma documents equivalent core functionality between desktop and browser, with a desktop file browser and document tabs. Its product remains cloud-based and has limited offline availability. TrackDraw adopts that workspace and account model while retaining anonymous editing and strengthening offline reopening for projects already stored on the device. Linux is also a TrackDraw delivery goal rather than an assumption about Figma's supported desktop platforms. See [Figma's desktop guide](https://help.figma.com/hc/en-us/articles/5601429983767-Guide-to-the-Figma-desktop-app) and [offline behavior](https://help.figma.com/hc/en-us/articles/360040328553-What-can-I-do-offline-in-Figma).
 
 Keep the existing account direction: new projects created while signed in synchronize automatically, and pre-existing device projects require deliberate attachment. The desktop plan does not introduce a per-project cloud opt-in for every new signed-in project. Saving locally remains the durability layer; the account revision remains the shared baseline across devices. Importing a portable project copy must not silently replace an account revision.
 
-The target is one editor with two supported hosts. Desktop priority concerns the workspace, local integration, and delivery sequence; it does not imply removing browser editing. Heavy editing already runs locally in the web version, so any reduction in cloud load must come from measured changes in sync, reads, or asset traffic. Default account sync remains part of the intended Figma-like experience.
+The target is one editor with two full workspaces. Shared editing features belong to both; desktop-specific priority concerns offline reliability, preparation, recovery and native file integration. Do not reduce browser functionality or require installation to encourage desktop adoption. Heavy editing already runs locally in the web version, so any reduction in cloud load must come from measured changes in sync, reads, or asset traffic. Default account sync remains part of the intended continuity experience when the user is signed in.
 
 Account-centered authoring is a gradual product direction. The homepage's existing guest/account split is the starting contract, and the reported anonymous audience needs a no-loss path into account projects. The PVA separates desktop delivery from a later account-only authoring gate, preserving existing local work and public review access. Initial anonymous editing remains supported during this transition; the plan does not promise a permanently identical guest feature set.
 
@@ -33,6 +33,10 @@ The value to evaluate is convenient access, reliable local continuity, and deskt
 ### Feedback from event venues
 
 Community feedback identifies venue website blockers as a practical barrier to using TrackDraw during events. Venue Wi-Fi may otherwise work while TrackDraw or its sign-in flow is blocked. Offline desktop operation must cover this situation as well as a complete loss of internet.
+
+Further feedback explicitly favors keeping the browser for general use and values an app for creating tracks offline or altering downloaded tracks at the field. It also supports the journey of preparing a track at home and adjusting it at the event. This refines the earlier desktop-primary direction; it is qualitative feedback, not evidence that all users want desktop or mandatory accounts.
+
+The reference journey is **prepare at home in the browser, adjust offline in desktop at the field, continue in the browser at home**. Validate it first through explicit JSON copies, retaining the originals and comparing track content rather than expecting imported copies to share an identity. Later validate the same journey through account synchronization, preserving project identity and reviewing concurrent revisions. Keep the portable-copy fallback and the ability to create a new local track at the venue. A browser-only user must still be able to complete a full design session without installing desktop.
 
 Prepare a device and its projects beforehand, then allow cold startup, local design/import, 2D/3D editing, saving, reopening, and supported exports without contacting TrackDraw or completing sign-in at the venue. A previously configured account becoming expired must pause cloud operations rather than block local work. This venue requirement remains part of any future account-only authoring model.
 
@@ -125,7 +129,7 @@ Native file chooser interaction, Windows/Linux behavior, full catalog visual acc
 
 ## Desktop branch implementation
 
-Development continues on `codex/desktop-app` in a separate managed worktree. The first increment adds SQLite-backed projects, working drafts and restore points, an awaited desktop persistence adapter, single-instance protection, and a close/save handshake. The original POC profile and unrelated web changes are not migrated automatically.
+Development began on `codex/desktop-app` in a separate managed worktree and now continues through the PR stack into `codex/desktop-integration`. Until that stack lands, `codex/desktop-identity` holds the complete preview and supersedes the original branch. The first increment adds SQLite-backed projects, working drafts and restore points, an awaited desktop persistence adapter, single-instance protection, and a close/save handshake. The original POC profile and unrelated web changes are not migrated automatically.
 
 The browser persistence implementation remains in place. A few shared callbacks now await preservation before replacing a design or advancing a save. The desktop still imports the existing editor, geometry, and renderers; the repository has not been converted into a monorepo. Cloud transport and account login remain disabled in this development build.
 
@@ -140,3 +144,5 @@ The desktop branch now opens a Home library with recent/all-project lists, share
 Tab switching acknowledges the current save before activating the next document. Selection, 2D pan/zoom, 3D camera/target and view mode are kept per document. Workspace metadata restores tabs and view preferences after restart; undo/redo remains in memory while documents are open, with SQLite restore points for durable recovery. The smoke flow checks independent edits/history, 2D restoration, rendered 3D camera restoration, library operations and restart behavior. Broader venue/auth and platform release gates remain open.
 
 Validation for this increment: 243 web test files with 1,573 tests, nine native repository tests, the real Electron smoke flow, lint, TypeScript, web and desktop builds, and both translation checks pass locally. Windows/Linux execution and native file-dialog interaction still require platform acceptance.
+
+The desktop visual direction uses TrackDraw's existing color logo, blue navigation and primary actions, an orange active-document accent, system typography and shared light/dark tokens. Library previews retain the actual track layout and include field dimensions, item counts and update dates. Home, recent projects and independent document tabs are workflow references; Figma's visual assets, copy and exact screen styling are not implementation sources. Keep this identity work inside the desktop shell so the shared editor and browser UI remain stable.

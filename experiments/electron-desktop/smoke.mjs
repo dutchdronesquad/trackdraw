@@ -390,7 +390,62 @@ try {
     .waitFor({ state: "hidden" });
   await page.getByRole("dialog").waitFor({ state: "detached" });
   console.log("PASS: library rename, duplicate and confirmed deletion");
-  await page.screenshot({ path: path.join(here, "artifacts/library.png") });
+  await page
+    .getByRole("heading", { name: "Your track library", exact: true })
+    .waitFor();
+  await page.waitForFunction(() => {
+    const logo = document.querySelector(".library-brand img");
+    return logo?.complete && logo.naturalWidth > 0;
+  });
+  await page.screenshot({
+    path: path.join(here, "artifacts/library.png"),
+    animations: "disabled",
+  });
+  const wasDark = await page.evaluate(() =>
+    document.documentElement.classList.contains("dark")
+  );
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".library-brand img")
+        ?.src.endsWith("darkbg.svg") &&
+      document.querySelector(".project-preview img")?.src.includes("%230b0f18")
+  );
+  await page.screenshot({
+    path: path.join(here, "artifacts/library-dark.png"),
+    animations: "disabled",
+  });
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].setContentSize(960, 640)
+  );
+  await page.waitForFunction(() => innerWidth === 960);
+  assert.equal(
+    await page.evaluate(() => {
+      const content = document.querySelector(".library-content");
+      return (
+        content.scrollWidth <= content.clientWidth &&
+        document.documentElement.scrollWidth <= innerWidth
+      );
+    }),
+    true,
+    "Library must fit the minimum desktop window width"
+  );
+  await page.screenshot({
+    path: path.join(here, "artifacts/library-compact.png"),
+    animations: "disabled",
+  });
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].setContentSize(1440, 960)
+  );
+  await page.evaluate(
+    (dark) => document.documentElement.classList.toggle("dark", dark),
+    wasDark
+  );
+  await page.waitForFunction(() => innerWidth === 1440);
+  console.log(
+    "PASS: branded library assets, theme-aware previews and minimum desktop width"
+  );
   await page
     .getByRole("tab", { name: "Desktop native roundtrip", exact: true })
     .click();
@@ -398,6 +453,10 @@ try {
   console.log(
     "PASS: independent document histories, selection/viewport stores, close/reopen and library search"
   );
+  await page.screenshot({
+    path: path.join(here, "artifacts/document-tabs.png"),
+    animations: "disabled",
+  });
 
   assert.deepEqual(errors, []);
   await page
