@@ -119,6 +119,7 @@ try {
     { gate, ppm: edited.field.ppm }
   );
   await page.mouse.click(gatePoint.x, gatePoint.y);
+  await page.getByText("1 selected", { exact: true }).waitFor();
   await page.keyboard.press("ArrowRight");
   edited = await waitForDraft(
     page,
@@ -779,6 +780,18 @@ try {
     "PASS: failed library copies export their own retained content rather than the active document"
   );
   console.log("POC smoke checks passed");
+} catch (error) {
+  const failedPage = app?.windows()[0];
+  if (failedPage && !failedPage.isClosed()) {
+    await failedPage
+      .screenshot({ path: path.join(here, "artifacts/failure.png") })
+      .catch(() => {});
+    await writeFile(
+      path.join(here, "artifacts/failure.txt"),
+      await failedPage.locator("body").innerText()
+    ).catch(() => {});
+  }
+  throw error;
 } finally {
   const force = setTimeout(() => app?.process().kill("SIGKILL"), 5000);
   await app?.close().catch(() => {});
