@@ -15,11 +15,21 @@ const errors = [];
 async function launch() {
   app = await electron.launch({ args: [here], env });
   const page = await app.firstWindow();
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+    console.error("Renderer:", error.message);
+  });
   page.on("response", (response) => {
     if (response.status() === 404)
       console.log("Missing asset:", response.url());
   });
+  await page.waitForFunction(
+    () => document.querySelector(".poc-bar") || document.querySelector("h1")
+  );
+  if (
+    await page.getByText("Desktop POC could not start", { exact: true }).count()
+  )
+    throw new Error(await page.locator("body").innerText());
   await page
     .getByRole("button", { name: "Load sample", exact: true })
     .waitFor();
@@ -28,16 +38,21 @@ async function launch() {
   );
   return page;
 }
+async function waitForDraft(page, predicate) {
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    const draft = await page.evaluate(
+      async () => (await window.trackdrawDesktop.projects("state")).draft
+    );
+    if (predicate(draft)) return draft;
+    await page.waitForTimeout(100);
+  }
+  throw new Error(
+    "Timed out waiting for the desktop database to confirm the expected design."
+  );
+}
 async function saved(page, count) {
-  await page.waitForFunction(
-    (count) =>
-      JSON.parse(localStorage.getItem("trackdraw-design") || "null")?.shapes
-        .length === count,
-    count
-  );
-  return page.evaluate(() =>
-    JSON.parse(localStorage.getItem("trackdraw-design"))
-  );
+  return waitForDraft(page, (draft) => draft?.shapes.length === count);
 }
 async function readDownload(filename) {
   const deadline = Date.now() + 15000;
@@ -93,15 +108,11 @@ try {
   await page.mouse.up();
   const gate = edited.shapes.at(-1);
   await page.keyboard.press("ArrowRight");
-  await page.waitForFunction(
-    ({ id, x }) =>
-      JSON.parse(localStorage.getItem("trackdraw-design")).shapes.find(
-        (shape) => shape.id === id
-      )?.x !== x,
-    { id: gate.id, x: gate.x }
+  edited = await waitForDraft(
+    page,
+    (draft) => draft?.shapes.find((shape) => shape.id === gate.id)?.x > gate.x
   );
-  edited = await saved(page, 7);
-  assert.ok(edited.shapes.at(-1).x > gate.x);
+  assert.ok(edited.shapes.find((shape) => shape.id === gate.id).x > gate.x);
   console.log("PASS: selection and nudge transform");
   await page.screenshot({ path: path.join(here, "artifacts/2d.png") });
 
@@ -145,10 +156,9 @@ try {
     .getByRole("button", { name: "Open project copy…", exact: true })
     .click();
   await page.getByText("Opened roundtrip.json", { exact: true }).waitFor();
-  await page.waitForFunction(
-    () =>
-      JSON.parse(localStorage.getItem("trackdraw-design")).title ===
-      "Desktop native roundtrip"
+  await waitForDraft(
+    page,
+    (draft) => draft?.title === "Desktop native roundtrip"
   );
   console.log(
     "PASS: native IPC save and open roundtrip (dialog selection simulated)"
@@ -201,7 +211,14 @@ try {
     {
       require: "undefined",
       process: "undefined",
-      bridge: ["onMenuAction", "openProject", "saveProject"],
+      bridge: [
+        "finishClose",
+        "onCloseRequested",
+        "onMenuAction",
+        "openProject",
+        "projects",
+        "saveProject",
+      ],
     }
   );
   console.log(
@@ -209,22 +226,27 @@ try {
   );
 
   assert.deepEqual(errors, []);
+  await page
+    .locator('input[value="Desktop native roundtrip"]')
+    .first()
+    .fill("Desktop close flush");
+  // Close immediately, before the 350 ms autosave debounce can complete.
   await app.close();
   page = await launch();
-  await page.waitForFunction(
-    () =>
-      JSON.parse(localStorage.getItem("trackdraw-design") || "null")?.title ===
-      "Desktop native roundtrip"
+  await waitForDraft(page, (draft) => draft?.title === "Desktop close flush");
+  assert.equal((await saved(page, 7)).title, "Desktop close flush");
+  console.log(
+    "PASS: close flushes pending edits before a full desktop restart"
   );
-  assert.equal((await saved(page, 7)).title, "Desktop native roundtrip");
-  console.log("PASS: project survives a full desktop restart");
   // app.exit bypasses renderer beforeunload, modelling loss of the process after confirmed autosave.
   await app.evaluate(({ app }) => app.exit(0)).catch(() => {});
   page = await launch();
-  assert.equal((await saved(page, 7)).title, "Desktop native roundtrip");
+  assert.equal((await saved(page, 7)).title, "Desktop close flush");
   assert.deepEqual(errors, []);
   console.log("PASS: project survives abrupt exit after confirmed autosave");
   console.log("POC smoke checks passed");
 } finally {
+  const force = setTimeout(() => app?.process().kill("SIGKILL"), 5000);
   await app?.close().catch(() => {});
+  clearTimeout(force);
 }

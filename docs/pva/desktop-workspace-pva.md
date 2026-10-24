@@ -2,7 +2,7 @@
 
 Date: October 24, 2026
 
-Status: proposed delivery plan following the working Electron POC and the user's positive hands-on evaluation. Desktop is the requested primary workspace; production implementation beyond the POC has not started.
+Status: proposed delivery plan following the working Electron POC and the user's positive hands-on evaluation. Desktop is the requested primary workspace; implementation has started on `codex/desktop-app` in an isolated worktree. The first increment adds native SQLite persistence and asynchronous save preservation; later phase gates remain open.
 
 ## Direction
 
@@ -112,14 +112,14 @@ The production desktop profile lives in the operating system's application-data 
 - [x] Demonstrate local continuity, 2D/3D rendering, and representative exports on macOS arm64.
 - [x] Obtain initial hands-on feedback from the user.
 
-The POC's existing test results establish this baseline. They do not establish cross-platform support, complete export acceptance, or cloud integration.
+The POC's existing test results establish this baseline. The first native-storage increment also has repository tests for write rollback, interrupted transactions, future-schema rejection, and restoration, plus desktop smoke acceptance against SQLite. They do not establish cross-platform support, complete export acceptance, or cloud integration.
 
 ### Phase 1 Make local work durable
 
-- [ ] Inventory POC aliases and synchronous persistence callers; record the small production seams before editing them.
-- [ ] Add the desktop project repository and versioned SQLite migrations. Keep the existing browser repository behavior.
+- [x] Inventory POC aliases and synchronous persistence callers; record the small production seams before editing them.
+- [x] Add the desktop project repository and versioned SQLite migrations. Keep the existing browser repository behavior.
 - [ ] Support project create/open/rename/duplicate/archive, autosave, restore points, and recovery after interruption.
-- [ ] Flush or report pending saves on close; serialize concurrent writes and prevent independent application instances from racing the same project store.
+- [x] Flush or report pending saves on close; serialize concurrent writes and prevent independent application instances from racing the same project store.
 - [ ] Preserve native open/save cancellation and invalid-file recovery. Save a disk backup even when local autosave fails.
 - [ ] Bundle catalog assets reproducibly and identify network-dependent features. Persist downloaded assets needed by the accepted offline workflow.
 - [ ] Add explicit offline preparation with verified project/assets, a prepared revision indicator, and retention of pinned data. Verify cold startup with all TrackDraw network access blocked while the operating system still reports online.
@@ -191,7 +191,9 @@ Deliver small changes in this order: persistence seam, durable desktop repositor
 
 Phase 1 is the next build scope. Do not bundle tabs, cloud sign-in, installers, and a repository restructure into that change. Phase exit gates determine whether to continue, rescope, or park the direction. Production persistence migrations require an export/backup path; later abandonment must not depend on retaining Electron to recover users' tracks.
 
-The first three implementation changes should be independently reviewable:
+The first native-storage increment uses a desktop persistence adapter behind the existing build aliases, avoiding a wholesale async rewrite of the browser repository. Shared changes are limited to awaiting preservation during import, new-project creation, manual snapshot save, and account project opening. The adapter hydrates an in-memory read cache from SQLite; writes await native acknowledgement. Its initial state response loads the project library in full, so paged/lazy loading remains a later scaling task. Cloud persistence is deliberately unavailable in this increment.
+
+The implementation sequence remains:
 
 1. Inventory persistence callers and introduce the smallest repository seam, with the current browser implementation as the default. Validate browser load, autosave, snapshots, and recovery without changing their storage format.
 2. Implement the desktop SQLite repository and migrations behind the native bridge. Validate atomic design/metadata writes, interrupted transactions, reopen, migration failure recovery, and binary asset references using disposable data.

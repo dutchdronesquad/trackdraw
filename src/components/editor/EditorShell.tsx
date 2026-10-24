@@ -1094,8 +1094,13 @@ export default function EditorShell({
           newProjectHasContent={Boolean(
             design.title.trim() || designShapes.length
           )}
-          onNewProject={() => {
-            snapshotCurrentDesign();
+          onNewProject={async () => {
+            try {
+              await snapshotCurrentDesign();
+            } catch {
+              toast.error(t("shell.localAutosaveFailed"));
+              return;
+            }
             applyStarterDesign("blank");
             setNewProjectOpen(false);
             setMobileToolsOpen(false);
@@ -1104,7 +1109,13 @@ export default function EditorShell({
             setNewProjectOpen(false);
             setExportOpen(true);
           }}
-          onNewProjectStarterLayout={(layoutId) => {
+          onNewProjectStarterLayout={async (layoutId) => {
+            try {
+              await snapshotCurrentDesign();
+            } catch {
+              toast.error(t("shell.localAutosaveFailed"));
+              return;
+            }
             applyStarterLayout(layoutId);
             setNewProjectOpen(false);
           }}

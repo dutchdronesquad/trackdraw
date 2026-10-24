@@ -42,6 +42,14 @@ export default defineConfig({
   resolve: {
     dedupe: ["react", "react-dom", "three", "zustand"],
     alias: [
+      {
+        find: "@/lib/projects",
+        replacement: path.join(here, "renderer/storage/projects.mjs"),
+      },
+      {
+        find: "@/hooks/editor/useEditorProjects",
+        replacement: path.join(here, "renderer/storage/useDesktopProjects.jsx"),
+      },
       { find: "@/lib/auth-client", replacement: shim("auth.mjs") },
       {
         find: "@/components/map-reference/MapReferenceDialog",
@@ -56,7 +64,7 @@ export default defineConfig({
     ],
   },
   define: {
-    "process.env.NEXT_PUBLIC_APP_VERSION": JSON.stringify("desktop-poc"),
+    "process.env.NEXT_PUBLIC_APP_VERSION": JSON.stringify("desktop-alpha"),
     "process.env.NEXT_PUBLIC_COMMIT_SHA": JSON.stringify(""),
     "process.env.NEXT_PUBLIC_SITE_URL": JSON.stringify("https://trackdraw.app"),
   },

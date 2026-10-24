@@ -13,7 +13,7 @@ type UseManualProjectSaveOptions = {
   design: TrackDesign;
   isAccountProject: boolean;
   currentProjectSyncMeta?: ProjectSyncMeta;
-  handleSaveSnapshot: () => void;
+  handleSaveSnapshot: () => void | Promise<unknown>;
   syncDesignToAccount: (
     design: TrackDesign,
     options?: {
@@ -37,7 +37,7 @@ export function useManualProjectSave({
   setSaveStatusLabel,
 }: UseManualProjectSaveOptions) {
   const handleManualSave = useCallback(async () => {
-    handleSaveSnapshot();
+    await handleSaveSnapshot();
 
     if (
       readOnly ||

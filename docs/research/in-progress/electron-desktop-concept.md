@@ -122,3 +122,14 @@ Validated on macOS arm64 with Node.js 26.11.1 and Electron 45.0.0 on October 24,
 - The existing web checks pass: lint, TypeScript, 243 test files with 1,581 tests, production build, translation integrity, and the hardcoded copy scan.
 
 Native file chooser interaction, Windows/Linux behavior, full catalog visual acceptance, and wider export coverage remain manual or follow-up checks. These results establish technical feasibility for a local editor; they do not establish user demand or production readiness.
+
+
+## Desktop branch implementation
+
+Development continues on `codex/desktop-app` in a separate managed worktree. The first increment adds SQLite-backed projects, working drafts and restore points, an awaited desktop persistence adapter, single-instance protection, and a close/save handshake. The original POC profile and unrelated web changes are not migrated automatically.
+
+The browser persistence implementation remains in place. A few shared callbacks now await preservation before replacing a design or advancing a save. The desktop still imports the existing editor, geometry, and renderers; the repository has not been converted into a monorepo. Cloud transport and account login remain disabled in this development build.
+
+Nine native repository tests cover atomic write rollback, interrupted transactions, reopen, unknown future schema rejection, copy/rename isolation, restore pruning/recovery, deletion and invalid commands. Desktop smoke checks use SQLite and include close-before-autosave recovery. On this branch, 241 web test files with 1,569 tests, lint, TypeScript, web build and translation checks pass. These are local development checks, not a desktop release or cross-platform acceptance.
+
+The broader Phase 1 gate remains open, including per-project offline preparation, more complete storage-failure UX, library scaling, and full asset acceptance. Account-expiry venue acceptance follows when authentication is implemented. See the PVA for the remaining phases.

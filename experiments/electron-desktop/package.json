@@ -8,9 +8,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "node ../../scripts/i18n_sync_assets.mjs && vite build",
     "start": "npm run build && electron .",
-    "smoke": "npm run build && node smoke.mjs"
+    "smoke": "npm run build && node smoke.mjs",
+    "test": "node --test repository.test.cjs"
   },
   "devDependencies": {
     "electron": "45.0.0",

@@ -9,7 +9,14 @@ import { MotionProvider } from "@/components/motion/MotionProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEditor } from "@/store/editor";
 import { parseDesign, serializeDesign } from "@/lib/track/design";
-import { saveLocalDraft, saveProjectWithResult } from "@/lib/projects";
+import {
+  ready,
+  saveDesign,
+  getState,
+  getError,
+  subscribe,
+} from "./storage/projects.mjs";
+import { nanoid } from "nanoid";
 import {
   createStarterLayoutDesign,
   starterLayouts,
@@ -30,13 +37,6 @@ const messages = Object.fromEntries(
 const namespaces = Object.keys(messages);
 setProductAnalyticsDisabled(true);
 
-function persist(design) {
-  const draft = saveLocalDraft(design);
-  const project = saveProjectWithResult(design);
-  if (!draft.ok || !project.ok)
-    throw new Error("Local save failed. Export a project copy before closing.");
-}
-
 async function openProject() {
   const result = await window.trackdrawDesktop.openProject();
   if (!result) return;
@@ -44,9 +44,12 @@ async function openProject() {
   if (!design)
     throw new Error("This file does not contain a valid TrackDraw project.");
   // Retain the current project before replacing it with the imported copy.
-  persist(useEditor.getState().track.design);
-  persist(design);
+  await saveDesign(useEditor.getState().track.design, true);
+  design.id = nanoid();
+  design.createdAt = design.updatedAt = new Date().toISOString();
+  await saveDesign(design);
   useEditor.getState().replaceDesign(design);
+  useEditor.getState().clearHistory();
   toast.success(`Opened ${result.name}`);
 }
 
@@ -60,7 +63,7 @@ async function saveProject() {
     toast.success(`Saved ${name}`);
     // An explicit disk backup must remain possible when browser storage is full.
     try {
-      persist(design);
+      await saveDesign(design);
     } catch {
       toast.warning("Project copy saved; local autosave is unavailable.");
     }
@@ -74,7 +77,7 @@ function run(action) {
 }
 
 function DesktopBar() {
-  const [status, setStatus] = useState("Local autosave · separate POC profile");
+  const [status, setStatus] = useState("Opening desktop database…");
   useEffect(() => {
     const stopMenu = window.trackdrawDesktop.onMenuAction((action) =>
       run(action === "open" ? openProject : saveProject)
@@ -83,47 +86,47 @@ function DesktopBar() {
       if (state.track.design !== previous.track.design)
         setStatus("Saving locally…");
     });
-    const timer = window.setInterval(() => {
-      const design = useEditor.getState().track.design;
-      try {
-        const saved = JSON.parse(
-          localStorage.getItem("trackdraw-design") || "null"
-        );
-        if (saved?.id === design.id && saved.updatedAt === design.updatedAt)
-          setStatus("Saved locally · separate POC profile");
-      } catch {
-        setStatus("Check local storage");
+    const updateStatus = () => {
+      const current = useEditor.getState().track.design;
+      const draft = getState().draft;
+      if (getError()) {
+        setStatus("Local save failed · export a project copy");
+        return;
       }
-    }, 700);
-    const flush = (event) => {
-      try {
-        persist(useEditor.getState().track.design);
-      } catch {
-        event.preventDefault();
-        event.returnValue = "";
-      }
+      setStatus(
+        draft?.id === current.id && draft.updatedAt === current.updatedAt
+          ? "Saved locally · SQLite"
+          : "Saving locally…"
+      );
     };
-    window.addEventListener("beforeunload", flush);
+    const stopRepository = subscribe(updateStatus);
+    updateStatus();
+    const stopClose = window.trackdrawDesktop.onCloseRequested(() =>
+      run(async () => {
+        await saveDesign(useEditor.getState().track.design);
+        await window.trackdrawDesktop.finishClose();
+      })
+    );
     return () => {
       stopMenu();
       stopStore();
-      clearInterval(timer);
-      window.removeEventListener("beforeunload", flush);
+      stopRepository();
+      stopClose();
     };
   }, []);
 
   return (
     <header className="poc-bar">
-      <strong>Desktop POC</strong>
+      <strong>Desktop Alpha</strong>
       <span>Offline only · cloud and online maps unavailable</span>
       <button onClick={() => run(openProject)}>Open project copy…</button>
       <button onClick={() => run(saveProject)}>Save project copy as…</button>
       <button
         onClick={() =>
-          run(() => {
-            persist(useEditor.getState().track.design);
+          run(async () => {
+            await saveDesign(useEditor.getState().track.design, true);
             const sample = createStarterLayoutDesign(starterLayouts[0].id);
-            persist(sample);
+            await saveDesign(sample);
             useEditor.getState().replaceDesign(sample);
           })
         }
@@ -153,6 +156,8 @@ class StartupBoundary extends Component {
     return this.props.children;
   }
 }
+
+await ready;
 
 createRoot(document.getElementById("root")).render(
   <StartupBoundary>

@@ -17,16 +17,29 @@ const origin = `${scheme}://desktop`;
 const dist = path.join(__dirname, "dist");
 const maxBytes = 16 * 1024 * 1024;
 let window;
+let repository;
+let approvedClose = false;
+let wantsQuit = false;
+const { openRepository } = require("./repository.cjs");
 
 // The removable POC never shares storage with the browser or another Electron app.
-app.setName("TrackDraw Desktop POC");
+app.setName("TrackDraw Desktop Alpha");
 app.setPath(
   "userData",
-  path.join(
-    __dirname,
-    process.env.TRACKDRAW_POC_SMOKE ? ".smoke-profile" : ".profile"
-  )
+  process.env.TRACKDRAW_POC_SMOKE
+    ? path.join(__dirname, ".smoke-profile")
+    : path.join(app.getPath("appData"), "TrackDraw Desktop Alpha")
 );
+const singleInstance = app.requestSingleInstanceLock();
+if (!singleInstance) app.quit();
+app.on("second-instance", () => {
+  window?.show();
+  window?.focus();
+});
+app.on("before-quit", () => {
+  wantsQuit = true;
+});
+app.on("will-quit", () => repository?.close());
 protocol.registerSchemesAsPrivileged([
   {
     scheme,
@@ -71,6 +84,30 @@ function action(name) {
 }
 
 app.whenReady().then(async () => {
+  if (!singleInstance) return;
+  try {
+    await fs.mkdir(app.getPath("userData"), { recursive: true });
+    repository = openRepository(
+      path.join(app.getPath("userData"), "projects.sqlite")
+    );
+  } catch (error) {
+    dialog.showErrorBox(
+      "Desktop project storage could not open",
+      error.message
+    );
+    app.quit();
+    return;
+  }
+  ipcMain.handle("desktop:projects", (event, name, payload) => {
+    trustedFrame(event);
+    return repository.command(name, payload);
+  });
+  ipcMain.handle("desktop:close-ready", (event) => {
+    trustedFrame(event);
+    approvedClose = true;
+    window.close();
+    if (wantsQuit) app.quit();
+  });
   protocol.handle(scheme, async (request) => {
     const url = new URL(request.url);
     if (url.hostname !== "desktop")
@@ -111,7 +148,7 @@ app.whenReady().then(async () => {
   );
   session.defaultSession.setPermissionCheckHandler(() => false);
   session.defaultSession.on("will-download", (_event, item) => {
-    item.setSaveDialogOptions({ title: "Export from TrackDraw Desktop POC" });
+    item.setSaveDialogOptions({ title: "Export from TrackDraw Desktop Alpha" });
   });
 
   ipcMain.handle("poc:open", async (event) => {
@@ -171,11 +208,7 @@ app.whenReady().then(async () => {
       { role: "editMenu" },
       {
         label: "View",
-        submenu: [
-          { role: "reload" },
-          { role: "toggleDevTools" },
-          { role: "togglefullscreen" },
-        ],
+        submenu: [{ role: "toggleDevTools" }, { role: "togglefullscreen" }],
       },
     ])
   );
@@ -186,13 +219,19 @@ app.whenReady().then(async () => {
       height: 960,
       minWidth: 960,
       minHeight: 640,
-      title: "TrackDraw Desktop POC",
+      title: "TrackDraw Desktop Alpha",
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,
         sandbox: true,
         nodeIntegration: false,
       },
+    });
+    approvedClose = false;
+    window.on("close", (event) => {
+      if (approvedClose) return;
+      event.preventDefault();
+      window.webContents.send("desktop:flush-before-close");
     });
     window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
     window.webContents.on("will-navigate", (event, target) => {
