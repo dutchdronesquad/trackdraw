@@ -17,7 +17,13 @@ export function apiSuccess<T>(data: T, init?: ResponseInit) {
         api_version: API_VERSION,
       },
     },
-    init
+    {
+      ...init,
+      headers: {
+        "Cache-Control": "no-store",
+        ...Object.fromEntries(new Headers(init?.headers)),
+      },
+    }
   );
 }
 
@@ -38,7 +44,13 @@ export function apiListSuccess<T>(
         api_version: API_VERSION,
       },
     },
-    init
+    {
+      ...init,
+      headers: {
+        "Cache-Control": "no-store",
+        ...Object.fromEntries(new Headers(init?.headers)),
+      },
+    }
   );
 }
 
@@ -50,6 +62,7 @@ export function apiProblem(options: {
   headers?: HeadersInit;
 }) {
   const headers = new Headers(options.headers);
+  headers.set("Cache-Control", "no-store");
   headers.set("content-type", "application/problem+json");
 
   return NextResponse.json(

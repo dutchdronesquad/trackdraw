@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Cloud, CloudUpload, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Cloud, CloudUpload, Copy, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
@@ -31,6 +32,8 @@ interface ProjectManagerAccountTabProps {
   activeDesignId?: string;
   syncingProjectId?: string | null;
   projectSyncMetaById: Record<string, ProjectSyncMeta>;
+  moveBlockedProjectId?: string;
+  onMoveProject?: (id: string) => void;
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
   onDuplicateAccountProject?: (id: string) => void;
@@ -45,6 +48,8 @@ export function ProjectManagerAccountTab({
   activeDesignId,
   syncingProjectId,
   projectSyncMetaById,
+  moveBlockedProjectId,
+  onMoveProject,
   onOpenAccountProject,
   onSyncProject,
   onDuplicateAccountProject,
@@ -103,7 +108,7 @@ export function ProjectManagerAccountTab({
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="divide-border/40 border-border/40 divide-y border-t">
       {sorted.map((proj) => {
         const isCurrent = proj.id === activeDesignId;
         const syncMeta = projectSyncMetaById[proj.id];
@@ -154,10 +159,8 @@ export function ProjectManagerAccountTab({
                 : undefined
             }
             className={cn(
-              "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
-              isCurrent
-                ? "border-border/70 bg-muted/45"
-                : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+              "flex min-h-16 items-start gap-3 px-1 py-3 transition-colors",
+              isCurrent ? "bg-muted/30" : "hover:bg-muted/30 cursor-pointer"
             )}
           >
             <ProjectAvatar id={proj.id} title={projectTitle} />
@@ -208,6 +211,25 @@ export function ProjectManagerAccountTab({
               className="flex shrink-0 items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
+              {onMoveProject ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={
+                    isSyncing ||
+                    hasConflict ||
+                    hasSyncFailure ||
+                    hasPendingChanges ||
+                    moveBlockedProjectId === proj.id
+                  }
+                  aria-label={t("teamLibrary.moveProject", {
+                    title: projectTitle,
+                  })}
+                  onClick={() => onMoveProject(proj.id)}
+                >
+                  <Users className="size-3.5" />
+                </Button>
+              ) : null}
               {showSyncButton ? (
                 <button
                   type="button"

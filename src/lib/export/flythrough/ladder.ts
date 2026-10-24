@@ -200,7 +200,7 @@ export async function addLadderSceneShapes(
   const totalH = shape.height ?? 6;
   const rungs = Math.max(1, shape.rungs ?? 3);
   const baseY = Math.max(shape.elevation ?? 0, 0);
-  const thick = 0.2;
+  const thick = shape.thick ?? 0.2;
   const gateH = totalH / rungs;
   const yaw = getGateLadderYawRadians(shape.rotation);
   const mat = makeMat(color);

@@ -3,6 +3,7 @@ export {
   hasMeaningfulProjectContent,
   createProjectDuplicate,
   ensureUniqueProjectTitle,
+  isMovedTeamProject,
 } from "../../../../src/lib/projects";
 
 let state = { designs: [], draft: null, restorePoints: [] };
@@ -74,6 +75,11 @@ export function saveLocalDraft() {
 export const saveProject = saveLocalDraft;
 
 export const deleteProject = saveLocalDraft;
+// Team moves require account transport, which this offline host does not expose.
+// Never remove native project data through the browser persistence implementation.
+export function forgetMovedProject(_id) {
+  return saveLocalDraft();
+}
 
 export function saveCopy(design) {
   return command("save-copy", { design: serializeDesign(design) });

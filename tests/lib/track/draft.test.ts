@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateTrackDraft } from "@/lib/track/draft";
+import { draftShapeSchema, validateTrackDraft } from "@/lib/track/draft";
 import { parseDesign, serializeDesign } from "@/lib/track/design";
 import { designToSvg } from "@/lib/export/exportSvg";
 const inventory = {
@@ -190,4 +190,20 @@ describe("bounded track draft validation", () => {
       }).ok
     ).toBe(false);
   });
+});
+
+it("accepts a custom suspended two-gate ladder draft with frame thickness", () => {
+  const shape = {
+    id: "suspended",
+    kind: "ladder",
+    x: 10,
+    y: 10,
+    rotation: 0,
+    width: 2,
+    height: 10,
+    rungs: 2,
+    elevation: 4,
+    thick: 0.4,
+  };
+  expect(draftShapeSchema.parse(shape)).toEqual(shape);
 });

@@ -14,7 +14,8 @@
       "plansAndLimits": "Plans & limits",
       "emailPreview": "Email Preview",
       "openStudio": "Open Studio",
-      "publicSite": "Public Site"
+      "publicSite": "Public Site",
+      "teams": "Teams"
     }
   },
   "navUser": {
@@ -209,7 +210,10 @@
       "galleryEntryRestored": "Entry restored",
       "galleryEntryDeleted": "Entry deleted",
       "signedUp": "Signed up",
-      "system": "System"
+      "system": "System",
+      "apiKeyAccessUpdated": "API key project access updated",
+      "teamOwnershipTransferred": "Team ownership transferred",
+      "teamDeleted": "Team deleted"
     },
     "relativeTime": {
       "minutes": "{count}m ago",
@@ -1433,7 +1437,10 @@
       "sharePublished": "Share published",
       "shareRevoked": "Share revoked",
       "sharePurged": "Share permanently deleted",
-      "metricsMaintenanceCompleted": "Metrics maintenance completed"
+      "metricsMaintenanceCompleted": "Metrics maintenance completed",
+      "apiKeyAccessUpdated": "API key project access updated",
+      "teamOwnershipTransferred": "Team ownership transferred",
+      "teamDeleted": "Team deleted"
     },
     "entityLabels": {
       "accountRole": "Account role",
@@ -1757,5 +1764,50 @@
     "from": "From",
     "to": "To",
     "viewport": "Preview width"
+  },
+  "teams": {
+    "title": "Teams",
+    "intro": "Manage teams, members and ownership.",
+    "search": "Search teams…",
+    "all": "All teams",
+    "attention": "Needs attention",
+    "team": "Team",
+    "owner": "Owner",
+    "members": "Members",
+    "projects": "Projects",
+    "statusLabel": "Status",
+    "status": {
+      "active": "Active",
+      "open": "Owner inactive",
+      "recovery": "Recovery"
+    },
+    "noOwner": "No owner",
+    "details": "Team details",
+    "name": "Name",
+    "role": "Role",
+    "roles": {
+      "owner": "Owner",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "projectCount": "{count, plural, one {# project} other {# projects}}",
+    "ownerRemoval": "Owner removal {date}",
+    "recoveryEnds": "Recovery ends {date}",
+    "changeOwner": "Change owner",
+    "auditHint": "Changes are recorded in the audit log.",
+    "loading": "Loading teams…",
+    "empty": "No teams found.",
+    "failed": "Teams could not be loaded.",
+    "retry": "Try again",
+    "firstPage": "First page",
+    "nextPage": "Next page",
+    "newOwner": "New owner",
+    "chooseEditor": "Choose an existing editor",
+    "reason": "Reason (required)",
+    "changeDescription": "Assign a new owner to {team}. This takes effect immediately.",
+    "changeConsequence": "The previous owner becomes an editor. Any pending recovery ends. The reason and ownership change are recorded in the audit log.",
+    "ownerChanged": "Team owner updated",
+    "changeFailed": "The owner could not be changed. Refresh the team and check its current owner and eligible editors."
   }
 }

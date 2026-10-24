@@ -177,7 +177,7 @@ describe("scheduled cleanup", () => {
         /"crons"\s*:\s*(\[[^\]]*\])/
       )![1]
     );
-    expect(schedules).toEqual(["0 0 * * *", "15,30 * * * *"]);
+    expect(schedules).toEqual(["0 0 * * *", "15,30,45 * * * *"]);
     const controllers = [
       { cron: schedules[0], scheduledTime: Date.UTC(2026, 9, 20, 0, 0) },
       { cron: schedules[1], scheduledTime: Date.UTC(2026, 9, 20, 12, 15) },

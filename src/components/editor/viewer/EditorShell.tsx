@@ -74,12 +74,14 @@ const MobilePanels = dynamic(() => import("./MobilePanels"), { ssr: false });
 export default function EditorShell({
   initialTab = "2d",
   embedMode = false,
+  privateProject = false,
   title,
   studioHref,
   existingShareMode = false,
 }: {
   initialTab?: EditorView;
   embedMode?: boolean;
+  privateProject?: boolean;
   title?: string;
   studioHref?: string;
   existingShareMode?: boolean;
@@ -152,19 +154,20 @@ export default function EditorShell({
 
   return (
     <>
-      <div className="bg-background text-foreground relative flex h-dvh overflow-hidden">
+      <div className="bg-background text-foreground relative flex h-full min-h-0 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Header
             tab={tab}
             onTabChange={handleTabChange}
-            embedMode={embedMode}
+            embedMode={embedMode || privateProject}
+            contextLabel={privateProject ? t("privateTeamPreview") : undefined}
             title={effectiveTitle}
             studioHref={studioHref}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
               setShowObstacleNumbers((current) => !current)
             }
-            onShare={() => setShareOpen(true)}
+            onShare={privateProject ? undefined : () => setShareOpen(true)}
             onFeedback={() => setFeedbackOpen(true)}
           />
 
@@ -209,7 +212,7 @@ export default function EditorShell({
             mobileGizmoEnabled={mobileGizmoEnabled}
             mobileObstacleNumbersEnabled={showObstacleNumbers}
             mobileRulersEnabled={mobileRulersEnabled}
-            embedMode={embedMode}
+            embedMode={embedMode || privateProject}
             onFitView={() => canvasRef.current?.fitToWindow()}
             onSetMobileGizmoEnabled={setMobileGizmoEnabled}
             onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
@@ -227,7 +230,11 @@ export default function EditorShell({
             onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
             readOnlyMenuOpen={readOnlyMenuOpen}
             saveStatusLabel={
-              embedMode ? t("embeddedTrack") : t("sharedPreview")
+              privateProject
+                ? t("privateTeamPreview")
+                : embedMode
+                  ? t("embeddedTrack")
+                  : t("sharedPreview")
             }
             studioHref={studioHref}
             tab={tab}
@@ -235,7 +242,7 @@ export default function EditorShell({
         ) : null}
       </div>
 
-      {shareOpen && !embedMode ? (
+      {shareOpen && !embedMode && !privateProject ? (
         <ShareDialog
           open={shareOpen}
           onOpenChange={setShareOpen}

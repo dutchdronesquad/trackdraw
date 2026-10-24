@@ -106,6 +106,7 @@ export default function EditorShell({
   studioHref,
   existingShareMode = false,
   showStarterExperience = true,
+  managedProject,
 }: {
   readOnly?: boolean;
   seedToken?: string;
@@ -113,6 +114,11 @@ export default function EditorShell({
   studioHref?: string;
   existingShareMode?: boolean;
   showStarterExperience?: boolean;
+  managedProject?: {
+    onSave: () => void;
+    statusLabel: string;
+    saveLabel: string;
+  };
 }) {
   usePerfMetric("render:EditorShell");
   useDeveloperModeShortcut();
@@ -304,7 +310,7 @@ export default function EditorShell({
     handleDeleteRestorePoint,
     snapshotCurrentDesign,
   } = useEditorProjects({
-    readOnly,
+    readOnly: readOnly || Boolean(managedProject),
     seedToken,
     design,
     historyPaused,
@@ -336,7 +342,7 @@ export default function EditorShell({
     refreshAccountShares,
   } = useAccountProjectSync({
     authUserId: authUser?.id ?? null,
-    readOnly,
+    readOnly: readOnly || Boolean(managedProject),
     design,
     projectManagerOpen,
     historyPaused,
@@ -359,7 +365,10 @@ export default function EditorShell({
     });
   }, [pathname, router, searchParams]);
   useOpenCloudProjectLink({
-    projectId: readOnly || seedToken ? null : searchParams.get("project"),
+    projectId:
+      readOnly || managedProject || seedToken
+        ? null
+        : searchParams.get("project"),
     userId: authUser?.id ?? null,
     ready: initialized && cloudProjectsAvailable && !accountProjectsLoading,
     open: handleOpenAccountProject,
@@ -368,7 +377,7 @@ export default function EditorShell({
 
   const currentProjectSyncMeta = projectSyncMetaById[design.id];
   const { handleManualSave } = useManualProjectSave({
-    readOnly,
+    readOnly: readOnly || Boolean(managedProject),
     design,
     isAccountProject,
     currentProjectSyncMeta,
@@ -382,7 +391,10 @@ export default function EditorShell({
     completeProfileOpen,
     handleCompleteProfileOpenChange,
     handleCompleteProfileSave,
-  } = useCompleteProfile({ readOnly, authUser });
+  } = useCompleteProfile({
+    readOnly: readOnly || Boolean(managedProject),
+    authUser,
+  });
 
   const handleOpenAccountProjectFromDialog = useCallback(
     async (projectId: string) => {
@@ -443,7 +455,7 @@ export default function EditorShell({
     applyStarterDesign,
     applyStarterLayout,
   } = useStarterExperience({
-    readOnly,
+    readOnly: readOnly || Boolean(managedProject),
     authUserId: authUser?.id ?? null,
     cloudProjectsAvailable,
     design,
@@ -469,7 +481,10 @@ export default function EditorShell({
   });
 
   const shouldShowStarter =
-    showStarterExperience && initialized && starterShouldShow;
+    showStarterExperience &&
+    !managedProject &&
+    initialized &&
+    starterShouldShow;
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
@@ -611,12 +626,16 @@ export default function EditorShell({
 
   return (
     <>
-      <div className="bg-background text-foreground relative flex h-dvh overflow-hidden">
+      <div
+        className={`bg-background text-foreground relative flex overflow-hidden ${managedProject ? "h-full min-h-0" : "h-dvh"}`}
+      >
         {!readOnly && (
           <Toolbar
-            onImport={() => setImportOpen(true)}
+            onImport={managedProject ? undefined : () => setImportOpen(true)}
             onExport={() => setExportOpen(true)}
-            onOpenProjectManager={() => setProjectManagerOpen(true)}
+            onOpenProjectManager={
+              managedProject ? undefined : () => setProjectManagerOpen(true)
+            }
             onOpenPresets={openPresetPicker}
             onFeedback={() => setFeedbackOpen(true)}
             collapsed={sidebarCollapsed}
@@ -643,11 +662,16 @@ export default function EditorShell({
             <Header
               tab={tab}
               onTabChange={handleTabChange}
-              onShare={() => setShareOpen(true)}
+              onShare={managedProject ? undefined : () => setShareOpen(true)}
               onExport={() => setExportOpen(true)}
-              onImport={() => setImportOpen(true)}
-              onOpenProjectManager={() => setProjectManagerOpen(true)}
-              onSaveSnapshot={() => void handleManualSave()}
+              onImport={managedProject ? undefined : () => setImportOpen(true)}
+              onOpenProjectManager={
+                managedProject ? undefined : () => setProjectManagerOpen(true)
+              }
+              onSaveSnapshot={
+                managedProject?.onSave ?? (() => void handleManualSave())
+              }
+              saveLabel={managedProject?.saveLabel}
               onOpenShortcuts={
                 isMobile ? undefined : () => setShortcutsOpen(true)
               }
@@ -659,7 +683,7 @@ export default function EditorShell({
               title={design.title || t("shell.untitledTrack")}
               studioHref={studioHref}
               lastSnapshotLabel={lastSnapshotLabel}
-              statusLabel={headerStatus?.label}
+              statusLabel={managedProject ? undefined : headerStatus?.label}
               statusTone={headerStatus?.tone}
               onRetrySync={
                 isAccountProject && currentProjectSyncMeta?.status === "failed"
@@ -789,7 +813,7 @@ export default function EditorShell({
             )}
             selectedCount={selection.length}
             selectedGroupName={selectedGroupName}
-            saveStatusLabel={saveStatusLabel}
+            saveStatusLabel={managedProject?.statusLabel ?? saveStatusLabel}
             tab={tab}
             onCloseInspector={closeMobileInspector}
             onFitView={() => canvasRef.current?.fitToWindow()}
@@ -973,7 +997,7 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
             readOnlyMenuOpen={readOnlyMenuOpen}
-            saveStatusLabel={saveStatusLabel}
+            saveStatusLabel={managedProject?.statusLabel ?? saveStatusLabel}
             studioHref={studioHref}
             tab={tab}
           />
@@ -1066,7 +1090,7 @@ export default function EditorShell({
         <EditorDialogsHost
           isMobile={isMobile}
           activeDesignId={design.id}
-          shareOpen={shareOpen}
+          shareOpen={!managedProject && shareOpen}
           onShareOpenChange={setShareOpen}
           hasPath={hasPath}
           shareProjectId={isAccountProject ? design.id : null}
@@ -1076,7 +1100,7 @@ export default function EditorShell({
             setShareOpen(false);
             setExportOpen(true);
           }}
-          importOpen={importOpen}
+          importOpen={!managedProject && importOpen}
           onImportOpenChange={setImportOpen}
           onImportBeforeConfirm={snapshotCurrentDesign}
           onImportBackupCurrent={() => {
@@ -1092,7 +1116,7 @@ export default function EditorShell({
           onExportRequest3DView={(options) => handleTabChange("3d", options)}
           shortcutsOpen={shortcutsOpen}
           onShortcutsOpenChange={setShortcutsOpen}
-          newProjectOpen={newProjectOpen}
+          newProjectOpen={!managedProject && newProjectOpen}
           onNewProjectOpenChange={setNewProjectOpen}
           newProjectHasContent={Boolean(
             design.title.trim() || designShapes.length
@@ -1122,7 +1146,7 @@ export default function EditorShell({
             applyStarterLayout(layoutId);
             setNewProjectOpen(false);
           }}
-          projectManagerOpen={projectManagerOpen}
+          projectManagerOpen={!managedProject && projectManagerOpen}
           onProjectManagerOpenChange={setProjectManagerOpen}
           onProjectManagerOpenNewProject={openNewProjectDialog}
           onOpenProject={handleOpenProject}
@@ -1153,6 +1177,11 @@ export default function EditorShell({
           accountShares={accountShares}
           accountSharesLoading={accountSharesLoading}
           onRevokeShare={handleRevokeShare}
+          moveBlockedProjectId={
+            isAccountProject && headerStatus?.tone !== "success"
+              ? design.id
+              : undefined
+          }
           projectSyncMetaById={projectSyncMetaById}
           syncingProjectId={syncingProjectId}
           restorePoints={restorePoints}
@@ -1170,7 +1199,7 @@ export default function EditorShell({
           onKeepLocalConflictCopy={handleKeepLocalConflictCopy}
         />
 
-        {!readOnly ? (
+        {!readOnly && !managedProject ? (
           <CommandPalette
             open={commandPaletteOpen}
             onOpenChange={setCommandPaletteOpen}

@@ -41,6 +41,7 @@ export const draftShapeSchema = z.union([
     ...dimensions,
     ...elevated,
     rungs: z.number().int().min(1).max(20),
+    thick: length.optional(),
   }),
   z.strictObject({
     ...position,

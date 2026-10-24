@@ -466,6 +466,22 @@ describe("dashboard users API routes", () => {
       expect(createAuditEvent).not.toHaveBeenCalled();
     });
 
+    it("returns a conflict when the account still owns a team", async () => {
+      vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
+      vi.mocked(hasCapability).mockReturnValue(true);
+      vi.mocked(getAdminUserById).mockResolvedValue(targetUser);
+      vi.mocked(deleteUserAccount).mockRejectedValue(
+        new Error("D1_ERROR: team_owner_required")
+      );
+      const response = await DELETE(deleteUserRequest(), userContext());
+      expect(response.status).toBe(409);
+      await expect(response.json()).resolves.toEqual({
+        ok: false,
+        error:
+          "Transfer team ownership or delete the team before deleting this account.",
+      });
+    });
+
     it("deletes the account with transactional audit context and pre-deletion stats", async () => {
       const stats = {
         projectCount: 2,

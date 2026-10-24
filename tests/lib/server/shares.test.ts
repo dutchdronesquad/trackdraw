@@ -201,7 +201,10 @@ describe("revokeShare", () => {
       expect.any(String),
       "tok-revoke"
     );
-    expect(mocks.deleteGalleryEntry).toHaveBeenCalledWith("tok-revoke");
+    expect(mocks.deleteGalleryEntry).toHaveBeenCalledWith(
+      "tok-revoke",
+      undefined
+    );
   });
 });
 
@@ -276,13 +279,21 @@ describe("revokeSharesForProject", () => {
       expect.any(String),
       "tok-a"
     );
-    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(1, "tok-a");
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(
+      1,
+      "tok-a",
+      undefined
+    );
     expect(revokeB.bind).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
       "tok-b"
     );
-    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(2, "tok-b");
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(
+      2,
+      "tok-b",
+      undefined
+    );
   });
 });
 
@@ -392,7 +403,7 @@ describe("share server helpers", () => {
   });
 
   it("creates anonymous shares as temporary links with an expiry", async () => {
-    const insertStatement = createStatement();
+    const insertStatement = createStatement({ first: { id: "new-share" } });
     installStatements([insertStatement]);
 
     const share = await createShare(createDefaultDesign(), {
@@ -413,7 +424,7 @@ describe("share server helpers", () => {
   });
 
   it("creates account shares without creating gallery entries", async () => {
-    const insertStatement = createStatement();
+    const insertStatement = createStatement({ first: { id: "new-share" } });
     installStatements([insertStatement]);
 
     const share = await createShare(createDefaultDesign(), {
@@ -437,7 +448,7 @@ describe("share server helpers", () => {
     const selectStatement = createStatement({
       first: existingShareRow(serializeDesign(createDefaultDesign())),
     });
-    const updateStatement = createStatement();
+    const updateStatement = createStatement({ first: { id: "share-id-1" } });
     installStatements([selectStatement, updateStatement]);
     const share = await createShare(design, {
       ownerUserId: "user-1",
@@ -456,7 +467,9 @@ describe("share server helpers", () => {
       design.field.height,
       0,
       "2026-04-25T12:00:00.000Z",
-      "share-id-1"
+      "share-id-1",
+      "project-1",
+      "user-1"
     );
     expect(share.token).toBe("existing-token");
     expect(share.shareType).toBe("published");

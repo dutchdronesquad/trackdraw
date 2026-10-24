@@ -70,11 +70,12 @@ const INSPECTOR_WIDTH = "21.25rem";
 interface HeaderProps {
   tab: "2d" | "3d";
   onTabChange: (t: "2d" | "3d") => void;
-  onShare: () => void;
+  onShare?: () => void;
   onExport?: () => void;
   onImport?: () => void;
   onOpenProjectManager?: () => void;
   onSaveSnapshot?: () => void;
+  saveLabel?: string;
   onOpenShortcuts?: () => void;
   onFeedback?: () => void;
   readOnly?: boolean;
@@ -100,6 +101,7 @@ export default function Header({
   onImport,
   onOpenProjectManager,
   onSaveSnapshot,
+  saveLabel,
   onOpenShortcuts,
   onFeedback,
   readOnly = false,
@@ -336,13 +338,13 @@ export default function Header({
                   <TooltipTrigger
                     className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 cursor-pointer items-center justify-center rounded-md transition-colors lg:flex"
                     onClick={onSaveSnapshot}
-                    aria-label={t("saveSnapshot")}
+                    aria-label={saveLabel ?? t("saveSnapshot")}
                   >
                     <Save className="size-3.5" />
                   </TooltipTrigger>
                   <TooltipContent className="flex flex-col gap-0.5">
                     <span>
-                      {t("saveSnapshot")}{" "}
+                      {saveLabel ?? t("saveSnapshot")}{" "}
                       <span className="font-mono text-[11px] opacity-65">
                         ⌘S
                       </span>
@@ -420,18 +422,24 @@ export default function Header({
             </button>
           )}
 
-          <button
-            onClick={onShare}
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              headerActionClass
-            )}
-          >
-            <Share2 className="size-3.5" />
-            <span>{t("share")}</span>
-          </button>
+          {onShare && (
+            <button
+              onClick={onShare}
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                headerActionClass
+              )}
+            >
+              <Share2 className="size-3.5" />
+              <span>{t("share")}</span>
+            </button>
+          )}
 
-          {!readOnly && onImport && onExport && onOpenProjectManager ? (
+          {!readOnly &&
+          onImport &&
+          onExport &&
+          onOpenProjectManager &&
+          onShare ? (
             showMobileAppMenu ? (
               <MobileAppMenu
                 defaultOpen

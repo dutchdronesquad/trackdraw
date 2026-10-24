@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import {
   Bell,
   BarChart2,
+  Building2,
   Home,
   Image as ImageIcon,
   KeyRound,
@@ -38,7 +39,8 @@ import {
 import type { DashboardModule } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
-type SidebarNavKey = DashboardModule | "email-preview" | "metrics-planning";
+type SidebarNavKey =
+  DashboardModule | "email-preview" | "metrics-planning" | "teams";
 
 type DashboardAppSidebarProps = {
   currentUser: {
@@ -134,6 +136,13 @@ const insightsNavItems: NavItem[] = [
 ] as const;
 
 const adminNavItems: NavItem[] = [
+  {
+    key: "teams",
+    titleKey: "teams",
+    href: "/dashboard/teams",
+    icon: Building2,
+    activePrefix: "/dashboard/teams",
+  },
   {
     key: "users",
     titleKey: "users",
@@ -278,6 +287,7 @@ export default function DashboardAppSidebar({
     if (item.key === "users") return visibleModules.includes("users");
     if (item.key === "audit") return visibleModules.includes("audit");
     if (item.key === "api-keys") return visibleModules.includes("api-keys");
+    if (item.key === "teams") return currentUser.role === "admin";
     if (item.key === "email-preview") return currentUser.role === "admin";
     return true;
   });

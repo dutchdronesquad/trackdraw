@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { accountInteractionClassName } from "./interaction-style";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -56,15 +56,6 @@ export function AccountProfileView({
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/mcp/connections"
-        prefetch={false}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
-      >
-        {t("account.profile.connectedApps")}
-      </Link>
       <div className="flex items-center gap-4">
         <span className="bg-foreground text-background flex size-12 shrink-0 items-center justify-center rounded-full text-sm font-medium">
           {user.name?.trim()?.[0]?.toUpperCase() ??
@@ -92,7 +83,7 @@ export function AccountProfileView({
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder={t("account.profile.displayName.placeholder")}
-            className="h-8 rounded-lg px-2.5 shadow-none"
+            className="h-9 rounded-lg px-3 shadow-none"
           />
         </label>
 
@@ -140,7 +131,11 @@ export function AccountProfileView({
             {t("account.profile.language.description")}
           </p>
         </div>
-        <LanguagePicker variant="full" className="w-40" />
+        <LanguagePicker
+          variant="full"
+          className="h-9 w-40"
+          contentClassName={accountInteractionClassName}
+        />
       </div>
     </div>
   );

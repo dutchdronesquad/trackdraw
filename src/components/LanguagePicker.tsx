@@ -40,11 +40,13 @@ function LocaleBadge({ abbr }: { abbr: string }) {
 
 interface LanguagePickerProps {
   className?: string;
+  contentClassName?: string;
   variant?: "compact" | "full";
 }
 
 export function LanguagePicker({
   className,
+  contentClassName,
   variant = "compact",
 }: LanguagePickerProps) {
   // useSyncExternalStore with a server snapshot ensures SSR renders defaultLocale,
@@ -94,7 +96,7 @@ export function LanguagePicker({
           </div>
         </SelectTrigger>
       )}
-      <SelectContent>
+      <SelectContent className={contentClassName}>
         {supportedLocales.map((l) => (
           <SelectItem key={l} value={l}>
             <span className="flex items-center gap-2">

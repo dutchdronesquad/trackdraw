@@ -16,6 +16,7 @@ vi.mock("@/lib/server/account-activity", () => ({
 
 import {
   createApiKeyForSession,
+  updateApiKeyProjectAccessForSession,
   deleteApiKeyForSession,
   getApiIdentityFromBearerKey,
   getBearerApiKey,
@@ -222,5 +223,52 @@ describe("API key server helpers", () => {
       code: "rate_limited",
       retryAfterSeconds: 2,
     });
+  });
+});
+
+it("issues mutation permissions only after explicit opt-in, preserving the selected team context", async () => {
+  const createApiKey = vi.fn(async () => ({ ...apiKeyRecord, key: "td_test" }));
+  vi.mocked(getAuth).mockResolvedValue({ api: { createApiKey } } as never);
+  const headers = new Headers();
+  const projectAccess = { mode: "all" as const, teamId: "club" };
+  await createApiKeyForSession({
+    headers,
+    name: "Team",
+    expiresInDays: 90,
+    projectAccess,
+    writeAccess: true,
+  });
+  expect(createApiKey).toHaveBeenCalledWith(
+    expect.objectContaining({
+      body: expect.objectContaining({
+        metadata: { projectAccess },
+        permissions: {
+          tracks: ["read"],
+          projects: ["create", "update", "archive"],
+        },
+      }),
+    })
+  );
+});
+
+it("updates only scope metadata using the existing session-owned key", async () => {
+  const updateApiKey = vi.fn(async () => apiKeyRecord);
+  vi.mocked(getAuth).mockResolvedValue({ api: { updateApiKey } } as never);
+  const headers = new Headers({ cookie: "session" });
+  await updateApiKeyProjectAccessForSession({
+    headers,
+    keyId: "key-1",
+    projectAccess: { mode: "selected", projectIds: ["race"] },
+    metadata: { source: "existing" },
+  });
+  expect(updateApiKey).toHaveBeenCalledWith({
+    headers,
+    body: {
+      keyId: "key-1",
+      metadata: {
+        source: "existing",
+        projectAccess: { mode: "selected", projectIds: ["race"] },
+      },
+    },
   });
 });

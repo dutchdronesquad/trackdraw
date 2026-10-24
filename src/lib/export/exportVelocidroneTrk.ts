@@ -223,7 +223,7 @@ function buildLadderGatePlacements(
   config: VelocidronePocConfig,
   transform: ExportTransform
 ): VelocidroneGatePlacement[] {
-  const count = Math.max(2, shape.rungs);
+  const count = Math.max(1, shape.rungs);
   const rungHeight = Math.max(1.2, shape.height);
   const rungSpacing = Math.max(0.55, rungHeight * 0.3);
 

@@ -111,6 +111,18 @@
     "createPermissionTitle": "Create track projects",
     "createPermission": "Allow this app to create new track projects using your field dimensions and obstacle inventory.",
     "createBoundaryTitle": "Open your tracks in Studio",
-    "createBoundary": "Open each new project in Studio to view and adjust it. This permission cannot edit, delete or publish existing projects. Geometry checks do not certify flight safety."
+    "createBoundary": "Open each new project in Studio to view and adjust it. This permission cannot edit, delete or publish existing projects. Geometry checks do not certify flight safety.",
+    "loadingConnections": "Loading connected apps…",
+    "loadConnectionsFailed": "Connected apps could not be loaded.",
+    "retry": "Try again",
+    "emptyConnectionsTitle": "No connected apps yet",
+    "emptyConnectionsBody": "Apps appear here after you connect them to TrackDraw. You can disconnect them at any time.",
+    "connectedOn": "Connected {date}",
+    "disconnectConfirm": "Disconnect {app}?",
+    "disconnectWarning": "This app will lose access to TrackDraw. You can connect it again later.",
+    "cancel": "Cancel",
+    "setupGuide": "MCP docs",
+    "teamPermissionTitle": "Access explicitly selected teams",
+    "teamPermission": "Use projects from teams you explicitly choose. Your current team role limits what this app can do. Leaving a team stops its access to that team. Publishing is excluded."
   }
 }

@@ -277,3 +277,31 @@ describe("SingleInspectorView race timing controls", () => {
     expect(screen.getByText(/^Thickness/)).toBeTruthy();
   });
 });
+
+describe("custom ladder mobile inspector", () => {
+  afterEach(cleanup);
+  it("exposes thickness and lower gate counts on mobile", async () => {
+    const user = userEvent.setup();
+    const updateShape = vi.fn();
+    renderSingleInspector(
+      {
+        id: "mobile-ladder",
+        kind: "ladder",
+        x: 5,
+        y: 5,
+        rotation: 0,
+        width: 2,
+        height: 10,
+        rungs: 2,
+        elevation: 4,
+        thick: 0.4,
+      },
+      { mobileInline: true, updateShape }
+    );
+    expect(screen.getByRole("textbox", { name: /Thickness/ })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /^Ladder$/ }));
+    expect(
+      screen.getByRole("spinbutton", { name: "Gates" }).getAttribute("min")
+    ).toBe("1");
+  });
+});

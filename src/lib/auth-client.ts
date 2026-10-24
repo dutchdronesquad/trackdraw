@@ -5,6 +5,7 @@ import { oauthProviderClient } from "@better-auth/oauth-provider/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
+import { useProjectLibrary } from "@/store/project-library";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 
 export type AuthUser = {
@@ -548,6 +549,7 @@ export const authClient = {
     });
   },
   async signOut(options?: SignOutOptions) {
+    useProjectLibrary.getState().clear();
     if (isDevAuthShimEnabled()) {
       writeDevSession(null);
       options?.fetchOptions?.onSuccess?.();

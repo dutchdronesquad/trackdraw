@@ -76,8 +76,9 @@ export interface StartFinishShape extends BaseShape {
 export interface LadderShape extends BaseShape {
   kind: "ladder";
   width: number; // m horizontal span
-  height: number; // m gate opening height (3D) / ladder footprint depth (2D top-down)
-  rungs: number; // count of rungs
+  height: number; // m total height across all gate openings
+  thick?: number; // m frame thickness (default 0.20)
+  rungs: number; // count of gate openings
   elevation?: number; // m bottom clearance above ground (default 0)
 }
 

@@ -6,13 +6,25 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### TrackDraw links and live preview
+
+Find the editor, community gallery and companion tools at `/bio`, with an interactive example track you can explore in 2D and 3D.
+
+### Private team projects and public snapshots
+
+Team owners can deliberately share saved track snapshots, embed them or list them in the gallery. Internal changes stay private until the owner updates the link, and publication controls explain what recipients can view, copy and export. Account settings keep the same dialog size when switching sections.
+
+### Team ownership recovery
+
+An existing editor can take over a team when its owner becomes inactive, after notification and a waiting period. Ownerless teams remain available to members for viewing and export during a 90-day recovery period before permanent removal.
+
 ### MCP connection foundation
 
 Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. With project-read permission, assistants can find saved cloud projects and inspect track data, overlays and viewer snapshots. Large tracks use paged shapes and route points, with actionable errors when a complete result is too large. They can also request material quantities, route metrics and setup estimates, or compare two selected tracks. The same connection can let assistants create a new track project within your stated field and inventory limits, ready to open and adjust in Studio. With edit permission, assistants can also preview changes to an existing track and apply the reviewed proposal. Newer saved work causes a conflict, and the previous server version remains recoverable. See the [connection guide](docs/mcp.md).
 
 ### Project access for integrations
 
-Limit an API key to selected cloud projects, or allow all current and future projects you own. Search for projects when creating a key and see its access level in account settings. Existing keys keep access to all your projects.
+Limit an API key to selected cloud projects, or allow all current and future projects you own. Choose personal projects or a specific team, then search for projects when creating a key. Optional write access respects team roles and the same editing session as Studio. MCP clients can request explicit team consent and work with a team you select. Existing keys and connections remain personal.
 
 ## [1.18.0]
 

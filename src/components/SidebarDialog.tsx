@@ -20,6 +20,7 @@ export interface SidebarDialogNavItem {
 export interface SidebarDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   eyebrow?: string;
   title: string;
   subtitle?: string;
@@ -28,12 +29,17 @@ export interface SidebarDialogProps {
   activeItem: string;
   onItemChange: (id: string) => void;
   contentTitle?: string;
+  contentHeaderless?: boolean;
+  mobileContentOnly?: boolean;
+  mobileContentHeader?: boolean;
   contentDescription?: string;
   contentActions?: React.ReactNode;
+  contentBodyClassName?: string;
   children: React.ReactNode;
   sidebarFooter?: React.ReactNode;
   maxWidth?: string;
   height?: string;
+  mobileHeight?: string;
 }
 
 function DesktopNavList({
@@ -195,6 +201,7 @@ function NavButton({
 export function SidebarDialog({
   open,
   onOpenChange,
+  onEscapeKeyDown,
   eyebrow,
   title,
   subtitle,
@@ -203,12 +210,17 @@ export function SidebarDialog({
   activeItem,
   onItemChange,
   contentTitle,
+  contentHeaderless = false,
+  mobileContentOnly = false,
+  mobileContentHeader = false,
   contentDescription,
   contentActions,
+  contentBodyClassName,
   children,
   sidebarFooter,
   maxWidth = "max-w-4xl",
   height = "h-[34rem]",
+  mobileHeight,
 }: SidebarDialogProps) {
   const isMobile = useIsMobile();
   const t = useTranslations("common");
@@ -236,13 +248,46 @@ export function SidebarDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
+        onEscapeKeyDown={onEscapeKeyDown}
         title={title}
+        headerless={mobileContentOnly}
         subtitle={mobileSubtitle}
-        contentClassName="max-h-[92dvh]"
+        contentClassName={cn(
+          "max-h-[92dvh]",
+          mobileContentHeader && "overflow-clip",
+          mobileHeight ?? (contentHeaderless && "h-[92dvh]")
+        )}
         pinnedContent={
-          <div className="border-border/30 shrink-0 border-b">{mobileNav}</div>
+          <div
+            className={cn(
+              "border-border/30 shrink-0",
+              !mobileContentOnly && "border-b"
+            )}
+          >
+            {(contentHeaderless || mobileContentHeader) && (
+              <div className="absolute top-6 right-3 z-10">
+                <CloseDialogButton
+                  onClick={() => onOpenChange(false)}
+                  label={t("actions.close")}
+                />
+              </div>
+            )}
+            {!mobileContentOnly && mobileNav}
+            {!mobileContentOnly && mobileContentHeader && (
+              <div className="border-border/30 flex h-[86px] shrink-0 flex-col justify-center border-t px-5 py-3">
+                <h2 className="text-foreground text-[15px] leading-5 font-semibold tracking-[-0.01em]">
+                  {resolvedContentTitle}
+                </h2>
+                {contentDescription && (
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-[13px] leading-5">
+                    {contentDescription}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         }
-        bodyClassName="pt-4 pb-4"
+        bodyClassName={cn("pt-4 pb-4", contentBodyClassName)}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -359,7 +404,15 @@ export function SidebarDialog({
           data-slot="sidebar-dialog-content"
           className="flex min-w-0 flex-1 flex-col overflow-hidden"
         >
-          {!unified && (
+          {contentHeaderless && !unified && (
+            <div className="absolute top-4 right-4 z-10">
+              <CloseDialogButton
+                onClick={() => onOpenChange(false)}
+                label={t("actions.close")}
+              />
+            </div>
+          )}
+          {!unified && !contentHeaderless && (
             <div
               className={cn(
                 "flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4",
@@ -396,7 +449,13 @@ export function SidebarDialog({
             </div>
           )}
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-7 py-6">
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto px-7 py-6",
+              contentHeaderless && "pt-14",
+              contentBodyClassName
+            )}
+          >
             <AnimatedContentPanel activeItem={activeItem}>
               {children}
             </AnimatedContentPanel>

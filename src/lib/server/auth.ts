@@ -1,7 +1,7 @@
 import "server-only";
 
 import { betterAuth } from "better-auth";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
@@ -206,6 +206,19 @@ function createAuth(
       },
       deleteUser: {
         enabled: true,
+        beforeDelete: async (user) => {
+          const ownsTeam = await database
+            .prepare(
+              "SELECT id FROM team_members WHERE userId=? AND role='owner' LIMIT 1"
+            )
+            .bind(user.id)
+            .first();
+          if (ownsTeam)
+            throw new APIError("CONFLICT", {
+              message:
+                "Transfer team ownership or delete the team before deleting this account.",
+            });
+        },
         afterDelete: async () => {
           const { flushAccountDeletionMedia } =
             await import("@/lib/server/gallery-media");

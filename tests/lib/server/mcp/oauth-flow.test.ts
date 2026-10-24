@@ -182,6 +182,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
         "projects:read",
         "projects:create",
         "projects:update",
+        "teams:access",
       ],
     });
     const issuer = await request(

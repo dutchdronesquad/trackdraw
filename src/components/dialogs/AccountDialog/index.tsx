@@ -1,27 +1,36 @@
 "use client";
 
+import { accountInteractionClassName } from "./interaction-style";
 import type { ApiKeyProjectAccess } from "@/lib/api/project-access";
 
 import { useEffect, useState } from "react";
 import {
-  Braces,
+  Plug,
+  UsersRound,
   ChartNoAxesColumn,
   ShieldCheck,
   ShieldAlert,
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
-import { SidebarDialog } from "@/components/SidebarDialog";
+import { TeamAccountDialog } from "@/components/teams/TeamAccountDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApiKeyActions } from "./ApiKeyActions";
 import { AccountApiKeysView } from "./ApiKeysView";
+import { IntegrationNavigation } from "./IntegrationNavigation";
+import { McpConnectionGuideLink } from "@/components/mcp/connection-guide-link";
+import { McpConnectionsContent } from "@/components/mcp/connections";
 import { AccountDangerView } from "./DangerView";
 import { AccountProfileView } from "./ProfileView";
 import { AccountSecurityView } from "./SecurityView";
 import { studioDialogUrl } from "@/lib/editor/dialog-links";
 import { ProductAnalyticsControl } from "@/components/ProductAnalyticsControl";
+import { TeamDialogState } from "@/components/teams/TeamDialogState";
+import { TeamsView } from "@/components/teams/TeamsView";
+import { AccountDialogNotSignedIn } from "./shared";
 import type {
   AccountApiKey,
   AccountDialogProps,
@@ -38,6 +47,7 @@ export default function AccountDialog({
 }: AccountDialogProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
+  const tTeams = useTranslations("dialogs.teams");
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
@@ -71,11 +81,16 @@ export default function AccountDialog({
   const [apiKeyExpiryDays, setApiKeyExpiryDays] = useState("90");
   const [apiKeyProjectAccess, setApiKeyProjectAccess] =
     useState<ApiKeyProjectAccess>({ mode: "all" });
-  const [apiKeyDraftOpen, setApiKeyDraftOpen] = useState(true);
+  const [apiKeyDraftOpen, setApiKeyDraftOpen] = useState(false);
   const [creatingApiKey, setCreatingApiKey] = useState(false);
   const [createdApiKey, setCreatedApiKey] =
     useState<CreatedAccountApiKey | null>(null);
   const [deletingApiKeyId, setDeletingApiKeyId] = useState<string | null>(null);
+  const [apiKeyEditDraft, setApiKeyEditDraft] = useState<{
+    keyId: string;
+    projectAccess: ApiKeyProjectAccess;
+  } | null>(null);
+  const [updatingApiKey, setUpdatingApiKey] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -102,10 +117,11 @@ export default function AccountDialog({
     setApiKeyName("");
     setApiKeyExpiryDays("90");
     setApiKeyProjectAccess({ mode: "all" });
-    setApiKeyDraftOpen(true);
+    setApiKeyDraftOpen(false);
     setCreatingApiKey(false);
     setCreatedApiKey(null);
     setDeletingApiKeyId(null);
+    setApiKeyEditDraft(null);
     setView(initialView);
   }, [initialView, open, user?.email, user?.name]);
 
@@ -400,7 +416,10 @@ export default function AccountDialog({
     setError(null);
   };
 
-  const handleCreateApiKey = async (projectAccess: ApiKeyProjectAccess) => {
+  const handleCreateApiKey = async (
+    projectAccess: ApiKeyProjectAccess,
+    writeAccess = false
+  ) => {
     const name = apiKeyName.trim();
     if (!name) {
       setError(t("account.errors.apiKeyNameRequired"));
@@ -421,6 +440,7 @@ export default function AccountDialog({
           name,
           expiresInDays: Number.parseInt(apiKeyExpiryDays, 10),
           projectAccess,
+          ...(writeAccess ? { writeAccess: true } : {}),
         }),
       });
       const payload = (await response.json()) as {
@@ -450,6 +470,44 @@ export default function AccountDialog({
       return false;
     } finally {
       setCreatingApiKey(false);
+    }
+  };
+
+  const handleUpdateApiKeyAccess = async (
+    keyId: string,
+    projectAccess: ApiKeyProjectAccess
+  ) => {
+    setUpdatingApiKey(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/account/api-keys/${encodeURIComponent(keyId)}`,
+        {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ projectAccess }),
+        }
+      );
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        apiKey?: AccountApiKey;
+      };
+      if (!response.ok || !payload.ok || !payload.apiKey) throw new Error();
+      const updated = payload.apiKey;
+      setApiKeys((current) =>
+        current.map((item) => (item.id === keyId ? updated : item))
+      );
+      setCreatedApiKey((current) =>
+        current?.id === keyId ? { ...current, ...updated } : current
+      );
+      toast.success(t("account.success.apiKeyAccessUpdated"));
+      return true;
+    } catch {
+      setError(t("account.errors.apiKeyUpdateFailed"));
+      return false;
+    } finally {
+      setUpdatingApiKey(false);
     }
   };
 
@@ -583,6 +641,13 @@ export default function AccountDialog({
       onApiKeyNameChange={setApiKeyName}
       onApiKeyExpiryDaysChange={setApiKeyExpiryDays}
       onCreateApiKey={handleCreateApiKey}
+      onUpdateApiKeyAccess={handleUpdateApiKeyAccess}
+      editDraft={apiKeyEditDraft}
+      onEditDraftChange={(draft) => {
+        setApiKeyEditDraft(draft);
+        setError(null);
+      }}
+      updatingApiKey={updatingApiKey}
       onCopyApiKey={(key) => void handleCopyApiKey(key)}
       onDeleteApiKey={(keyId) => void handleDeleteApiKey(keyId)}
       onRefreshApiKeys={refreshApiKeys}
@@ -606,16 +671,29 @@ export default function AccountDialog({
       icon: <ChartNoAxesColumn className="size-4" />,
     },
     {
-      id: "apiKeys" as AccountDialogView,
-      label: t("account.nav.apiKeys"),
-      icon: <Braces className="size-4" />,
+      id: "connectedApps" as AccountDialogView,
+      label: t("account.nav.integrations"),
+      icon: <Plug className="size-4" />,
     },
-    {
-      id: "danger" as AccountDialogView,
-      label: t("account.nav.danger"),
-      icon: <ShieldAlert className="size-4" />,
-      tone: "danger" as const,
-    },
+    ...(user
+      ? [
+          {
+            id: "teams" as AccountDialogView,
+            label: tTeams("title"),
+            icon: <UsersRound className="size-4" />,
+          },
+        ]
+      : []),
+    ...(isMobile
+      ? [
+          {
+            id: "danger" as AccountDialogView,
+            label: t("account.nav.danger"),
+            icon: <ShieldAlert className="size-4" />,
+            tone: "danger" as const,
+          },
+        ]
+      : []),
   ];
 
   const contentMap: Record<
@@ -638,9 +716,27 @@ export default function AccountDialog({
       content: privacyContent,
     },
     apiKeys: {
-      title: t("account.panels.apiKeys.title"),
-      description: t("account.panels.apiKeys.description"),
+      title: t("account.panels.integrations.title"),
+      description: t("account.panels.integrations.description"),
       content: apiKeysContent,
+    },
+    connectedApps: {
+      title: t("account.panels.integrations.title"),
+      description: t("account.panels.integrations.description"),
+      content: user ? (
+        <McpConnectionsContent key={user.id} />
+      ) : (
+        <AccountDialogNotSignedIn />
+      ),
+    },
+    teams: {
+      title: tTeams("title"),
+      description: tTeams("description"),
+      content: user ? (
+        <TeamsView key={user.id} />
+      ) : (
+        <AccountDialogNotSignedIn />
+      ),
     },
     danger: {
       title: t("account.panels.danger.title"),
@@ -652,29 +748,78 @@ export default function AccountDialog({
   const current = contentMap[view];
 
   return (
-    <SidebarDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      eyebrow={t("account.dialog.eyebrow")}
-      title={tCommon("labels.account")}
-      mobileSubtitle={t("account.dialog.mobileSubtitle")}
-      navItems={navItems}
-      activeItem={view}
-      onItemChange={(id) => {
-        if (onViewChange) onViewChange(id as AccountDialogView);
-        else setView(id as AccountDialogView);
-        setError(null);
-      }}
-      contentTitle={current.title}
-      contentDescription={current.description}
-      contentActions={
-        view === "apiKeys" && user && !isMobile ? (
-          <ApiKeyActions loading={apiKeysLoading} onRefresh={refreshApiKeys} />
-        ) : undefined
-      }
-      maxWidth="max-w-4xl"
-    >
-      {current.content}
-    </SidebarDialog>
+    <TeamDialogState key={userId ?? "signed-out"}>
+      <TeamAccountDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        eyebrow={t("account.dialog.eyebrow")}
+        title={tCommon("labels.account")}
+        mobileSubtitle={
+          view === "teams" ? undefined : t("account.dialog.mobileSubtitle")
+        }
+        navItems={navItems}
+        activeItem={view === "apiKeys" ? "connectedApps" : view}
+        onItemChange={(id) => {
+          if (onViewChange) onViewChange(id as AccountDialogView);
+          else setView(id as AccountDialogView);
+          setError(null);
+        }}
+        sidebarFooter={
+          !isMobile ? (
+            <button
+              type="button"
+              aria-current={view === "danger" ? "page" : undefined}
+              onClick={() => {
+                if (onViewChange) onViewChange("danger");
+                else setView("danger");
+                setError(null);
+              }}
+              className={cn(
+                "focus-visible:ring-ring flex h-9 w-full items-center gap-2.5 rounded-xl border border-transparent px-2 text-left text-[13px] text-rose-700 transition-colors outline-none hover:border-rose-500/20 hover:bg-rose-500/8 focus-visible:ring-2 dark:text-rose-300",
+                view === "danger" && "border-rose-500/20 bg-rose-500/8"
+              )}
+            >
+              <ShieldAlert className="size-4" aria-hidden="true" />
+              {t("account.nav.danger")}
+            </button>
+          ) : undefined
+        }
+        contentTitle={current.title}
+        contentDescription={current.description}
+        contentActions={
+          user && !isMobile ? (
+            view === "apiKeys" ? (
+              <ApiKeyActions
+                loading={apiKeysLoading}
+                onRefresh={refreshApiKeys}
+              />
+            ) : view === "connectedApps" ? (
+              <McpConnectionGuideLink />
+            ) : undefined
+          ) : undefined
+        }
+        contentBodyClassName={accountInteractionClassName}
+        maxWidth="max-w-6xl"
+        height="h-[43rem] max-h-[calc(100dvh-2.5rem)]"
+        mobileHeight="h-[92dvh]"
+      >
+        {(view === "apiKeys" || view === "connectedApps") && (
+          <IntegrationNavigation
+            view={view}
+            onViewChange={(next) => {
+              if (onViewChange) onViewChange(next);
+              else setView(next);
+              setError(null);
+            }}
+          />
+        )}
+        {view === "connectedApps" && user && isMobile && (
+          <div className="mb-6 flex justify-end">
+            <McpConnectionGuideLink />
+          </div>
+        )}
+        {current.content}
+      </TeamAccountDialog>
+    </TeamDialogState>
   );
 }

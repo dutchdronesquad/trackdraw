@@ -1,4 +1,8 @@
 import {
+  deliverSuccessionNotices,
+  advanceTeamSuccession,
+} from "./team-succession-jobs";
+import {
   cleanupInactiveAccounts,
   type AccountDeletionMediaBucket,
 } from "@/lib/server/account-deletion";
@@ -36,7 +40,8 @@ export type ScheduledCleanupTaskName =
   | "embed_referrers"
   | "localization_demand"
   | "account_retention_notices"
-  | "accounts";
+  | "accounts"
+  | "team_succession";
 
 export type ScheduledCleanupTask = {
   name: ScheduledCleanupTaskName;
@@ -119,9 +124,29 @@ export function createScheduledCleanupTasks(
   mailer: TransactionalMailer,
   mediaBucket?: AccountDeletionMediaBucket
 ): ScheduledCleanupTask[] {
+  if (
+    cron === "15,30,45 * * * *" &&
+    new Date(scheduledTime).getUTCMinutes() === 45
+  )
+    return [
+      {
+        name: "team_succession",
+        run: async () => {
+          let deliveryFailure: unknown;
+          try {
+            await deliverSuccessionNotices(db, mailer);
+          } catch (error) {
+            deliveryFailure = error;
+          }
+          const result = await advanceTeamSuccession(db);
+          if (deliveryFailure) throw deliveryFailure;
+          return result;
+        },
+      },
+    ];
   // Each schedule owns its invocation budget; never fall back to running everything.
   if (
-    cron === "15,30 * * * *" &&
+    cron === "15,30,45 * * * *" &&
     new Date(scheduledTime).getUTCMinutes() === 15
   ) {
     return [
@@ -129,7 +154,7 @@ export function createScheduledCleanupTasks(
     ];
   }
   if (
-    cron === "15,30 * * * *" &&
+    cron === "15,30,45 * * * *" &&
     new Date(scheduledTime).getUTCMinutes() === 30
   ) {
     return [

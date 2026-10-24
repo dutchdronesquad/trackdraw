@@ -53,7 +53,9 @@
       "security": "Security",
       "privacy": "Privacy",
       "apiKeys": "API keys",
-      "danger": "Danger zone"
+      "danger": "Danger zone",
+      "integrations": "Integrations",
+      "connectedApps": "Connected apps"
     },
     "panels": {
       "profile": {
@@ -75,6 +77,10 @@
       "danger": {
         "title": "Danger zone",
         "description": "Destructive and irreversible account actions."
+      },
+      "integrations": {
+        "title": "Integrations",
+        "description": "Manage connected apps and API access."
       }
     },
     "profile": {
@@ -147,10 +153,13 @@
     "apiKeys": {
       "form": {
         "keyNameLabel": "Key name",
+        "nameHint": "Use a name you can recognize later.",
+        "expiryHint": "Choose when this key stops working.",
         "expiryDays": "{days} days",
         "expiryYear": "1 year",
         "namePlaceholder": "Integration name",
-        "create": "Create key"
+        "create": "Create key",
+        "description": "Give your key a name, choose its project access, and set an expiry."
       },
       "created": {
         "title": "API key created",
@@ -165,7 +174,7 @@
       },
       "empty": {
         "title": "No API keys yet",
-        "description": "Create one when a trusted integration needs read-only access to your account projects."
+        "description": "Choose which projects a trusted integration can access."
       },
       "fallback": {
         "unnamed": "Unnamed API key"
@@ -179,7 +188,7 @@
         "tooltip": "Revoke",
         "ariaLabel": "Revoke {name}",
         "warningExpiring": "This key stops working.",
-        "warningNonExpiring": "Integrations using this key lose read-only access.",
+        "warningNonExpiring": "Integrations using this key lose access.",
         "revoking": "Revoking...",
         "action": "Revoke"
       },
@@ -200,10 +209,33 @@
         "trigger": "{count, plural, one {# project} other {# projects}}",
         "selectedCompactHint": "New projects are excluded.",
         "noMatches": "No matching projects.",
-        "limit": "100 projects selected. New projects are excluded."
+        "limit": "100 projects selected. New projects are excluded.",
+        "context": "Project owner",
+        "allOwnerHint": "Includes all current and future projects for this owner.",
+        "done": "Done",
+        "personal": "Personal projects",
+        "teamSelection": "Team projects",
+        "teamHint": "Access follows your current team role. Leaving the team stops this key’s access.",
+        "more": "Load more projects",
+        "allowWrites": "Allow project changes",
+        "writeHint": "Let this integration create, edit and archive projects within your access.",
+        "selectedWriteHint": "Let this integration edit and archive the selected projects.",
+        "writable": "Can edit",
+        "ownerHint": "Choose personal or team projects."
       },
       "newKey": "New API key",
-      "actionsFor": "Actions for {name}"
+      "actionsFor": "Actions for {name}",
+      "edit": {
+        "action": "Edit project access",
+        "actions": "Actions for {name}",
+        "title": "Project access for {name}",
+        "description": "Changes apply after saving.",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "heading": "Edit project access",
+        "back": "API keys",
+        "keyName": "{name} · API key"
+      }
     },
     "danger": {
       "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",
@@ -237,7 +269,8 @@
       "passkeyRemoveFailed": "Failed to remove passkey.",
       "apiKeyNameRequired": "Enter a name for this API key.",
       "apiKeyCreateFailed": "Failed to create API key.",
-      "apiKeyRevokeFailed": "Failed to revoke API key."
+      "apiKeyRevokeFailed": "Failed to revoke API key.",
+      "apiKeyUpdateFailed": "Could not update project access. Try again."
     },
     "success": {
       "profileUpdated": "Profile updated",
@@ -245,7 +278,8 @@
       "passkeyRenamed": "Passkey renamed",
       "apiKeyCreated": "API key created",
       "apiKeyCopied": "API key copied",
-      "apiKeyRevoked": "API key revoked"
+      "apiKeyRevoked": "API key revoked",
+      "apiKeyAccessUpdated": "Project access updated"
     }
   },
   "export": {
@@ -1008,5 +1042,243 @@
     "lastChanged": "Last changed {date}",
     "keepLocal": "Keep this device version",
     "useCloud": "Use account version"
+  },
+  "teams": {
+    "title": "Teams",
+    "description": "Collaborate using your own accounts.",
+    "yourTeams": "Your teams",
+    "selectTeam": "Choose a team",
+    "empty": "You have not joined a team yet.",
+    "teamName": "Team name",
+    "createTitle": "Create a team",
+    "create": "Create team",
+    "rename": "Save name",
+    "refresh": "Refresh",
+    "members": "Members",
+    "yourRole": "Your role: {role}",
+    "memberRole": "Role for {email}",
+    "role": "Role",
+    "email": "Email address",
+    "inviteTitle": "Invite a member",
+    "invite": "Send invitation",
+    "invitations": "Your invitations",
+    "accept": "Accept invitation",
+    "resend": "Send new invitation",
+    "revoke": "Revoke",
+    "remove": "Remove",
+    "confirmRemove": "Confirm removal",
+    "cancel": "Cancel",
+    "leave": "Leave team",
+    "leaveConfirm": "Leave this team? Your team access and editing session will stop. Team projects stay with the team. Previously downloaded or exported files cannot be recalled.",
+    "saved": "Changes saved.",
+    "roleUpdated": "Role updated",
+    "projects": "Projects",
+    "projectCount": "{count, plural, one {# project} other {# projects}}",
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "loading": "Loading teams…",
+    "invitationTitle": "Team invitation",
+    "invitationHelp": "Sign in with the email address that received this invitation, then choose whether to join.",
+    "invitationEnded": "This invitation can no longer be accepted.",
+    "invitationUnavailable": "No available invitation was found for this verified account. Sign in with the invited email address, or ask the team owner for a new invitation.",
+    "joined": "You have joined this team. Open your account’s Teams section to continue.",
+    "back": "Open Teams in Studio",
+    "signIn": "Sign in or create an account",
+    "roles": {
+      "owner": "Owner",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "expired": "Expired",
+      "accepted": "Accepted",
+      "rejected": "Declined",
+      "canceled": "Revoked",
+      "sending": "Sending"
+    },
+    "errors": {
+      "unauthorized": "Sign in again to continue.",
+      "verification": "Verify your account email before creating a team or accepting invitations.",
+      "not_found": "This team or invitation is no longer available to your account. Refresh and try again.",
+      "invalid": "Check the name, email address and role, then try again.",
+      "limit": "A team or invitation limit was reached, or this email is already a member or invited. Try again later or send a new invitation from the existing entry.",
+      "owner_required": "Transfer ownership to a member or delete the team before leaving or deleting your account.",
+      "delivery": "The invitation could not be delivered and was revoked. Try sending a new invitation.",
+      "failed": "Something went wrong. Refresh and try again.",
+      "impact_changed": "The team changed since this review. Refresh and review its current impact before deleting.",
+      "transfer_invalid": "Choose an accepted, verified team member who can own another team."
+    },
+    "switchAccount": "Use another account",
+    "invitationSending": "This invitation is still being sent. Reload this page shortly.",
+    "inviteMember": "Invite member",
+    "inviteDescription": "Invite someone to {team}.",
+    "editorHelp": "Can create and edit team tracks.",
+    "viewerHelp": "Can view team tracks.",
+    "renameTitle": "Rename team",
+    "pendingInvitations": "Pending invitations",
+    "memberActions": "Actions for {email}",
+    "invitationActions": "Invitation actions for {email}",
+    "teamActions": "Team actions",
+    "makeEditor": "Change to Editor",
+    "makeViewer": "Change to Viewer",
+    "removeConfirm": "Remove {name} from this team? They will lose access to team tracks.",
+    "inviteDelivery": "We’ll email an invitation valid for 7 days.",
+    "inviteSignIn": "They’ll need to sign in with this email address.",
+    "emptyTitle": "Design tracks together",
+    "emptyDescription": "Create a team to share projects and collaborate using your own accounts. To join an existing team, ask its owner for an invitation.",
+    "emptyInvitationDescription": "Accept an invitation above to join a team, or create your own team to start sharing projects.",
+    "createDescription": "A shared space for your track projects and the people you design with.",
+    "createNameHelp": "Choose a name your teammates will recognize. You can invite them after creating the team.",
+    "creating": "Creating…",
+    "lifecycle": {
+      "transferAction": "Transfer ownership",
+      "transferConfirm": "Make {name} the team owner? They will control members, publishing and team deletion. You will become an editor. Existing public links stay available.",
+      "deleteTitle": "Delete this team?",
+      "deleteAction": "Delete team",
+      "deleteDescription": "This permanently deletes the team and all its projects, removes its members and invitations, stops editing sessions and takes its public shares and gallery entries offline. This cannot be undone.",
+      "downloads": "Copies that members previously downloaded or exported cannot be recalled.",
+      "confirmName": "Type “{name}” to confirm",
+      "impact": {
+        "projects": "Projects, including archived",
+        "members": "Members",
+        "invitations": "Pending invitations",
+        "shares": "Active public links",
+        "galleryEntries": "Gallery entries",
+        "editingSessions": "Active editing sessions"
+      }
+    },
+    "succession": {
+      "title": "Ownership recovery",
+      "risk": "The owner’s account may be removed on or after {date}. An existing editor can request ownership.",
+      "recovery": "This team has no owner. Recovery and export are available until {date}.",
+      "readOnly": "Projects are read-only. Existing published links remain accessible until final team removal. Export any projects you want to keep.",
+      "apply": "Request ownership",
+      "withdraw": "Withdraw request",
+      "response": "Ownership can transfer from {date}",
+      "sending": "Waiting for notice delivery; the 30-day waiting period has not started.",
+      "saved": "Team ownership request updated",
+      "failed": "The request could not be completed. Refresh and check the current status.",
+      "retry": "Try again",
+      "reason": "Delivery evidence (required)",
+      "confirm": {
+        "apply": "You accept responsibility for this team. The owner and all members will be notified. The first eligible editor to complete the 30-day waiting period becomes owner.",
+        "withdraw": "Withdraw your ownership request? Another eligible editor may complete their request and become owner.",
+        "confirm-notice": "First verify in the mail provider that this exact notice was delivered. Record the provider receipt or delivery evidence below. Confirming starts the full response or reminder lead time from now. Do not confirm an unverified delivery.",
+        "retry-notice": "Use this only after the mail provider confirms that the previous request was never accepted or sent. Record that evidence below. This authorizes a new delivery attempt with a new idempotency key; do not retry an ambiguous accepted request."
+      },
+      "confirm-notice": "Confirm provider delivery",
+      "queued": "{event}: awaiting delivery",
+      "uncertain": "{event}: delivery needs provider reconciliation",
+      "retry-notice": "Retry verified unsent notice",
+      "resolved": "Ownership has been transferred. Outstanding delivery needs administrator attention.",
+      "events": {
+        "risk": "Ownership warning",
+        "application": "Ownership request",
+        "ownerless": "Recovery started",
+        "reminder30": "30-day reminder",
+        "reminder7": "7-day reminder",
+        "outcome": "Transfer outcome"
+      },
+      "deadlinePassed": "The recovery deadline has passed. Removal is awaiting scheduled cleanup and any required notice periods. You can still export while access is available; new requests and ownership changes are closed.",
+      "firstCompleted": "The first eligible editor to complete the 30-day waiting period becomes owner. No member approval is required.",
+      "support": "Questions about the new owner? <link>Contact TrackDraw</link> so an administrator can review ownership.",
+      "requestedBy": "{name} requested ownership",
+      "requestReceived": "Request received",
+      "waitingPeriod": "Waiting period",
+      "transfer": "Ownership transfer",
+      "deliveryTitle": "Notice delivery",
+      "deliveryPending": "Pending",
+      "deliveryCheck": "Check delivery",
+      "deliveryReference": "Delivery reference",
+      "pendingNotices": "{count} pending",
+      "awaitingDelivery": "Waiting for notice delivery",
+      "deliveryPeriod": "The 30-day waiting period starts after notices are delivered."
+    }
+  },
+  "teamLibrary": {
+    "library": "Show projects from",
+    "personal": "Personal projects",
+    "private": "Private to team members",
+    "create": "New project",
+    "title": "Project title",
+    "cancel": "Cancel",
+    "failed": "Could not load projects. Reopen Projects to try again.",
+    "loading": "Loading projects…",
+    "empty": "No team projects yet.",
+    "projectMeta": "{count, plural, one {# item} other {# items}}",
+    "more": "Load more",
+    "move": "Move to team",
+    "moveProject": "Move {title} to a team",
+    "moveTitle": "Move “{title}” to a team",
+    "moveDescription": "The team becomes the owner. All current and future team members can view the project, and owners and editors can edit it in turns. The project keeps its ID and artwork references. Its personal device copy and snapshots are removed. Moving it back is not supported.",
+    "destination": "Destination team",
+    "chooseTeam": "Choose a team you own",
+    "noOwnedTeam": "You must own a team to move a project into it.",
+    "publicationImpact": "Existing access: {shares, plural, one {# active share link} other {# active share links}}, {gallery, plural, one {# public gallery entry} other {# public gallery entries}}.",
+    "publicationUnchanged": "The team owner manages these shares and gallery entries.",
+    "confirmMove": "Move project to team",
+    "moveFailed": "The project or its publication state changed, access was lost, or an editing session is active. Return to Projects, sync any changes, and review the move again.",
+    "back": "Back to projects",
+    "viewer": "Private team project · Read-only",
+    "export": "Export JSON",
+    "unavailable": "This project is unavailable, or your team access could not be verified.",
+    "signIn": "Sign in to access this private team project.",
+    "signInAction": "Sign in",
+    "panelTitle": "Cloud projects",
+    "panelDescription": "Your personal projects and tracks shared with your teams.",
+    "confirmCreate": "Create project",
+    "teams": "Teams",
+    "readOnly": "Read-only",
+    "panelMobileDescription": "Personal projects and team tracks.",
+    "startEditing": "Edit project",
+    "starting": "Opening editing session…",
+    "finishEditing": "Finish editing",
+    "editing": "Editing · All changes saved",
+    "saving": "Saving changes…",
+    "unsaved": "Editing · Unsaved changes",
+    "editorActive": "{name} is editing · Read-only",
+    "sessionLost": "Editing stopped because your session or connection could not be verified.",
+    "conflict": "A newer project version exists. Your changes have not overwritten it.",
+    "recovery": "Export your unsaved changes before reloading. Reloading discards this draft and fetches the latest version; it never reapplies the draft.",
+    "reloadHint": "Reload the latest version before starting a new editing session.",
+    "reloadLatest": "Discard draft and reload latest",
+    "exportRecovery": "Export unsaved changes",
+    "finishBeforeLeaving": "Finish editing before leaving",
+    "recoverBeforeLeaving": "Export or discard your unsaved changes before leaving",
+    "save": "Save changes",
+    "workspaceContext": "Team project context",
+    "projectsShort": "Projects",
+    "savedShort": "Saved",
+    "savingShort": "Saving…",
+    "unsavedShort": "Unsaved",
+    "youAreEditing": "You are editing",
+    "publish": "Share",
+    "editShort": "Edit",
+    "moveDialog": {
+      "title": "Move project to a team",
+      "personal": "Personal projects",
+      "ownership": "The team becomes the owner.",
+      "accessTitle": "All team members can access this project",
+      "accessBody": "Current and future team members can view this project. Owners and editors can edit it.",
+      "removedTitle": "Removed from your personal projects",
+      "removedBody": "The project will be transferred to the team and removed from your personal projects.",
+      "warningTitle": "You can’t move it back.",
+      "warningBody": "Your local device copy and snapshots will be removed.",
+      "publicationsTitle": "Public links and gallery entries",
+      "publicationsSummary": "Existing published content stays accessible.",
+      "confirm": "Move project"
+    }
+  },
+  "teamPublication": {
+    "audience": "Anyone with the link can view this snapshot.",
+    "consequences": "Recipients can copy, download or export the published track. Revoking a link cannot remove copies they already saved. Membership changes do not revoke public links.",
+    "snapshot": "Publish or update uses the saved team project. Internal edits stay private until you explicitly update the link. Map references, inventory and internal metadata are excluded. Private artwork is replaced with the standard appearance.",
+    "galleryAudience": "Listing makes this snapshot discoverable in the public gallery and search engines, with your display name. Removing it from the gallery leaves its link active.",
+    "selectLink": "Manage published link",
+    "title": "Team project snapshot",
+    "description": "Publish a saved version of this team project. Updating a link replaces only that link’s public snapshot.",
+    "noLink": "No published team snapshot",
+    "galleryDescription": "Add a public title and description for this saved snapshot.",
+    "galleryPreview": "Uses the standard TrackDraw image."
   }
 }

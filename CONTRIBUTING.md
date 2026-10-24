@@ -72,6 +72,12 @@ openssl rand -base64 32
 
 For email template styling in non-production environments, use `/dev/email-preview` to preview auth mail variants without sending a real message.
 
+## Team Management Preview
+
+Team management is available to signed-in users after applying migrations through `0036_team_inactivity_succession.sql`. For local validation, run `npm run preview`. Use separate verified accounts; the local non-production email fallback prints invitation URLs. Open `/studio?dialog=account&section=teams` to manage a team. Verify explicit acceptance, wrong-account rejection, resend/revoke, role changes and leaving on desktop/mobile. The Projects dialog includes a personal/team project selector and creation of blank private team projects. Personal owners can explicitly move a synced personal project into a team they own. Team projects open read-only and owners/editors explicitly acquire an exclusive editing session. Validate two tabs (including the same account), release/handoff, expiry after a crash, stale saves, role/membership loss, revision conflicts and unsaved JSON recovery against the preview runtime; verify ownership transfer to an accepted member, continued team/publication ownership after creator or former-owner account deletion, and team deletion with a fresh impact review and exact-name confirmation. Team deletion permanently purges its D1 records immediately, revokes public access and cancels sessions/invitations; preview media is queued for the existing hourly cleanup. Check explicit owner-only sharing, revision conflicts, gallery listing/unlisting, retained links after a move, and outsider/private-metadata isolation. Public snapshots must not change after internal saves. See [personal and team projects](docs/pva/personal-and-team-projects.md).
+
+For inactive-owner succession, read [team ownership recovery](docs/pva/team-ownership-recovery.md). The local preview must use migration 0036; the admin-only Teams directory and member recovery controls share the same server lifecycle.
+
 ## Roles And Dashboard Checks
 
 Use two modes:
@@ -240,7 +246,7 @@ REST API changes:
 
 MCP changes:
 
-Follow [MCP connection and validation](docs/mcp.md). Run the official SDK OAuth smoke client against local Cloudflare preview with a temporary account. Verify consent, PKCE, refresh, expiry, disconnect and request-budget failures. For project reads, cover account-only versus `projects:read` consent, ownership/archival isolation, paged shapes/points, result limits and REST serializer parity. For track analysis, cover mixed catalog variants/dimensions, shared geometry and setup parity, empty/ambiguous routes and ownership checks for both comparison projects. The SDK smoke client verifies the latest track material workflow; select an explicit second project with `TRACKDRAW_MCP_COMPARE_PROJECT_ID` to check comparison. For draft writes, explicitly opt into `TRACKDRAW_MCP_CREATE_DRAFT=1` using a disposable local account; verify read-only rejection, invalid constraints, atomic retries, Studio opening/save/reload/export and preservation of the prior local project on desktop/mobile. Apply migrations through `0028_mcp_track_drafts.sql` first and use the same canonical origin at build and runtime. Keep credentials out of logs. The implementation decisions are in the [MCP foundation PVA](docs/pva/trackdraw-mcp-pva.md).
+Follow [MCP validation and technical reference](docs/mcp-validation.md#technical-reference). Run the official SDK OAuth smoke client against local Cloudflare preview with a temporary account. Verify consent, PKCE, refresh, expiry, disconnect and request-budget failures. For project reads, cover account-only versus `projects:read` consent, ownership/archival isolation, paged shapes/points, result limits and REST serializer parity. For track analysis, cover mixed catalog variants/dimensions, shared geometry and setup parity, empty/ambiguous routes and ownership checks for both comparison projects. The SDK smoke client verifies the latest track material workflow; select an explicit second project with `TRACKDRAW_MCP_COMPARE_PROJECT_ID` to check comparison. For draft writes, explicitly opt into `TRACKDRAW_MCP_CREATE_DRAFT=1` using a disposable local account; verify read-only rejection, invalid constraints, atomic retries, Studio opening/save/reload/export and preservation of the prior local project on desktop/mobile. Apply migrations through `0028_mcp_track_drafts.sql` first and use the same canonical origin at build and runtime. Keep credentials out of logs. The implementation decisions are in the [MCP foundation PVA](docs/pva/trackdraw-mcp-pva.md).
 
 Landing page changes:
 
@@ -309,3 +315,5 @@ See [Obstacle appearances](docs/obstacle-appearances.md) for registry selection,
 See [Transparent 3D export](docs/transparent-3d-export.md) for the shared camera/floor conventions and the standalone Chromium check for PNG alpha, texture readiness, compositing and camera preservation.
 
 See [API-key project access](docs/api-key-project-access.md) for all-project and selected-project authorization, legacy compatibility and integration behavior.
+
+Team integration changes require local migrations through `0034_team_integration_context.sql`. Validate individual key selection, live membership changes, optional MCP team consent and cross-transport lease exclusion with `tests/lib/server/team-integrations.test.ts` and the real SDK route tests before exercising Cloudflare preview. Existing personal grants must remain personal.

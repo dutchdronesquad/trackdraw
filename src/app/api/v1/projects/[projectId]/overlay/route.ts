@@ -1,4 +1,7 @@
-import { apiKeyProjectAccess } from "@/lib/api/project-access";
+import {
+  externalProject,
+  withExternalErrors,
+} from "@/lib/server/external-projects";
 import {
   apiProblem,
   apiSuccess,
@@ -6,7 +9,6 @@ import {
 } from "@/lib/server/api-v1";
 import { trackReadPermission } from "@/lib/server/api-keys";
 import { toApiOverlayPackage } from "@/lib/server/api-projects";
-import { getProjectForUser } from "@/lib/server/projects";
 
 type ProjectOverlayRouteContext = {
   params: Promise<{
@@ -14,10 +16,7 @@ type ProjectOverlayRouteContext = {
   }>;
 };
 
-export async function GET(
-  request: Request,
-  context: ProjectOverlayRouteContext
-) {
+async function read(request: Request, context: ProjectOverlayRouteContext) {
   const auth = await authenticateApiRequest(request, trackReadPermission);
   if (!auth.ok) {
     return auth.response;
@@ -33,11 +32,7 @@ export async function GET(
     });
   }
 
-  const project = await getProjectForUser(
-    projectId,
-    auth.identity.user.id,
-    apiKeyProjectAccess(auth.identity.key.metadata)
-  );
+  const project = await externalProject(request, auth.identity, projectId);
   if (!project) {
     return apiProblem({
       status: 404,
@@ -49,3 +44,5 @@ export async function GET(
 
   return apiSuccess(toApiOverlayPackage(project));
 }
+
+export const GET = withExternalErrors(read);

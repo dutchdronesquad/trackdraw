@@ -1,5 +1,9 @@
 "use client";
 
+import { useProjectLibrary } from "@/store/project-library";
+import { TeamLibrary } from "./TeamLibrary";
+import { MoveProject } from "./MoveProject";
+import { useProjectMove } from "./useProjectMove";
 import { useState } from "react";
 import { Cloud, Clock, FolderOpen, Link2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,6 +18,8 @@ import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync"
 import { useTranslations } from "next-intl";
 
 interface ProjectManagerDialogProps {
+  userId?: string;
+  moveBlockedProjectId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenNewProject?: () => void;
@@ -51,6 +57,8 @@ interface ProjectManagerDialogProps {
 type View = "device" | "account" | "restore" | "shares";
 
 export default function ProjectManagerDialog({
+  userId,
+  moveBlockedProjectId,
   open,
   onOpenChange,
   onOpenNewProject,
@@ -82,7 +90,16 @@ export default function ProjectManagerDialog({
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
-  const [view, setView] = useState<View>("device");
+  const [view, setView] = useState<View>(() =>
+    userId &&
+    useProjectLibrary.getState().byUser[userId] &&
+    useProjectLibrary.getState().byUser[userId] !== "personal"
+      ? "account"
+      : "device"
+  );
+
+  const [movingProject, setMovingProject] = useState<string | null>(null);
+  const moveReview = useProjectMove(movingProject, userId);
 
   const hasAccountSection = Boolean(onSyncProject);
 
@@ -94,7 +111,7 @@ export default function ProjectManagerDialog({
     id: View;
     label: string;
     icon: React.ReactNode;
-    count: number;
+    count?: number;
   };
   const navItems: NavItem[] = [
     {
@@ -109,7 +126,7 @@ export default function ProjectManagerDialog({
             id: "account",
             label: tCommon("labels.account"),
             icon: <Cloud className="size-4" />,
-            count: accountProjects.length,
+            count: userId ? undefined : accountProjects.length,
           },
           {
             id: "shares",
@@ -138,8 +155,12 @@ export default function ProjectManagerDialog({
       description: t("projectManager.panels.device.description"),
     },
     account: {
-      label: t("projectManager.panels.account.label"),
-      description: t("projectManager.panels.account.description"),
+      label: userId
+        ? t("teamLibrary.panelTitle")
+        : t("projectManager.panels.account.label"),
+      description: userId
+        ? t("teamLibrary.panelDescription")
+        : t("projectManager.panels.account.description"),
     },
     restore: {
       label: t("projectManager.panels.snapshots.label"),
@@ -152,6 +173,7 @@ export default function ProjectManagerDialog({
   };
 
   const current = viewMeta[activeView];
+  const cloudView = activeView === "account" && !!userId;
 
   const tabContent = {
     device: (
@@ -181,6 +203,15 @@ export default function ProjectManagerDialog({
         activeDesignId={activeDesignId}
         syncingProjectId={syncingProjectId}
         projectSyncMetaById={projectSyncMetaById}
+        moveBlockedProjectId={moveBlockedProjectId}
+        onMoveProject={
+          userId
+            ? (id) => {
+                moveReview.reset();
+                setMovingProject(id);
+              }
+            : undefined
+        }
         onOpenAccountProject={onOpenAccountProject}
         onSyncProject={onSyncProject}
         onDuplicateAccountProject={onDuplicateAccountProject}
@@ -207,27 +238,66 @@ export default function ProjectManagerDialog({
     ),
   };
 
-  void isMobile; // used by tab components via useIsMobile()
-
   return (
-    <SidebarDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      eyebrow={t("projectManager.dialog.eyebrow")}
-      title={t("projectManager.dialog.title")}
-      mobileSubtitle={t("projectManager.dialog.mobileSubtitle")}
-      navItems={navItems.map((item) => ({
-        id: item.id,
-        label: item.label,
-        icon: item.icon,
-        badge: item.count,
-      }))}
-      activeItem={activeView}
-      onItemChange={(id) => setView(id as View)}
-      contentTitle={current.label}
-      contentDescription={current.description}
-    >
-      {tabContent[activeView]}
-    </SidebarDialog>
+    <>
+      <SidebarDialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!next && movingProject && userId && activeView === "account")
+            return;
+          onOpenChange(next);
+        }}
+        eyebrow={t("projectManager.dialog.eyebrow")}
+        title={t("projectManager.dialog.title")}
+        mobileSubtitle={t("projectManager.dialog.mobileSubtitle")}
+        navItems={navItems.map((item) => ({
+          id: item.id,
+          label: item.label,
+          icon: item.icon,
+          badge: item.count,
+        }))}
+        activeItem={activeView}
+        onItemChange={(id) => setView(id as View)}
+        contentTitle={current.label}
+        contentDescription={
+          isMobile && cloudView
+            ? t("teamLibrary.panelMobileDescription")
+            : current.description
+        }
+        mobileContentHeader
+        contentBodyClassName={
+          cloudView ? "overflow-y-hidden p-0 [&>div]:h-full" : undefined
+        }
+        maxWidth="max-w-5xl"
+        height="h-[36rem]"
+        mobileHeight="h-[92dvh]"
+      >
+        {activeView === "account" && userId ? (
+          <>
+            <TeamLibrary
+              key={userId}
+              userId={userId}
+              personal={tabContent.account}
+              onNewPersonalProject={
+                onOpenNewProject
+                  ? () => {
+                      onOpenChange(false);
+                      onOpenNewProject();
+                    }
+                  : undefined
+              }
+            />
+            {movingProject && (
+              <MoveProject
+                review={moveReview}
+                onCancel={() => setMovingProject(null)}
+              />
+            )}
+          </>
+        ) : (
+          tabContent[activeView]
+        )}
+      </SidebarDialog>
+    </>
   );
 }

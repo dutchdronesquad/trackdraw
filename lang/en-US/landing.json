@@ -292,5 +292,68 @@
   "screenshotPlaceholder": {
     "label": "Screenshot Placeholder",
     "plannedAsset": "Planned Asset"
+  },
+  "bio": {
+    "name": "TrackDraw",
+    "tagline": "Design and share FPV race tracks.",
+    "metadata": {
+      "title": "Links & highlights",
+      "description": "Explore TrackDraw: design FPV race tracks, browse community layouts, and discover the viewer and artwork designer."
+    },
+    "featured": "In the spotlight",
+    "explore": "Make your next track",
+    "socials": "Follow TrackDraw",
+    "home": "trackdraw.app",
+    "items": {
+      "intro": {
+        "label": "From first gate to race day.",
+        "description": "Draw your track in 2D, find the flow in 3D, and share the plan with your crew."
+      },
+      "studio": {
+        "label": "Open TrackDraw",
+        "description": "No account needed."
+      },
+      "gallery": {
+        "label": "Explore tracks",
+        "description": "Community layouts"
+      },
+      "viewer": {
+        "label": "TrackDraw Viewer",
+        "description": "Embed a track on your website"
+      },
+      "artwork": {
+        "label": "Artwork designer",
+        "description": "Gate and flag artwork"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "description": "Instagram"
+      },
+      "facebook": {
+        "label": "Facebook",
+        "description": "Facebook"
+      },
+      "github": {
+        "label": "GitHub",
+        "description": "GitHub"
+      }
+    },
+    "track": {
+      "heading": "A track, from every angle",
+      "title": "Skyline Circuit interactive track preview",
+      "viewLabel": "Track view",
+      "2d": "2D",
+      "3d": "3D",
+      "hint2D": "Switch to 3D to explore the crossover, tower and dive.",
+      "hint3D": "Drag to rotate. Pinch or scroll to zoom.",
+      "loading": "Loading the sample track…",
+      "error": "The track could not load. Your links are still ready to use.",
+      "retry": "Try again",
+      "loading3D": "Loading 3D preview…",
+      "unavailable3D": "3D is unavailable on this device. You can still explore the track in 2D.",
+      "grid": "Grid: {grid}",
+      "panZoom": "Pan and zoom",
+      "fit": "Fit track to window"
+    }
   }
 }

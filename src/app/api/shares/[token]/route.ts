@@ -3,7 +3,7 @@ import { z } from "zod";
 import { auditEventTypes } from "@/lib/audit-events";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
-import { isResourceOwner } from "@/lib/server/authorization";
+import { canManageShare } from "@/lib/server/share-management";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   deleteGalleryEntry,
@@ -91,7 +91,7 @@ async function authorizeOwnedShare(
     };
   }
 
-  if (!isResourceOwner(user, share.ownerUserId)) {
+  if (!(await canManageShare(user.id, token))) {
     return {
       error: NextResponse.json(
         { ok: false, error: "Forbidden" },
@@ -120,7 +120,7 @@ export async function DELETE(
       return authorized.error;
     }
 
-    await revokeShare(authorized.token);
+    await revokeShare(authorized.token, authorized.user.id);
     await recordAuditEvent({
       actorUserId: authorized.user.id,
       targetUserId: authorized.user.id,
@@ -191,7 +191,10 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
 
       const entry =
         existingEntry ??
-        (await getOrCreateGalleryEntryForShare(authorized.share));
+        (await getOrCreateGalleryEntryForShare(
+          authorized.share,
+          authorized.user.id
+        ));
 
       if (!entry) {
         return NextResponse.json(
@@ -200,11 +203,14 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
         );
       }
 
-      await updateGalleryEntryMetadata({
-        shareToken: authorized.token,
-        title: body.title,
-        description: body.description,
-      });
+      await updateGalleryEntryMetadata(
+        {
+          shareToken: authorized.token,
+          title: body.title,
+          description: body.description,
+        },
+        authorized.user.id
+      );
 
       if (body.previewDataUrl) {
         const previewImage = await uploadGalleryPreviewImage({
@@ -213,14 +219,17 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
         });
 
         if (previewImage) {
-          await setGalleryEntryPreviewImage({
-            shareToken: authorized.token,
-            previewImage,
-          });
+          await setGalleryEntryPreviewImage(
+            {
+              shareToken: authorized.token,
+              previewImage,
+            },
+            authorized.user.id
+          );
         }
       }
 
-      await moveGalleryEntryToListed(authorized.token);
+      await moveGalleryEntryToListed(authorized.token, authorized.user.id);
     } else if (body.action === "update") {
       if (
         existingEntry?.galleryState !== "listed" &&
@@ -235,13 +244,16 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
         );
       }
 
-      await updateGalleryEntryMetadata({
-        shareToken: authorized.token,
-        title: body.title,
-        description: body.description,
-      });
+      await updateGalleryEntryMetadata(
+        {
+          shareToken: authorized.token,
+          title: body.title,
+          description: body.description,
+        },
+        authorized.user.id
+      );
     } else if (existingEntry) {
-      await deleteGalleryEntry(authorized.token);
+      await deleteGalleryEntry(authorized.token, authorized.user.id);
     }
 
     const updatedEntry = await getGalleryEntryByShareToken(authorized.token);

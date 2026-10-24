@@ -12,15 +12,59 @@ import {
   ProjectCreateRequestError,
 } from "@/lib/server/projects";
 import { getSiteUrl } from "@/lib/seo";
-import { annotations, execute, ProjectToolError } from "./project-context";
+import {
+  annotations,
+  execute,
+  ProjectToolError,
+  mcpTeamActor,
+  projectId,
+} from "./project-context";
 
 export const CATALOG_TOOLS = ["get_track_catalog"] as const;
 export const CREATE_TOOLS = ["create_track"] as const;
 const record = z.record(z.string(), z.unknown());
+// Schemas contain no account state. Reuse them while keeping servers and handlers request-local.
+const getTrackCatalogInputSchema = z.strictObject({
+  offset: z.number().int().min(0).max(1000).default(0),
+  limit: z.number().int().min(1).max(20).default(10),
+});
+const getTrackCatalogOutputSchema = z.object({
+  type: z.literal("track_catalog"),
+  schema: z.literal("trackdraw.mcp.project-create.v1"),
+  design_version: z.literal(2),
+  proposal_schema: record,
+  items: z.array(record),
+  pagination: z.object({
+    offset: z.number(),
+    has_more: z.boolean(),
+    next_offset: z.number().nullable(),
+  }),
+  unvalidated_constraints: z.array(z.string()),
+});
+const createTrackInputSchema = z.strictObject({
+  team_id: projectId.optional(),
+  idempotency_key: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
+  proposal: z.unknown(),
+});
+const createTrackOutputSchema = z.object({
+  type: z.literal("project"),
+  schema: z.literal("trackdraw.mcp.project-create.v1"),
+  project_id: z.string(),
+  title: z.string(),
+  studio_url: z.string(),
+  replayed: z.boolean(),
+  design_version: z.literal(2),
+  validation: z.object({
+    required_inventory: record,
+    unvalidated_constraints: z.array(z.string()),
+  }),
+});
+
 export function registerCreateTools(
   server: McpServer,
   userId: string,
-  canCreate: boolean
+  canCreate: boolean,
+  teamConsent = false
 ) {
   server.registerTool(
     "get_track_catalog",
@@ -28,23 +72,8 @@ export function registerCreateTools(
       title: "Inspect track catalog and creation schema",
       description:
         "Return a page of supported physical catalog items and the exact version-2 track proposal JSON Schema. All lengths are meters, rotation is degrees with 0 as stored forward, coordinates use a top-left field origin. Catalog placements use catalog_id and keep canonical dimensions/metadata; custom shapes use kind and explicit dimensions. Inventory counts complete placed assemblies including towers. Query before creating a track; no account project data is returned.",
-      inputSchema: z.strictObject({
-        offset: z.number().int().min(0).max(1000).default(0),
-        limit: z.number().int().min(1).max(20).default(10),
-      }),
-      outputSchema: z.object({
-        type: z.literal("track_catalog"),
-        schema: z.literal("trackdraw.mcp.project-create.v1"),
-        design_version: z.literal(2),
-        proposal_schema: record,
-        items: z.array(record),
-        pagination: z.object({
-          offset: z.number(),
-          has_more: z.boolean(),
-          next_offset: z.number().nullable(),
-        }),
-        unvalidated_constraints: z.array(z.string()),
-      }),
+      inputSchema: getTrackCatalogInputSchema,
+      outputSchema: getTrackCatalogOutputSchema,
       annotations,
     },
     ({ offset, limit }) =>
@@ -87,23 +116,8 @@ export function registerCreateTools(
       title: "Create a track project",
       description:
         "Create a new track project in the authorized account from a proposed version-2 track and explicit field/inventory constraints. Requires projects:create consent; never edits, replaces or publishes an existing project. First get_track_catalog for schema, units and supported items. Use a unique idempotency_key for each new project and the SAME key+proposal when retrying; changed proposals require a new key. Returns actionable validation issues or a stable Studio opening URL. Field footprints and assembly counts are checked; clearance and flight safety require user review.",
-      inputSchema: z.strictObject({
-        idempotency_key: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
-        proposal: z.unknown(),
-      }),
-      outputSchema: z.object({
-        type: z.literal("project"),
-        schema: z.literal("trackdraw.mcp.project-create.v1"),
-        project_id: z.string(),
-        title: z.string(),
-        studio_url: z.string(),
-        replayed: z.boolean(),
-        design_version: z.literal(2),
-        validation: z.object({
-          required_inventory: record,
-          unvalidated_constraints: z.array(z.string()),
-        }),
-      }),
+      inputSchema: createTrackInputSchema,
+      outputSchema: createTrackOutputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -111,8 +125,9 @@ export function registerCreateTools(
         openWorldHint: false,
       },
     },
-    ({ idempotency_key, proposal }) =>
+    ({ idempotency_key, proposal, team_id }) =>
       execute(async () => {
+        const actor = mcpTeamActor(userId, team_id, teamConsent);
         const validated = validateTrackDraft(proposal);
         if (!validated.ok)
           throw new ProjectToolError(
@@ -121,7 +136,11 @@ export function registerCreateTools(
             validated.issues
           );
         const bytes = new TextEncoder().encode(
-          JSON.stringify(validated.proposal)
+          JSON.stringify(
+            actor
+              ? { proposal: validated.proposal, teamId: team_id }
+              : validated.proposal
+          )
         );
         const hash = [
           ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
@@ -129,19 +148,29 @@ export function registerCreateTools(
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
         try {
-          const { project, replayed } = await createMcpProjectForUser(
-            userId,
-            validated.design,
-            idempotency_key,
-            hash
-          );
+          const { project, replayed } = actor
+            ? await createMcpProjectForUser(
+                userId,
+                validated.design,
+                idempotency_key,
+                hash,
+                actor
+              )
+            : await createMcpProjectForUser(
+                userId,
+                validated.design,
+                idempotency_key,
+                hash
+              );
           return {
             type: "project",
             schema: "trackdraw.mcp.project-create.v1",
             project_id: project.id,
             title: project.title,
             studio_url: new URL(
-              `/studio/open/${encodeURIComponent(project.id)}`,
+              team_id
+                ? `/studio?teamId=${encodeURIComponent(team_id)}&teamProject=${encodeURIComponent(project.id)}`
+                : `/studio/open/${encodeURIComponent(project.id)}`,
               getSiteUrl()
             ).href,
             replayed,

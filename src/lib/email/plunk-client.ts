@@ -10,7 +10,11 @@ export type PlunkMailOptions = {
   subject: string;
   htmlBody: string;
   textBody: string;
-  emailType?: "auth-magic-link" | "account-retention";
+  emailType?:
+    | "auth-magic-link"
+    | "account-retention"
+    | "team-invitation"
+    | "team-succession";
   idempotencyKey?: string;
 };
 

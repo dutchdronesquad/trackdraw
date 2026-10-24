@@ -371,6 +371,19 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("team_owner_required")
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Transfer team ownership or delete the team before deleting this account.",
+        },
+        { status: 409 }
+      );
+    }
     console.error("[TrackDraw] Failed to delete user", { error });
     return NextResponse.json(
       { ok: false, error: "Failed to permanently delete user" },

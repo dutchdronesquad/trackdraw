@@ -5,6 +5,20 @@ afterEach(() => {
   vi.resetModules();
 });
 
+it("rejects unsupported team-move cleanup without deleting native or browser project data", async () => {
+  const projects = vi.fn().mockResolvedValue(state);
+  vi.stubGlobal("window", { trackdrawDesktop: { projects } });
+  const repository =
+    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+  await repository.ready;
+  projects.mockClear();
+  expect(() => repository.forgetMovedProject("local-track")).toThrow(
+    "Use the awaited desktop project repository."
+  );
+  expect(projects).not.toHaveBeenCalled();
+  expect(repository.getState()).toBe(state);
+});
+
 it("does not dispatch a superseded document save after an earlier native request completes", async () => {
   const projects = vi.fn().mockResolvedValue(state);
   vi.stubGlobal("window", { trackdrawDesktop: { projects } });

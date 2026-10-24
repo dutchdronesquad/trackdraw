@@ -1,4 +1,3 @@
-import { apiKeyProjectAccess } from "@/lib/api/project-access";
 import {
   apiListSuccess,
   apiProblem,
@@ -6,7 +5,10 @@ import {
 } from "@/lib/server/api-v1";
 import { trackReadPermission } from "@/lib/server/api-keys";
 import { toApiProjectSummaryLight } from "@/lib/server/api-projects";
-import { listProjectSummariesForUser } from "@/lib/server/projects";
+import {
+  externalProjectList,
+  externalFailure,
+} from "@/lib/server/external-projects";
 
 function parseLimit(request: Request): number | null {
   const url = new URL(request.url);
@@ -63,29 +65,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const projects = await listProjectSummariesForUser(
-      auth.identity.user.id,
-      apiKeyProjectAccess(auth.identity.key.metadata)
+    const projects = await externalProjectList(
+      request,
+      auth.identity,
+      limit + 1,
+      cursor.id ?? undefined
     );
-
-    let startIndex = 0;
-    if (cursor.id !== null) {
-      const foundIndex = projects.findIndex(
-        (project) => project.id === cursor.id
-      );
-      if (foundIndex === -1) {
-        return apiProblem({
-          status: 400,
-          code: "bad_request",
-          title: "Bad Request",
-          detail: "Invalid or expired cursor.",
-        });
-      }
-      startIndex = foundIndex + 1;
-    }
-
-    const page = projects.slice(startIndex, startIndex + limit);
-    const hasMore = startIndex + limit < projects.length;
+    const page = projects.slice(0, limit);
+    const hasMore = projects.length > limit;
     const lastItem = page.at(-1);
 
     return apiListSuccess(page.map(toApiProjectSummaryLight), {
@@ -93,12 +80,9 @@ export async function GET(request: Request) {
       next_cursor: hasMore && lastItem ? encodeCursor(lastItem.id) : null,
       has_more: hasMore,
     });
-  } catch {
-    return apiProblem({
-      status: 500,
-      code: "internal_error",
-      title: "Internal Server Error",
-      detail: "Failed to list projects.",
-    });
+  } catch (error) {
+    return externalFailure(error);
   }
 }
+
+export { createExternalProject as POST } from "@/lib/server/external-project-mutations";

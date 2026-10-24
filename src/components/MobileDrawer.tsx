@@ -12,8 +12,10 @@ import { cn } from "@/lib/utils";
 interface MobileDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   title: string;
   subtitle?: string;
+  headerless?: boolean;
   children: React.ReactNode;
   pinnedContent?: React.ReactNode;
   footerContent?: React.ReactNode;
@@ -64,8 +66,10 @@ export function MobileDrawerHeader({
 export function MobileDrawer({
   open,
   onOpenChange,
+  onEscapeKeyDown,
   title,
   subtitle,
+  headerless = false,
   children,
   pinnedContent,
   footerContent,
@@ -86,6 +90,7 @@ export function MobileDrawer({
         )}
       />
       <DrawerPrimitive.Content
+        onEscapeKeyDown={onEscapeKeyDown}
         data-slot="mobile-drawer-content"
         className={cn(
           "group/drawer-content border-border/50 bg-card fixed inset-x-0 bottom-0 z-50 flex h-auto max-h-[85dvh] flex-col gap-0 overflow-hidden rounded-t-[1.35rem] border text-sm shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden",
@@ -93,7 +98,11 @@ export function MobileDrawer({
         )}
       >
         <DrawerPrimitive.Handle className="mx-auto mt-3 h-1 w-25 shrink-0 self-center rounded-full bg-black/14 dark:bg-white/72" />
-        <MobileDrawerHeader title={title} subtitle={subtitle} />
+        {headerless ? (
+          <DrawerTitle className="sr-only">{title}</DrawerTitle>
+        ) : (
+          <MobileDrawerHeader title={title} subtitle={subtitle} />
+        )}
         {pinnedContent}
         <div
           className={cn(

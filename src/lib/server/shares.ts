@@ -1,4 +1,7 @@
 import "server-only";
+import { publicTeamSnapshot } from "@/lib/track/public-snapshot";
+import { shareManagementPredicate } from "./share-management";
+import { TeamProjectError } from "./team-project-error";
 
 import { customAlphabet } from "nanoid";
 import {
@@ -46,6 +49,7 @@ type ShareRow = {
   expires_at: string | null;
   revoked_at: string | null;
   owner_user_id: string | null;
+  owner_team_id?: string | null;
   project_id: string | null;
   share_type: string | null;
 };
@@ -139,7 +143,9 @@ function mapShareRow(row: ShareRow): StoredShare {
     typeof row.design_json === "string"
       ? (JSON.parse(row.design_json) as SerializedTrackDesign)
       : row.design_json;
-  const design = normalizeDesign(rawDesign);
+  const design = row.owner_team_id
+    ? publicTeamSnapshot(normalizeDesign(rawDesign), row.token, row.updated_at)
+    : normalizeDesign(rawDesign);
 
   return {
     id: row.id,
@@ -190,7 +196,8 @@ export async function resolveStoredShare(
     .prepare(
       `
         select
-          ${SHARE_SELECT}
+          ${SHARE_SELECT},
+          (SELECT owner_team_id FROM projects WHERE projects.id=shares.project_id) AS owner_team_id
         from shares
         where token = ?
         limit 1
@@ -260,6 +267,7 @@ export async function getSharesByUserId(
         from shares s
         left join gallery_entries g on g.share_token = s.token
         where s.owner_user_id = ?
+          and NOT EXISTS (SELECT 1 FROM projects p WHERE p.id=s.project_id AND p.owner_team_id IS NOT NULL)
           and ${ACTIVE_USER_SHARE_WHERE}
         order by s.created_at desc
         limit ?
@@ -295,6 +303,7 @@ export async function getShareByProjectIdForUser(
         from shares s
         left join gallery_entries g on g.share_token = s.token
         where s.owner_user_id = ?
+          and NOT EXISTS (SELECT 1 FROM projects p WHERE p.id=s.project_id AND p.owner_team_id IS NOT NULL)
           and s.project_id = ?
           and s.share_type = 'published'
           and ${ACTIVE_USER_SHARE_WHERE}
@@ -320,7 +329,8 @@ export async function getShareByProjectIdForUser(
   return mapUserShareRow(row);
 }
 
-export async function revokeShare(token: string) {
+export async function revokeShare(token: string, actorUserId?: string) {
+  const guard = actorUserId ? shareManagementPredicate(actorUserId) : null;
   const db = await getDatabase();
   const now = nowIso();
 
@@ -329,13 +339,13 @@ export async function revokeShare(token: string) {
       `
         update shares
         set revoked_at = ?, updated_at = ?
-        where token = ? and revoked_at is null
+        where token = ? and revoked_at is null ${guard ? `AND ${guard.sql}` : ""}
       `
     )
-    .bind(now, now, token)
+    .bind(now, now, token, ...(guard?.bindings ?? []))
     .run();
 
-  await deleteGalleryEntry(token);
+  await deleteGalleryEntry(token, actorUserId);
 }
 
 export async function purgeRevokedShare(token: string) {
@@ -460,7 +470,7 @@ export async function listSharesForDashboard(
           s.revoked_at,
           s.share_type,
           s.owner_user_id,
-          u.name as owner_name,
+          coalesce((SELECT t.name FROM teams t JOIN projects p ON p.owner_team_id=t.id WHERE p.id=s.project_id),u.name) as owner_name,
           u.email as owner_email,
           g.gallery_state
         from shares s
@@ -524,6 +534,10 @@ export async function createShare(
   const expiresAt =
     shareType === "published" ? null : toIsoDateAfterDays(expiresInDays);
   const db = await getDatabase();
+  const personalGuard = projectId
+    ? "EXISTS(SELECT 1 FROM projects p WHERE p.id=? AND p.owner_user_id=? AND p.owner_team_id IS NULL AND p.archived_at IS NULL)"
+    : "1";
+  const personalBindings = projectId ? [projectId, ownerUserId] : [];
 
   if (shareType === "published" && projectId) {
     const existing = await db
@@ -546,7 +560,7 @@ export async function createShare(
     if (existing) {
       const now = nowIso();
 
-      await db
+      const updated = await db
         .prepare(
           `
             update shares
@@ -559,7 +573,7 @@ export async function createShare(
               shape_count = ?,
               updated_at = ?,
               expires_at = null
-            where id = ?
+            where id = ? AND revoked_at IS NULL AND ${personalGuard} RETURNING id
           `
         )
         .bind(
@@ -570,9 +584,11 @@ export async function createShare(
           normalized.field.height,
           shapeCount,
           now,
-          existing.id
+          existing.id,
+          ...personalBindings
         )
-        .run();
+        .first();
+      if (!updated) throw new TeamProjectError("conflict", 409);
 
       const share: StoredShare = {
         ...mapShareRow(existing),
@@ -597,7 +613,7 @@ export async function createShare(
     const now = nowIso();
 
     try {
-      await db
+      const statement = db
         .prepare(
           `
             insert into shares (
@@ -618,7 +634,7 @@ export async function createShare(
               project_id,
               share_type
             )
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${personalGuard} RETURNING id
           `
         )
         .bind(
@@ -637,9 +653,11 @@ export async function createShare(
           null,
           ownerUserId,
           projectId,
-          shareType
-        )
-        .run();
+          shareType,
+          ...personalBindings
+        );
+      if (!(await statement.first()))
+        throw new TeamProjectError("conflict", 409);
 
       const share: StoredShare = {
         id,
@@ -673,7 +691,10 @@ export async function createShare(
   throw new Error("Failed to generate a unique share token");
 }
 
-export async function getOrCreateGalleryEntryForShare(share: StoredShare) {
+export async function getOrCreateGalleryEntryForShare(
+  share: StoredShare,
+  actorUserId?: string
+) {
   if (!share.ownerUserId) {
     return null;
   }
@@ -683,10 +704,13 @@ export async function getOrCreateGalleryEntryForShare(share: StoredShare) {
     return existing;
   }
 
-  return createUnlistedGalleryEntry({
-    shareToken: share.token,
-    ownerUserId: share.ownerUserId,
-    title: share.title,
-    description: share.description,
-  });
+  return createUnlistedGalleryEntry(
+    {
+      shareToken: share.token,
+      ownerUserId: share.ownerUserId,
+      title: share.title,
+      description: share.description,
+    },
+    actorUserId
+  );
 }

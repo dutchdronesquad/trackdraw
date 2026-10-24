@@ -121,7 +121,7 @@ export function AccountSecurityView({
                   value={email}
                   onChange={(event) => onEmailChange(event.target.value)}
                   placeholder={t("account.security.email.placeholder")}
-                  className="h-8 rounded-lg px-2.5 shadow-none"
+                  className="h-9 rounded-lg px-3 shadow-none"
                 />
               </label>
 
@@ -376,7 +376,7 @@ export function AccountSecurityView({
                         placeholder={t(
                           "account.security.passkeys.fields.namePlaceholder"
                         )}
-                        className="h-8 rounded-lg px-2.5 shadow-none"
+                        className="h-9 rounded-lg px-3 shadow-none"
                       />
 
                       <p className="text-muted-foreground text-xs leading-relaxed">

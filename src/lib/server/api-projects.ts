@@ -48,7 +48,9 @@ function toSnakeCaseValue(value: unknown): unknown {
   );
 }
 
-export function toApiProjectSummaryLight(project: StoredProjectSummary) {
+export function toApiProjectSummaryLight(
+  project: Omit<StoredProjectSummary, "ownerUserId">
+) {
   return {
     type: "project" as const,
     id: project.id,
@@ -64,7 +66,9 @@ export function toApiProjectSummaryLight(project: StoredProjectSummary) {
   };
 }
 
-export function toApiProjectSummary(project: StoredProject) {
+export function toApiProjectSummary(
+  project: Omit<StoredProject, "ownerUserId">
+) {
   return {
     type: "project" as const,
     id: project.id,
@@ -291,7 +295,7 @@ function getSplitIndexByShapeId(timingPoints: OverlayPrepTimingPoint[]) {
   );
 }
 
-export function toApiTrackHeader(project: StoredProject) {
+export function toApiTrackHeader(project: Omit<StoredProject, "ownerUserId">) {
   const shapes = getDesignShapes(project.design);
 
   return {
@@ -319,7 +323,7 @@ export function toApiTrackHeader(project: StoredProject) {
   };
 }
 
-export function toApiTrackPackage(project: StoredProject) {
+export function toApiTrackPackage(project: Omit<StoredProject, "ownerUserId">) {
   return {
     ...toApiTrackHeader(project),
     shapes: getDesignShapes(project.design).map(toApiTrackShape),
@@ -334,7 +338,9 @@ export function toApiTrackPackage(project: StoredProject) {
  * same type/schema/source/title/updated_at envelope convention as
  * toApiTrackPackage/toApiOverlayPackage above.
  */
-export function toApiViewerSnapshotPackage(project: StoredProject) {
+export function toApiViewerSnapshotPackage(
+  project: Omit<StoredProject, "ownerUserId">
+) {
   const snapshot = toViewerDesignSnapshot(project.design);
 
   return {
@@ -362,7 +368,9 @@ export function toApiViewerSnapshotPackage(project: StoredProject) {
   };
 }
 
-export function toApiOverlayPackage(project: StoredProject) {
+export function toApiOverlayPackage(
+  project: Omit<StoredProject, "ownerUserId">
+) {
   const route = getPrimaryRoute(project.design);
   const routeMetrics = route ? getPolyline2DDerived(route) : null;
   const routePoints = routeMetrics?.smoothPoints ?? [];
