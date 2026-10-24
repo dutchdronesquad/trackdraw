@@ -660,6 +660,11 @@
     "saving": "Saving locally…",
     "saveFailed": "Save failed. Export a backup before closing.",
     "copyOf": "Copy of {title}",
-    "renameHelp": "Choose a name that makes this track easy to find."
+    "renameHelp": "Choose a name that makes this track easy to find.",
+    "recoveryTitle": "Unsaved projects",
+    "recoveryHelp": "Some changes could not be saved on this device. Keep TrackDraw open, retry saving or export a JSON backup. To close without saving locally, first export every unsaved project with its latest changes.",
+    "retrySave": "Retry save",
+    "exportBackup": "Export JSON backup",
+    "closeWithBackups": "Close with exported backups"
   }
 }

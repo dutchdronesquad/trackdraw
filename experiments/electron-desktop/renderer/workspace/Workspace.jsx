@@ -34,7 +34,13 @@ import EditorShell from "@/components/editor/EditorShell";
 import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { designToSvg } from "@/lib/export/exportSvg";
 import { parseDesign } from "@/lib/track/design";
-import { getState, subscribe, getError } from "../storage/projects.mjs";
+import {
+  getState,
+  subscribe,
+  getError,
+  getSaveFailures,
+  getErrorMessage,
+} from "../storage/projects.mjs";
 import { DocumentContext } from "./document-context.jsx";
 import {
   useWorkspace,
@@ -46,6 +52,8 @@ import {
   renameDocument,
   duplicateDocument,
   deleteDocument,
+  retryDocumentSave,
+  canCloseWithBackups,
 } from "./workspace.mjs";
 
 function Preview({ design }) {
@@ -335,7 +343,9 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   const state = useWorkspace();
   const repository = useSyncExternalStore(subscribe, getState);
   const document = getDocument(state.activeId);
+  const failures = getSaveFailures();
   const saveFailed = Boolean(getError());
+  const [recovering, setRecovering] = useState(null);
   const [status, setStatus] = useState("");
   const saving = state.busy || status === t("saving");
   useEffect(() => {
@@ -344,7 +354,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
       const design = document.store.getState().track.design;
       const saved = repository.designs.find((item) => item.id === design.id);
       setStatus(
-        getError()
+        getError(document.id)
           ? t("saveFailed")
           : saved?.updatedAt === design.updatedAt
             ? t("saved")
@@ -355,7 +365,8 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
     return document.store.subscribe(update);
   }, [document, repository, t]);
   useEffect(() => {
-    const stop = window.trackdrawDesktop.onMenuAction((action) =>
+    const stop = window.trackdrawDesktop.onMenuAction((action) => {
+      if (useWorkspace.getState().closing) return;
       run(() =>
         action === "open"
           ? onImport()
@@ -368,19 +379,25 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                   ? Promise.resolve()
                   : closeDocument(state.activeId)
                 : onSave()
-      )
-    );
-    const close = window.trackdrawDesktop.onCloseRequested(() =>
+      );
+    });
+    const close = window.trackdrawDesktop.onCloseRequested(() => {
+      if (useWorkspace.getState().closing) return;
+      useWorkspace.setState({ closing: true });
       run(async () => {
-        await flushDocuments();
-        await window.trackdrawDesktop.finishClose();
-      })
-    );
+        try {
+          await flushDocuments();
+          await window.trackdrawDesktop.finishClose();
+        } finally {
+          useWorkspace.setState({ closing: false });
+        }
+      });
+    });
     const action = (event) =>
       run(() => (event.detail === "import" ? onImport() : onNew()));
     window.addEventListener("desktop:action", action);
     const block = (event) => {
-      if (useWorkspace.getState().busy) {
+      if (useWorkspace.getState().busy || useWorkspace.getState().closing) {
         event.preventDefault();
         event.stopImmediatePropagation();
       }
@@ -412,7 +429,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
       ?.focus();
   };
   return (
-    <div className="desktop-workbench">
+    <div className="desktop-workbench" inert={state.closing || undefined}>
       <div className="desktop-tabs" role="tablist" aria-label={t("documents")}>
         <button
           id="desktop-tab-home"
@@ -510,6 +527,73 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                 : status}
         </span>
       </div>
+      {failures.length > 0 && (
+        <section
+          className="desktop-save-recovery"
+          aria-label={t("recoveryTitle")}
+        >
+          <p role="alert">{t("recoveryHelp")}</p>
+          {failures.map(({ design, error }) => (
+            <div className="recovery-project" key={design.id}>
+              <div>
+                <strong>
+                  {getDocument(design.id)?.store.getState().track.design
+                    .title ||
+                    design.title ||
+                    t("untitled")}
+                </strong>
+                <span>{getErrorMessage(error)}</span>
+              </div>
+              <button
+                disabled={recovering !== null}
+                onClick={() =>
+                  run(async () => {
+                    setRecovering(design.id);
+                    try {
+                      await retryDocumentSave(design.id);
+                    } finally {
+                      setRecovering(null);
+                    }
+                  })
+                }
+              >
+                {t("retrySave")}
+              </button>
+              <button
+                disabled={recovering !== null}
+                onClick={() =>
+                  run(async () => {
+                    setRecovering(design.id);
+                    try {
+                      await onSave(design.id);
+                    } finally {
+                      setRecovering(null);
+                    }
+                  })
+                }
+              >
+                {t("exportBackup")}
+              </button>
+            </div>
+          ))}
+          <button
+            disabled={recovering !== null || !canCloseWithBackups()}
+            onClick={() =>
+              run(async () => {
+                if (!canCloseWithBackups()) return;
+                useWorkspace.setState({ closing: true });
+                try {
+                  await window.trackdrawDesktop.finishClose();
+                } finally {
+                  useWorkspace.setState({ closing: false });
+                }
+              })
+            }
+          >
+            {t("closeWithBackups")}
+          </button>
+        </section>
+      )}
       {state.home || !document ? (
         <Library
           onNew={onNew}

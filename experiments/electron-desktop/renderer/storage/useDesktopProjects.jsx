@@ -14,6 +14,8 @@ import {
   hasMeaningfulProjectContent,
   command,
   getState,
+  getError,
+  getErrorMessage,
   listProjects,
   loadProject,
   loadLocalDraft,
@@ -44,7 +46,7 @@ export function useEditorProjects({
   const failure = useCallback((error) => {
     setStatus("Local save failed");
     toast.error("Local save failed. Export a project copy before closing.", {
-      description: error.message,
+      description: getErrorMessage(error),
     });
   }, []);
   useEffect(() => {
@@ -86,7 +88,8 @@ export function useEditorProjects({
           isActiveDocument(document) && store.getState().track.design === design
       )
         .then(() => {
-          if (!cancelled) setStatus("Saved locally to desktop database");
+          if (!cancelled && store.getState().track.design === design)
+            setStatus("Saved locally to desktop database");
         })
         .catch(failure);
     }, 350);
@@ -163,8 +166,14 @@ export function useEditorProjects({
     setRestorePoints: refresh,
     activeRestorePointId,
     setActiveRestorePointId,
-    saveStatusLabel:
-      historyPaused || interactionSessionDepth > 0 ? "Editing…" : status,
+    saveStatusLabel: getError(document.id)
+      ? "Local save failed"
+      : historyPaused || interactionSessionDepth > 0
+        ? "Editing…"
+        : view.designs.find((item) => item.id === design.id)?.updatedAt ===
+            design.updatedAt
+          ? "Saved locally to desktop database"
+          : status,
     lastSnapshotLabel,
     setSaveStatusLabel: setStatus,
     initialized,

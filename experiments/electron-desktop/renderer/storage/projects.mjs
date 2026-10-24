@@ -9,8 +9,20 @@ export {
 let state = { designs: [], draft: null, restorePoints: [] };
 let queue = Promise.resolve();
 let lastError = null;
-export function getError() {
-  return lastError;
+const failedSaves = new Map();
+export function getError(id) {
+  return id
+    ? failedSaves.get(id)?.error || null
+    : failedSaves.values().next().value?.error || lastError;
+}
+export function getSaveFailures() {
+  return [...failedSaves.values()];
+}
+export function getErrorMessage(error) {
+  return String(error?.message || error).replace(
+    /^Error invoking remote method '[^']+': (?:Error: )?/,
+    ""
+  );
 }
 const listeners = new Set();
 export function subscribe(listener) {
@@ -25,6 +37,9 @@ function accept(next) {
 }
 export function getState() {
   return state;
+}
+export function waitForWrites() {
+  return queue;
 }
 export function listProjects() {
   return state.designs
@@ -47,12 +62,19 @@ export function loadLocalDraft() {
   return state.draft ? parseDesign(state.draft) : null;
 }
 export function command(name, payload, shouldRun = () => true) {
+  const isSave =
+    (name === "save" || name === "save-copy") &&
+    typeof payload?.design?.id === "string";
   const operation = queue.then(async () => {
     if (!shouldRun()) return state;
-    return accept(await window.trackdrawDesktop.projects(name, payload));
+    const next = await window.trackdrawDesktop.projects(name, payload);
+    if (isSave) failedSaves.delete(payload.design.id);
+    return accept(next);
   });
   queue = operation.catch((error) => {
     lastError = error;
+    if (isSave)
+      failedSaves.set(payload.design.id, { design: payload.design, error });
     state = { ...state };
     for (const listener of listeners) listener();
   });

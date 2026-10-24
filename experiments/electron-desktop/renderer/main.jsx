@@ -6,14 +6,15 @@ import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { serializeDesign } from "@/lib/track/design";
-import { ready } from "./storage/projects.mjs";
+import { ready, getErrorMessage } from "./storage/projects.mjs";
 import { Workspace } from "./workspace/Workspace.jsx";
 import {
   initializeWorkspace,
   createDocument,
   newDocument,
   useWorkspace,
-  getDocument,
+  getRecoveryDesign,
+  markProjectBackup,
 } from "./workspace/workspace.mjs";
 import {
   parseProjectFile,
@@ -50,15 +51,15 @@ async function openProject() {
   toast.success(`Opened ${result.name}`);
 }
 
-async function saveProject() {
-  const document = getDocument(useWorkspace.getState().activeId);
-  if (!document) return;
-  const design = document.store.getState().track.design;
+async function saveProject(id = useWorkspace.getState().activeId) {
+  const design = getRecoveryDesign(id);
+  if (!design) return;
   const name = await window.trackdrawDesktop.saveProject({
     text: JSON.stringify(serializeDesign(design), null, 2),
     name: design.title || "track",
   });
   if (name) {
+    markProjectBackup(design);
     toast.success(`Saved ${name}`);
   }
 }
@@ -66,7 +67,7 @@ async function saveProject() {
 function run(action) {
   void Promise.resolve()
     .then(action)
-    .catch((error) => toast.error(error.message));
+    .catch((error) => toast.error(getErrorMessage(error)));
 }
 
 class StartupBoundary extends Component {
@@ -101,7 +102,7 @@ createRoot(document.getElementById("root")).render(
               run(() => newDocument(messages.editor.desktopWorkspace.untitled))
             }
             onImport={() => run(openProject)}
-            onSave={() => run(saveProject)}
+            onSave={saveProject}
             onSample={() =>
               run(() =>
                 createDocument(createStarterLayoutDesign(starterLayouts[0].id))
