@@ -6,3 +6,8 @@ node_modules
 next-env.d.ts
 public
 src/components/ui
+experiments/electron-desktop/dist/
+experiments/electron-desktop/.profile/
+experiments/electron-desktop/.smoke-profile/
+experiments/electron-desktop/artifacts/
+experiments/electron-desktop/.asset-cache/
