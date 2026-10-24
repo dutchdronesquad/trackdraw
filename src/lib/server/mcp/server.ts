@@ -19,6 +19,32 @@ import {
 
 import { EDIT_TOOLS, registerEditTools } from "./edit-tools";
 
+// Schemas contain no account state. Reuse them while keeping servers and handlers request-local.
+const getAccountInputSchema = z.strictObject({});
+const getAccountOutputSchema = z.object({
+  type: z.literal("api_identity"),
+  account: z.object({ id: z.string(), name: z.string().nullable() }),
+  permissions: z.record(z.string(), z.array(z.string())).nullable(),
+  expires_at: z.string().nullable(),
+  mcp: z.object({
+    tools: z.array(
+      z.enum([
+        "get_account",
+        "list_teams",
+        ...CATALOG_TOOLS,
+        ...CREATE_TOOLS,
+        ...EDIT_TOOLS,
+        ...PROJECT_READ_TOOLS,
+        ...TRACK_ANALYSIS_TOOLS,
+      ])
+    ),
+    project_reads: z.boolean(),
+    project_writes: z.boolean(),
+    project_creation: z.boolean(),
+    project_updates: z.boolean(),
+  }),
+});
+
 /** A fresh server per authenticated request prevents cross-account state reuse. */
 export function createMcpServer(
   identity: ReturnType<typeof toAccountIdentitySummary>
@@ -52,30 +78,8 @@ export function createMcpServer(
       title: "Check TrackDraw account",
       description:
         "Return the account authorized by this OAuth connection, its MCP permissions and available capabilities. Does not return the email address, tokens or project contents.",
-      inputSchema: z.strictObject({}),
-      outputSchema: z.object({
-        type: z.literal("api_identity"),
-        account: z.object({ id: z.string(), name: z.string().nullable() }),
-        permissions: z.record(z.string(), z.array(z.string())).nullable(),
-        expires_at: z.string().nullable(),
-        mcp: z.object({
-          tools: z.array(
-            z.enum([
-              "get_account",
-              "list_teams",
-              ...CATALOG_TOOLS,
-              ...CREATE_TOOLS,
-              ...EDIT_TOOLS,
-              ...PROJECT_READ_TOOLS,
-              ...TRACK_ANALYSIS_TOOLS,
-            ])
-          ),
-          project_reads: z.boolean(),
-          project_writes: z.boolean(),
-          project_creation: z.boolean(),
-          project_updates: z.boolean(),
-        }),
-      }),
+      inputSchema: getAccountInputSchema,
+      outputSchema: getAccountOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
