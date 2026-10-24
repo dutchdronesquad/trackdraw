@@ -66,3 +66,19 @@ Two throwaway experiments were evaluated and removed from the checkout:
 All experimental application changes were discarded. The accepted implementation remains the merged #1013 code. No plan/CPU limit was changed. Complete hosted auth-negative, durable-budget, token-lifecycle and scale acceptance still has to pass before closing #1000/#994.
 
 A separate Worker is not established as necessary to stay on Free: the prototype only demonstrates a possible path around Next routing, and adds deployment/auth integration work. Keep the current architecture pending a measured, reviewable decision. Temporary dev data and clients were removed, separate SELECT counts were zero, and production MCP/discovery remained 404.
+
+## October 24 hosted recheck and next runtime gate
+
+The [latest validation record](../../mcp-validation.md#development-recheck-and-paid-recommendation--october-24-2026) reproduces large-track 503/1102 on development commit `002c6297aa665c6ee36c1d8ff4a39dc4d373c3cc`. One captured invocation exceeded CPU at 10 ms; all five immediate HTTP repetitions failed too. Initial public and cursor-page loops passed, so passing a reduced loop alone remains insufficient.
+
+Workers Paid is the recommended next acceptance environment. The account owner raised this option after the repeated Free-limit failure. Activation has not been performed or authorized as a billing action. Confirm the effective development usage model and request CPU limit after activation, then repeat the complete hosted acceptance gate before closing #1000/#994. No separate Worker or other architecture change is established as necessary.
+
+A disposable local experiment moved account-independent Zod input/output schemas out of request-local tool registration. Measuring fresh MCP server construction with Node `process.cpuUsage` (20 warmups, 100 samples) reduced median CPU from 0.454 to 0.012 ms and p95 from 2.55 to 0.141 ms. These are server-construction-only measurements, not total request CPU or hosted results. The experiment was retained outside the repository as a patch and is not part of the application. It does not establish a Free-runtime fix or replace Paid acceptance.
+
+## Hosted recheck after fixed-schema reuse — October 24, 2026
+
+[Deployment 40073915270](https://github.com/dutchdronesquad/trackdraw/actions/runs/40073915270) shipped PR #1053 as `b071bb76c3abe6e1cc8bad01b6a2a7fc5394bb5d`, Worker `0c7fa24d-8af4-43d7-81b9-d9d2bf93d74a`. SDK 1.32.2 passed all 100 public discovery/challenge checks, OAuth, creation/edit/conflict/recovery, typical reads/analysis/comparison, all 41 large shape pages, the first two route-point pages and explicit oversized-result refusal. A further large-read repetition loop returned 503/1102, followed by five failing immediate repetitions. A second SDK attempt failed during OAuth before its cursor loop. Remaining full-run negative-auth, budgets and token lifecycle were not reached.
+
+The generated track initially failed to open in Studio with 1102; a retry displayed the expected design and `dev-b071bb7`. The sanitized tail recorded `exceededCpu` at 10 ms during the Studio failure and 29 ms during the later authorization attempt, on the tested version. It did not capture the original failing MCP read. Successful samples above 10 ms and `usage_model: standard` do not establish an account-plan change; confirm the subscription and effective CPU settings before attributing changes in hosted behavior. No plan or CPU setting was changed by the recheck.
+
+Schema reuse is a merged/deployed reduction in request setup work, supported by its local measurements and regression coverage. It has not resolved the complete hosted availability gate. Temporary dev users/projects/clients and tokens were removed; separate SELECT counts were zero. Production discovery and MCP remain 404. See the [full acceptance record](../../mcp-validation.md#development-recheck-after-pr-1053--october-24-2026); keep #1000/#994 open.
