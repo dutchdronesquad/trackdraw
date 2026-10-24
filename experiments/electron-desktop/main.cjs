@@ -76,8 +76,8 @@ function validatePayload(text) {
   const value = JSON.parse(text);
   if (
     !value ||
-    ![1, 2].includes(value.version) ||
-    !Array.isArray(value.shapes) ||
+    ![undefined, 1, 2].includes(value.version) ||
+    (!Array.isArray(value.shapes) && !Array.isArray(value.shapeOrder)) ||
     !value.field
   )
     throw new Error("Choose a TrackDraw project JSON file.");
