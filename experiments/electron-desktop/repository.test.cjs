@@ -174,7 +174,7 @@ function offlineService() {
   };
 }
 test("offline preparation persists its exact revision and becomes stale after edits", (t) => {
-  const { filename, repo, open } = setup(t);
+  const { repo, open } = setup(t);
   repo.command("save", { design: design("field") });
   repo.close();
   let prepared = open(offlineService());
@@ -200,7 +200,7 @@ test("offline preparation persists its exact revision and becomes stale after ed
   assert.equal(state.designs[0].title, "Venue adjustment");
 });
 test("map imagery and external appearances are explicit limitations, never fully ready", (t) => {
-  const { repo, filename, open } = setup(t);
+  const { repo, open } = setup(t);
   repo.close();
   const prepared = open(offlineService());
   prepared.command("save", {
@@ -218,7 +218,7 @@ test("map imagery and external appearances are explicit limitations, never fully
   ]);
 });
 test("failed offline preparation preserves the previous pin and all local work", (t) => {
-  const { repo, filename, open } = setup(t);
+  const { repo, open } = setup(t);
   repo.close();
   const service = offlineService();
   const prepared = open(service);
