@@ -270,20 +270,6 @@ export function deleteDocument(id) {
   });
 }
 
-export function prepareOffline(id) {
-  return transition(async () => {
-    const document = getDocument(id);
-    if (document) await saveCopy(document.store.getState().track.design);
-    return command("prepare-offline", { id });
-  });
-}
-export function removeOffline(id) {
-  return transition(() => command("remove-offline", { id }));
-}
-export function checkOfflineProjects() {
-  return command("state");
-}
-
 export function captureViewport(id, kind, view) {
   const document = documents.get(id);
   if (document) document[kind] = view;

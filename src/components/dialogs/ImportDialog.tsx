@@ -4,7 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { parseDesign } from "@/lib/track/design";
+import { parseProjectFile } from "@/lib/track/project-file";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { useTrackActions } from "@/store/actions";
 import { cn } from "@/lib/utils";
@@ -79,7 +79,7 @@ export default function ImportDialog({
       }
 
       try {
-        const design = parseDesign(data);
+        const design = parseProjectFile(data);
         if (!design) {
           throw new Error("Invalid TrackDraw project");
         }

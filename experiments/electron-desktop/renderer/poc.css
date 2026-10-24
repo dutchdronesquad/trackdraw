@@ -529,54 +529,18 @@ body,
   }
 }
 
-.project-offline {
+.project-online-note {
   position: absolute;
-  left: 10px;
   top: 10px;
+  left: 10px;
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10px;
-  font-weight: 600;
   padding: 4px 7px;
-  background: var(--background);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--muted-foreground);
-  max-width: calc(100% - 54px);
-}
-.project-offline.offline-ready {
-  color: #106da6;
-}
-.project-offline.offline-limited,
-.project-offline.offline-changed,
-.project-offline.offline-update {
-  color: var(--foreground);
   border-left: 2px solid var(--brand-secondary);
-}
-.project-offline.offline-missing {
-  color: var(--destructive);
-}
-.offline-help {
-  color: var(--muted-foreground);
-  font-size: 12px;
-  line-height: 1.7;
-  margin: 0 0 22px;
-  max-width: 750px;
-}
-.offline-help button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #106da6;
-  cursor: pointer;
-  margin-left: 6px;
-}
-.dark .project-offline.offline-ready,
-.dark .offline-help button {
-  color: var(--brand-primary);
-}
-.project-menu button:disabled {
-  opacity: 0.5;
-  cursor: wait;
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 10px;
 }

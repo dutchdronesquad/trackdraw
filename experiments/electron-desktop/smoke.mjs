@@ -1,6 +1,6 @@
 import { _electron as electron } from "playwright";
 import assert from "node:assert/strict";
-import { mkdir, rm, readFile, writeFile, cp, rename } from "node:fs/promises";
+import { mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
@@ -10,13 +10,7 @@ const sharp = createRequire(path.join(here, "../../package.json"))("sharp");
 await rm(path.join(here, ".smoke-profile"), { recursive: true, force: true });
 await rm(path.join(here, "artifacts"), { recursive: true, force: true });
 await mkdir(path.join(here, "artifacts"), { recursive: true });
-const smokeBundle = path.join(here, "artifacts/bundle");
-await cp(path.join(here, "dist"), smokeBundle, { recursive: true });
-const env = {
-  ...process.env,
-  TRACKDRAW_POC_SMOKE: "1",
-  TRACKDRAW_POC_SMOKE_BUNDLE: smokeBundle,
-};
+const env = { ...process.env, TRACKDRAW_POC_SMOKE: "1" };
 delete env.ELECTRON_RUN_AS_NODE;
 let app;
 const errors = [];
@@ -52,21 +46,6 @@ async function waitForDraft(page, predicate) {
     if (predicate(draft)) return draft;
     await page.waitForTimeout(100);
   }
-  await page.screenshot({ path: path.join(here, "artifacts/failure.png") });
-  console.error(
-    "Draft after timeout:",
-    await page.evaluate(async () => {
-      const draft = (await window.trackdrawDesktop.projects("state")).draft;
-      return {
-        id: draft?.id,
-        title: draft?.title,
-        count: draft?.shapes.length,
-        activeTool: document.querySelector(
-          '[data-sidebar="menu-button"][aria-pressed="true"]'
-        )?.textContent,
-      };
-    })
-  );
   throw new Error(
     "Timed out waiting for the desktop database to confirm the expected design."
   );
@@ -411,51 +390,6 @@ try {
     .waitFor({ state: "hidden" });
   await page.getByRole("dialog").waitFor({ state: "detached" });
   console.log("PASS: library rename, duplicate and confirmed deletion");
-  const venueTile = () =>
-    page.locator(".project-tile").filter({
-      has: page.getByRole("button", {
-        name: "Open Venue practice",
-        exact: true,
-      }),
-    });
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Make available offline", exact: true })
-    .click();
-  await venueTile().getByText("Ready offline", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "For offline use", exact: true })
-    .click();
-  assert.equal(
-    await page
-      .getByRole("button", { name: "Open Venue practice", exact: true })
-      .count(),
-    1
-  );
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Remove offline preparation", exact: true })
-    .click();
-  await page
-    .getByText("Use a project's menu to prepare it for the field.", {
-      exact: false,
-    })
-    .waitFor();
-  await page.getByRole("button", { name: "All projects", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Make available offline", exact: true })
-    .click();
-  await venueTile().getByText("Ready offline", { exact: true }).waitFor();
-  console.log(
-    "PASS: explicit offline preparation, filtering and removal preserve the local project"
-  );
   await page
     .getByRole("heading", { name: "Your track library", exact: true })
     .waitFor();
@@ -531,98 +465,7 @@ try {
     .fill("Desktop close flush");
   // Close immediately, before the 350 ms autosave debounce can complete.
   await app.close();
-  const manifest = JSON.parse(
-    await readFile(path.join(smokeBundle, "offline-manifest.json"), "utf8")
-  );
-  const texture = manifest.entries.find(
-    (entry) =>
-      entry.path.startsWith("/poc-assets/") && entry.path.endsWith(".webp")
-  );
-  const texturePath = path.join(smokeBundle, texture.path.slice(1));
-  const textureBackup = path.join(here, "artifacts/texture-backup.webp");
-  await rename(texturePath, textureBackup);
   page = await launch();
-  await venueTile().getByText("Ready offline", { exact: true }).waitFor();
-  const cachedTexture = await page.evaluate(async (url) => {
-    const response = await fetch(url, { cache: "no-store" });
-    return {
-      status: response.status,
-      bytes: (await response.arrayBuffer()).byteLength,
-    };
-  }, texture.path);
-  assert.deepEqual(cachedTexture, { status: 200, bytes: texture.size });
-  await rename(textureBackup, texturePath);
-  const retainedPath = path.join(
-    here,
-    ".smoke-profile/offline-assets",
-    `${texture.sha256}.webp`
-  );
-  await rm(retainedPath);
-  await page
-    .getByRole("button", { name: "For offline use", exact: true })
-    .click();
-  await venueTile()
-    .getByText("Offline files missing", { exact: true })
-    .waitFor();
-  await rename(texturePath, textureBackup);
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Prepare latest version", exact: true })
-    .click();
-  await venueTile()
-    .getByText("Preparation failed: retry", { exact: true })
-    .waitFor();
-  await rename(textureBackup, texturePath);
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Prepare latest version", exact: true })
-    .click();
-  await venueTile().getByText("Ready offline", { exact: true }).waitFor();
-  await page.screenshot({
-    path: path.join(here, "artifacts/offline-projects.png"),
-    animations: "disabled",
-  });
-  console.log(
-    "PASS: cold-start offline readiness, retained texture loading, missing-file detection and repair"
-  );
-  await page
-    .getByRole("button", { name: "Open Venue practice", exact: true })
-    .click();
-  await saved(page, 1);
-  // SQLite acknowledges opening before React has mounted the newly active editor.
-  // Use an actionable tool button so the test waits for the document handoff.
-  await page.getByRole("button", { name: "Gate G", exact: true }).click();
-  const venueCanvas = await page
-    .locator(".konvajs-content")
-    .first()
-    .boundingBox();
-  await page.mouse.click(
-    venueCanvas.x + venueCanvas.width * 0.5,
-    venueCanvas.y + venueCanvas.height * 0.5
-  );
-  await saved(page, 2);
-  await page.getByRole("tab", { name: "Home", exact: true }).click();
-  await venueTile()
-    .getByText("Track changed: recheck", { exact: true })
-    .waitFor();
-  await page
-    .getByRole("button", { name: "Actions for Venue practice", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Prepare latest version", exact: true })
-    .click();
-  await venueTile().getByText("Ready offline", { exact: true }).waitFor();
-  await page
-    .getByRole("tab", { name: "Desktop close flush", exact: true })
-    .click();
-  await saved(page, 7);
-  console.log(
-    "PASS: a prepared track opens and edits offline after restart, then requires a new preparation"
-  );
   await page
     .getByRole("tab", { name: "Desktop close flush", exact: true })
     .waitFor();
@@ -635,11 +478,106 @@ try {
     "PASS: close flushes pending edits before a full desktop restart"
   );
   // app.exit bypasses renderer beforeunload, modelling loss of the process after confirmed autosave.
+  const exited = new Promise((resolve) => app.process().once("exit", resolve));
   await app.evaluate(({ app }) => app.exit(0)).catch(() => {});
+  await exited;
   page = await launch();
   assert.equal((await saved(page, 7)).title, "Desktop close flush");
   assert.deepEqual(errors, []);
   console.log("PASS: project survives abrupt exit after confirmed autosave");
+  assert.equal(
+    await page
+      .getByRole("button", { name: "For offline use", exact: true })
+      .count(),
+    0
+  );
+  const rich = JSON.parse(
+    await readFile(
+      path.join(here, "../../tests/fixtures/json-roundtrip.json"),
+      "utf8"
+    )
+  );
+  const incoming = path.join(here, "artifacts/browser-rich.json");
+  const returned = path.join(here, "artifacts/desktop-rich.json");
+  await writeFile(incoming, JSON.stringify(rich));
+  await app.evaluate(
+    ({ dialog }, files) => {
+      dialog.showOpenDialog = async () => ({
+        canceled: false,
+        filePaths: [files.incoming],
+      });
+      dialog.showSaveDialog = async () => ({
+        canceled: false,
+        filePath: files.returned,
+      });
+    },
+    { incoming, returned }
+  );
+  await app.evaluate(({ Menu }) =>
+    Menu.getApplicationMenu()
+      .items.find((item) => item.label === "File")
+      .submenu.items.find((item) => item.label === "Open project copy…")
+      .click()
+  );
+  const imported = await waitForDraft(
+    page,
+    (draft) => draft?.title === rich.title
+  );
+  assert.notEqual(imported.id, rich.id);
+  assert.deepEqual(imported, {
+    ...rich,
+    id: imported.id,
+    createdAt: imported.createdAt,
+    updatedAt: imported.updatedAt,
+  });
+  await app.close();
+  page = await launch();
+  await app.evaluate(({ dialog }, destination) => {
+    dialog.showSaveDialog = async () => ({
+      canceled: false,
+      filePath: destination,
+    });
+  }, returned);
+  await page
+    .getByRole("button", { name: `Open ${rich.title}`, exact: true })
+    .click();
+  await page
+    .locator(`input[value="${rich.title}"]`)
+    .first()
+    .fill(`${rich.title} at the field`);
+  await page
+    .locator(`input[value="${rich.title} at the field"]`)
+    .first()
+    .press("Tab");
+  const fieldEdit = await waitForDraft(
+    page,
+    (draft) => draft?.title === `${rich.title} at the field`
+  );
+  assert.deepEqual(fieldEdit, {
+    ...imported,
+    title: fieldEdit.title,
+    updatedAt: fieldEdit.updatedAt,
+  });
+  await app.evaluate(({ Menu }) =>
+    Menu.getApplicationMenu()
+      .items.find((item) => item.label === "File")
+      .submenu.items.find((item) => item.label === "Save project copy as…")
+      .click()
+  );
+  await page.getByText("Saved desktop-rich.json", { exact: true }).waitFor();
+  assert.deepEqual(JSON.parse(await readFile(returned, "utf8")), fieldEdit);
+  assert.deepEqual(JSON.parse(await readFile(incoming, "utf8")), rich);
+  assert.equal(
+    await page.evaluate(
+      async () =>
+        (await window.trackdrawDesktop.projects("state")).offlinePreparations
+          .length
+    ),
+    0
+  );
+  console.log(
+    "PASS: all track fields survive native JSON import, offline restart/edit and native file export without preparation"
+  );
   console.log("POC smoke checks passed");
 } finally {
   const force = setTimeout(() => app?.process().kill("SIGKILL"), 5000);

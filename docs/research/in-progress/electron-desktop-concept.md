@@ -12,9 +12,9 @@ Figma documents equivalent core functionality between desktop and browser, with 
 
 Keep the existing account direction: new projects created while signed in synchronize automatically, and pre-existing device projects require deliberate attachment. The desktop plan does not introduce a per-project cloud opt-in for every new signed-in project. Saving locally remains the durability layer; the account revision remains the shared baseline across devices. Importing a portable project copy must not silently replace an account revision.
 
-The target is one editor with two full workspaces. Shared editing features belong to both; desktop-specific priority concerns offline reliability, preparation, recovery and native file integration. Do not reduce browser functionality or require installation to encourage desktop adoption. Heavy editing already runs locally in the web version, so any reduction in cloud load must come from measured changes in sync, reads, or asset traffic. Default account sync remains part of the intended continuity experience when the user is signed in.
+The target is one editor with two full workspaces. Shared editing features belong to both; desktop-specific priority concerns offline reliability, recovery and native file integration. Do not reduce browser functionality or require installation to encourage desktop adoption. Heavy editing already runs locally in the web version, so any reduction in cloud load must come from measured changes in sync, reads, or asset traffic. Default account sync remains part of the intended continuity experience when the user is signed in.
 
-Account-centered authoring is a gradual product direction. The homepage's existing guest/account split is the starting contract, and the reported anonymous audience needs a no-loss path into account projects. The PVA separates desktop delivery from a later account-only authoring gate, preserving existing local work and public review access. Initial anonymous editing remains supported during this transition; the plan does not promise a permanently identical guest feature set.
+Account-backed continuity remains useful, while later feedback favors local editing without an initial login and accounts for online saving/synchronization. Preserve the homepage's existing guest/account split, local work and public review access. Account-only authoring is an earlier proposal requiring a separate product decision, not an accepted desktop delivery step.
 
 ## Product goal
 
@@ -36,11 +36,13 @@ Community feedback identifies venue website blockers as a practical barrier to u
 
 Further feedback explicitly favors keeping the browser for general use and values an app for creating tracks offline or altering downloaded tracks at the field. It also supports the journey of preparing a track at home and adjusting it at the event. This refines the earlier desktop-primary direction; it is qualitative feedback, not evidence that all users want desktop or mandatory accounts.
 
+Hazard also prefers browser use to avoid another application to update, accepts occasional offline value and asks for local exploration without initial login; an account is reasonable for online saving. GRUBBY suggests evaluating a PWA and raises Electron runtime footprint as a personal objection. Keep desktop optional and compare the same blocked-origin, offline restart/edit/export and recovery scenarios in a PWA investigation before broad distribution. Measure installation/runtime costs, update friction and platform maintenance rather than treating the current Electron experiment as a final technology choice. Mister Nicolaz is the maintainer's own response to this feedback. The [PVA](../../pva/desktop-workspace-pva.md) records this evaluation gate.
+
 The reference journey is **prepare at home in the browser, adjust offline in desktop at the field, continue in the browser at home**. Validate it first through explicit JSON copies, retaining the originals and comparing track content rather than expecting imported copies to share an identity. Later validate the same journey through account synchronization, preserving project identity and reviewing concurrent revisions. Keep the portable-copy fallback and the ability to create a new local track at the venue. A browser-only user must still be able to complete a full design session without installing desktop.
 
-Prepare a device and its projects beforehand, then allow cold startup, local design/import, 2D/3D editing, saving, reopening, and supported exports without contacting TrackDraw or completing sign-in at the venue. A previously configured account becoming expired must pause cloud operations rather than block local work. This venue requirement remains part of any future account-only authoring model.
+After installing the app, existing local projects must work offline by default. No separate offline library, preparation button or pinned project state is required. Allow cold startup, local design/import, 2D/3D editing, saving, reopening and supported exports without contacting TrackDraw or completing sign-in at the venue. A previously configured account becoming expired must pause cloud operations rather than block local work. Connecting an account must preserve this local capability.
 
-The PVA's venue availability requirement defines project/asset preparation, non-blocking authentication failure, and the blocked-endpoint acceptance matrix. First installation/sign-in and projects never downloaded can still require a working connection. The existing offline POC is useful evidence for a local runtime; authentication-expiry acceptance remains future work.
+The PVA's venue availability requirement defines locally available project data, bundled resources, non-blocking authentication failure and the blocked-endpoint acceptance matrix. First installation/sign-in and projects never downloaded can still require a working connection. The existing offline POC is useful evidence for a local runtime; authentication-expiry acceptance remains future work.
 
 ## Existing foundations
 
@@ -135,7 +137,7 @@ The browser persistence implementation remains in place. A few shared callbacks 
 
 Nine native repository tests cover atomic write rollback, interrupted transactions, reopen, unknown future schema rejection, copy/rename isolation, restore pruning/recovery, deletion and invalid commands. Desktop smoke checks use SQLite and include close-before-autosave recovery. On this branch, 241 web test files with 1,569 tests, lint, TypeScript, web build and translation checks pass. These are local development checks, not a desktop release or cross-platform acceptance.
 
-The broader Phase 1 gate remains open, including per-project offline preparation, more complete storage-failure UX, library scaling, and full asset acceptance. Account-expiry venue acceptance follows when authentication is implemented. See the PVA for the remaining phases.
+The broader Phase 1 gate remains open, including more complete storage-failure UX, library scaling and full asset/platform acceptance. Account-expiry venue acceptance follows when authentication is implemented. See the PVA for the remaining phases.
 
 ### Project library and document tabs
 
@@ -146,3 +148,9 @@ Tab switching acknowledges the current save before activating the next document.
 Validation for this increment: 243 web test files with 1,573 tests, nine native repository tests, the real Electron smoke flow, lint, TypeScript, web and desktop builds, and both translation checks pass locally. Windows/Linux execution and native file-dialog interaction still require platform acceptance.
 
 The desktop visual direction uses TrackDraw's existing color logo, blue navigation and primary actions, an orange active-document accent, system typography and shared light/dark tokens. Library previews retain the actual track layout and include field dimensions, item counts and update dates. Home, recent projects and independent document tabs are workflow references; Figma's visual assets, copy and exact screen styling are not implementation sources. Keep this identity work inside the desktop shell so the shared editor and browser UI remain stable.
+
+### JSON transfer and offline-by-default clarification
+
+The explicit offline-preparation UI was too literal for the intended workflow. Ordinary desktop projects already live in SQLite and the editor/catalog are installed locally, so temporary off-grid use needs no extra action. The library retains its normal recent/all-project views and identifies optional online resources. Previously stored preparation metadata/assets remain intact internally.
+
+The JSON journey is validated against a rich fixture covering every current item kind and portable project field. Browser export/import handlers, SQLite reopen and an isolated editor store compare the entire document around an intentional geometry edit; the Electron file bridge separately checks import, restart, offline edit and export. Desktop imports retain item IDs and content while assigning a fresh project ID and copy timestamps. Future versions or broken item references are rejected rather than silently reduced. Valid map coordinates and rotations are kept numerically exact through repeated normalization.

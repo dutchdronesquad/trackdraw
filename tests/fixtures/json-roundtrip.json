@@ -1,0 +1,375 @@
+{
+  "id": "browser-origin",
+  "version": 2,
+  "title": "Club field – Nürburgring 日本語",
+  "description": "Layout at home\nAdjust at the field.",
+  "tags": ["race", "night", "één"],
+  "authorName": "Klaas & club",
+  "inventory": {
+    "gate": 12,
+    "flag": 7,
+    "cone": 19,
+    "startfinish": 2,
+    "ladder": 5,
+    "divegate": 3,
+    "barrier": 11
+  },
+  "field": {
+    "width": 82.5,
+    "height": 47.25,
+    "origin": "bl",
+    "gridStep": 0.25,
+    "ppm": 24
+  },
+  "mapReference": {
+    "type": "map",
+    "provider": "esri-world-imagery",
+    "mapStyle": "satellite",
+    "centerLat": 52.091234,
+    "centerLng": 5.123456,
+    "zoom": 18.5,
+    "rotationDeg": 37.123456,
+    "opacity": 0.42,
+    "visible": false,
+    "locked": true
+  },
+  "shapes": [
+    {
+      "id": "gate-0",
+      "kind": "gate",
+      "name": "Club gate 0 Ω",
+      "x": 4.25,
+      "y": 6.125,
+      "rotation": 23.75,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "club-pair",
+        "groupName": "Gate pair",
+        "timing": {
+          "role": "start_finish",
+          "timingId": "timer-0"
+        },
+        "catalog": {
+          "version": 1,
+          "elementId": "multigp-standard-gate-5x5",
+          "assignedKind": "gate",
+          "official": true,
+          "snapshot": {
+            "name": "Club standard gate",
+            "organization": "MultiGP",
+            "dimensionsLabel": "Custom 3.125 × 2.25 m"
+          }
+        }
+      },
+      "width": 3.125,
+      "height": 2.25,
+      "thick": 0.18,
+      "appearance": {
+        "source": "registry",
+        "collectionId": "club",
+        "textureId": "striped",
+        "templateId": "gate-standard-v1",
+        "assetId": "club-01"
+      }
+    },
+    {
+      "id": "gate-1",
+      "kind": "gate",
+      "name": "Club gate 1 Ω",
+      "x": 6.5,
+      "y": 7.25,
+      "rotation": 31.0,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "club-pair",
+        "groupName": "Gate pair",
+        "timing": {
+          "role": "split",
+          "timingId": "timer-1"
+        }
+      },
+      "width": 2.3,
+      "height": 2.1,
+      "thick": 0.12
+    },
+    {
+      "id": "flag-2",
+      "kind": "flag",
+      "name": "Club flag 2 Ω",
+      "x": 8.75,
+      "y": 8.375,
+      "rotation": 38.25,
+      "frontOffsetDeg": 11.5,
+      "locked": true,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-2",
+        "groupName": "Section 2"
+      },
+      "radius": 0.8,
+      "poleHeight": 3.4
+    },
+    {
+      "id": "cone-3",
+      "kind": "cone",
+      "name": "Club cone 3 Ω",
+      "x": 11.0,
+      "y": 9.5,
+      "rotation": 45.5,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-3",
+        "groupName": "Section 3"
+      },
+      "radius": 0.375
+    },
+    {
+      "id": "startfinish-4",
+      "kind": "startfinish",
+      "name": "Club startfinish 4 Ω",
+      "x": 13.25,
+      "y": 10.625,
+      "rotation": 52.75,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-4",
+        "groupName": "Section 4"
+      },
+      "width": 4.25
+    },
+    {
+      "id": "ladder-5",
+      "kind": "ladder",
+      "name": "Club ladder 5 Ω",
+      "x": 15.5,
+      "y": 11.75,
+      "rotation": 60.0,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-5",
+        "groupName": "Section 5"
+      },
+      "width": 3.15,
+      "height": 6.4,
+      "thick": 0.22,
+      "rungs": 3,
+      "elevation": 1.25
+    },
+    {
+      "id": "ladder-6",
+      "kind": "ladder",
+      "name": "Club ladder 6 Ω",
+      "x": 17.75,
+      "y": 12.875,
+      "rotation": 67.25,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-6",
+        "groupName": "Section 6"
+      },
+      "width": 1.55,
+      "height": 2.8,
+      "thick": 0.14,
+      "rungs": 1,
+      "elevation": 0
+    },
+    {
+      "id": "tower-7",
+      "kind": "tower",
+      "name": "Club tower 7 Ω",
+      "x": 20.0,
+      "y": 14.0,
+      "rotation": 74.5,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-7",
+        "groupName": "Section 7"
+      },
+      "width": 2.75,
+      "height": 2.1,
+      "levels": 3,
+      "thick": 0.21,
+      "elevation": 1.4
+    },
+    {
+      "id": "divegate-8",
+      "kind": "divegate",
+      "name": "Club divegate 8 Ω",
+      "x": 22.25,
+      "y": 15.125,
+      "rotation": 81.75,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-8",
+        "groupName": "Section 8"
+      },
+      "width": 3.25,
+      "height": 2.65,
+      "thick": 0.16,
+      "tilt": 34.5,
+      "elevation": 4.2
+    },
+    {
+      "id": "barrier-9",
+      "kind": "barrier",
+      "name": "Club barrier 9 Ω",
+      "x": 24.5,
+      "y": 16.25,
+      "rotation": 89.0,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-9",
+        "groupName": "Section 9"
+      },
+      "variant": "net",
+      "width": 9.25,
+      "height": 3.5
+    },
+    {
+      "id": "barrier-10",
+      "kind": "barrier",
+      "name": "Club barrier 10 Ω",
+      "x": 26.75,
+      "y": 17.375,
+      "rotation": 96.25,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-10",
+        "groupName": "Section 10"
+      },
+      "variant": "hurdle",
+      "width": 4.15,
+      "height": 1.6
+    },
+    {
+      "id": "label-11",
+      "kind": "label",
+      "name": "Club label 11 Ω",
+      "x": 29.0,
+      "y": 18.5,
+      "rotation": 103.5,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-11",
+        "groupName": "Section 11"
+      },
+      "text": "Start → finish\n日本語 & <club>",
+      "fontSize": 19.5,
+      "project": false
+    },
+    {
+      "id": "polyline-12",
+      "kind": "polyline",
+      "name": "Club polyline 12 Ω",
+      "x": 0,
+      "y": 0,
+      "rotation": 110.75,
+      "frontOffsetDeg": 11.5,
+      "locked": false,
+      "color": "#385ca8",
+      "meta": {
+        "notes": {
+          "crew": ["Ana", "山田"],
+          "heightOffset": 0.125
+        },
+        "groupId": "group-12",
+        "groupName": "Section 12",
+        "primary": true
+      },
+      "points": [
+        {
+          "x": 1.25,
+          "y": 3.5,
+          "z": 0.25
+        },
+        {
+          "x": 20.75,
+          "y": 15.125,
+          "z": 4.5
+        },
+        {
+          "x": 31.5,
+          "y": 29.75,
+          "z": 1.125
+        }
+      ],
+      "closed": true,
+      "strokeWidth": 0.27,
+      "showArrows": false,
+      "arrowSpacing": 3.75,
+      "smooth": true
+    }
+  ],
+  "createdAt": "2026-05-12T10:11:12.345Z",
+  "updatedAt": "2026-10-24T08:09:10.123Z"
+}

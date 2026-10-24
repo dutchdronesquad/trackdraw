@@ -165,6 +165,29 @@ describe("ImportDialog", () => {
     );
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  it("rejects a future file version before replacing the current project", async () => {
+    const user = userEvent.setup();
+    const { input } = renderImportDialog();
+    await user.upload(
+      input,
+      new File(
+        [
+          JSON.stringify({
+            ...serializeDesign(createDefaultDesign()),
+            version: 99,
+          }),
+        ],
+        "future.json",
+        { type: "application/json" }
+      )
+    );
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(mocks.replaceDesign).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: "Replace project" })
+    ).toBeNull();
+  });
   it("waits for durable preservation before replacing a project", async () => {
     const user = userEvent.setup();
     let completeSave!: () => void;

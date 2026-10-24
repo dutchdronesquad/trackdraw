@@ -41,6 +41,7 @@ export interface PixelDelta {
 
 export function normalizeLongitude(lng: number) {
   if (!Number.isFinite(lng)) return 0;
+  if (lng >= -180 && lng < 180) return lng;
   return ((((lng + 180) % 360) + 360) % 360) - 180;
 }
 
@@ -69,7 +70,9 @@ export function normalizeMapReference(value: unknown): MapReference | null {
   const rotationDeg =
     typeof record.rotationDeg === "number" &&
     Number.isFinite(record.rotationDeg)
-      ? ((record.rotationDeg % 360) + 360) % 360
+      ? record.rotationDeg >= 0 && record.rotationDeg < 360
+        ? record.rotationDeg
+        : ((record.rotationDeg % 360) + 360) % 360
       : 0;
   const opacity =
     typeof record.opacity === "number" && Number.isFinite(record.opacity)

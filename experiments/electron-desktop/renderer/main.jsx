@@ -5,7 +5,7 @@ import ClientLanguageProvider from "@/i18n/ClientLanguageProvider";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { parseDesign, serializeDesign } from "@/lib/track/design";
+import { serializeDesign } from "@/lib/track/design";
 import { ready } from "./storage/projects.mjs";
 import { Workspace } from "./workspace/Workspace.jsx";
 import {
@@ -15,7 +15,10 @@ import {
   useWorkspace,
   getDocument,
 } from "./workspace/workspace.mjs";
-import { nanoid } from "nanoid";
+import {
+  parseProjectFile,
+  createImportedProjectCopy,
+} from "@/lib/track/project-file";
 import {
   createStarterLayoutDesign,
   starterLayouts,
@@ -39,13 +42,11 @@ setProductAnalyticsDisabled(true);
 async function openProject() {
   const result = await window.trackdrawDesktop.openProject();
   if (!result) return;
-  const design = parseDesign(JSON.parse(result.text));
+  const design = parseProjectFile(JSON.parse(result.text));
   if (!design)
     throw new Error("This file does not contain a valid TrackDraw project.");
   // Retain the current project before replacing it with the imported copy.
-  design.id = nanoid();
-  design.createdAt = design.updatedAt = new Date().toISOString();
-  await createDocument(design);
+  await createDocument(createImportedProjectCopy(design));
   toast.success(`Opened ${result.name}`);
 }
 
