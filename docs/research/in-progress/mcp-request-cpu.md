@@ -66,3 +66,11 @@ Two throwaway experiments were evaluated and removed from the checkout:
 All experimental application changes were discarded. The accepted implementation remains the merged #1013 code. No plan/CPU limit was changed. Complete hosted auth-negative, durable-budget, token-lifecycle and scale acceptance still has to pass before closing #1000/#994.
 
 A separate Worker is not established as necessary to stay on Free: the prototype only demonstrates a possible path around Next routing, and adds deployment/auth integration work. Keep the current architecture pending a measured, reviewable decision. Temporary dev data and clients were removed, separate SELECT counts were zero, and production MCP/discovery remained 404.
+
+## October 24 hosted recheck and next runtime gate
+
+The [latest validation record](../../mcp-validation.md#development-recheck-and-paid-recommendation--october-24-2026) reproduces large-track 503/1102 on development commit `002c6297aa665c6ee36c1d8ff4a39dc4d373c3cc`. One captured invocation exceeded CPU at 10 ms; all five immediate HTTP repetitions failed too. Initial public and cursor-page loops passed, so passing a reduced loop alone remains insufficient.
+
+Workers Paid is the recommended next acceptance environment. The account owner raised this option after the repeated Free-limit failure. Activation has not been performed or authorized as a billing action. Confirm the effective development usage model and request CPU limit after activation, then repeat the complete hosted acceptance gate before closing #1000/#994. No separate Worker or other architecture change is established as necessary.
+
+A disposable local experiment moved account-independent Zod input/output schemas out of request-local tool registration. Measuring fresh MCP server construction with Node `process.cpuUsage` (20 warmups, 100 samples) reduced median CPU from 0.454 to 0.012 ms and p95 from 2.55 to 0.141 ms. These are server-construction-only measurements, not total request CPU or hosted results. The experiment was retained outside the repository as a patch and is not part of the application. It does not establish a Free-runtime fix or replace Paid acceptance.
