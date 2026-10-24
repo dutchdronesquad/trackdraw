@@ -1,6 +1,6 @@
 # TrackDraw Electron desktop development build
 
-This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron. During the initial PR stack, `codex/desktop-identity` contains the complete preview; accepted changes land on `codex/desktop-integration`. The earlier `codex/desktop-app` branch is superseded by this stack. The build has a project library, document tabs, and native SQLite storage for projects, the current draft, and restore points. The existing web build and project storage remain in place.
+This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron. Accepted changes land on `codex/desktop-integration`; new work uses feature branches and PRs into that branch. The build has a project library, document tabs, and native SQLite storage for projects, the current draft, restore points and explicit offline preparation. The existing web build and project storage remain in place.
 
 ## Run
 
@@ -21,7 +21,7 @@ The catalog texture preparation reads the current URLs in the shared catalog and
 1. Start at **Home**, browse **Recents** or **All projects**, and search by name. Choose **New track**, **Import project…**, or **Load sample** in an empty library.
 2. Place and select obstacles, move them, and use undo and redo.
 3. Switch between **2D** and **3D**.
-4. Wait for **Saved locally** in the POC bar, quit, and reopen the app without internet.
+4. Wait for **Saved on this device** in the document rail, quit, and reopen the app without internet.
 5. Use the File menu's **Save project copy as…** and **Open project copy…** to round-trip a normal TrackDraw JSON project through native file dialogs. Imported copies open as independent documents. The shortcuts are Cmd/Ctrl+Shift+S and Cmd/Ctrl+O. Cmd/Ctrl+S retains the editor's existing snapshot behavior.
 6. Use the normal **Export** dialog for SVG or Race Pack PDF. Downloads use a native save dialog.
 
@@ -60,9 +60,9 @@ Export projects you want to retain and close Electron before removing this check
 npm --prefix experiments/electron-desktop test
 ```
 
-These tests use disposable SQLite databases to exercise atomic write failure, interrupted transactions, reopen, unknown future schema rejection, restore pruning/recovery, inactive-copy behavior, and cascade deletion. The runtime uses Electron's bundled `node:sqlite`, avoiding a separately compiled SQLite addon. The schema currently has one initial migration; future incompatible schemas are refused without rewriting the database.
+GitHub CI runs these dependency-free native tests on Linux with Node.js 24. They use disposable SQLite databases to exercise atomic write failure, interrupted transactions, reopen, unknown future schema rejection, restore pruning/recovery, inactive-copy behavior, and cascade deletion. The runtime uses Electron's bundled `node:sqlite`, avoiding a separately compiled SQLite addon. The schema has an initial migration and a version-two migration for offline preparation; future incompatible schemas are refused without rewriting the database.
 
-Each open document now has an independent editor store and undo/redo history; only the active editor/canvas is mounted. The account transport is still disabled, and authentication expiry, offline asset pinning, cloud continuity, platform installers, and updates remain later work in the PVA. In this increment the entire catalog texture set is locally bundled, not a per-project asset pinning system.
+Each open document now has an independent editor store and undo/redo history; only the active editor/canvas is mounted. The account transport is still disabled, and authentication expiry, cloud continuity, platform installers, and updates remain later work in the PVA. Offline preparation currently retains a shared copy of the full local runtime and catalog asset set; it does not download cloud-only projects or external assets.
 
 ## Project library and document tabs
 
@@ -75,3 +75,18 @@ Open tab IDs, recent ordering, selection and view preferences use Zustand persis
 Desktop smoke coverage includes two independently edited documents, separate undo/redo histories, selection and 2D viewport preservation, a rendered-image comparison for 3D camera/pan restoration, close/reopen, library search/rename/duplicate/delete, persisted tabs, and save-on-close. The browser keeps its existing default editor store and starter experience.
 
 The workspace uses TrackDraw's existing color logo, theme tokens and system typography. Blue identifies navigation and primary actions; orange identifies the active track tab. The library presents field dimensions in the selected measurement system, item counts and update dates alongside the shared SVG previews. Light/dark preview colors follow the app theme. The document workflow takes inspiration from familiar design tools, while its branding, copy and track presentation belong to TrackDraw. All styling is scoped to the desktop experiment.
+
+## Prepare projects for the field
+
+1. Create or import the project locally. From its library menu choose **Make available offline**. The installed app can prepare bundled resources without internet; first installation and browser/cloud transfers still require the appropriate setup or portable JSON copy.
+2. Open **For offline use** to see prepared tracks. **Ready offline** means the saved project revision and current app files were verified. Hover the badge for the preparation time and saved version; screen readers receive the same description.
+3. **Track only** identifies projects with online map imagery or external registry appearances. These resources are not downloaded or licensed for caching by this feature. Track geometry remains editable; the badge explains the specific limitation. Such projects never receive the full-ready label.
+4. After edits, **Track changed: recheck** indicates that the prepared snapshot is older. **Prepare latest version** records the current saved track. An app update similarly requires a new check/preparation.
+5. **Check offline files** checks the retained resources. Missing or damaged bytes remove readiness; preparing again repairs them from the installed bundle when available. Failed preparation retains previous snapshots and local edits.
+6. **Remove offline preparation** removes only the preparation record. The project, edits and restore points remain. Explicit project deletion also removes its prepared snapshot.
+
+SQLite schema two stores a full prepared project snapshot, preparation time and the bundle manifest. A build-generated manifest covers the local renderer, catalog textures, fonts and other bundled public files with SHA-256 hashes. Native preparation verifies and copies these files into the application-data profile's `offline-assets` directory before committing the snapshot. Content-addressed files are shared between projects, are verified on startup and recheck, and are not automatically evicted. The renderer receives only readiness metadata, never native paths or SQL. Unpreparing does not garbage-collect cached bytes; safe cleanup and selective per-project asset sets remain future work.
+
+The native protocol can serve retained files when matching bundled resources are missing. An installed compatible application is still required; preparation is not a standalone app backup or a promise that every export/video feature is accepted. Upgrading from schema one retains existing projects, drafts and restore points; older binaries reject schema two. Export JSON backups before trying older development builds.
+
+The Electron smoke flow uses a separate copy of the app bundle and disposable profile. It prepares/unprepares through the library, cold-starts with a bundled texture removed, loads its retained copy, detects a deleted retained file, repairs it, then edits and prepares the track again. Normal app resources and profiles are untouched. HTTP/WebSocket access remains blocked. This does not establish account-expiry behavior or Windows/Linux acceptance.

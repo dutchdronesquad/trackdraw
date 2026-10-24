@@ -19,13 +19,24 @@ function setup(t) {
   const directory = mkdtempSync(path.join(tmpdir(), "trackdraw-desktop-"));
   const filename = path.join(directory, "projects.sqlite");
   const repo = openRepository(filename);
+  const connections = [repo];
   t.after(() => {
-    try {
-      repo.close();
-    } catch {}
+    for (const connection of connections) {
+      try {
+        connection.close();
+      } catch {}
+    }
     rmSync(directory, { recursive: true, force: true });
   });
-  return { repo, filename };
+  return {
+    repo,
+    filename,
+    open(assets) {
+      const connection = openRepository(filename, assets);
+      connections.push(connection);
+      return connection;
+    },
+  };
 }
 
 test("desktop draft and project survive closing and reopening SQLite", (t) => {
@@ -154,4 +165,119 @@ test("failed restoration rolls back both the recovery snapshot and the target de
   assert.equal(state.draft.title, "Current track");
   assert.equal(state.restorePoints.length, 1);
   assert.equal(state.restorePoints[0].id, point.id);
+});
+
+function offlineService() {
+  return {
+    prepare: () => ({ version: 1, revision: "test-runtime", entries: [] }),
+    check: () => "verified",
+  };
+}
+test("offline preparation persists its exact revision and becomes stale after edits", (t) => {
+  const { filename, repo, open } = setup(t);
+  repo.command("save", { design: design("field") });
+  repo.close();
+  let prepared = open(offlineService());
+  let state = prepared.command("prepare-offline", { id: "field" });
+  const revision = state.offlinePreparations[0].revision;
+  assert.equal(state.offlinePreparations[0].status, "ready");
+  prepared.close();
+  prepared = open(offlineService());
+  assert.equal(
+    prepared.command("state").offlinePreparations[0].revision,
+    revision
+  );
+  state = prepared.command("save", {
+    design: design("field", "Venue adjustment"),
+  });
+  assert.equal(state.offlinePreparations[0].status, "changed");
+  assert.equal(state.offlinePreparations[0].revision, revision);
+  state = prepared.command("prepare-offline", { id: "field" });
+  assert.equal(state.offlinePreparations[0].status, "ready");
+  assert.notEqual(state.offlinePreparations[0].revision, revision);
+  state = prepared.command("remove-offline", { id: "field" });
+  assert.equal(state.offlinePreparations.length, 0);
+  assert.equal(state.designs[0].title, "Venue adjustment");
+});
+test("map imagery and external appearances are explicit limitations, never fully ready", (t) => {
+  const { repo, filename, open } = setup(t);
+  repo.close();
+  const prepared = open(offlineService());
+  prepared.command("save", {
+    design: {
+      ...design("field"),
+      mapReference: { type: "map", visible: false },
+      shapes: [{ appearance: { source: "external" } }],
+    },
+  });
+  const state = prepared.command("prepare-offline", { id: "field" });
+  assert.equal(state.offlinePreparations[0].status, "limited");
+  assert.deepEqual(state.offlinePreparations[0].limitations, [
+    "map",
+    "appearance",
+  ]);
+});
+test("failed offline preparation preserves the previous pin and all local work", (t) => {
+  const { repo, filename, open } = setup(t);
+  repo.close();
+  const service = offlineService();
+  const prepared = open(service);
+  prepared.command("save", { design: design("field") });
+  const first = prepared.command("prepare-offline", { id: "field" })
+    .offlinePreparations[0];
+  prepared.command("save", { design: design("field", "New work") });
+  service.prepare = () => {
+    throw new Error("Disk full");
+  };
+  assert.throws(
+    () => prepared.command("prepare-offline", { id: "field" }),
+    /Disk full/
+  );
+  const state = prepared.command("state");
+  assert.equal(state.offlinePreparations[0].revision, first.revision);
+  assert.equal(state.offlinePreparations[0].status, "changed");
+  assert.equal(state.draft.title, "New work");
+});
+test("database acknowledgement failure cannot replace an earlier prepared revision", (t) => {
+  const { repo, filename, open } = setup(t);
+  repo.close();
+  const prepared = open(offlineService());
+  prepared.command("save", { design: design("field") });
+  const first = prepared.command("prepare-offline", { id: "field" })
+    .offlinePreparations[0];
+  prepared.command("save", { design: design("field", "Unsnapshotted work") });
+  const other = new DatabaseSync(filename);
+  other.exec(
+    "CREATE TRIGGER fail_pin BEFORE UPDATE ON offline_preparations BEGIN SELECT RAISE(ABORT,'pin write failed'); END;"
+  );
+  other.close();
+  assert.throws(
+    () => prepared.command("prepare-offline", { id: "field" }),
+    /pin write failed/
+  );
+  assert.equal(
+    prepared.command("state").offlinePreparations[0].revision,
+    first.revision
+  );
+  assert.equal(prepared.command("state").draft.title, "Unsnapshotted work");
+});
+test("upgrading a version-one database preserves existing projects, drafts and restore points", (t) => {
+  const { repo, filename, open } = setup(t);
+  repo.command("save", { design: design("existing"), restore: true });
+  repo.close();
+  const other = new DatabaseSync(filename);
+  other.exec("DROP TABLE offline_preparations; PRAGMA user_version=1;");
+  other.close();
+  const upgraded = open(offlineService());
+  const state = upgraded.command("state");
+  assert.equal(state.designs[0].id, "existing");
+  assert.equal(state.draft.id, "existing");
+  assert.equal(state.restorePoints.length, 1);
+  assert.equal(state.offlinePreparations.length, 0);
+  upgraded.command("prepare-offline", { id: "existing" });
+  assert.equal(
+    upgraded.command("delete", { ids: ["existing"] }).offlinePreparations
+      .length,
+    0
+  );
 });

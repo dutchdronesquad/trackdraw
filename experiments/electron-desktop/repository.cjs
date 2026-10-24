@@ -1,5 +1,6 @@
 const { DatabaseSync } = require("node:sqlite");
 const { randomUUID } = require("node:crypto");
+const { digest } = require("./offline-assets.cjs");
 
 function validateDesign(design) {
   if (
@@ -16,11 +17,11 @@ function validateDesign(design) {
     throw new Error("Project exceeds the 16 MiB desktop limit.");
 }
 
-function openRepository(filename) {
+function openRepository(filename, offlineAssets = null) {
   const db = new DatabaseSync(filename);
   try {
     const version = db.prepare("PRAGMA user_version").get().user_version;
-    if (version > 1)
+    if (version > 2)
       throw new Error(
         "This project database requires a newer TrackDraw version. No data was changed."
       );
@@ -33,6 +34,12 @@ function openRepository(filename) {
         CREATE TABLE workspace (id INTEGER PRIMARY KEY CHECK(id=1), design TEXT NOT NULL CHECK(json_valid(design)));
         CREATE TABLE restore_points (id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, saved_at TEXT NOT NULL, design TEXT NOT NULL CHECK(json_valid(design)));
         PRAGMA user_version=1;
+        COMMIT;`);
+    }
+    if (version < 2) {
+      db.exec(`BEGIN IMMEDIATE;
+        CREATE TABLE offline_preparations (project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE, design TEXT NOT NULL CHECK(json_valid(design)), prepared_at TEXT NOT NULL, manifest TEXT NOT NULL CHECK(json_valid(manifest)));
+        PRAGMA user_version=2;
         COMMIT;`);
     }
   } catch (error) {
@@ -76,6 +83,35 @@ function openRepository(filename) {
             shapeCount: design.shapes.length,
           };
         }),
+      offlinePreparations: db
+        .prepare(
+          "SELECT p.project_id, p.design AS prepared_design, p.prepared_at, p.manifest, d.design FROM offline_preparations p JOIN projects d ON d.id=p.project_id"
+        )
+        .all()
+        .map((row) => {
+          const design = JSON.parse(row.prepared_design);
+          const manifest = JSON.parse(row.manifest);
+          const assets = offlineAssets?.check(manifest) || "missing";
+          const limitations = [];
+          if (design.mapReference) limitations.push("map");
+          if (design.shapes.some((shape) => shape?.appearance))
+            limitations.push("appearance");
+          return {
+            projectId: row.project_id,
+            preparedAt: row.prepared_at,
+            designUpdatedAt: design.updatedAt,
+            revision: digest(row.prepared_design),
+            status:
+              assets !== "verified"
+                ? assets
+                : digest(row.design) !== digest(row.prepared_design)
+                  ? "changed"
+                  : limitations.length
+                    ? "limited"
+                    : "ready",
+            limitations,
+          };
+        }),
     };
   }
   function writeDesign(design, restore, activate) {
@@ -109,6 +145,34 @@ function openRepository(filename) {
     if (name === "save")
       return save(payload?.design, payload?.restore === true);
     if (name === "save-copy") return save(payload?.design, false, false);
+    if (name === "prepare-offline") {
+      const id = String(payload?.id);
+      const row = db.prepare("SELECT design FROM projects WHERE id=?").get(id);
+      if (!row) throw new Error("Project is unavailable.");
+      if (!offlineAssets)
+        throw new Error("Offline preparation is unavailable.");
+      const manifest = offlineAssets.prepare();
+      // Files are verified and durable before the prepared snapshot is committed.
+      transaction(() =>
+        db
+          .prepare(
+            "INSERT INTO offline_preparations VALUES(?, ?, ?, ?) ON CONFLICT(project_id) DO UPDATE SET design=excluded.design, prepared_at=excluded.prepared_at, manifest=excluded.manifest"
+          )
+          .run(
+            id,
+            row.design,
+            new Date().toISOString(),
+            JSON.stringify(manifest)
+          )
+      );
+      return snapshot();
+    }
+    if (name === "remove-offline") {
+      db.prepare("DELETE FROM offline_preparations WHERE project_id=?").run(
+        String(payload?.id)
+      );
+      return snapshot();
+    }
     if (name === "restore") {
       const row = db
         .prepare("SELECT design FROM restore_points WHERE id=?")
