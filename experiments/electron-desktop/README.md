@@ -64,7 +64,6 @@ These tests use disposable SQLite databases to exercise atomic write failure, in
 
 Each open document now has an independent editor store and undo/redo history; only the active editor/canvas is mounted. The account transport is still disabled, and authentication expiry, offline asset pinning, cloud continuity, platform installers, and updates remain later work in the PVA. In this increment the entire catalog texture set is locally bundled, not a per-project asset pinning system.
 
-
 ## Project library and document tabs
 
 The Home tab opens the local project library with recent/all-project sorting, search, shared SVG previews, new/import actions, rename, duplicate, and confirmed deletion. Opening a project already in a tab activates that document. Closing a tab saves it and leaves its project in the library. File menu shortcuts include Cmd/Ctrl+N for a new track, Cmd/Ctrl+O for import, Cmd/Ctrl+W to close the current document, and Cmd/Ctrl+Shift+H for the library.

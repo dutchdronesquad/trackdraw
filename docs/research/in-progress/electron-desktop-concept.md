@@ -133,7 +133,6 @@ Nine native repository tests cover atomic write rollback, interrupted transactio
 
 The broader Phase 1 gate remains open, including per-project offline preparation, more complete storage-failure UX, library scaling, and full asset acceptance. Account-expiry venue acceptance follows when authentication is implemented. See the PVA for the remaining phases.
 
-
 ### Project library and document tabs
 
 The desktop branch now opens a Home library with recent/all-project lists, shared SVG previews, search, creation/import and project management. Open projects appear as document tabs, with separate editor stores and temporal histories. Only the active editor is mounted. The web editor continues to use its existing default store and first-use flow.
