@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("trackdrawDesktop", {
+  platform: process.platform,
   projects: (name, payload) =>
     ipcRenderer.invoke("desktop:projects", name, payload),
   finishClose: () => ipcRenderer.invoke("desktop:close-ready"),

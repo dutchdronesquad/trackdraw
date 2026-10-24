@@ -107,4 +107,12 @@ The native tests exercise failed backup writes, sync and rename. The Electron sm
 
 ## App identity for UI review
 
-The development app uses the existing TrackDraw blue/orange gate-and-route icon from `public/assets/pwa/icon-512.png` for the macOS Dock and desktop window icon. This reuses established artwork rather than introducing a second brand. Packaged macOS `.icns`, Windows `.ico`, Linux desktop integration and installer/update identity remain part of the platform-delivery phase; running the development app does not prove those packaged identities.
+The development app reuses the existing TrackDraw blue/orange gate-and-route artwork from `public/assets/pwa/icon-512.png`. The desktop build generates a macOS Dock variant with an 824-pixel mark centered on a transparent 1024-pixel canvas; other window icons keep the existing source asset. The Home tab uses a compact 16-pixel icon. This changes presentation scale without introducing another brand or altering the web artwork. Packaged macOS `.icns`, Windows `.ico`, Linux desktop integration and installer/update identity remain part of the platform-delivery phase; running the development app does not prove those packaged identities.
+
+## Desktop workspace presentation
+
+On macOS, the document rail shares the native title bar, retaining the standard window controls. Empty title-bar space drags the window; tabs, buttons and the scrollable document strip remain interactive. Windows and Linux retain their native window frames. Home and save status remain outside the horizontally scrollable document strip; selecting a document brings its tab into view and truncated titles expose the full name on hover.
+
+The library uses a compact heading and the shared TrackDraw dropdown-menu primitive for project actions, including keyboard focus, Escape dismissal and focus return. Rename/delete dialogs retain their existing confirmation flows. Desktop focus styling applies only to desktop chrome, library and recovery actions; shared editor controls retain Studio hover/focus styling without a second desktop outline. The normal and reduced-motion rules remain scoped to this host.
+
+This UI pass was inspected in the running macOS app against the online Studio. Broader tab-overflow, small-window, assistive-technology and Windows/Linux acceptance remain separate checks. Account/share affordances in the offline alpha, richer project sorting/list views and native packaged app naming remain follow-up work.

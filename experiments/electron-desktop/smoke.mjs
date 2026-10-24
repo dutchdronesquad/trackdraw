@@ -363,7 +363,7 @@ try {
     .getByRole("button", { name: "Actions for Untitled track", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Rename project", exact: true })
+    .getByRole("menuitem", { name: "Rename project", exact: true })
     .click();
   await page
     .getByRole("dialog", { name: "Rename project" })
@@ -379,7 +379,7 @@ try {
   await page
     .getByRole("button", { name: "Actions for Venue practice", exact: true })
     .click();
-  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Duplicate", exact: true }).click();
   await page
     .getByRole("button", { name: "Open Copy of Venue practice", exact: true })
     .waitFor();
@@ -390,7 +390,7 @@ try {
     })
     .click();
   await page
-    .getByRole("button", { name: "Delete project", exact: true })
+    .getByRole("menuitem", { name: "Delete project", exact: true })
     .click();
   await page
     .getByRole("dialog", { name: "Delete project" })
@@ -744,7 +744,7 @@ try {
       exact: true,
     })
     .click();
-  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Duplicate", exact: true }).click();
   await recovery().waitFor();
   const duplicateBackupFile = path.join(
     here,
