@@ -25,13 +25,13 @@ Exit gate for account-only authoring: working login/recovery, robust account syn
 
 ## Product contract
 
-| Surface | Primary role | Required behavior |
-| --- | --- | --- |
-| Desktop | Offline creation and venue-side changes, project preparation, exports, and local file integration | Open a project library at startup, resume prepared/downloaded tracks, create local tracks, save locally before syncing, and support complete editing sessions without reachable website or login services. |
+| Surface    | Primary role                                                                                          | Required behavior                                                                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop    | Offline creation and venue-side changes, project preparation, exports, and local file integration     | Open a project library at startup, resume prepared/downloaded tracks, create local tracks, save locally before syncing, and support complete editing sessions without reachable website or login services.        |
 | Web Studio | Full track design at home or elsewhere, including continued work after an event, without installation | Retain creation, 2D/3D editing, autosave, recovery, import/export and existing account project features. Keep direct browser editing available and preserve project compatibility and the current guest contract. |
-| Mobile web | Venue-side access, review, and editing | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app. |
-| Public web | Discovery, gallery, sharing, and embeds | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy. |
-| Cloud | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability. |
+| Mobile web | Venue-side access, review, and editing                                                                | Preserve the existing mobile editor. Shared links and account projects remain usable without a desktop app.                                                                                                       |
+| Public web | Discovery, gallery, sharing, and embeds                                                               | Keep `/share/[token]` canonical and directly usable without installation. A shared link opens a published snapshot, not someone's unpublished working copy.                                                       |
+| Cloud      | Identity, account project continuity, published snapshots, gallery, and existing APIs/MCP             | Synchronize account revisions and serve public content. Local design operations must not wait for cloud availability.                                                                                             |
 
 ### Home to field to home acceptance journey
 
@@ -69,16 +69,16 @@ Locally commit edits and pending sync operations while endpoints are blocked. Wh
 
 Required acceptance scenarios, to be implemented as the relevant phases land:
 
-| Scenario | Required result |
-| --- | --- |
-| Browser-only use without desktop installed | Complete creation, 2D/3D editing, save/reopen, recovery and import/export; existing account and public sharing flows remain usable. |
-| Browser preparation, offline desktop changes at the venue, then browser continuation | Preserve track content through the explicit JSON-copy flow first, and through the same account project after sync lands. Continue browser editing without desktop running. |
-| Internet fully disconnected before launch | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss. |
-| Venue Wi-Fi reports online but TrackDraw domains are blocked | The same local workflow works without waiting for cloud requests to time out. |
-| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite. |
-| Update service is blocked or unreachable | The installed compatible editor starts and local work remains available. |
-| A project or required asset was not downloaded | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness. |
-| Network access returns after offline edits and a concurrent desktop/web/MCP update | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry. |
+| Scenario                                                                                  | Required result                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Browser-only use without desktop installed                                                | Complete creation, 2D/3D editing, save/reopen, recovery and import/export; existing account and public sharing flows remain usable.                                        |
+| Browser preparation, offline desktop changes at the venue, then browser continuation      | Preserve track content through the explicit JSON-copy flow first, and through the same account project after sync lands. Continue browser editing without desktop running. |
+| Internet fully disconnected before launch                                                 | Cold-start, open a prepared project, edit, save, export, quit, and reopen without data loss.                                                                               |
+| Venue Wi-Fi reports online but TrackDraw domains are blocked                              | The same local workflow works without waiting for cloud requests to time out.                                                                                              |
+| Website or sign-in flow is blocked and credentials expire before launch or during editing | The local editor remains usable; reauthentication is offered for cloud access without becoming a local-work prerequisite.                                                  |
+| Update service is blocked or unreachable                                                  | The installed compatible editor starts and local work remains available.                                                                                                   |
+| A project or required asset was not downloaded                                            | Explain exactly what is unavailable; retain access to other local projects and allow creating/importing a local track. Do not report complete offline readiness.           |
+| Network access returns after offline edits and a concurrent desktop/web/MCP update        | Reconcile revisions through review, retain both versions, and avoid duplicate writes on retry.                                                                             |
 
 Repeat the blocked-endpoint scenarios on each supported desktop platform. The current offline POC does not yet validate account-expiry behavior because it has no account integration.
 
@@ -100,15 +100,15 @@ Keep `src/` in place and continue importing the editor into a separate local fro
 
 The POC's aliases are temporary integration points. Replace only the required runtime seams with small explicit interfaces for project persistence, navigation, and native file actions. Start with persistence; introduce other interfaces when their production behavior is implemented. Do not build a general plugin framework.
 
-| Existing owner | Bounded change |
-| --- | --- |
-| `experiments/electron-desktop/` | Keep the working POC reproducible while production behavior is introduced incrementally. Promote it to a dedicated desktop directory only after the storage and runtime boundaries are accepted; moving this small folder must not require moving `src/`. |
-| `src/components/editor/EditorShell.tsx` and `StudioDialogsProvider.tsx` | Introduce the minimum host/navigation integration needed to retain web behavior and remove production dependence on history monkey patches. |
-| `src/hooks/editor/useEditorProjects.ts` and `src/lib/projects.ts` | Retain the browser persistence path and introduce an awaited desktop repository for loading, autosave, restore points, and project management. Audit synchronous callers before changing signatures. |
-| `src/store/editor.ts` and editor action hooks | Preserve current editing semantics. Document tabs require isolated project state and history; do not mount several shells against the current singleton store. |
-| `src/components/editor/useAccountProjectSync.ts` | Separate the project transport from browser-relative fetches while retaining revision conflicts and recovery. |
-| `src/lib/server/projects.ts`, project/share routes, and auth helpers | Reuse ownership and revision rules. Add only the authentication/API changes required for an installed client. |
-| `src/lib/track/`, canvas renderers, and `src/lib/export/` | Continue sharing behavior. Add native file output at the boundary without duplicating geometry or export implementations. |
+| Existing owner                                                          | Bounded change                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `experiments/electron-desktop/`                                         | Keep the working POC reproducible while production behavior is introduced incrementally. Promote it to a dedicated desktop directory only after the storage and runtime boundaries are accepted; moving this small folder must not require moving `src/`. |
+| `src/components/editor/EditorShell.tsx` and `StudioDialogsProvider.tsx` | Introduce the minimum host/navigation integration needed to retain web behavior and remove production dependence on history monkey patches.                                                                                                               |
+| `src/hooks/editor/useEditorProjects.ts` and `src/lib/projects.ts`       | Retain the browser persistence path and introduce an awaited desktop repository for loading, autosave, restore points, and project management. Audit synchronous callers before changing signatures.                                                      |
+| `src/store/editor.ts` and editor action hooks                           | Preserve current editing semantics. Document tabs require isolated project state and history; do not mount several shells against the current singleton store.                                                                                            |
+| `src/components/editor/useAccountProjectSync.ts`                        | Separate the project transport from browser-relative fetches while retaining revision conflicts and recovery.                                                                                                                                             |
+| `src/lib/server/projects.ts`, project/share routes, and auth helpers    | Reuse ownership and revision rules. Add only the authentication/API changes required for an installed client.                                                                                                                                             |
+| `src/lib/track/`, canvas renderers, and `src/lib/export/`               | Continue sharing behavior. Add native file output at the boundary without duplicating geometry or export implementations.                                                                                                                                 |
 
 Use SQLite as the proposed durable desktop project store, with transactions for the working design, project metadata, restore points, and eventual pending sync operations. Put binary assets in an application-managed directory. Database migration and packaging must work on all supported platforms. Keep normal JSON import/export compatibility; do not introduce a mandatory new archive format in the first release.
 
@@ -202,15 +202,15 @@ Evaluate product reliability and maintenance cost separately from infrastructure
 
 ### Branch and pull request workflow
 
-Use `codex/desktop-integration` as the review destination for desktop development, separate from `main`. Preserve `codex/desktop-app` as the existing runnable preview of the complete work while the initial review stack is outstanding. Do not reset or force-push it to manufacture smaller diffs. After the stack lands, create each new feature branch from the accepted integration tip and open a bounded PR back to that integration branch.
+Use `codex/desktop-integration` as the review destination for desktop development, separate from `main`. While the initial review stack is outstanding, `codex/desktop-identity` is the complete runnable preview. The earlier `codex/desktop-app` branch can be removed after verifying all of its commits are ancestors of that stack tip and the complete preview still works. Removing the redundant branch must not remove the worktree, application-data database or exported projects. Do not reset or force-push branches to manufacture smaller diffs. After the stack lands, create each new feature branch from the accepted integration tip and open a bounded PR back to that integration branch.
 
 The initial work is split along its existing commit boundaries:
 
-| Review slice | Head branch | Initial PR base | Scope |
-| --- | --- | --- | --- |
-| Desktop foundation | `codex/desktop-foundation` | `codex/desktop-integration` | Isolated Electron runtime, native JSON files, durable SQLite projects, restore points and awaited saves. |
-| Project workspace | `codex/desktop-workspace` | `codex/desktop-foundation` | Project library, isolated document stores, tabs and per-document view/history behavior. |
-| TrackDraw identity and direction | `codex/desktop-identity` | `codex/desktop-workspace` | TrackDraw visual styling, browser/offline role clarification and this review workflow. |
+| Review slice                     | Head branch                | Initial PR base             | Scope                                                                                                    |
+| -------------------------------- | -------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Desktop foundation               | `codex/desktop-foundation` | `codex/desktop-integration` | Isolated Electron runtime, native JSON files, durable SQLite projects, restore points and awaited saves. |
+| Project workspace                | `codex/desktop-workspace`  | `codex/desktop-foundation`  | Project library, isolated document stores, tabs and per-document view/history behavior.                  |
+| TrackDraw identity and direction | `codex/desktop-identity`   | `codex/desktop-workspace`   | TrackDraw visual styling, browser/offline role clarification and this review workflow.                   |
 
 Open these as dependent draft PRs so each diff contains only its own slice. Review and merge from foundation upward. Use merge commits for this initial stack to preserve ancestry, then retarget the next PR to `codex/desktop-integration` after its predecessor lands. Do not squash a parent and retarget a child without first rebuilding the child's base; that would reintroduce already-reviewed changes into its diff. No merges or automatic merges are part of setting up this review stack.
 

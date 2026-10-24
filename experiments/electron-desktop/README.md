@@ -1,6 +1,6 @@
 # TrackDraw Electron desktop development build
 
-This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron on the `codex/desktop-app` branch. It has a project library, document tabs, and native SQLite storage for projects, the current draft, and restore points. The existing web build and project storage remain in place.
+This desktop development build runs the shared TrackDraw editor from a local Vite bundle in Electron. During the initial PR stack, `codex/desktop-identity` contains the complete preview; accepted changes land on `codex/desktop-integration`. The earlier `codex/desktop-app` branch is superseded by this stack. The build has a project library, document tabs, and native SQLite storage for projects, the current draft, and restore points. The existing web build and project storage remain in place.
 
 ## Run
 
@@ -54,7 +54,6 @@ The smoke flow covers placement, selection and nudge, undo/redo, 3D canvas creat
 
 Export projects you want to retain and close Electron before removing this checkout. Generated builds, texture caches, dependencies, and smoke output live here; the normal desktop database remains in the application-data profile. The branch also contains a few shared callbacks that await preservation, so retain or revert those through Git when abandoning this branch. Never delete the application-data profile as part of routine cleanup. Retain the [concept and evaluation](../../docs/research/in-progress/electron-desktop-concept.md) if the direction is parked.
 
-
 ## Native storage checks
 
 ```bash
@@ -64,7 +63,6 @@ npm --prefix experiments/electron-desktop test
 These tests use disposable SQLite databases to exercise atomic write failure, interrupted transactions, reopen, unknown future schema rejection, restore pruning/recovery, inactive-copy behavior, and cascade deletion. The runtime uses Electron's bundled `node:sqlite`, avoiding a separately compiled SQLite addon. The schema currently has one initial migration; future incompatible schemas are refused without rewriting the database.
 
 Each open document now has an independent editor store and undo/redo history; only the active editor/canvas is mounted. The account transport is still disabled, and authentication expiry, offline asset pinning, cloud continuity, platform installers, and updates remain later work in the PVA. In this increment the entire catalog texture set is locally bundled, not a per-project asset pinning system.
-
 
 ## Project library and document tabs
 
