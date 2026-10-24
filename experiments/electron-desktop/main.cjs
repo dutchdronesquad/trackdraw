@@ -7,6 +7,7 @@ const {
   net,
   protocol,
   session,
+  nativeImage,
 } = require("electron");
 const fs = require("node:fs/promises");
 const path = require("node:path");
@@ -25,6 +26,7 @@ let approvedClose = false;
 let wantsQuit = false;
 const { openRepository } = require("./repository.cjs");
 const { openOfflineAssets } = require("./offline-assets.cjs");
+const { writeProjectBackup } = require("./project-backup.cjs");
 let offlineAssets;
 
 // The removable POC never shares storage with the browser or another Electron app.
@@ -90,6 +92,10 @@ function action(name) {
 
 app.whenReady().then(async () => {
   if (!singleInstance) return;
+  const icon = nativeImage.createFromPath(
+    path.join(dist, "assets/pwa/icon-512.png")
+  );
+  if (!icon.isEmpty()) app.dock?.setIcon(icon);
   try {
     await fs.mkdir(app.getPath("userData"), { recursive: true });
     offlineAssets = openOfflineAssets(
@@ -193,7 +199,7 @@ app.whenReady().then(async () => {
       filters: [{ name: "TrackDraw project", extensions: ["json"] }],
     });
     if (result.canceled || !result.filePath) return null;
-    await fs.writeFile(result.filePath, text, "utf8");
+    await writeProjectBackup(result.filePath, text);
     return path.basename(result.filePath);
   });
 
@@ -251,6 +257,7 @@ app.whenReady().then(async () => {
       minWidth: 960,
       minHeight: 640,
       title: "TrackDraw Desktop Alpha",
+      icon,
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,

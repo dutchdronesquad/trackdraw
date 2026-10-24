@@ -2,7 +2,7 @@
 
 Date: October 24, 2026
 
-Status: an isolated Electron POC exists in `experiments/electron-desktop/` and received positive hands-on feedback. Community feedback refines the direction: retain the browser as a full workspace and focus desktop on reliable offline creation and venue-side changes. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the next delivery phases; production release and broader platform acceptance remain open.
+Status: Electron selected for continued desktop development on October 24, 2026; offline PWA work is parked. An isolated Electron POC exists in `experiments/electron-desktop/` and received positive hands-on feedback. Community feedback refines the direction: retain the browser as a full workspace and focus desktop on reliable offline creation and venue-side changes. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the next delivery phases; production release and broader platform acceptance remain open.
 
 ## Desktop and web product direction
 
@@ -18,9 +18,9 @@ Account-backed continuity remains useful, while later feedback favors local edit
 
 ## Product goal
 
-Explore whether an installable TrackDraw app makes regular track design more convenient, particularly when working without a reliable connection. Keep the browser editor, mobile access, gallery, and canonical shared links available.
+Develop the existing Electron foundation into an optional desktop workspace for reliable local track design, particularly when working without a reliable connection. Keep the browser editor, mobile access, gallery, and canonical shared links available.
 
-The first question is whether the existing editor can run locally in Electron with a small, removable integration. A successful experiment does not commit TrackDraw to a desktop release, a monorepo migration, a new engine, or a new persistence system.
+The POC established that the existing editor can run locally in Electron with a small integration. Electron is now the selected desktop direction; production release still depends on the PVA's durability, venue, security and platform acceptance gates. This does not require a monorepo migration or a new rendering engine.
 
 ## Proposed user experience
 
@@ -36,7 +36,7 @@ Community feedback identifies venue website blockers as a practical barrier to u
 
 Further feedback explicitly favors keeping the browser for general use and values an app for creating tracks offline or altering downloaded tracks at the field. It also supports the journey of preparing a track at home and adjusting it at the event. This refines the earlier desktop-primary direction; it is qualitative feedback, not evidence that all users want desktop or mandatory accounts.
 
-Hazard also prefers browser use to avoid another application to update, accepts occasional offline value and asks for local exploration without initial login; an account is reasonable for online saving. GRUBBY suggests evaluating a PWA and raises Electron runtime footprint as a personal objection. Keep desktop optional and compare the same blocked-origin, offline restart/edit/export and recovery scenarios in a PWA investigation before broad distribution. Measure installation/runtime costs, update friction and platform maintenance rather than treating the current Electron experiment as a final technology choice. Mister Nicolaz is the maintainer's own response to this feedback. The [PVA](../../pva/desktop-workspace-pva.md) records this evaluation gate.
+Hazard also prefers browser use to avoid another application to update, accepts occasional offline value and asks for local exploration without initial login; an account is reasonable for online saving. GRUBBY suggested a PWA and raised Electron runtime footprint as a personal objection. That alternative was investigated; the maintainer subsequently chose to continue with Electron and park PWA work. Retain the feedback as delivery requirements: keep desktop optional and measure installation/runtime costs, update friction and platform maintenance. Mister Nicolaz is the maintainer's own response to the feedback. The [PVA](../../pva/desktop-workspace-pva.md) records the current runtime decision.
 
 The reference journey is **prepare at home in the browser, adjust offline in desktop at the field, continue in the browser at home**. Validate it first through explicit JSON copies, retaining the originals and comparing track content rather than expecting imported copies to share an identity. Later validate the same journey through account synchronization, preserving project identity and reviewing concurrent revisions. Keep the portable-copy fallback and the ability to create a new local track at the venue. A browser-only user must still be able to complete a full design session without installing desktop.
 
@@ -81,6 +81,8 @@ Use disposable project copies during the trial. Background maps, remotely loaded
 SQLite, a new project archive format, and a generalized storage abstraction are deferred. The experiment should first demonstrate whether those investments are needed.
 
 ## Evaluation criteria
+
+The [parked offline PWA evaluation](../planned/offline-pwa-evaluation.md) retains the source investigation and conditions for reconsideration. The maintainer selected Electron after reviewing it; a PWA proof of concept is no longer a distribution gate. Continue validating the Electron app against the criteria below and the PVA phase gates. No PWA has been built or accepted.
 
 | Question                                   | Evidence required before expanding scope                                                                                                            |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |

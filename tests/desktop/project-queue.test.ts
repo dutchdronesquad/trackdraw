@@ -56,8 +56,44 @@ it("retains a failure until native acknowledgement and permits a subsequent retr
   await repository.ready;
   const failure = new Error("Disk full");
   projects.mockRejectedValueOnce(failure);
-  await expect(repository.command("save", {})).rejects.toThrow("Disk full");
+  const design = { id: "track-one", title: "Unsaved work" };
+  await expect(repository.command("save", { design })).rejects.toThrow(
+    "Disk full"
+  );
   expect(repository.getError()).toBe(failure);
+  expect(
+    repository.getErrorMessage(
+      new Error(
+        "Error invoking remote method 'desktop:projects': Error: Disk full"
+      )
+    )
+  ).toBe("Disk full");
   await repository.command("state", undefined);
+  await repository.command("save-copy", { design: { id: "other-track" } });
+  expect(repository.getError("track-one")).toBe(failure);
+  expect(repository.getSaveFailures()).toEqual([{ design, error: failure }]);
+  await repository.command("save", {
+    design: { ...design, title: "Latest edits" },
+  });
   expect(repository.getError()).toBeNull();
+  expect(repository.getSaveFailures()).toEqual([]);
+});
+
+it("retains independent failed project snapshots until each project is acknowledged", async () => {
+  const projects = vi.fn().mockResolvedValue(state);
+  vi.stubGlobal("window", { trackdrawDesktop: { projects } });
+  const repository =
+    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+  await repository.ready;
+  for (const id of ["one", "two"]) {
+    projects.mockRejectedValueOnce(new Error("Read-only disk"));
+    await expect(
+      repository.command("save-copy", { design: { id } })
+    ).rejects.toThrow("Read-only disk");
+  }
+  await repository.command("save-copy", { design: { id: "two" } });
+  expect(repository.getSaveFailures().map(({ design }) => design.id)).toEqual([
+    "one",
+  ]);
+  expect(repository.getError("two")).toBeNull();
 });

@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import {
   createEditorStore,
   setActiveEditorStore,
 } from "../shims/editor-store.jsx";
-import { createDefaultDesign } from "@/lib/track/design";
+import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import {
   loadProject,
   saveDesign,
@@ -13,9 +13,12 @@ import {
   getState,
   createProjectDuplicate,
   listProjects,
+  getSaveFailures,
+  waitForWrites,
 } from "../storage/projects.mjs";
 
 const documents = new Map();
+const exportedBackups = new Map();
 let queue = Promise.resolve();
 export const useWorkspace = create(
   persist(
@@ -26,9 +29,35 @@ export const useWorkspace = create(
       views: {},
       home: true,
       busy: false,
+      closing: false,
     }),
     {
       name: "trackdraw.desktopWorkspace",
+      // These are disposable UI preferences. A full browser-storage quota must
+      // not prevent recovery/export of project data held in the editor.
+      storage: createJSONStorage(() => ({
+        getItem(name) {
+          try {
+            return localStorage.getItem(name);
+          } catch {
+            return null;
+          }
+        },
+        setItem(name, value) {
+          try {
+            localStorage.setItem(name, value);
+          } catch {
+            /* Keep editing/recovery available. */
+          }
+        },
+        removeItem(name) {
+          try {
+            localStorage.removeItem(name);
+          } catch {
+            /* Preferences are not project data. */
+          }
+        },
+      })),
       partialize: (state) => ({
         openIds: state.openIds,
         activeId: state.activeId,
@@ -40,6 +69,44 @@ export const useWorkspace = create(
 );
 export function getDocument(id) {
   return documents.get(id);
+}
+export function getRecoveryDesign(id) {
+  return (
+    getDocument(id)?.store.getState().track.design ||
+    getSaveFailures().find((failure) => failure.design.id === id)?.design
+  );
+}
+export function retryDocumentSave(id) {
+  const design = getRecoveryDesign(id);
+  if (!design) throw new Error("This project is no longer available.");
+  return useWorkspace.getState().activeId === id
+    ? saveDesign(design)
+    : saveCopy(design);
+}
+export function markProjectBackup(design) {
+  exportedBackups.set(design.id, JSON.stringify(serializeDesign(design)));
+  useWorkspace.setState({});
+}
+export function canCloseWithBackups() {
+  const candidates = new Map(
+    getSaveFailures().map(({ design }) => [design.id, design])
+  );
+  for (const document of documents.values())
+    candidates.set(document.id, document.store.getState().track.design);
+  const pending = [...candidates.values()].filter(
+    (design) =>
+      JSON.stringify(
+        getState().designs.find((saved) => saved.id === design.id)
+      ) !== JSON.stringify(serializeDesign(design))
+  );
+  return (
+    pending.length > 0 &&
+    pending.every(
+      (design) =>
+        exportedBackups.get(design.id) ===
+        JSON.stringify(serializeDesign(design))
+    )
+  );
 }
 export function isDocumentOpen(document) {
   return documents.get(document.id) === document;
@@ -202,11 +269,28 @@ export function closeDocument(id) {
 }
 export async function flushDocuments() {
   await queue;
+  await waitForWrites();
   for (const document of documents.values()) {
-    await saveCopy(document.store.getState().track.design);
+    const design = document.store.getState().track.design;
+    const saved = getState().designs.find((item) => item.id === document.id);
+    if (JSON.stringify(saved) !== JSON.stringify(serializeDesign(design)))
+      await saveCopy(design);
     rememberDocument(document);
   }
-  await preserveActive();
+  // A failed import/duplicate can exist only in recovery memory, without an open
+  // editor tab. Closing must retain or acknowledge that project as well.
+  for (const { design } of getSaveFailures()) {
+    const saved = getState().designs.find((item) => item.id === design.id);
+    if (JSON.stringify(saved) !== JSON.stringify(serializeDesign(design)))
+      await saveCopy(design);
+  }
+  const active = getDocument(useWorkspace.getState().activeId);
+  if (
+    active &&
+    JSON.stringify(getState().draft) !==
+      JSON.stringify(serializeDesign(active.store.getState().track.design))
+  )
+    await saveDesign(active.store.getState().track.design);
 }
 export function initializeWorkspace() {
   const state = useWorkspace.getState();
@@ -222,6 +306,7 @@ export function initializeWorkspace() {
     activeId,
     home: true,
     busy: false,
+    closing: false,
     recentIds: state.recentIds.filter((id) => known.has(id)),
   });
 }

@@ -2,7 +2,7 @@
 
 Date: October 24, 2026
 
-Status: delivery plan revised after community feedback. The browser remains a full workspace; desktop primarily adds dependable offline work at event venues. Implementation has started on `codex/desktop-app` in an isolated worktree, including native SQLite persistence, a project library and document tabs. Cloud continuity and later release gates remain open.
+Status: Electron selected for desktop delivery on October 24, 2026; offline PWA work is parked. The browser remains a full workspace; desktop primarily adds dependable offline work at event venues. Implementation has started on `codex/desktop-app` in an isolated worktree, including native SQLite persistence, a project library and document tabs. Cloud continuity and later release gates remain open.
 
 ## Direction
 
@@ -18,13 +18,15 @@ Later community feedback makes the preferred boundary clearer: let users try and
 
 The earlier account-only authoring idea is not an accepted delivery step. This plan does not add a first-launch login gate or make local authoring depend on initial account provisioning. Any later proposal to restrict guest authoring needs a separate explicit product decision, evidence of user benefit and impact, a no-loss transition, and a reversible rollout. Do not infer authorization for that change from desktop development or this feedback. Preserve existing guest exports, temporary shares and public review access.
 
-## Community feedback and runtime evaluation
+## Community feedback and runtime decision
 
 Hazard prefers the browser to avoid maintaining another installed application, sees occasional value in offline editing, and objects to an initial login gate while accepting accounts for online saving. GRUBBY raises a PWA as an alternative and objects to Electron's additional runtime footprint. These are qualitative signals, not a representative adoption survey. Mister Nicolaz is the maintainer's own reply welcoming feedback, not an additional independent endorsement.
 
-Keep desktop optional and the full browser editor available. Evaluate a practical offline PWA alongside the Electron alpha before committing to broad desktop distribution. Do not assume either option passes the venue requirements. Use the same saved track and compare cold launch after prior installation while the origin/login are blocked, disconnected 2D/3D editing, JSON transfer, supported exports, restart recovery, storage retention, unavailable resources and recovery from an interrupted update. Assess the supported browser/platform matrix and distinguish first installation from later off-grid use.
+Electron is the chosen desktop runtime. Continue developing the existing isolated desktop app, sharing the editor and portable JSON format with the full browser workspace. The offline PWA alternative has been investigated and is [parked](../research/planned/offline-pwa-evaluation.md); no PWA prototype or browser-storage migration is required before desktop work or release validation can continue. Revisit it only through a separate product decision if Electron's maintenance or distribution cost becomes unacceptable, or new user needs justify it.
 
-Record installation size, memory use, startup time, native file handling, update friction and the work needed to maintain signed releases on each platform. The update experience must preserve local projects and pending edits and allow ongoing venue work to continue. Automatic update delivery and durable PWA storage are evaluation requirements, not capabilities claimed by this PR. Keep the shared editor and portable JSON contract independent of the runtime decision. This increment continues the isolated Electron experiment; it does not implement a service worker, migrate browser storage or select a final distribution technology.
+Prioritize dependable installed startup, local SQLite projects, recovery and native file handling when TrackDraw or login endpoints are unreachable. This choice does not establish immunity to device-management restrictions or cross-platform acceptance. Keep desktop optional, local creation/editing available without an initial login, and existing local projects editable offline by default. Cloud-only projects still need a connection for their first download.
+
+Retain installation size, memory use, startup time, update friction and signed-release maintenance as Electron delivery checks. Updates must preserve local projects and pending edits and allow ongoing venue work to continue. The next work is to close the local storage/recovery and venue acceptance gaps, then progress through account continuity and platform delivery under the existing phase gates. No new engine, separate repository or broad codebase reorganization is part of this runtime decision.
 
 ## Product contract
 
@@ -144,6 +146,8 @@ Exit gate: complete real track design sessions offline, including close/reopen, 
 
 The earlier preparation UI is superseded by offline-by-default local projects. SQLite schema two and existing retained snapshots/assets remain preserved. The JSON round-trip increment verifies all current portable project fields and every item kind through browser dialogs, native files/SQLite, an offline edit and browser reimport. A separate Electron smoke flow covers the native file bridge and restart with a rich track. The broader venue/platform/account gates remain open. See the [desktop runbook](../../experiments/electron-desktop/README.md#offline-by-default).
 
+The save-recovery increment adds persistent per-project failures, retry of the current in-memory design and native JSON backups independent of SQLite. Normal close remains blocked on failure. An explicit close is allowed only after all unsaved documents have current successful exports; further edits invalidate earlier backups. Backup replacement uses a synced temporary file before rename, preserving an older backup if writing fails. Disposable SQLite failure tests cover this path; physical power loss, startup/corrupt-database recovery and platform acceptance remain open. The development Dock/window icon reuses existing TrackDraw artwork; packaged platform icons belong to Phase 4.
+
 ### Phase 2 Add the desktop workspace
 
 - [x] Open a project library with recent projects, search, and a clear continue-working action. Keep TrackDraw's visual language.
@@ -228,7 +232,7 @@ Keep production delivery incremental too: identify small reusable changes suitab
 
 Deliver small changes in this order: persistence seam, durable desktop repository, workspace/library, document isolation, desktop auth/transport, sync recovery, platform delivery, then website entry points. Each change must have a bounded diff and relevant behavior checks. Shared-code changes run the normal lint, tests, type, and build checks; copy changes also run the i18n checks.
 
-Phase 1 is the next build scope. Do not bundle tabs, cloud sign-in, installers, and a repository restructure into that change. Phase exit gates determine whether to continue, rescope, or park the direction. Production persistence migrations require an export/backup path; later abandonment must not depend on retaining Electron to recover users' tracks.
+Continue the remaining Phase 1 local durability and venue checks in small Electron PRs; retain the existing library, document tabs and JSON-transfer foundation. Do not bundle cloud sign-in, installers and a repository restructure into the storage/recovery increment. PWA investigation or implementation is not a prerequisite. Phase exit gates determine whether to continue, rescope, or park the direction. Production persistence migrations require an export/backup path; later abandonment must not depend on retaining Electron to recover users' tracks.
 
 The first native-storage increment uses a desktop persistence adapter behind the existing build aliases, avoiding a wholesale async rewrite of the browser repository. Shared changes are limited to awaiting preservation during import, new-project creation, manual snapshot save, and account project opening. The adapter hydrates an in-memory read cache from SQLite; writes await native acknowledgement. Its initial state response loads the project library in full, so paged/lazy loading remains a later scaling task. Cloud persistence is deliberately unavailable in this increment.
 

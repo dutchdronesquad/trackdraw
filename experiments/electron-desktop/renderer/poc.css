@@ -544,3 +544,45 @@ body,
   color: var(--foreground);
   font-size: 10px;
 }
+
+.desktop-save-recovery {
+  flex-shrink: 0;
+  max-height: 30vh;
+  overflow: auto;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--destructive);
+  background: var(--background);
+}
+.desktop-save-recovery p {
+  margin: 0 0 8px;
+}
+.recovery-project {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+.recovery-project > div {
+  flex: 1;
+  min-width: 0;
+}
+.recovery-project strong,
+.recovery-project span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.recovery-project span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.desktop-save-recovery button {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.desktop-save-recovery button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

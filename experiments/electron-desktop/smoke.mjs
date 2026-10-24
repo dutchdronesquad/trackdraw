@@ -104,11 +104,22 @@ try {
   console.log("PASS: gate placement, undo and redo");
 
   await page.keyboard.press("v");
-  await page.mouse.move(point.x - 24, point.y - 24);
-  await page.mouse.down();
-  await page.mouse.move(point.x + 24, point.y + 24, { steps: 10 });
-  await page.mouse.up();
   const gate = edited.shapes.at(-1);
+  // Fit-to-track may move the viewport after undo/redo. Resolve the saved gate's
+  // current screen position instead of reusing its original placement position.
+  const gatePoint = await page.evaluate(
+    ({ gate, ppm }) => {
+      const stage = window.Konva.stages.find((stage) => stage.width() > 500);
+      const screen = stage
+        .getAbsoluteTransform()
+        .point({ x: gate.x * ppm, y: gate.y * ppm });
+      const bounds = stage.container().getBoundingClientRect();
+      return { x: bounds.x + screen.x, y: bounds.y + screen.y };
+    },
+    { gate, ppm: edited.field.ppm }
+  );
+  await page.mouse.click(gatePoint.x, gatePoint.y);
+  await page.getByText("1 selected", { exact: true }).waitFor();
   await page.keyboard.press("ArrowRight");
   edited = await waitForDraft(
     page,
@@ -578,7 +589,209 @@ try {
   console.log(
     "PASS: all track fields survive native JSON import, offline restart/edit and native file export without preparation"
   );
+  const storageFault = async (enabled) =>
+    app.evaluate(({ app }, enabled) => {
+      const { DatabaseSync } = process.getBuiltinModule("node:sqlite");
+      const database = new DatabaseSync(
+        `${app.getPath("userData")}/projects.sqlite`
+      );
+      try {
+        database.exec(
+          enabled
+            ? "CREATE TRIGGER smoke_storage_failure BEFORE INSERT ON projects BEGIN SELECT RAISE(ABORT,'Simulated disk full'); END;"
+            : "DROP TRIGGER smoke_storage_failure"
+        );
+      } finally {
+        database.close();
+      }
+    }, enabled);
+  await storageFault(true);
+  const changeTitle = async (from, to) => {
+    const input = page.locator(`input[value="${from}"]`).first();
+    await input.fill(to);
+    await page.locator(`input[value="${to}"]`).first().press("Tab");
+  };
+  const recovery = () =>
+    page.getByRole("region", { name: "Unsaved projects", exact: true });
+  await changeTitle(fieldEdit.title, "Recovery: unsaved changes");
+  await recovery().waitFor();
+  await page.screenshot({
+    path: path.join(here, "artifacts/save-recovery.png"),
+    animations: "disabled",
+  });
+  assert.equal((await saved(page, rich.shapes.length)).title, fieldEdit.title);
+  assert.equal(
+    await recovery()
+      .getByRole("button", { name: "Close with exported backups", exact: true })
+      .isDisabled(),
+    true
+  );
+  await app.evaluate(({ dialog }) => {
+    dialog.showSaveDialog = async () => ({ canceled: true });
+  });
+  await recovery()
+    .getByRole("button", { name: "Export JSON backup", exact: true })
+    .click();
+  assert.equal(
+    await recovery()
+      .getByRole("button", { name: "Close with exported backups", exact: true })
+      .isDisabled(),
+    true
+  );
+  const recoveryFile = path.join(here, "artifacts/recovery.json");
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, recoveryFile);
+  await recovery()
+    .getByRole("button", { name: "Export JSON backup", exact: true })
+    .click();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("button")].some(
+      (button) =>
+        button.textContent === "Close with exported backups" && !button.disabled
+    )
+  );
+  const backup = JSON.parse(await readFile(recoveryFile, "utf8"));
+  assert.deepEqual(backup, {
+    ...fieldEdit,
+    title: "Recovery: unsaved changes",
+    updatedAt: backup.updatedAt,
+  });
+  await changeTitle(backup.title, "Recovery: latest changes");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("button")].some(
+      (button) =>
+        button.textContent === "Close with exported backups" && button.disabled
+    )
+  );
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].close()
+  );
+  await recovery().getByText("Simulated disk full", { exact: false }).waitFor();
+  assert.equal(page.isClosed(), false);
+  await storageFault(false);
+  await recovery()
+    .getByRole("button", { name: "Retry save", exact: true })
+    .click();
+  const recovered = await waitForDraft(
+    page,
+    (draft) => draft?.title === "Recovery: latest changes"
+  );
+  await recovery().waitFor({ state: "hidden" });
+  assert.deepEqual(recovered, {
+    ...fieldEdit,
+    title: recovered.title,
+    updatedAt: recovered.updatedAt,
+  });
+  console.log(
+    "PASS: failed saves retain edits, canceled backups do not acknowledge recovery, stale backups cannot authorize close, retry saves latest changes"
+  );
+
+  await storageFault(true);
+  await changeTitle(recovered.title, "Recovery: backup-only changes");
+  await recovery().waitFor();
+  await recovery()
+    .getByRole("button", { name: "Export JSON backup", exact: true })
+    .click();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("button")].some(
+      (button) =>
+        button.textContent === "Close with exported backups" && !button.disabled
+    )
+  );
+  const finalBackup = JSON.parse(await readFile(recoveryFile, "utf8"));
+  assert.equal(finalBackup.title, "Recovery: backup-only changes");
+  await storageFault(false);
+  const closed = page.waitForEvent("close");
+  await recovery()
+    .getByRole("button", { name: "Close with exported backups", exact: true })
+    .click();
+  await closed;
+  await app.close();
+  page = await launch();
+  assert.equal((await saved(page, rich.shapes.length)).title, recovered.title);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({
+      canceled: false,
+      filePaths: [filePath],
+    });
+  }, recoveryFile);
+  await app.evaluate(({ Menu }) =>
+    Menu.getApplicationMenu()
+      .items.find((item) => item.label === "File")
+      .submenu.items.find((item) => item.label === "Open project copy…")
+      .click()
+  );
+  const restoredBackup = await waitForDraft(
+    page,
+    (draft) => draft?.title === finalBackup.title
+  );
+  assert.deepEqual(restoredBackup, {
+    ...finalBackup,
+    id: restoredBackup.id,
+    createdAt: restoredBackup.createdAt,
+    updatedAt: restoredBackup.updatedAt,
+  });
+  assert.deepEqual(errors, []);
+  console.log(
+    "PASS: explicit close after current backups preserves the database and exported JSON restores all unsaved track content"
+  );
+  await page.getByRole("tab", { name: "Home", exact: true }).click();
+  await storageFault(true);
+  await page
+    .getByRole("button", {
+      name: `Actions for ${restoredBackup.title}`,
+      exact: true,
+    })
+    .click();
+  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+  await recovery().waitFor();
+  const duplicateBackupFile = path.join(
+    here,
+    "artifacts/duplicate-recovery.json"
+  );
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].close()
+  );
+  await recovery()
+    .getByRole("button", { name: "Export JSON backup", exact: true })
+    .waitFor();
+  assert.equal(page.isClosed(), false);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, duplicateBackupFile);
+  await recovery()
+    .getByRole("button", { name: "Export JSON backup", exact: true })
+    .click();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("button")].some(
+      (button) =>
+        button.textContent === "Close with exported backups" && !button.disabled
+    )
+  );
+  const duplicateBackup = JSON.parse(
+    await readFile(duplicateBackupFile, "utf8")
+  );
+  assert.notEqual(duplicateBackup.id, restoredBackup.id);
+  assert.equal(duplicateBackup.title, `Copy of ${restoredBackup.title}`);
+  assert.deepEqual(duplicateBackup.shapes, restoredBackup.shapes);
+  await storageFault(false);
+  console.log(
+    "PASS: failed library copies export their own retained content rather than the active document"
+  );
   console.log("POC smoke checks passed");
+} catch (error) {
+  const failedPage = app?.windows()[0];
+  if (failedPage && !failedPage.isClosed()) {
+    await failedPage
+      .screenshot({ path: path.join(here, "artifacts/failure.png") })
+      .catch(() => {});
+    await writeFile(
+      path.join(here, "artifacts/failure.txt"),
+      await failedPage.locator("body").innerText()
+    ).catch(() => {});
+  }
+  throw error;
 } finally {
   const force = setTimeout(() => app?.process().kill("SIGKILL"), 5000);
   await app?.close().catch(() => {});
