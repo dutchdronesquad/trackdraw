@@ -95,7 +95,11 @@ app.whenReady().then(async () => {
   const icon = nativeImage.createFromPath(
     path.join(dist, "assets/pwa/icon-512.png")
   );
-  if (!icon.isEmpty()) app.dock?.setIcon(icon);
+  const dockIcon = nativeImage.createFromPath(
+    path.join(dist, "assets/desktop/icon-macos.png")
+  );
+  if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
+  else if (!icon.isEmpty()) app.dock?.setIcon(icon);
   try {
     await fs.mkdir(app.getPath("userData"), { recursive: true });
     offlineAssets = openOfflineAssets(
@@ -257,6 +261,12 @@ app.whenReady().then(async () => {
       minWidth: 960,
       minHeight: 640,
       title: "TrackDraw Desktop Alpha",
+      ...(process.platform === "darwin"
+        ? {
+            titleBarStyle: "hiddenInset",
+            trafficLightPosition: { x: 16, y: 15 },
+          }
+        : {}),
       icon,
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),

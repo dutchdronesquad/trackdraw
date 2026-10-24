@@ -30,6 +30,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import EditorShell from "@/components/editor/EditorShell";
 import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { designToSvg } from "@/lib/export/exportSvg";
@@ -226,51 +233,59 @@ function Library({ onNew, onImport, onSample, run }) {
                     </span>
                   </span>
                 </button>
-                <button
-                  className="project-menu-trigger"
-                  aria-label={t("projectActions", { title: design.title })}
-                  aria-expanded={menu === design.id}
-                  onClick={() => setMenu(menu === design.id ? null : design.id)}
+                <DropdownMenu
+                  open={menu === design.id}
+                  onOpenChange={(open) => setMenu(open ? design.id : null)}
                 >
-                  <MoreHorizontal size={18} />
-                </button>
-                {menu === design.id && (
-                  <div className="project-menu">
+                  <DropdownMenuTrigger asChild>
                     <button
-                      onClick={() => {
+                      className="project-menu-trigger"
+                      aria-label={t("projectActions", { title: design.title })}
+                    >
+                      <MoreHorizontal size={18} aria-hidden="true" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="desktop-project-menu"
+                    onCloseAutoFocus={(event) => {
+                      if (dialog) event.preventDefault();
+                    }}
+                  >
+                    <DropdownMenuItem
+                      onSelect={() => {
                         setDialog({ kind: "rename", id: design.id });
                         setTitle(design.title);
-                        setMenu(null);
                       }}
                     >
                       <Pencil size={14} />
                       {t("rename")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setMenu(null);
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() =>
                         run(() =>
                           duplicateDocument(
                             design.id,
                             t("copyOf", { title: design.title })
                           )
-                        );
-                      }}
+                        )
+                      }
                     >
                       <Copy size={14} />
                       {t("duplicate")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDialog({ kind: "delete", id: design.id });
-                        setMenu(null);
-                      }}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() =>
+                        setDialog({ kind: "delete", id: design.id })
+                      }
                     >
                       <Trash2 size={14} />
                       {t("delete")}
-                    </button>
-                  </div>
-                )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </article>
             ))}
           </div>
@@ -410,6 +425,12 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
       window.removeEventListener("keydown", block, true);
     };
   }, [state.home, state.activeId, onImport, onSave, onNew, run]);
+  useEffect(() => {
+    if (!state.home && state.activeId)
+      globalThis.document
+        .getElementById(`desktop-tab-${state.activeId}`)
+        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [state.activeId, state.home]);
   const tabs = [null, ...state.openIds];
   const change = (id) => run(() => (id ? openDocument(id) : showLibrary()));
   const keyDown = (event, id) => {
@@ -429,78 +450,93 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
       ?.focus();
   };
   return (
-    <div className="desktop-workbench" inert={state.closing || undefined}>
-      <div className="desktop-tabs" role="tablist" aria-label={t("documents")}>
-        <button
-          id="desktop-tab-home"
-          role="tab"
-          aria-selected={state.home}
-          tabIndex={state.home ? 0 : -1}
-          disabled={state.busy}
-          onKeyDown={(event) => keyDown(event, null)}
-          onClick={() => change(null)}
+    <div
+      className="desktop-workbench"
+      data-platform={window.trackdrawDesktop.platform}
+      inert={state.closing || undefined}
+    >
+      <div className="desktop-titlebar">
+        <div
+          className="desktop-tabs"
+          role="tablist"
+          aria-label={t("documents")}
         >
-          <Image
-            src="/assets/pwa/icon-192.png"
-            alt=""
-            width={22}
-            height={22}
-            unoptimized
-          />
-          {t("home")}
-        </button>
-        {state.openIds.map((id) => {
-          const doc = getDocument(id);
-          const design = doc?.store.getState().track.design;
-          return (
-            <div
-              className={`document-tab ${!state.home && id === state.activeId ? "active" : ""}`}
-              key={id}
-            >
-              <button
-                role="tab"
-                id={`desktop-tab-${id}`}
-                aria-selected={!state.home && id === state.activeId}
-                tabIndex={!state.home && id === state.activeId ? 0 : -1}
-                disabled={state.busy}
-                onKeyDown={(event) => keyDown(event, id)}
-                onClick={() => change(id)}
-              >
-                <Route
-                  size={14}
-                  className="document-tab-icon"
-                  aria-hidden="true"
-                />
-                <span className="document-tab-title">
-                  {design?.title || t("untitled")}
-                </span>
-                {design &&
-                  repository.designs.find((item) => item.id === id)
-                    ?.updatedAt !== design.updatedAt && (
-                    <span aria-label={t("saving")}>•</span>
-                  )}
-              </button>
-              <button
-                className="tab-close"
-                aria-label={t("closeDocument", {
-                  title: design?.title || t("untitled"),
-                })}
-                disabled={state.busy}
-                onClick={() => run(() => closeDocument(id))}
-              >
-                <X size={13} />
-              </button>
-            </div>
-          );
-        })}
-        <button
-          className="new-tab"
-          aria-label={t("newProject")}
-          disabled={state.busy}
-          onClick={onNew}
-        >
-          <Plus size={16} />
-        </button>
+          <button
+            id="desktop-tab-home"
+            role="tab"
+            aria-selected={state.home}
+            tabIndex={state.home ? 0 : -1}
+            disabled={state.busy}
+            onKeyDown={(event) => keyDown(event, null)}
+            onClick={() => change(null)}
+          >
+            <Image
+              src="/assets/pwa/icon-192.png"
+              alt=""
+              width={16}
+              height={16}
+              unoptimized
+            />
+            {t("home")}
+          </button>
+          <div className="document-tab-scroll">
+            {state.openIds.map((id) => {
+              const doc = getDocument(id);
+              const design = doc?.store.getState().track.design;
+              return (
+                <div
+                  className={`document-tab ${!state.home && id === state.activeId ? "active" : ""}`}
+                  key={id}
+                >
+                  <button
+                    role="tab"
+                    id={`desktop-tab-${id}`}
+                    aria-selected={!state.home && id === state.activeId}
+                    tabIndex={!state.home && id === state.activeId ? 0 : -1}
+                    disabled={state.busy}
+                    onKeyDown={(event) => keyDown(event, id)}
+                    onClick={() => change(id)}
+                  >
+                    <Route
+                      size={14}
+                      className="document-tab-icon"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="document-tab-title"
+                      title={design?.title || t("untitled")}
+                    >
+                      {design?.title || t("untitled")}
+                    </span>
+                    {design &&
+                      repository.designs.find((item) => item.id === id)
+                        ?.updatedAt !== design.updatedAt && (
+                        <span aria-label={t("saving")}>•</span>
+                      )}
+                  </button>
+                  <button
+                    className="tab-close"
+                    aria-label={t("closeDocument", {
+                      title: design?.title || t("untitled"),
+                    })}
+                    disabled={state.busy}
+                    onClick={() => run(() => closeDocument(id))}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <button
+            className="new-tab"
+            aria-label={t("newProject")}
+            disabled={state.busy}
+            onClick={onNew}
+          >
+            <Plus size={16} />
+          </button>
+        </div>
         <span
           className={`workspace-status ${saveFailed ? "save-failed" : ""}`}
           role="status"

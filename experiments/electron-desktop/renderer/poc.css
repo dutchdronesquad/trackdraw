@@ -17,15 +17,35 @@ body,
   font-size: 13px;
   font-family: var(--font-sans);
 }
-/* The document rail uses TrackDraw blue for focus and orange for the active track. */
-.desktop-tabs {
+.desktop-titlebar {
   height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: stretch;
-  overflow-x: auto;
   border-bottom: 1px solid var(--border);
   background: var(--sidebar);
+  user-select: none;
+  -webkit-app-region: drag;
+}
+.desktop-workbench[data-platform="darwin"] .desktop-titlebar {
+  padding-left: 80px;
+}
+.desktop-titlebar button {
+  -webkit-app-region: no-drag;
+}
+.document-tab-scroll {
+  display: flex;
+  overflow-x: auto;
+  min-width: 0;
+  gap: 3px;
+  scrollbar-width: thin;
+  -webkit-app-region: no-drag;
+}
+/* The document rail uses TrackDraw blue for focus and orange for the active track. */
+.desktop-tabs {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
   padding: 5px 8px 0;
   gap: 4px;
 }
@@ -53,8 +73,9 @@ body,
 }
 .document-tab {
   display: flex;
-  min-width: 155px;
-  max-width: 248px;
+  flex: 0 0 190px;
+  min-width: 120px;
+  max-width: 230px;
   border-radius: 6px 6px 0 0;
   border-top: 2px solid transparent;
 }
@@ -135,11 +156,11 @@ body,
   position: relative;
 }
 .library-sidebar {
-  width: 224px;
+  width: 216px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  padding: 32px 16px 20px;
+  padding: 24px 12px 16px;
   border-right: 1px solid var(--border);
   background: var(--sidebar);
 }
@@ -220,14 +241,14 @@ body,
   flex: 1;
   min-width: 0;
   overflow: auto;
-  padding: 40px clamp(28px, 4vw, 64px);
+  padding: 24px clamp(24px, 3vw, 48px);
 }
 .library-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  padding-bottom: 32px;
+  padding-bottom: 20px;
 }
 .library-eyebrow {
   color: var(--brand-primary);
@@ -235,14 +256,14 @@ body,
   margin-bottom: 8px;
 }
 .library-heading h1 {
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 650;
   letter-spacing: -0.035em;
   line-height: 1.2;
 }
 .library-heading p {
   color: var(--muted-foreground);
-  margin-top: 10px;
+  margin-top: 6px;
   font-size: 13px;
 }
 .library-actions {
@@ -286,7 +307,7 @@ body,
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 20px 0;
+  padding: 14px 0;
   border-top: 1px solid var(--border);
 }
 .library-toolbar h2 {
@@ -320,7 +341,7 @@ body,
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
-  gap: 30px 24px;
+  gap: 24px 20px;
   max-width: 1280px;
 }
 .project-tile {
@@ -423,28 +444,13 @@ body,
   background: var(--secondary);
   color: var(--foreground);
 }
-.project-menu {
-  position: absolute;
-  right: 0;
-  bottom: 45px;
-  z-index: 5;
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px;
-  box-shadow: 0 6px 20px #0002;
+.desktop-project-menu {
+  min-width: 172px;
 }
-.project-menu button {
-  display: flex;
-  align-items: center;
+.desktop-project-menu [role="menuitem"] {
+  font-size: 13px;
   gap: 8px;
-  padding: 8px 12px;
-  width: 100%;
-  cursor: pointer;
-  border-radius: 3px;
-}
-.project-menu button:hover {
-  background: var(--secondary);
+  padding: 8px 10px;
 }
 .library-empty {
   min-height: 330px;
@@ -464,8 +470,10 @@ body,
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.desktop-workbench button:focus-visible,
-.desktop-workbench input:focus-visible {
+.desktop-titlebar button:focus-visible,
+.desktop-library button:focus-visible,
+.desktop-library input:focus-visible,
+.desktop-save-recovery button:focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 3px;
 }
@@ -514,7 +522,7 @@ body,
     flex-direction: column-reverse;
   }
   .library-heading h1 {
-    font-size: 27px;
+    font-size: 24px;
   }
   .library-search input {
     width: 130px;

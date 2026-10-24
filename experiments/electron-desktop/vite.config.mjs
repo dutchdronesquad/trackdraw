@@ -39,6 +39,22 @@ export default defineConfig({
             copyFile(path.join(cache, name), path.join(destination, name))
           )
         );
+        // Keep the exact existing artwork; macOS icons need transparent outer
+        // space rather than the edge-to-edge canvas used by the web icon.
+        const sharp = requireRoot("sharp");
+        const iconDirectory = path.join(here, "dist/assets/desktop");
+        await mkdir(iconDirectory, { recursive: true });
+        await sharp(path.join(root, "public/assets/pwa/icon-512.png"))
+          .resize(824, 824)
+          .extend({
+            top: 100,
+            bottom: 100,
+            left: 100,
+            right: 100,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+          })
+          .png()
+          .toFile(path.join(iconDirectory, "icon-macos.png"));
         const { writeFile } = await import("node:fs/promises");
         await writeFile(
           path.join(here, "dist", manifestName),
