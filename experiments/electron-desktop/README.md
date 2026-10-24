@@ -54,7 +54,6 @@ The smoke flow covers placement, selection and nudge, undo/redo, 3D canvas creat
 
 Export projects you want to retain and close Electron before removing this checkout. Generated builds, texture caches, dependencies, and smoke output live here; the normal desktop database remains in the application-data profile. The branch also contains a few shared callbacks that await preservation, so retain or revert those through Git when abandoning this branch. Never delete the application-data profile as part of routine cleanup. Retain the [concept and evaluation](../../docs/research/in-progress/electron-desktop-concept.md) if the direction is parked.
 
-
 ## Native storage checks
 
 ```bash

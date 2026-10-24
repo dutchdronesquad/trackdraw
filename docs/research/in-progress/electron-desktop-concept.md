@@ -40,14 +40,14 @@ The PVA's venue availability requirement defines project/asset preparation, non-
 
 ## Existing foundations
 
-| Owner | Current foundation | Desktop question |
-| --- | --- | --- |
-| `src/app/studio/page.tsx` | Loads the client editor through `EditorShell` with server rendering disabled | Which route and provider dependencies need a small desktop substitute? |
-| `src/components/editor/EditorShell.tsx` | Existing editor entry point | Can a separate local frontend reuse it without moving editor code? |
-| `src/lib/projects.ts` | Local drafts, named projects, restore points, and serialization using browser local storage | Does the same project layer provide sufficient persistence for the experiment? |
-| `src/components/editor/useAccountProjectSync.ts` | Account project access, sync states, and revision conflict handling | Which network calls must be disabled for an offline experiment and adapted for a later desktop client? |
-| `src/lib/server/projects.ts` | Cloud project storage and revision checks | Can a later desktop client reuse the project contract safely? |
-| `src/lib/track/` and `src/lib/export/` | Track rules, geometry, and export implementations | Do existing behaviors work in a locally bundled Electron renderer? |
+| Owner                                            | Current foundation                                                                          | Desktop question                                                                                       |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `src/app/studio/page.tsx`                        | Loads the client editor through `EditorShell` with server rendering disabled                | Which route and provider dependencies need a small desktop substitute?                                 |
+| `src/components/editor/EditorShell.tsx`          | Existing editor entry point                                                                 | Can a separate local frontend reuse it without moving editor code?                                     |
+| `src/lib/projects.ts`                            | Local drafts, named projects, restore points, and serialization using browser local storage | Does the same project layer provide sufficient persistence for the experiment?                         |
+| `src/components/editor/useAccountProjectSync.ts` | Account project access, sync states, and revision conflict handling                         | Which network calls must be disabled for an offline experiment and adapted for a later desktop client? |
+| `src/lib/server/projects.ts`                     | Cloud project storage and revision checks                                                   | Can a later desktop client reuse the project contract safely?                                          |
+| `src/lib/track/` and `src/lib/export/`           | Track rules, geometry, and export implementations                                           | Do existing behaviors work in a locally bundled Electron renderer?                                     |
 
 ## Experiment boundary
 
@@ -76,15 +76,15 @@ SQLite, a new project archive format, and a generalized storage abstraction are 
 
 ## Evaluation criteria
 
-| Question | Evidence required before expanding scope |
-| --- | --- |
-| Does desktop add useful convenience? | A complete design session shows a concrete benefit over using the browser, such as offline reopening or normal desktop file handling. |
-| Can the editor be reused cheaply? | An inventory of production changes shows small integration seams, with no copied editor and no broad restructure. |
-| Does local continuity work? | A saved disposable project survives normal quit, forced termination after confirmed save, and offline restart. |
-| Does the editor retain essential behavior? | Placement, selection, transforms, undo/redo, 2D/3D consistency, import, and representative exports pass the agreed scenarios. |
-| What actually works offline? | A list of bundled, cached, and unavailable assets and features accompanies the results. |
-| Does the web product remain intact? | Existing relevant tests and web validation pass after any shared source changes. |
-| Is distribution affordable to maintain? | A separate follow-up identifies platform testing, signing, update delivery, security maintenance, and release ownership before public distribution. |
+| Question                                   | Evidence required before expanding scope                                                                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Does desktop add useful convenience?       | A complete design session shows a concrete benefit over using the browser, such as offline reopening or normal desktop file handling.               |
+| Can the editor be reused cheaply?          | An inventory of production changes shows small integration seams, with no copied editor and no broad restructure.                                   |
+| Does local continuity work?                | A saved disposable project survives normal quit, forced termination after confirmed save, and offline restart.                                      |
+| Does the editor retain essential behavior? | Placement, selection, transforms, undo/redo, 2D/3D consistency, import, and representative exports pass the agreed scenarios.                       |
+| What actually works offline?               | A list of bundled, cached, and unavailable assets and features accompanies the results.                                                             |
+| Does the web product remain intact?        | Existing relevant tests and web validation pass after any shared source changes.                                                                    |
+| Is distribution affordable to maintain?    | A separate follow-up identifies platform testing, signing, update delivery, security maintenance, and release ownership before public distribution. |
 
 Choose the first operating system before building the prototype. Success on one system does not establish Windows, macOS, and Linux compatibility.
 
@@ -122,7 +122,6 @@ Validated on macOS arm64 with Node.js 26.11.1 and Electron 45.0.0 on October 24,
 - The existing web checks pass: lint, TypeScript, 243 test files with 1,581 tests, production build, translation integrity, and the hardcoded copy scan.
 
 Native file chooser interaction, Windows/Linux behavior, full catalog visual acceptance, and wider export coverage remain manual or follow-up checks. These results establish technical feasibility for a local editor; they do not establish user demand or production readiness.
-
 
 ## Desktop branch implementation
 
