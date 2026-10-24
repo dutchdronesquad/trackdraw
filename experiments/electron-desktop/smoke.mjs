@@ -2,9 +2,11 @@ import { _electron as electron } from "playwright";
 import assert from "node:assert/strict";
 import { mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
+const sharp = createRequire(path.join(here, "../../package.json"))("sharp");
 await rm(path.join(here, ".smoke-profile"), { recursive: true, force: true });
 await rm(path.join(here, "artifacts"), { recursive: true, force: true });
 await mkdir(path.join(here, "artifacts"), { recursive: true });
@@ -24,18 +26,15 @@ async function launch() {
       console.log("Missing asset:", response.url());
   });
   await page.waitForFunction(
-    () => document.querySelector(".poc-bar") || document.querySelector("h1")
+    () =>
+      document.querySelector(".desktop-workbench") ||
+      document.querySelector("h1")
   );
   if (
     await page.getByText("Desktop POC could not start", { exact: true }).count()
   )
     throw new Error(await page.locator("body").innerText());
-  await page
-    .getByRole("button", { name: "Load sample", exact: true })
-    .waitFor();
-  await page.waitForFunction(() =>
-    document.querySelector(".konvajs-content canvas")
-  );
+  await page.getByRole("tab", { name: "Home", exact: true }).waitFor();
   return page;
 }
 async function waitForDraft(page, predicate) {
@@ -83,6 +82,9 @@ try {
   await page.reload();
   await page.getByRole("button", { name: "Load sample", exact: true }).click();
   const sample = await saved(page, 6);
+  await page.waitForFunction(() =>
+    document.querySelector(".konvajs-content canvas")
+  );
   console.log("PASS: sample track and local autosave");
 
   await page.keyboard.press("g");
@@ -144,17 +146,23 @@ try {
       filePaths: [projectFile],
     });
   }, projectFile);
-  await page
-    .getByRole("button", { name: "Save project copy as…", exact: true })
-    .click();
+  await app.evaluate(({ Menu }) =>
+    Menu.getApplicationMenu()
+      .items.find((item) => item.label === "File")
+      .submenu.items.find((item) => item.label === "Save project copy as…")
+      .click()
+  );
   await page.getByText("Saved roundtrip.json", { exact: true }).waitFor();
   const exported = JSON.parse(await readFile(projectFile, "utf8"));
   assert.deepEqual(exported.shapes, edited.shapes);
   exported.title = "Desktop native roundtrip";
   await writeFile(projectFile, JSON.stringify(exported));
-  await page
-    .getByRole("button", { name: "Open project copy…", exact: true })
-    .click();
+  await app.evaluate(({ Menu }) =>
+    Menu.getApplicationMenu()
+      .items.find((item) => item.label === "File")
+      .submenu.items.find((item) => item.label === "Open project copy…")
+      .click()
+  );
   await page.getByText("Opened roundtrip.json", { exact: true }).waitFor();
   await waitForDraft(
     page,
@@ -225,6 +233,172 @@ try {
     "PASS: renderer has no Node.js access and a restricted native bridge"
   );
 
+  // Separate stores must retain their own history and viewport through tab switches.
+  await page
+    .getByRole("tab", { name: "Open Practice Layout", exact: true })
+    .click();
+  await page.getByRole("button", { name: "2D", exact: true }).click();
+  await page.waitForFunction(() =>
+    document.querySelector(".konvajs-content canvas")
+  );
+  const viewport = await page.locator(".konvajs-content").first().boundingBox();
+  await page.mouse.move(
+    viewport.x + viewport.width / 2,
+    viewport.y + viewport.height / 2
+  );
+  await page.mouse.wheel(0, -120);
+  await page.waitForTimeout(1500);
+  const readViewport = () =>
+    page.evaluate(() => {
+      const stage = window.Konva.stages.find((stage) => stage.width() > 500);
+      return { x: stage.x(), y: stage.y(), scale: stage.scaleX() };
+    });
+  const savedViewport = await readViewport();
+  await page.getByRole("button", { name: "New track", exact: true }).click();
+  await waitForDraft(page, (draft) => draft?.title === "Untitled track");
+  await page.waitForFunction(() =>
+    document.querySelector(".konvajs-content canvas")
+  );
+  const blank = await page.locator(".konvajs-content").first().boundingBox();
+  await page.keyboard.press("g");
+  await page.mouse.click(
+    blank.x + blank.width * 0.4,
+    blank.y + blank.height * 0.4
+  );
+  await saved(page, 1);
+  await page
+    .getByRole("tab", { name: "Open Practice Layout", exact: true })
+    .click();
+  await page.waitForFunction(() =>
+    document.querySelector(".konvajs-content canvas")
+  );
+  await page.waitForTimeout(200);
+  const restoredViewport = await readViewport();
+  await page.getByRole("button", { name: "Lock", exact: true }).waitFor();
+  assert.ok(Math.abs(restoredViewport.scale - savedViewport.scale) < 0.001);
+  assert.ok(Math.abs(restoredViewport.x - savedViewport.x) < 1);
+  assert.ok(Math.abs(restoredViewport.y - savedViewport.y) < 1);
+  await page.keyboard.press(`${modifier}+z`);
+  await saved(page, 6);
+  await page.keyboard.press(`${modifier}+Shift+z`);
+  await saved(page, 7);
+  await page.getByRole("button", { name: "3D", exact: true }).click();
+  await page.waitForTimeout(1000);
+  const scene = page.locator("canvas:visible").last();
+  const sceneBox = await scene.boundingBox();
+  await page.mouse.move(
+    sceneBox.x + sceneBox.width * 0.7,
+    sceneBox.y + sceneBox.height * 0.25
+  );
+  await page.mouse.down({ button: "middle" });
+  await page.mouse.move(
+    sceneBox.x + sceneBox.width * 0.6,
+    sceneBox.y + sceneBox.height * 0.35,
+    { steps: 15 }
+  );
+  await page.mouse.up({ button: "middle" });
+  await page.waitForTimeout(1500);
+  const cameraBefore = await scene.screenshot();
+  await page.getByRole("tab", { name: "Untitled track", exact: true }).click();
+  await page
+    .getByRole("tab", { name: "Open Practice Layout", exact: true })
+    .click();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "3D", exact: true })
+      .getAttribute("aria-pressed"),
+    "true"
+  );
+  await page.waitForTimeout(1500);
+  const cameraAfter = await page.locator("canvas:visible").last().screenshot();
+  const beforePixels = await sharp(cameraBefore).removeAlpha().raw().toBuffer();
+  const afterPixels = await sharp(cameraAfter).removeAlpha().raw().toBuffer();
+  assert.equal(beforePixels.length, afterPixels.length);
+  let delta = 0;
+  for (let index = 0; index < beforePixels.length; index++)
+    delta += Math.abs(beforePixels[index] - afterPixels[index]);
+  assert.ok(
+    delta / beforePixels.length < 3,
+    `3D camera changed across tabs: mean pixel difference ${delta / beforePixels.length}`
+  );
+  console.log(
+    "PASS: 3D view mode, camera position and pan target survive a document switch"
+  );
+  await page.getByRole("tab", { name: "Untitled track", exact: true }).click();
+  await page.keyboard.press(`${modifier}+z`);
+  await saved(page, 0);
+  await page.keyboard.press(`${modifier}+Shift+z`);
+  await saved(page, 1);
+  await page
+    .getByRole("button", { name: "Close Untitled track", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Home", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Search projects", exact: true })
+    .fill("Untitled track");
+  await page
+    .getByRole("button", { name: "Open Untitled track", exact: true })
+    .click();
+  await saved(page, 1);
+  await page.getByRole("tab", { name: "Home", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Search projects", exact: true })
+    .fill("no-matching-track");
+  await page.getByText("No projects found", { exact: true }).waitFor();
+  await page
+    .getByRole("textbox", { name: "Search projects", exact: true })
+    .fill("");
+  await page
+    .getByRole("button", { name: "Actions for Untitled track", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Rename project", exact: true })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Rename project" })
+    .getByLabel("Project name")
+    .fill("Venue practice");
+  await page
+    .getByRole("dialog", { name: "Rename project" })
+    .getByRole("button", { name: "Save", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Open Venue practice", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Actions for Venue practice", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Open Copy of Venue practice", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", {
+      name: "Actions for Copy of Venue practice",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Delete project", exact: true })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Delete project" })
+    .getByRole("button", { name: "Delete project", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Open Copy of Venue practice", exact: true })
+    .waitFor({ state: "hidden" });
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+  console.log("PASS: library rename, duplicate and confirmed deletion");
+  await page.screenshot({ path: path.join(here, "artifacts/library.png") });
+  await page
+    .getByRole("tab", { name: "Desktop native roundtrip", exact: true })
+    .click();
+  await saved(page, 7);
+  console.log(
+    "PASS: independent document histories, selection/viewport stores, close/reopen and library search"
+  );
+
   assert.deepEqual(errors, []);
   await page
     .locator('input[value="Desktop native roundtrip"]')
@@ -233,6 +407,12 @@ try {
   // Close immediately, before the 350 ms autosave debounce can complete.
   await app.close();
   page = await launch();
+  await page
+    .getByRole("tab", { name: "Desktop close flush", exact: true })
+    .waitFor();
+  await page
+    .getByRole("tab", { name: "Venue practice", exact: true })
+    .waitFor();
   await waitForDraft(page, (draft) => draft?.title === "Desktop close flush");
   assert.equal((await saved(page, 7)).title, "Desktop close flush");
   console.log(

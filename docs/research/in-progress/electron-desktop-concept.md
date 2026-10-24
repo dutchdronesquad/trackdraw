@@ -132,3 +132,11 @@ The browser persistence implementation remains in place. A few shared callbacks 
 Nine native repository tests cover atomic write rollback, interrupted transactions, reopen, unknown future schema rejection, copy/rename isolation, restore pruning/recovery, deletion and invalid commands. Desktop smoke checks use SQLite and include close-before-autosave recovery. On this branch, 241 web test files with 1,569 tests, lint, TypeScript, web build and translation checks pass. These are local development checks, not a desktop release or cross-platform acceptance.
 
 The broader Phase 1 gate remains open, including per-project offline preparation, more complete storage-failure UX, library scaling, and full asset acceptance. Account-expiry venue acceptance follows when authentication is implemented. See the PVA for the remaining phases.
+
+### Project library and document tabs
+
+The desktop branch now opens a Home library with recent/all-project lists, shared SVG previews, search, creation/import and project management. Open projects appear as document tabs, with separate editor stores and temporal histories. Only the active editor is mounted. The web editor continues to use its existing default store and first-use flow.
+
+Tab switching acknowledges the current save before activating the next document. Selection, 2D pan/zoom, 3D camera/target and view mode are kept per document. Workspace metadata restores tabs and view preferences after restart; undo/redo remains in memory while documents are open, with SQLite restore points for durable recovery. The smoke flow checks independent edits/history, 2D restoration, rendered 3D camera restoration, library operations and restart behavior. Broader venue/auth and platform release gates remain open.
+
+Validation for this increment: 243 web test files with 1,573 tests, nine native repository tests, the real Electron smoke flow, lint, TypeScript, web and desktop builds, and both translation checks pass locally. Windows/Linux execution and native file-dialog interaction still require platform acceptance.

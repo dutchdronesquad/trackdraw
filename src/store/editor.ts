@@ -137,36 +137,8 @@ function removeShapeRecord(design: TrackDesign, id: string) {
   design.shapeOrder = design.shapeOrder.filter((shapeId) => shapeId !== id);
 }
 
-function pauseTemporalHistory() {
-  useEditor.temporal.getState().pause();
-}
-
-function resumeTemporalHistory() {
-  useEditor.temporal.getState().resume();
-}
-
-function clearTemporalHistory() {
-  useEditor.temporal.getState().clear();
-}
-
 function touchTrackDesign(state: EditorState) {
   state.track.design.updatedAt = nowIso();
-}
-
-function trackMeaningfulEdit(
-  editType: import("@/lib/product-events").ProductEventEditType
-) {
-  const projectId = useEditor.getState().track.design.id;
-  trackProductEvent(
-    "editor.meaningful_edit_completed",
-    {
-      projectId,
-      properties: { edit_type: editType },
-    },
-    {
-      oncePerSession: `meaningful-edit:${projectId}:${editType}`,
-    }
-  );
 }
 
 function clearPolylineEditSelections(state: EditorState, ids: string[]) {
@@ -182,713 +154,753 @@ function clearPolylineEditSelections(state: EditorState, ids: string[]) {
   }
 }
 
-export const useEditor = create<EditorState>()(
-  temporal(
-    immer<EditorState>((set) => ({
-      track: createDefaultEditorTrackState(),
-      session: createDefaultEditorSessionState(),
-      ui: createDefaultEditorUiState(),
+export function createEditorStore() {
+  function pauseTemporalHistory() {
+    store.temporal.getState().pause();
+  }
 
-      addShape: (s) => {
-        const id = nanoid();
-        const projectId = useEditor.getState().track.design.id;
-        set((draft) => {
-          const nextShape: Shape = { ...s, id };
-          addShapeRecord(draft.track.design, nextShape);
-          touchTrackDesign(draft);
-        });
-        trackProductEvent("editor.element_placed", {
-          projectId,
-          properties: { kind: s.kind, count: 1 },
-        });
-        trackMeaningfulEdit("place");
-        return id;
+  function resumeTemporalHistory() {
+    store.temporal.getState().resume();
+  }
+
+  function clearTemporalHistory() {
+    store.temporal.getState().clear();
+  }
+
+  function trackMeaningfulEdit(
+    editType: import("@/lib/product-events").ProductEventEditType
+  ) {
+    const projectId = store.getState().track.design.id;
+    trackProductEvent(
+      "editor.meaningful_edit_completed",
+      {
+        projectId,
+        properties: { edit_type: editType },
       },
+      {
+        oncePerSession: `meaningful-edit:${projectId}:${editType}`,
+      }
+    );
+  }
 
-      addShapes: (shapes) => {
-        const ids = shapes.map(() => nanoid());
-        const projectId = useEditor.getState().track.design.id;
-        set((draft) => {
-          const nextShapes: Shape[] = shapes.map((shape, index) => ({
-            ...shape,
-            id: ids[index],
-          }));
-          nextShapes.forEach((shape) =>
-            addShapeRecord(draft.track.design, shape)
-          );
-          touchTrackDesign(draft);
-        });
-        const countsByKind = new Map<Shape["kind"], number>();
-        for (const shape of shapes) {
-          countsByKind.set(shape.kind, (countsByKind.get(shape.kind) ?? 0) + 1);
-        }
-        for (const [kind, count] of countsByKind) {
-          for (let remaining = count; remaining > 0; remaining -= 500) {
-            trackProductEvent("editor.element_placed", {
-              projectId,
-              properties: { kind, count: Math.min(remaining, 500) },
-            });
+  const store = create<EditorState>()(
+    temporal(
+      immer<EditorState>((set) => ({
+        track: createDefaultEditorTrackState(),
+        session: createDefaultEditorSessionState(),
+        ui: createDefaultEditorUiState(),
+
+        addShape: (s) => {
+          const id = nanoid();
+          const projectId = store.getState().track.design.id;
+          set((draft) => {
+            const nextShape: Shape = { ...s, id };
+            addShapeRecord(draft.track.design, nextShape);
+            touchTrackDesign(draft);
+          });
+          trackProductEvent("editor.element_placed", {
+            projectId,
+            properties: { kind: s.kind, count: 1 },
+          });
+          trackMeaningfulEdit("place");
+          return id;
+        },
+
+        addShapes: (shapes) => {
+          const ids = shapes.map(() => nanoid());
+          const projectId = store.getState().track.design.id;
+          set((draft) => {
+            const nextShapes: Shape[] = shapes.map((shape, index) => ({
+              ...shape,
+              id: ids[index],
+            }));
+            nextShapes.forEach((shape) =>
+              addShapeRecord(draft.track.design, shape)
+            );
+            touchTrackDesign(draft);
+          });
+          const countsByKind = new Map<Shape["kind"], number>();
+          for (const shape of shapes) {
+            countsByKind.set(
+              shape.kind,
+              (countsByKind.get(shape.kind) ?? 0) + 1
+            );
           }
-        }
-        if (ids.length > 0) trackMeaningfulEdit("place");
-        return ids;
-      },
+          for (const [kind, count] of countsByKind) {
+            for (let remaining = count; remaining > 0; remaining -= 500) {
+              trackProductEvent("editor.element_placed", {
+                projectId,
+                properties: { kind, count: Math.min(remaining, 500) },
+              });
+            }
+          }
+          if (ids.length > 0) trackMeaningfulEdit("place");
+          return ids;
+        },
 
-      updateShape: (id, patch) => {
-        let changed = false;
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (!shape || shape.locked) return;
-          if (!applyShapePatch(shape, patch)) return;
-          touchTrackDesign(draft);
-          changed = true;
-        });
-        if (changed) trackMeaningfulEdit("transform");
-      },
-
-      updateShapes: (ids, patch) => {
-        let committed = false;
-        set((draft) => {
+        updateShape: (id, patch) => {
           let changed = false;
-
-          for (const id of ids) {
+          set((draft) => {
             const shape = draft.track.design.shapeById[id];
-            if (!shape || shape.locked) continue;
-            if (applyShapePatch(shape, patch)) {
+            if (!shape || shape.locked) return;
+            if (!applyShapePatch(shape, patch)) return;
+            touchTrackDesign(draft);
+            changed = true;
+          });
+          if (changed) trackMeaningfulEdit("transform");
+        },
+
+        updateShapes: (ids, patch) => {
+          let committed = false;
+          set((draft) => {
+            let changed = false;
+
+            for (const id of ids) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape || shape.locked) continue;
+              if (applyShapePatch(shape, patch)) {
+                changed = true;
+              }
+            }
+
+            if (changed) {
+              touchTrackDesign(draft);
+              committed = true;
+            }
+          });
+          if (committed) trackMeaningfulEdit("transform");
+        },
+
+        updateShapesCatalogType: (ids, entryId) =>
+          set((draft) => {
+            let changed = false;
+
+            for (const id of ids) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape || shape.locked) continue;
+              const patch = buildCatalogTypePatch(shape, entryId);
+
+              if (patch && applyShapePatch(shape, patch as Partial<Shape>)) {
+                changed = true;
+              }
+            }
+
+            if (changed) {
+              touchTrackDesign(draft);
+            }
+          }),
+
+        setShapesLocked: (ids, locked) =>
+          set((draft) => {
+            let changed = false;
+
+            for (const id of ids) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape || shape.locked === locked) continue;
+              shape.locked = locked;
               changed = true;
             }
-          }
 
-          if (changed) {
-            touchTrackDesign(draft);
-            committed = true;
-          }
-        });
-        if (committed) trackMeaningfulEdit("transform");
-      },
-
-      updateShapesCatalogType: (ids, entryId) =>
-        set((draft) => {
-          let changed = false;
-
-          for (const id of ids) {
-            const shape = draft.track.design.shapeById[id];
-            if (!shape || shape.locked) continue;
-            const patch = buildCatalogTypePatch(shape, entryId);
-
-            if (patch && applyShapePatch(shape, patch as Partial<Shape>)) {
-              changed = true;
+            if (changed) {
+              touchTrackDesign(draft);
             }
-          }
+          }),
 
-          if (changed) {
-            touchTrackDesign(draft);
-          }
-        }),
-
-      setShapesLocked: (ids, locked) =>
-        set((draft) => {
+        setPolylinePoints: (id, points) => {
           let changed = false;
-
-          for (const id of ids) {
+          set((draft) => {
             const shape = draft.track.design.shapeById[id];
-            if (!shape || shape.locked === locked) continue;
-            shape.locked = locked;
+            if (shape?.locked || !setPolylinePoints(shape, points)) {
+              return;
+            }
+            touchTrackDesign(draft);
             changed = true;
-          }
+          });
+          if (changed) trackMeaningfulEdit("route");
+        },
 
-          if (changed) {
-            touchTrackDesign(draft);
-          }
-        }),
-
-      setPolylinePoints: (id, points) => {
-        let changed = false;
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !setPolylinePoints(shape, points)) {
-            return;
-          }
-          touchTrackDesign(draft);
-          changed = true;
-        });
-        if (changed) trackMeaningfulEdit("route");
-      },
-
-      updatePolylinePoint: (id, index, patch) =>
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !updatePolylinePoint(shape, index, patch)) {
-            return;
-          }
-          touchTrackDesign(draft);
-        }),
-
-      insertPolylinePoint: (id, index, point) =>
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !insertPolylinePoint(shape, index, point)) {
-            return;
-          }
-          clearPolylineEditSelections(draft, [id]);
-          touchTrackDesign(draft);
-        }),
-
-      removePolylinePoint: (id, index) =>
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !removePolylinePoint(shape, index)) {
-            return;
-          }
-          clearPolylineEditSelections(draft, [id]);
-          touchTrackDesign(draft);
-        }),
-
-      appendPolylinePoint: (id, point) =>
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !appendPolylinePoint(shape, point)) {
-            return;
-          }
-          clearPolylineEditSelections(draft, [id]);
-          touchTrackDesign(draft);
-        }),
-
-      reversePolylinePoints: (id) =>
-        set((draft) => {
-          const shape = draft.track.design.shapeById[id];
-          if (shape?.locked || !reversePolylinePoints(shape)) return;
-          clearPolylineEditSelections(draft, [id]);
-          touchTrackDesign(draft);
-        }),
-
-      rotateShapes: (ids, delta) =>
-        set((draft) => {
-          const changed = rotateShapes(
-            draft.track.design.shapeById,
-            ids,
-            delta
-          );
-          if (changed) {
-            touchTrackDesign(draft);
-          }
-        }),
-
-      removeShapes: (ids) => {
-        let changed = false;
-        set((draft) => {
-          const removedIds = new Set<string>();
-          const targetShapes = ids
-            .map((id) => draft.track.design.shapeById[id])
-            .filter((shape): shape is Shape => Boolean(shape));
-
-          if (targetShapes.some((shape) => shape.locked)) return;
-
-          for (const shape of targetShapes) {
-            removeShapeRecord(draft.track.design, shape.id);
-            removedIds.add(shape.id);
-          }
-
-          if (removedIds.size === 0) return;
-          draft.session.selection = draft.session.selection.filter(
-            (id) => !removedIds.has(id)
-          );
-          touchTrackDesign(draft);
-          changed = true;
-        });
-        if (changed) trackMeaningfulEdit("delete");
-      },
-
-      nudgeShapes: (ids, dx, dy) =>
-        set((draft) => {
-          if (!nudgeShapes(draft.track.design.shapeById, ids, dx, dy)) return;
-          touchTrackDesign(draft);
-        }),
-
-      arrangeShapes: (ids, mode) => {
-        let changed = false;
-        set((draft) => {
-          if (!arrangeShapes(draft.track.design.shapeById, ids, mode)) return;
-          touchTrackDesign(draft);
-          changed = true;
-        });
-        if (changed) trackMeaningfulEdit("transform");
-      },
-
-      duplicateShapes: (ids) =>
-        set((draft) => {
-          const newShapes = duplicateShapes(draft.track.design, ids);
-          if (newShapes.length === 0) return;
-          newShapes.forEach((shape) =>
-            addShapeRecord(draft.track.design, shape)
-          );
-          draft.session.selection = newShapes.map((s) => s.id);
-          touchTrackDesign(draft);
-        }),
-
-      groupSelection: (ids) => {
-        const nextGroupId = nanoid();
-        let grouped = false;
-
-        set((draft) => {
-          const expandedIds = expandGroupedSelection(draft.track.design, ids);
-          if (expandedIds.length < 2) return;
-
-          for (const id of expandedIds) {
+        updatePolylinePoint: (id, index, patch) =>
+          set((draft) => {
             const shape = draft.track.design.shapeById[id];
-            if (!shape) continue;
-            shape.meta = {
-              ...shape.meta,
-              groupId: nextGroupId,
-            };
-          }
-
-          draft.session.selection = expandedIds;
-          touchTrackDesign(draft);
-          grouped = true;
-        });
-
-        return grouped ? nextGroupId : null;
-      },
-
-      setGroupName: (ids, name) =>
-        set((draft) => {
-          const expandedIds = expandGroupedSelection(draft.track.design, ids);
-          const selectedGroupIds = new Set<string>();
-          let changed = false;
-
-          for (const id of expandedIds) {
-            const shape = draft.track.design.shapeById[id];
-            if (!shape) continue;
-
-            const groupId = getShapeGroupId(shape);
-            if (groupId) {
-              selectedGroupIds.add(groupId);
+            if (shape?.locked || !updatePolylinePoint(shape, index, patch)) {
+              return;
             }
-          }
+            touchTrackDesign(draft);
+          }),
 
-          if (selectedGroupIds.size === 0) return;
-
-          for (const id of draft.track.design.shapeOrder) {
+        insertPolylinePoint: (id, index, point) =>
+          set((draft) => {
             const shape = draft.track.design.shapeById[id];
-            if (!shape) continue;
+            if (shape?.locked || !insertPolylinePoint(shape, index, point)) {
+              return;
+            }
+            clearPolylineEditSelections(draft, [id]);
+            touchTrackDesign(draft);
+          }),
 
-            const groupId = getShapeGroupId(shape);
-            if (!groupId || !selectedGroupIds.has(groupId)) continue;
+        removePolylinePoint: (id, index) =>
+          set((draft) => {
+            const shape = draft.track.design.shapeById[id];
+            if (shape?.locked || !removePolylinePoint(shape, index)) {
+              return;
+            }
+            clearPolylineEditSelections(draft, [id]);
+            touchTrackDesign(draft);
+          }),
 
-            const nextMeta = { ...shape.meta };
-            if (name.trim().length > 0) {
-              nextMeta.groupName = name;
-            } else {
-              delete nextMeta.groupName;
+        appendPolylinePoint: (id, point) =>
+          set((draft) => {
+            const shape = draft.track.design.shapeById[id];
+            if (shape?.locked || !appendPolylinePoint(shape, point)) {
+              return;
+            }
+            clearPolylineEditSelections(draft, [id]);
+            touchTrackDesign(draft);
+          }),
+
+        reversePolylinePoints: (id) =>
+          set((draft) => {
+            const shape = draft.track.design.shapeById[id];
+            if (shape?.locked || !reversePolylinePoints(shape)) return;
+            clearPolylineEditSelections(draft, [id]);
+            touchTrackDesign(draft);
+          }),
+
+        rotateShapes: (ids, delta) =>
+          set((draft) => {
+            const changed = rotateShapes(
+              draft.track.design.shapeById,
+              ids,
+              delta
+            );
+            if (changed) {
+              touchTrackDesign(draft);
+            }
+          }),
+
+        removeShapes: (ids) => {
+          let changed = false;
+          set((draft) => {
+            const removedIds = new Set<string>();
+            const targetShapes = ids
+              .map((id) => draft.track.design.shapeById[id])
+              .filter((shape): shape is Shape => Boolean(shape));
+
+            if (targetShapes.some((shape) => shape.locked)) return;
+
+            for (const shape of targetShapes) {
+              removeShapeRecord(draft.track.design, shape.id);
+              removedIds.add(shape.id);
             }
 
-            shape.meta =
-              Object.keys(nextMeta).length > 0 ? nextMeta : undefined;
-            changed = true;
-          }
-
-          if (changed) {
+            if (removedIds.size === 0) return;
+            draft.session.selection = draft.session.selection.filter(
+              (id) => !removedIds.has(id)
+            );
             touchTrackDesign(draft);
-          }
-        }),
-
-      ungroupSelection: (ids) =>
-        set((draft) => {
-          const expandedIds = expandGroupedSelection(draft.track.design, ids);
-          let changed = false;
-
-          for (const id of expandedIds) {
-            const shape = draft.track.design.shapeById[id];
-            if (!shape || !shape.meta || !("groupId" in shape.meta)) continue;
-
-            const {
-              groupId: _groupId,
-              groupName: _groupName,
-              ...restMeta
-            } = shape.meta;
-            shape.meta =
-              Object.keys(restMeta).length > 0 ? restMeta : undefined;
             changed = true;
-          }
+          });
+          if (changed) trackMeaningfulEdit("delete");
+        },
 
-          if (changed) {
+        nudgeShapes: (ids, dx, dy) =>
+          set((draft) => {
+            if (!nudgeShapes(draft.track.design.shapeById, ids, dx, dy)) return;
+            touchTrackDesign(draft);
+          }),
+
+        arrangeShapes: (ids, mode) => {
+          let changed = false;
+          set((draft) => {
+            if (!arrangeShapes(draft.track.design.shapeById, ids, mode)) return;
+            touchTrackDesign(draft);
+            changed = true;
+          });
+          if (changed) trackMeaningfulEdit("transform");
+        },
+
+        duplicateShapes: (ids) =>
+          set((draft) => {
+            const newShapes = duplicateShapes(draft.track.design, ids);
+            if (newShapes.length === 0) return;
+            newShapes.forEach((shape) =>
+              addShapeRecord(draft.track.design, shape)
+            );
+            draft.session.selection = newShapes.map((s) => s.id);
+            touchTrackDesign(draft);
+          }),
+
+        groupSelection: (ids) => {
+          const nextGroupId = nanoid();
+          let grouped = false;
+
+          set((draft) => {
+            const expandedIds = expandGroupedSelection(draft.track.design, ids);
+            if (expandedIds.length < 2) return;
+
+            for (const id of expandedIds) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape) continue;
+              shape.meta = {
+                ...shape.meta,
+                groupId: nextGroupId,
+              };
+            }
+
             draft.session.selection = expandedIds;
             touchTrackDesign(draft);
-          }
-        }),
-
-      joinPolylines: (ids) => {
-        const nextId = nanoid();
-        let created = false;
-
-        set((draft) => {
-          const idSet = new Set(ids);
-          const polylineShapes = draft.track.design.shapeOrder
-            .filter((id) => idSet.has(id))
-            .map((id) => draft.track.design.shapeById[id])
-            .filter(
-              (shape): shape is PolylineShape =>
-                Boolean(shape) && shape.kind === "polyline"
-            );
-          if (polylineShapes.some((shape) => shape.locked)) return;
-          const merged = joinPolylineShapes(polylineShapes);
-          if (!merged) return;
-
-          polylineShapes.forEach((shape) =>
-            removeShapeRecord(draft.track.design, shape.id)
-          );
-          addShapeRecord(draft.track.design, {
-            ...merged,
-            id: nextId,
-            name:
-              polylineShapes.length === 2
-                ? "Joined path"
-                : `Joined ${polylineShapes.length} paths`,
+            grouped = true;
           });
-          draft.session.selection = [nextId];
-          clearPolylineEditSelections(
-            draft,
-            polylineShapes.map((shape) => shape.id)
-          );
-          touchTrackDesign(draft);
-          created = true;
-        });
 
-        return created ? nextId : null;
-      },
-
-      closePolyline: (id) => {
-        let closed = false;
-
-        set((draft) => {
-          const shape = getDesignShapeById(draft.track.design, id);
-          if (shape?.locked || !closePolyline(shape ?? undefined)) return;
-          draft.session.selection = [id];
-          clearPolylineEditSelections(draft, [id]);
-          touchTrackDesign(draft);
-          closed = true;
-        });
-
-        return closed;
-      },
-
-      setSelection: (ids) =>
-        set((draft) => {
-          const nextSelection = expandGroupedSelection(draft.track.design, ids);
-          const selectionChanged = !sameSelection(
-            draft.session.selection,
-            nextSelection
-          );
-          draft.session.selection = nextSelection;
-          if (selectionChanged) {
-            draft.ui.segmentSelection = null;
-          }
-          if (draft.session.selection.length !== 1) {
-            draft.ui.vertexSelection = null;
-          }
-        }),
-
-      setActiveTool: (tool) =>
-        set((draft) => {
-          draft.ui.activeTool = tool;
-        }),
-
-      setActivePresetId: (presetId) =>
-        set((draft) => {
-          draft.ui.activePresetId = presetId;
-        }),
-
-      setActivePlacementElementId: (tool, entryId) =>
-        set((draft) => {
-          if (entryId === null) {
-            delete draft.ui.activePlacementElementId[tool];
-          } else {
-            draft.ui.activePlacementElementId[tool] = entryId;
-          }
-        }),
-
-      setSnapEnabled: (enabled) =>
-        set((draft) => {
-          draft.ui.snapEnabled = enabled;
-        }),
-
-      toggleSnapEnabled: () =>
-        set((draft) => {
-          draft.ui.snapEnabled = !draft.ui.snapEnabled;
-        }),
-
-      setZoom: (zoom) =>
-        set((draft) => {
-          draft.ui.zoom = Math.max(0.1, Math.min(5, zoom));
-        }),
-
-      setPanOffset: (offset) =>
-        set((draft) => {
-          draft.ui.panOffset = offset;
-        }),
-
-      updateField: (patch) => {
-        set((draft) => {
-          Object.assign(draft.track.design.field, patch);
-          touchTrackDesign(draft);
-        });
-        trackMeaningfulEdit("layout");
-      },
-
-      updateDesignMeta: (patch) => {
-        set((draft) => {
-          Object.assign(draft.track.design, patch);
-          touchTrackDesign(draft);
-        });
-        trackMeaningfulEdit("settings");
-      },
-
-      setMapReference: (reference) =>
-        set((draft) => {
-          draft.track.design.mapReference = normalizeMapReference(reference);
-          touchTrackDesign(draft);
-        }),
-
-      clearMapReference: () =>
-        set((draft) => {
-          if (!draft.track.design.mapReference) return;
-          draft.track.design.mapReference = null;
-          touchTrackDesign(draft);
-        }),
-
-      setMapReferenceVisibility: (visible) =>
-        set((draft) => {
-          if (!draft.track.design.mapReference) return;
-          draft.track.design.mapReference.visible = visible;
-          touchTrackDesign(draft);
-        }),
-
-      setMapReferenceOpacity: (opacity) =>
-        set((draft) => {
-          if (!draft.track.design.mapReference) return;
-          draft.track.design.mapReference.opacity = clamp(opacity, 0.05, 1);
-          touchTrackDesign(draft);
-        }),
-
-      setMapReferenceRotation: (rotationDeg) =>
-        set((draft) => {
-          if (!draft.track.design.mapReference) return;
-          draft.track.design.mapReference.rotationDeg =
-            ((rotationDeg % 360) + 360) % 360;
-          touchTrackDesign(draft);
-        }),
-
-      replaceDesign: (design) => {
-        set((draft) => {
-          draft.track.design = normalizeDesign(design);
-          draft.session = createDefaultEditorSessionState();
-          draft.ui = resetEditorUiState(draft.ui);
-        });
-        clearTemporalHistory();
-      },
-
-      setHoveredShapeId: (shapeId) =>
-        set((draft) => {
-          draft.ui.hoveredShapeId = shapeId;
-        }),
-
-      setHoveredWaypoint: (w) =>
-        set((draft) => {
-          draft.ui.hoveredWaypoint = w;
-        }),
-
-      setSegmentSelection: (value) =>
-        set((draft) => {
-          draft.ui.segmentSelection =
-            typeof value === "function"
-              ? value(draft.ui.segmentSelection)
-              : value;
-          if (draft.ui.segmentSelection) {
-            draft.ui.vertexSelection = null;
-          }
-        }),
-
-      setVertexSelection: (value) =>
-        set((draft) => {
-          draft.ui.vertexSelection =
-            typeof value === "function"
-              ? value(draft.ui.vertexSelection)
-              : value;
-          if (draft.ui.vertexSelection) {
-            draft.ui.segmentSelection = null;
-          }
-        }),
-
-      setDraftPath: (value) =>
-        set((draft) => {
-          draft.ui.draftPath =
-            typeof value === "function" ? value(draft.ui.draftPath) : value;
-        }),
-
-      setDraftForceClosed: (value) =>
-        set((draft) => {
-          draft.ui.draftForceClosed =
-            typeof value === "function"
-              ? value(draft.ui.draftForceClosed)
-              : value;
-        }),
-
-      setDraftSourceShapeId: (value) =>
-        set((draft) => {
-          draft.ui.draftSourceShapeId =
-            typeof value === "function"
-              ? value(draft.ui.draftSourceShapeId)
-              : value;
-        }),
-
-      setMarqueeRect: (value) =>
-        set((draft) => {
-          draft.ui.marqueeRect =
-            typeof value === "function" ? value(draft.ui.marqueeRect) : value;
-        }),
-
-      setRotationSession: (value) =>
-        set((draft) => {
-          draft.ui.rotationSession =
-            typeof value === "function"
-              ? value(draft.ui.rotationSession)
-              : value;
-        }),
-
-      setGroupDragPreview: (value) =>
-        set((draft) => {
-          draft.ui.groupDragPreview =
-            typeof value === "function"
-              ? value(draft.ui.groupDragPreview)
-              : value;
-        }),
-
-      setLiveShapePatch: (id, patch) =>
-        set((draft) => {
-          draft.ui.liveShapePatches[id] = patch;
-        }),
-
-      clearLiveShapePatch: (id) =>
-        set((draft) => {
-          delete draft.ui.liveShapePatches[id];
-        }),
-
-      newProject: () => {
-        set((draft) => {
-          draft.track = createDefaultEditorTrackState();
-          draft.session = createDefaultEditorSessionState();
-          draft.ui = resetEditorUiState(draft.ui, {
-            zoom: 1,
-            panOffset: { x: 0, y: 0 },
-          });
-        });
-        clearTemporalHistory();
-      },
-
-      bringForward: (id) =>
-        set((draft) => {
-          const idx = findShapeOrderIndex(draft.track.design, id);
-          if (idx < draft.track.design.shapeOrder.length - 1) {
-            const [shapeId] = draft.track.design.shapeOrder.splice(idx, 1);
-            draft.track.design.shapeOrder.splice(idx + 1, 0, shapeId);
-            touchTrackDesign(draft);
-          }
-        }),
-
-      sendBackward: (id) =>
-        set((draft) => {
-          const idx = findShapeOrderIndex(draft.track.design, id);
-          if (idx > 0) {
-            const [shapeId] = draft.track.design.shapeOrder.splice(idx, 1);
-            draft.track.design.shapeOrder.splice(idx - 1, 0, shapeId);
-            touchTrackDesign(draft);
-          }
-        }),
-
-      reorderShapes: (fromId: string, beforeId: string | null) =>
-        set((draft) => {
-          if (beforeId === fromId) return;
-          const order = draft.track.design.shapeOrder;
-          const fromIdx = order.indexOf(fromId);
-          if (fromIdx === -1) return;
-          const [shapeId] = order.splice(fromIdx, 1);
-          if (beforeId === null) {
-            order.push(shapeId);
-          } else {
-            const toIdx = order.indexOf(beforeId);
-            order.splice(toIdx === -1 ? order.length : toIdx, 0, shapeId);
-          }
-          touchTrackDesign(draft);
-        }),
-
-      pauseHistory: () => {
-        set((draft) => {
-          draft.session.historySessionDepth += 1;
-          if (draft.session.historySessionDepth === 1) {
-            pauseTemporalHistory();
-            draft.session.historyPaused = true;
-          }
-        });
-      },
-
-      resumeHistory: () => {
-        set((draft) => {
-          draft.session.historySessionDepth = Math.max(
-            0,
-            draft.session.historySessionDepth - 1
-          );
-          if (draft.session.historySessionDepth === 0) {
-            resumeTemporalHistory();
-            draft.session.historyPaused = false;
-          }
-        });
-      },
-
-      clearHistory: () => {
-        clearTemporalHistory();
-        set((draft) => {
-          draft.session.historyPaused = false;
-          draft.session.historySessionDepth = 0;
-        });
-      },
-
-      beginInteraction: () => {
-        set((draft) => {
-          draft.session.interactionSessionDepth += 1;
-        });
-      },
-
-      endInteraction: () => {
-        set((draft) => {
-          draft.session.interactionSessionDepth = Math.max(
-            0,
-            draft.session.interactionSessionDepth - 1
-          );
-        });
-      },
-
-      sanitizeHistoryState: () => {
-        set((draft) => {
-          draft.track.design = normalizeDesign(draft.track.design);
-          draft.session = createDefaultEditorSessionState();
-          draft.ui = sanitizeEditorUiState(draft.ui);
-        });
-      },
-    })),
-    {
-      partialize: (state) => ({
-        track: {
-          design: normalizeDesign(serializeDesign(state.track.design)),
+          return grouped ? nextGroupId : null;
         },
-      }),
-      equality: (past, current) =>
-        past.track.design.id === current.track.design.id &&
-        past.track.design.updatedAt === current.track.design.updatedAt,
-      limit: 100,
-    }
-  )
-);
+
+        setGroupName: (ids, name) =>
+          set((draft) => {
+            const expandedIds = expandGroupedSelection(draft.track.design, ids);
+            const selectedGroupIds = new Set<string>();
+            let changed = false;
+
+            for (const id of expandedIds) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape) continue;
+
+              const groupId = getShapeGroupId(shape);
+              if (groupId) {
+                selectedGroupIds.add(groupId);
+              }
+            }
+
+            if (selectedGroupIds.size === 0) return;
+
+            for (const id of draft.track.design.shapeOrder) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape) continue;
+
+              const groupId = getShapeGroupId(shape);
+              if (!groupId || !selectedGroupIds.has(groupId)) continue;
+
+              const nextMeta = { ...shape.meta };
+              if (name.trim().length > 0) {
+                nextMeta.groupName = name;
+              } else {
+                delete nextMeta.groupName;
+              }
+
+              shape.meta =
+                Object.keys(nextMeta).length > 0 ? nextMeta : undefined;
+              changed = true;
+            }
+
+            if (changed) {
+              touchTrackDesign(draft);
+            }
+          }),
+
+        ungroupSelection: (ids) =>
+          set((draft) => {
+            const expandedIds = expandGroupedSelection(draft.track.design, ids);
+            let changed = false;
+
+            for (const id of expandedIds) {
+              const shape = draft.track.design.shapeById[id];
+              if (!shape || !shape.meta || !("groupId" in shape.meta)) continue;
+
+              const {
+                groupId: _groupId,
+                groupName: _groupName,
+                ...restMeta
+              } = shape.meta;
+              shape.meta =
+                Object.keys(restMeta).length > 0 ? restMeta : undefined;
+              changed = true;
+            }
+
+            if (changed) {
+              draft.session.selection = expandedIds;
+              touchTrackDesign(draft);
+            }
+          }),
+
+        joinPolylines: (ids) => {
+          const nextId = nanoid();
+          let created = false;
+
+          set((draft) => {
+            const idSet = new Set(ids);
+            const polylineShapes = draft.track.design.shapeOrder
+              .filter((id) => idSet.has(id))
+              .map((id) => draft.track.design.shapeById[id])
+              .filter(
+                (shape): shape is PolylineShape =>
+                  Boolean(shape) && shape.kind === "polyline"
+              );
+            if (polylineShapes.some((shape) => shape.locked)) return;
+            const merged = joinPolylineShapes(polylineShapes);
+            if (!merged) return;
+
+            polylineShapes.forEach((shape) =>
+              removeShapeRecord(draft.track.design, shape.id)
+            );
+            addShapeRecord(draft.track.design, {
+              ...merged,
+              id: nextId,
+              name:
+                polylineShapes.length === 2
+                  ? "Joined path"
+                  : `Joined ${polylineShapes.length} paths`,
+            });
+            draft.session.selection = [nextId];
+            clearPolylineEditSelections(
+              draft,
+              polylineShapes.map((shape) => shape.id)
+            );
+            touchTrackDesign(draft);
+            created = true;
+          });
+
+          return created ? nextId : null;
+        },
+
+        closePolyline: (id) => {
+          let closed = false;
+
+          set((draft) => {
+            const shape = getDesignShapeById(draft.track.design, id);
+            if (shape?.locked || !closePolyline(shape ?? undefined)) return;
+            draft.session.selection = [id];
+            clearPolylineEditSelections(draft, [id]);
+            touchTrackDesign(draft);
+            closed = true;
+          });
+
+          return closed;
+        },
+
+        setSelection: (ids) =>
+          set((draft) => {
+            const nextSelection = expandGroupedSelection(
+              draft.track.design,
+              ids
+            );
+            const selectionChanged = !sameSelection(
+              draft.session.selection,
+              nextSelection
+            );
+            draft.session.selection = nextSelection;
+            if (selectionChanged) {
+              draft.ui.segmentSelection = null;
+            }
+            if (draft.session.selection.length !== 1) {
+              draft.ui.vertexSelection = null;
+            }
+          }),
+
+        setActiveTool: (tool) =>
+          set((draft) => {
+            draft.ui.activeTool = tool;
+          }),
+
+        setActivePresetId: (presetId) =>
+          set((draft) => {
+            draft.ui.activePresetId = presetId;
+          }),
+
+        setActivePlacementElementId: (tool, entryId) =>
+          set((draft) => {
+            if (entryId === null) {
+              delete draft.ui.activePlacementElementId[tool];
+            } else {
+              draft.ui.activePlacementElementId[tool] = entryId;
+            }
+          }),
+
+        setSnapEnabled: (enabled) =>
+          set((draft) => {
+            draft.ui.snapEnabled = enabled;
+          }),
+
+        toggleSnapEnabled: () =>
+          set((draft) => {
+            draft.ui.snapEnabled = !draft.ui.snapEnabled;
+          }),
+
+        setZoom: (zoom) =>
+          set((draft) => {
+            draft.ui.zoom = Math.max(0.1, Math.min(5, zoom));
+          }),
+
+        setPanOffset: (offset) =>
+          set((draft) => {
+            draft.ui.panOffset = offset;
+          }),
+
+        updateField: (patch) => {
+          set((draft) => {
+            Object.assign(draft.track.design.field, patch);
+            touchTrackDesign(draft);
+          });
+          trackMeaningfulEdit("layout");
+        },
+
+        updateDesignMeta: (patch) => {
+          set((draft) => {
+            Object.assign(draft.track.design, patch);
+            touchTrackDesign(draft);
+          });
+          trackMeaningfulEdit("settings");
+        },
+
+        setMapReference: (reference) =>
+          set((draft) => {
+            draft.track.design.mapReference = normalizeMapReference(reference);
+            touchTrackDesign(draft);
+          }),
+
+        clearMapReference: () =>
+          set((draft) => {
+            if (!draft.track.design.mapReference) return;
+            draft.track.design.mapReference = null;
+            touchTrackDesign(draft);
+          }),
+
+        setMapReferenceVisibility: (visible) =>
+          set((draft) => {
+            if (!draft.track.design.mapReference) return;
+            draft.track.design.mapReference.visible = visible;
+            touchTrackDesign(draft);
+          }),
+
+        setMapReferenceOpacity: (opacity) =>
+          set((draft) => {
+            if (!draft.track.design.mapReference) return;
+            draft.track.design.mapReference.opacity = clamp(opacity, 0.05, 1);
+            touchTrackDesign(draft);
+          }),
+
+        setMapReferenceRotation: (rotationDeg) =>
+          set((draft) => {
+            if (!draft.track.design.mapReference) return;
+            draft.track.design.mapReference.rotationDeg =
+              ((rotationDeg % 360) + 360) % 360;
+            touchTrackDesign(draft);
+          }),
+
+        replaceDesign: (design) => {
+          set((draft) => {
+            draft.track.design = normalizeDesign(design);
+            draft.session = createDefaultEditorSessionState();
+            draft.ui = resetEditorUiState(draft.ui);
+          });
+          clearTemporalHistory();
+        },
+
+        setHoveredShapeId: (shapeId) =>
+          set((draft) => {
+            draft.ui.hoveredShapeId = shapeId;
+          }),
+
+        setHoveredWaypoint: (w) =>
+          set((draft) => {
+            draft.ui.hoveredWaypoint = w;
+          }),
+
+        setSegmentSelection: (value) =>
+          set((draft) => {
+            draft.ui.segmentSelection =
+              typeof value === "function"
+                ? value(draft.ui.segmentSelection)
+                : value;
+            if (draft.ui.segmentSelection) {
+              draft.ui.vertexSelection = null;
+            }
+          }),
+
+        setVertexSelection: (value) =>
+          set((draft) => {
+            draft.ui.vertexSelection =
+              typeof value === "function"
+                ? value(draft.ui.vertexSelection)
+                : value;
+            if (draft.ui.vertexSelection) {
+              draft.ui.segmentSelection = null;
+            }
+          }),
+
+        setDraftPath: (value) =>
+          set((draft) => {
+            draft.ui.draftPath =
+              typeof value === "function" ? value(draft.ui.draftPath) : value;
+          }),
+
+        setDraftForceClosed: (value) =>
+          set((draft) => {
+            draft.ui.draftForceClosed =
+              typeof value === "function"
+                ? value(draft.ui.draftForceClosed)
+                : value;
+          }),
+
+        setDraftSourceShapeId: (value) =>
+          set((draft) => {
+            draft.ui.draftSourceShapeId =
+              typeof value === "function"
+                ? value(draft.ui.draftSourceShapeId)
+                : value;
+          }),
+
+        setMarqueeRect: (value) =>
+          set((draft) => {
+            draft.ui.marqueeRect =
+              typeof value === "function" ? value(draft.ui.marqueeRect) : value;
+          }),
+
+        setRotationSession: (value) =>
+          set((draft) => {
+            draft.ui.rotationSession =
+              typeof value === "function"
+                ? value(draft.ui.rotationSession)
+                : value;
+          }),
+
+        setGroupDragPreview: (value) =>
+          set((draft) => {
+            draft.ui.groupDragPreview =
+              typeof value === "function"
+                ? value(draft.ui.groupDragPreview)
+                : value;
+          }),
+
+        setLiveShapePatch: (id, patch) =>
+          set((draft) => {
+            draft.ui.liveShapePatches[id] = patch;
+          }),
+
+        clearLiveShapePatch: (id) =>
+          set((draft) => {
+            delete draft.ui.liveShapePatches[id];
+          }),
+
+        newProject: () => {
+          set((draft) => {
+            draft.track = createDefaultEditorTrackState();
+            draft.session = createDefaultEditorSessionState();
+            draft.ui = resetEditorUiState(draft.ui, {
+              zoom: 1,
+              panOffset: { x: 0, y: 0 },
+            });
+          });
+          clearTemporalHistory();
+        },
+
+        bringForward: (id) =>
+          set((draft) => {
+            const idx = findShapeOrderIndex(draft.track.design, id);
+            if (idx < draft.track.design.shapeOrder.length - 1) {
+              const [shapeId] = draft.track.design.shapeOrder.splice(idx, 1);
+              draft.track.design.shapeOrder.splice(idx + 1, 0, shapeId);
+              touchTrackDesign(draft);
+            }
+          }),
+
+        sendBackward: (id) =>
+          set((draft) => {
+            const idx = findShapeOrderIndex(draft.track.design, id);
+            if (idx > 0) {
+              const [shapeId] = draft.track.design.shapeOrder.splice(idx, 1);
+              draft.track.design.shapeOrder.splice(idx - 1, 0, shapeId);
+              touchTrackDesign(draft);
+            }
+          }),
+
+        reorderShapes: (fromId: string, beforeId: string | null) =>
+          set((draft) => {
+            if (beforeId === fromId) return;
+            const order = draft.track.design.shapeOrder;
+            const fromIdx = order.indexOf(fromId);
+            if (fromIdx === -1) return;
+            const [shapeId] = order.splice(fromIdx, 1);
+            if (beforeId === null) {
+              order.push(shapeId);
+            } else {
+              const toIdx = order.indexOf(beforeId);
+              order.splice(toIdx === -1 ? order.length : toIdx, 0, shapeId);
+            }
+            touchTrackDesign(draft);
+          }),
+
+        pauseHistory: () => {
+          set((draft) => {
+            draft.session.historySessionDepth += 1;
+            if (draft.session.historySessionDepth === 1) {
+              pauseTemporalHistory();
+              draft.session.historyPaused = true;
+            }
+          });
+        },
+
+        resumeHistory: () => {
+          set((draft) => {
+            draft.session.historySessionDepth = Math.max(
+              0,
+              draft.session.historySessionDepth - 1
+            );
+            if (draft.session.historySessionDepth === 0) {
+              resumeTemporalHistory();
+              draft.session.historyPaused = false;
+            }
+          });
+        },
+
+        clearHistory: () => {
+          clearTemporalHistory();
+          set((draft) => {
+            draft.session.historyPaused = false;
+            draft.session.historySessionDepth = 0;
+          });
+        },
+
+        beginInteraction: () => {
+          set((draft) => {
+            draft.session.interactionSessionDepth += 1;
+          });
+        },
+
+        endInteraction: () => {
+          set((draft) => {
+            draft.session.interactionSessionDepth = Math.max(
+              0,
+              draft.session.interactionSessionDepth - 1
+            );
+          });
+        },
+
+        sanitizeHistoryState: () => {
+          set((draft) => {
+            draft.track.design = normalizeDesign(draft.track.design);
+            draft.session = createDefaultEditorSessionState();
+            draft.ui = sanitizeEditorUiState(draft.ui);
+          });
+        },
+      })),
+      {
+        partialize: (state) => ({
+          track: {
+            design: normalizeDesign(serializeDesign(state.track.design)),
+          },
+        }),
+        equality: (past, current) =>
+          past.track.design.id === current.track.design.id &&
+          past.track.design.updatedAt === current.track.design.updatedAt,
+        limit: 100,
+      }
+    )
+  );
+
+  return store;
+}
+
+export const useEditor = createEditorStore();
 
 if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
   const HMR_KEY = "__td_editor_track__";

@@ -192,6 +192,16 @@ app.whenReady().then(async () => {
         label: "File",
         submenu: [
           {
+            label: "New track",
+            accelerator: "CmdOrCtrl+N",
+            click: () => action("new"),
+          },
+          {
+            label: "Project library",
+            accelerator: "CmdOrCtrl+Shift+H",
+            click: () => action("home"),
+          },
+          {
             label: "Open project copy…",
             accelerator: "CmdOrCtrl+O",
             click: () => action("open"),
@@ -202,7 +212,16 @@ app.whenReady().then(async () => {
             click: () => action("save"),
           },
           { type: "separator" },
-          { role: "close" },
+          {
+            label: "Close document",
+            accelerator: "CmdOrCtrl+W",
+            click: () => action("close-tab"),
+          },
+          {
+            role: "close",
+            label: "Close window",
+            accelerator: "CmdOrCtrl+Shift+W",
+          },
         ],
       },
       { role: "editMenu" },

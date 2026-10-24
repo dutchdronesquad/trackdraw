@@ -1,0 +1,44 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { createEditorStore, useEditor } from "@/store/editor";
+import { createDefaultDesign } from "@/lib/track/design";
+import { gateDraft } from "../helpers/editor-store";
+
+afterEach(() => vi.useRealTimers());
+it("isolates document data, selection, viewport and history from other documents and the web singleton", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-10-24T12:00:00Z"));
+  const a = createEditorStore();
+  const b = createEditorStore();
+  const webId = useEditor.getState().track.design.id;
+  vi.advanceTimersByTime(10);
+  const id = a.getState().addShape(gateDraft());
+  a.getState().setSelection([id]);
+  a.getState().setZoom(2);
+  vi.advanceTimersByTime(10);
+  b.getState().addShape(gateDraft());
+  const bHistory = b.temporal.getState().pastStates.length;
+  a.temporal.getState().undo();
+  expect(a.getState().track.design.shapeOrder).toHaveLength(0);
+  expect(b.getState().track.design.shapeOrder).toHaveLength(1);
+  expect(b.temporal.getState().pastStates).toHaveLength(bHistory);
+  a.temporal.getState().redo();
+  expect(a.getState().session.selection).toEqual([id]);
+  expect(a.getState().ui.zoom).toBe(2);
+  expect(b.getState().ui.zoom).toBe(1);
+  expect(useEditor.getState().track.design.id).toBe(webId);
+});
+it("document-local replace and history pause cannot clear or pause another document", () => {
+  vi.useFakeTimers();
+  const a = createEditorStore();
+  const b = createEditorStore();
+  vi.advanceTimersByTime(10);
+  a.getState().addShape(gateDraft());
+  const history = a.temporal.getState().pastStates;
+  b.getState().pauseHistory();
+  expect(a.temporal.getState().isTracking).toBe(true);
+  expect(b.temporal.getState().isTracking).toBe(false);
+  b.getState().resumeHistory();
+  b.getState().replaceDesign(createDefaultDesign());
+  expect(a.temporal.getState().pastStates).toEqual(history);
+  expect(a.getState().track.design.shapeOrder).toHaveLength(1);
+});

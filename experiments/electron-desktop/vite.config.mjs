@@ -42,6 +42,15 @@ export default defineConfig({
   resolve: {
     dedupe: ["react", "react-dom", "three", "zustand"],
     alias: [
+      { find: "@/store/editor", replacement: shim("editor-store.jsx") },
+      {
+        find: "@/components/canvas/useTrackCanvasViewport",
+        replacement: shim("viewport.jsx"),
+      },
+      {
+        find: "@/components/canvas/preview3d/shared-scene",
+        replacement: shim("scene.jsx"),
+      },
       {
         find: "@/lib/projects",
         replacement: path.join(here, "renderer/storage/projects.mjs"),

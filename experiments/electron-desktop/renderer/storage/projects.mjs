@@ -45,19 +45,25 @@ export function listRestorePointsForProject(id) {
 export function loadLocalDraft() {
   return state.draft ? parseDesign(state.draft) : null;
 }
-export function command(name, payload) {
-  const operation = queue
-    .then(() => window.trackdrawDesktop.projects(name, payload))
-    .then(accept);
+export function command(name, payload, shouldRun = () => true) {
+  const operation = queue.then(async () => {
+    if (!shouldRun()) return state;
+    return accept(await window.trackdrawDesktop.projects(name, payload));
+  });
   queue = operation.catch((error) => {
     lastError = error;
+    state = { ...state };
     for (const listener of listeners) listener();
   });
   return operation;
 }
-export async function saveDesign(design, restore = false) {
+export async function saveDesign(design, restore = false, shouldRun) {
   // Capture the exact design at request time, before another edit changes the store.
-  return command("save", { design: serializeDesign(design), restore });
+  return command(
+    "save",
+    { design: serializeDesign(design), restore },
+    shouldRun
+  );
 }
 export const ready = command("state");
 // Shared cloud persistence remains disabled in this offline increment. Never silently

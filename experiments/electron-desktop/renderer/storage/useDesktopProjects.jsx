@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { useEditor } from "@/store/editor";
+import { useDocument } from "../workspace/document-context.jsx";
 import {
-  createProjectDuplicate,
+  openDocument,
+  isDocumentOpen,
+  isActiveDocument,
+  renameDocument,
+  duplicateDocument,
+  deleteDocument,
+} from "../workspace/workspace.mjs";
+import {
   hasMeaningfulProjectContent,
   command,
   getState,
@@ -12,7 +19,6 @@ import {
   loadLocalDraft,
   ready,
   saveDesign,
-  saveCopy,
   subscribe,
 } from "./projects.mjs";
 
@@ -25,6 +31,8 @@ export function useEditorProjects({
   interactionSessionDepth,
   replaceDesign,
 }) {
+  const document = useDocument();
+  const store = document.store;
   const t = useTranslations("editor.shell");
   const [view, setView] = useState(() => getState());
   const refresh = useCallback(() => setView(getState()), []);
@@ -44,8 +52,7 @@ export function useEditorProjects({
     ready
       .then(() => {
         if (cancelled) return;
-        const restored = loadLocalDraft();
-        if (restored) replaceDesign(restored);
+        const restored = document;
         setView(getState());
         setInitialized(true);
         setStatus(
@@ -58,7 +65,7 @@ export function useEditorProjects({
     return () => {
       cancelled = true;
     };
-  }, [replaceDesign, failure]);
+  }, [document, replaceDesign, failure]);
   useEffect(() => {
     if (
       !initialized ||
@@ -69,9 +76,15 @@ export function useEditorProjects({
       return;
     let cancelled = false;
     const timer = setTimeout(() => {
-      if (!hasMeaningfulProjectContent(design)) return;
+      if (!hasMeaningfulProjectContent(design) || !isDocumentOpen(document))
+        return;
       setStatus("Saving locally…");
-      saveDesign(design)
+      saveDesign(
+        design,
+        false,
+        () =>
+          isActiveDocument(document) && store.getState().track.design === design
+      )
         .then(() => {
           if (!cancelled) setStatus("Saved locally to desktop database");
         })
@@ -83,6 +96,8 @@ export function useEditorProjects({
     };
   }, [
     initialized,
+    document,
+    store,
     readOnly,
     design,
     historyPaused,
@@ -91,18 +106,24 @@ export function useEditorProjects({
   ]);
   useEffect(() => {
     if (!initialized || readOnly) return;
-    let last = useEditor.getState().track.design.updatedAt;
+    let last = store.getState().track.design.updatedAt;
     const timer = setInterval(() => {
-      const current = useEditor.getState().track.design;
+      const current = store.getState().track.design;
       if (current.updatedAt === last) return;
-      saveDesign(current, true)
+      saveDesign(
+        current,
+        true,
+        () =>
+          isActiveDocument(document) &&
+          store.getState().track.design === current
+      )
         .then(() => {
           last = current.updatedAt;
         })
         .catch(failure);
     }, 300000);
     return () => clearInterval(timer);
-  }, [initialized, readOnly, failure]);
+  }, [initialized, readOnly, failure, store, document]);
   const run = async (operation) => {
     try {
       return await operation();
@@ -112,33 +133,26 @@ export function useEditorProjects({
     }
   };
   const snapshotCurrentDesign = useCallback(async () => {
-    const current = useEditor.getState().track.design;
+    const current = store.getState().track.design;
     if (hasMeaningfulProjectContent(current)) await saveDesign(current, true);
-  }, []);
+  }, [store]);
   const handleSaveSnapshot = () =>
     run(async () => {
-      await saveDesign(useEditor.getState().track.design, true);
+      await saveDesign(store.getState().track.design, true);
       setActiveRestorePointId(null);
       setLastSnapshotLabel("Snapshot saved");
       setStatus("Snapshot saved");
       toast.success(t("snapshotSaved"));
     });
   const handleOpenProject = (id) =>
-    run(async () => {
-      const loaded = loadProject(id);
-      if (!loaded) throw new Error("Project is unavailable.");
-      await snapshotCurrentDesign();
-      await saveDesign(loaded);
-      replaceDesign(loaded);
-      useEditor.getState().clearHistory();
-      setActiveRestorePointId(null);
-      setStatus("Project opened");
+    run(() => {
+      history.replaceState(null, "", "/studio");
+      return openDocument(id);
     });
   const handleDeleteProjects = (ids) =>
     run(async () => {
-      await command("delete", { ids });
-      if (ids.includes(useEditor.getState().track.design.id))
-        useEditor.getState().newProject();
+      history.replaceState(null, "", "/studio");
+      for (const id of ids) await deleteDocument(id);
     });
   return {
     projects: listProjects(),
@@ -160,32 +174,23 @@ export function useEditorProjects({
     handleDeleteProjects,
     handleDeleteProject: (id) => handleDeleteProjects([id]),
     handleRenameProject: (id, title) =>
-      run(async () => {
-        await command("rename", { id, title });
-        if (id === useEditor.getState().track.design.id)
-          useEditor.getState().updateDesignMeta({ title });
+      run(() => {
+        history.replaceState(null, "", "/studio");
+        return renameDocument(id, title);
       }),
     handleDuplicateProject: (id) =>
-      run(async () => {
-        const source =
-          id === design.id
-            ? useEditor.getState().track.design
-            : loadProject(id);
-        if (!source) throw new Error("Project is unavailable.");
-        const copy = createProjectDuplicate(
-          source,
-          `Copy of ${source.title || "Untitled"}`,
-          listProjects().map((project) => project.title)
+      run(() => {
+        history.replaceState(null, "", "/studio");
+        return duplicateDocument(
+          id,
+          t("copyOfTitle", { title: loadProject(id)?.title || "" })
         );
-        // Store a copy without switching the active editor's crash-recovery draft.
-        await saveCopy(copy);
-        return copy;
       }),
     handleRestorePoint: (id) =>
       run(async () => {
         await command("restore", { id });
         replaceDesign(loadLocalDraft());
-        useEditor.getState().clearHistory();
+        store.getState().clearHistory();
         setActiveRestorePointId(id);
         setStatus("Restored from snapshot");
       }),
