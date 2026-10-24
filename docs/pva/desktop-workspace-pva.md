@@ -200,6 +200,26 @@ Evaluate product reliability and maintenance cost separately from infrastructure
 
 ## Change discipline and stopping points
 
+### Branch and pull request workflow
+
+Use `codex/desktop-integration` as the review destination for desktop development, separate from `main`. Preserve `codex/desktop-app` as the existing runnable preview of the complete work while the initial review stack is outstanding. Do not reset or force-push it to manufacture smaller diffs. After the stack lands, create each new feature branch from the accepted integration tip and open a bounded PR back to that integration branch.
+
+The initial work is split along its existing commit boundaries:
+
+| Review slice | Head branch | Initial PR base | Scope |
+| --- | --- | --- | --- |
+| Desktop foundation | `codex/desktop-foundation` | `codex/desktop-integration` | Isolated Electron runtime, native JSON files, durable SQLite projects, restore points and awaited saves. |
+| Project workspace | `codex/desktop-workspace` | `codex/desktop-foundation` | Project library, isolated document stores, tabs and per-document view/history behavior. |
+| TrackDraw identity and direction | `codex/desktop-identity` | `codex/desktop-workspace` | TrackDraw visual styling, browser/offline role clarification and this review workflow. |
+
+Open these as dependent draft PRs so each diff contains only its own slice. Review and merge from foundation upward. Use merge commits for this initial stack to preserve ancestry, then retarget the next PR to `codex/desktop-integration` after its predecessor lands. Do not squash a parent and retarget a child without first rebuilding the child's base; that would reintroduce already-reviewed changes into its diff. No merges or automatic merges are part of setting up this review stack.
+
+The initial integration seed is `a780c72d`, the existing pre-desktop baseline. It predates newer `main` changes and contains MCP callback history inherited from the original checkout; that history is not part of the desktop review slices. Bring current `main` into the integration branch in a separately reviewed compatibility change before a release candidate. Recheck browser/team project flows and desktop persistence after resolving any conflicts. Preserve unrelated working checkouts.
+
+Keep future PRs to one behavior or boundary, for example offline preparation, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, but the native repository tests and real Electron smoke flow still require explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
+
+Keep production delivery incremental too: identify small reusable changes suitable for `main` separately, and retain the isolated desktop runtime until its release gates pass. Do not use a single final merge of the long-lived branch as a substitute for reviewing shared-code changes and compatibility with current `main`.
+
 Deliver small changes in this order: persistence seam, durable desktop repository, workspace/library, document isolation, desktop auth/transport, sync recovery, platform delivery, then website entry points. Each change must have a bounded diff and relevant behavior checks. Shared-code changes run the normal lint, tests, type, and build checks; copy changes also run the i18n checks.
 
 Phase 1 is the next build scope. Do not bundle tabs, cloud sign-in, installers, and a repository restructure into that change. Phase exit gates determine whether to continue, rescope, or park the direction. Production persistence migrations require an export/backup path; later abandonment must not depend on retaining Electron to recover users' tracks.
