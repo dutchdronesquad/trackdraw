@@ -546,7 +546,7 @@ body,
   max-width: calc(100% - 54px);
 }
 .project-offline.offline-ready {
-  color: var(--brand-primary);
+  color: #106da6;
 }
 .project-offline.offline-limited,
 .project-offline.offline-changed,
@@ -568,9 +568,13 @@ body,
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--brand-primary);
+  color: #106da6;
   cursor: pointer;
   margin-left: 6px;
+}
+.dark .project-offline.offline-ready,
+.dark .offline-help button {
+  color: var(--brand-primary);
 }
 .project-menu button:disabled {
   opacity: 0.5;
