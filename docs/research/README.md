@@ -19,6 +19,8 @@ Research is grouped by implementation status, assessed against the current repos
 
 ## In progress
 
+The [Electron desktop concept](in-progress/electron-desktop-concept.md) has a removable POC and a requested direction toward desktop as the primary workspace, following Figma's project-library and account-continuity model. The [Desktop Workspace PVA](../pva/desktop-workspace-pva.md) proposes incremental delivery while retaining web editing; production storage, cloud integration, and desktop release support remain open.
+
 | Research                                                                          | Already present                                                                                                                       | Still open                                                                                                                                                |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Worker build size](in-progress/worker-build-size.md)                             | Worker upload attribution and local packaging experiments; production build script selects webpack for the trial.                     | Controlled bundler comparison in CI, deployed runtime and browser acceptance, and viewer package deduplication.                                           |

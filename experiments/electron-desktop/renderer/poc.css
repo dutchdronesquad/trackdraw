@@ -1,0 +1,43 @@
+@import "../../../src/app/globals.css";
+@source "../../../src";
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.poc-bar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  font-size: 11px;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.poc-bar strong {
+  color: var(--brand-primary);
+}
+.poc-bar button {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.poc-bar button:hover {
+  background: var(--secondary);
+}
+.poc-status {
+  margin-left: auto;
+  color: var(--muted-foreground);
+}
+.poc-editor {
+  height: calc(100dvh - 40px);
+}
+.poc-editor .h-dvh {
+  height: 100%;
+}
