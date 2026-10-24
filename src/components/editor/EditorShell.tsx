@@ -105,12 +105,14 @@ export default function EditorShell({
   initialTab = "2d",
   studioHref,
   existingShareMode = false,
+  showStarterExperience = true,
 }: {
   readOnly?: boolean;
   seedToken?: string;
   initialTab?: EditorView;
   studioHref?: string;
   existingShareMode?: boolean;
+  showStarterExperience?: boolean;
 }) {
   usePerfMetric("render:EditorShell");
   useDeveloperModeShortcut();
@@ -466,7 +468,8 @@ export default function EditorShell({
     createBlankDesign: createFirstUseBlankDesign,
   });
 
-  const shouldShowStarter = initialized && starterShouldShow;
+  const shouldShowStarter =
+    showStarterExperience && initialized && starterShouldShow;
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {

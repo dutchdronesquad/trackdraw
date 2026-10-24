@@ -7,6 +7,18 @@ for (const method of ["pushState", "replaceState"]) {
   window.history[method] = (...args) => {
     if (args[2]) {
       const url = new URL(args[2], window.location.href);
+      const requested = url.searchParams.get("dialog");
+      if (["import", "new-project"].includes(requested)) {
+        url.searchParams.delete("dialog");
+        original(args[0], args[1], `${url.pathname}${url.search}${url.hash}`);
+        window.dispatchEvent(new Event(eventName));
+        window.dispatchEvent(
+          new CustomEvent("desktop:action", {
+            detail: requested === "import" ? "import" : "new",
+          })
+        );
+        return;
+      }
       if (
         ["account", "share", "feedback"].includes(
           url.searchParams.get("dialog")

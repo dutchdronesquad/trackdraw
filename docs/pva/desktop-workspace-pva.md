@@ -129,10 +129,12 @@ Exit gate: complete real track design sessions offline, including close/reopen, 
 
 ### Phase 2 Add the desktop workspace
 
-- [ ] Open a project library with recent projects, search, and a clear continue-working action. Keep TrackDraw's visual language.
-- [ ] Add normal application menus, native file handling, shortcuts, recent-file recovery, and explicit storage/sync status.
-- [ ] Add document tabs only after each project can retain its own selection, viewport, undo/redo history, and pending-save state.
-- [ ] Validate switching, closing, and reopening documents with unsaved changes, including importing a copy while another document is open.
+- [x] Open a project library with recent projects, search, and a clear continue-working action. Keep TrackDraw's visual language.
+- [x] Add normal application menus, native file handling, shortcuts, recent-project recovery, and explicit local storage status. Add sync status when cloud transport is implemented.
+- [x] Add document tabs only after each project can retain its own selection, viewport, undo/redo history, and pending-save state.
+- [x] Validate switching, closing, and reopening documents with unsaved changes, including importing a copy while another document is open.
+
+Implemented on the desktop branch: a Home library with previews, recent/all-project views and search, plus independent per-document stores created from the existing editor factory. Browser consumers keep the original singleton. Document tabs save before switching/closing; workspace preferences restore tabs, selections and 2D/3D views. Runtime undo/redo is isolated per open document and is not persisted across close/restart. The Electron smoke flow exercises independent histories and 2D/3D viewport restoration. Cloud accounts, multiple windows and cross-platform acceptance remain later work.
 
 Exit gate: use several real projects across repeated sessions without lost state or history crossing between tracks. A library with one active editor can ship as an intermediate alpha. If safe tabs require a broad store rewrite, defer tabs to a separately scoped change; do not simulate independent documents with one shared history. Multiple concurrent windows are deferred.
 
