@@ -87,7 +87,11 @@
       "liveCompact": "Live {value}",
       "latestMatureCohort": "Latest mature cohort",
       "contractMeta": "{id} · {window}-day window · measured since {date} · owner: Product",
-      "drilldown": "View analytical context"
+      "drilldown": "View analytical context",
+      "MTR-009": {
+        "label": "Most used feature"
+      },
+      "featureRate": "Used in {rate} of eligible editor sessions"
     },
     "quality": {
       "not_started": "Awaiting first complete period",
@@ -146,6 +150,13 @@
         "detail": "{building} metric series are still building and are not treated as incidents.",
         "action": "Review measurement health"
       }
+    },
+    "features": {
+      "preview_3d": "3D preview",
+      "import": "Import",
+      "export": "Export",
+      "share_link": "Share link",
+      "gallery_publication": "Gallery publication"
     }
   },
   "overview": {
@@ -477,8 +488,8 @@
         "description": "Editor activity split between anonymous and signed-in sessions."
       },
       "adoption": {
-        "title": "Which features do creators use?",
-        "description": "Completed feature use among eligible creator sessions."
+        "title": "Most used features",
+        "description": "Ranked by editor sessions using each feature over the latest 28 complete days. Counts and shares of eligible sessions are shown; gallery publication is limited to signed-in sessions with permission."
       },
       "content": {
         "title": "How much content is being created?",

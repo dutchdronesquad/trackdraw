@@ -35,6 +35,58 @@ function metricRow(
 }
 
 describe("daily dashboard cockpit", () => {
+  it("ranks features by session count and compares the same feature", () => {
+    const rows = [
+      metricRow("MTR-009", "2026-08-13", {
+        window_days: 28,
+        dimension: "export",
+        numerator: 12,
+        denominator: 40,
+      }),
+      metricRow("MTR-009", "2026-08-13", {
+        window_days: 28,
+        dimension: "gallery_publication",
+        numerator: 5,
+        denominator: 5,
+      }),
+      metricRow("MTR-009", "2026-07-16", {
+        window_days: 28,
+        dimension: "export",
+        numerator: 8,
+        denominator: 40,
+      }),
+      metricRow("MTR-009", "2026-07-16", {
+        window_days: 28,
+        dimension: "gallery_publication",
+        numerator: 9,
+        denominator: 10,
+      }),
+    ];
+    const metric = buildCockpitHeadlineMetrics(
+      { "MTR-009": rows },
+      new Date("2026-08-14T12:00:00Z")
+    ).find((entry) => entry.id === "MTR-009")!;
+    expect(metric.current?.dimension).toBe("export");
+    expect(metric.previous?.numerator).toBe(8);
+    expect(metric.comparisonReady).toBe(true);
+  });
+
+  it("does not invent a favorite feature when no feature was used", () => {
+    const rows = [
+      metricRow("MTR-009", "2026-08-13", {
+        window_days: 28,
+        dimension: "export",
+        numerator: 0,
+        denominator: 40,
+      }),
+    ];
+    const metric = buildCockpitHeadlineMetrics(
+      { "MTR-009": rows },
+      new Date("2026-08-14T12:00:00Z")
+    ).find((entry) => entry.id === "MTR-009")!;
+    expect(metric.current).toBeNull();
+  });
+
   it("shows low-volume counts without enabling comparison styling", () => {
     const rows = [
       metricRow("MTR-001", "2026-08-13", {

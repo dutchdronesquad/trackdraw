@@ -101,44 +101,6 @@ export function GrowthAside({
   );
 }
 
-function latestRow(metric: MetricsExplorerMetric) {
-  return [...metric.rows]
-    .filter((row) => row.value !== null)
-    .sort((left, right) => right.day.localeCompare(left.day))[0];
-}
-
-export function RetentionAside({
-  metric,
-  link,
-}: {
-  metric: MetricsExplorerMetric;
-  link?: AsideLink;
-}) {
-  const { t, number, percent, pointChange } = useFormats();
-  const row = latestRow(metric);
-  if (!row || row.value === null) return null;
-  return (
-    <MetricsAside
-      value={percent.format(row.value)}
-      label={t("retention.label")}
-      change={
-        row.comparisonReady && row.previousValue !== null
-          ? pointChange(row.value, row.previousValue)
-          : null
-      }
-      note={
-        row.denominator !== null
-          ? t("retention.note", {
-              returned: number.format(row.numerator),
-              activated: number.format(row.denominator),
-            })
-          : null
-      }
-      link={link}
-    />
-  );
-}
-
 export function AcquisitionAside({
   metric,
 }: {

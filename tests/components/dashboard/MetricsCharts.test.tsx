@@ -291,17 +291,17 @@ describe("metrics decision views", () => {
           measuredSince: "2026-07-01",
           trend: [],
         },
-        ...(["MTR-004", "MTR-005", "MTR-006"] as const).map((id) => ({
+        ...(["MTR-004", "MTR-006"] as const).map((id) => ({
           id,
-          windowDays: id === "MTR-005" ? (30 as const) : (7 as const),
-          minimumVolume: id === "MTR-005" ? 20 : 30,
+          windowDays: 7 as const,
+          minimumVolume: 30,
           valueKind: "rate" as const,
           unfavorableDirection: "down" as const,
           drilldown: "/dashboard/metrics",
           current: {
             ...metricRow,
             metric_id: id,
-            window_days: id === "MTR-005" ? (30 as const) : (7 as const),
+            window_days: 7 as const,
             numerator: id === "MTR-004" ? 0 : 4,
             denominator: id === "MTR-004" ? 0 : 10,
           },
@@ -711,13 +711,21 @@ describe("metrics decision views", () => {
     expect(screen.queryByText(/Compared with/)).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
 
-    await user.click(screen.getByRole("tab", { name: "Creators" }));
-    expect(screen.getByText("Do activated creators come back?")).toBeTruthy();
+    await user.click(screen.getByRole("tab", { name: "Overview" }));
     expect(
-      screen.getByText(
+      screen.getByRole("heading", { name: "Most used features" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "3D preview: 7 (70%)" })
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole("tab", { name: "Creators" }));
+    expect(screen.queryByText("Do activated creators come back?")).toBeNull();
+    expect(
+      screen.queryByText(
         "Mature creator-activation cohorts will appear after the observation window is complete."
       )
-    ).toBeTruthy();
+    ).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Creation" }));
     expect(screen.getByText("How much content is being created?")).toBeTruthy();
@@ -730,14 +738,14 @@ describe("metrics decision views", () => {
       })
     ).toBeTruthy();
     const adoption = screen
-      .getByRole("heading", { name: "Which features do creators use?" })
+      .getByRole("heading", { name: "Most used features" })
       .closest("section");
     expect(adoption).toBeTruthy();
     expect(
       within(adoption!)
         .getAllByRole("img")
         .map((row) => row.getAttribute("aria-label"))
-    ).toEqual(["3D preview: 70%", "Import: 20%"]);
+    ).toEqual(["3D preview: 7 (70%)", "Import: 2 (20%)"]);
 
     await user.click(screen.getByRole("tab", { name: "Distribution" }));
     expect(
