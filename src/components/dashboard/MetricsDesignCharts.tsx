@@ -4,7 +4,6 @@ import { Fragment, useMemo } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  Area,
   Bar,
   BarChart,
   CartesianGrid,
@@ -34,7 +33,6 @@ import {
   TIME_TO_RESULT_BUCKETS,
   type ProductActivityAnalysis,
 } from "@/lib/metrics-analysis";
-import type { MetricsExplorerMetric } from "@/lib/metrics-explorer";
 import type {
   AdminMetrics,
   ContentGrowthPoint,
@@ -488,103 +486,6 @@ export function WeeklyViewsChart({
         />
       ) : null}
     </div>
-  );
-}
-
-export function RetentionTrend({ metric }: { metric: MetricsExplorerMetric }) {
-  const { t, percent, day } = useVisualFormats();
-  const data = metric.rows
-    .filter((row) => row.value !== null)
-    .map((row) => ({
-      day: row.day,
-      label: t("weekShort", { week: isoWeekNumber(row.day) }),
-      range: t("retentionTrend.cohort", { date: day(row.day) }),
-      rate: row.value ?? 0,
-    }));
-  if (data.length === 0) {
-    return <MetricsEmpty>{t("retentionTrend.empty")}</MetricsEmpty>;
-  }
-  const config = {
-    rate: { label: t("retentionTrend.rate"), color: "var(--chart-5)" },
-  } satisfies ChartConfig;
-  const last = data[data.length - 1];
-
-  return (
-    <ChartContainer config={config} className="aspect-auto h-56 w-full">
-      <ComposedChart
-        data={data}
-        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-      >
-        <CartesianGrid vertical={false} strokeDasharray="3 3" />
-        <XAxis
-          dataKey="label"
-          tickLine={false}
-          axisLine={false}
-          tick={axisTick}
-          minTickGap={8}
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tick={axisTick}
-          tickFormatter={percent}
-          domain={[0, "auto"]}
-          width={44}
-        />
-        <ChartTooltip
-          cursor={tooltipCursor}
-          content={({ active, payload }) => {
-            const row = payload?.[0]?.payload as
-              (typeof data)[number] | undefined;
-            if (!active || !row) return null;
-            return (
-              <MetricsTooltipCard
-                label={row.range}
-                rows={[
-                  {
-                    key: "rate",
-                    label: config.rate.label,
-                    value: percent(row.rate),
-                  },
-                ]}
-              />
-            );
-          }}
-        />
-        <Area
-          type="linear"
-          dataKey="rate"
-          stroke="none"
-          fill="var(--color-rate)"
-          fillOpacity={0.12}
-          isAnimationActive={false}
-        />
-        <Line
-          type="linear"
-          dataKey="rate"
-          stroke="var(--color-rate)"
-          strokeWidth={2.5}
-          dot={(props: {
-            cx?: number;
-            cy?: number;
-            payload?: { day: string };
-          }) =>
-            props.payload?.day === last.day ? (
-              <circle
-                key="last"
-                cx={props.cx}
-                cy={props.cy}
-                r={4}
-                fill="var(--color-rate)"
-              />
-            ) : (
-              <g key={props.payload?.day} />
-            )
-          }
-          activeDot={{ r: 4 }}
-        />
-      </ComposedChart>
-    </ChartContainer>
   );
 }
 
