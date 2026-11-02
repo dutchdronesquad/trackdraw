@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { TrackDesign } from "@/lib/types";
+import type { TeamSummary } from "@/lib/teams";
 
 const id = z.string().min(1).max(128);
 export const teamProjectCommandSchema = z.discriminatedUnion("action", [
@@ -36,6 +38,12 @@ export function teamProjectHref(teamId: string, projectId: string) {
 }
 
 export type ProjectEditor = { userId: string; name: string; expiresAt: string };
+export type TeamProjectPoll = {
+  team: TeamSummary;
+  editing: ProjectEditor | null;
+  revision: number;
+  project: { design: TrackDesign; revision: number } | null;
+};
 export const teamEditingCommandSchema = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("acquire"), teamId: id, projectId: id }),
   z.strictObject({
