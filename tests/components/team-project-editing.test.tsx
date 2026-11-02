@@ -291,3 +291,64 @@ it("scrubs the private canvas, recovery and selected team after confirmed member
   );
   expect(useEditor.temporal.getState().pastStates).toHaveLength(0);
 });
+
+it("polls the known revision and refreshes metadata without replacing the canvas or history", async () => {
+  vi.useFakeTimers();
+  await act(async () => {
+    render(<Harness />);
+  });
+  const original = useEditor.getState().track.design;
+  const history = useEditor.temporal.getState().pastStates;
+  mocks.read.mockResolvedValue({
+    team: { id: "club", name: "Renamed", role: "viewer", recovery: true },
+    project: null,
+    revision: 7,
+    editing: { userId: "other", name: "Other", expiresAt: "2099-01-01" },
+  });
+  await act(async () => vi.advanceTimersByTimeAsync(20_000));
+  expect(mocks.read.mock.calls.at(-1)?.[0]).toEqual({
+    teamId: "club",
+    projectId: "race",
+    knownRevision: "7",
+  });
+  expect(latest.loaded?.team).toMatchObject({
+    name: "Renamed",
+    role: "viewer",
+    recovery: true,
+  });
+  expect(latest.loaded?.editing?.name).toBe("Other");
+  expect(useEditor.getState().track.design).toBe(original);
+  expect(useEditor.temporal.getState().pastStates).toBe(history);
+});
+
+it("installs a changed revision, refreshes on focus and forces a full explicit reload", async () => {
+  await act(async () => {
+    render(<Harness />);
+  });
+  mocks.read.mockResolvedValue({
+    team: { id: "club", name: "Club", role: "owner" },
+    project: { design: { ...design, title: "New revision" }, revision: 8 },
+    editing: null,
+  });
+  await act(async () => window.dispatchEvent(new Event("focus")));
+  expect(useEditor.getState().track.design.title).toBe("New revision");
+  mocks.read.mockClear();
+  await act(async () => latest.reload());
+  expect(mocks.read.mock.calls[0][0]).toEqual({
+    teamId: "club",
+    projectId: "race",
+  });
+});
+
+it("clears private content when conditional revalidation fails", async () => {
+  vi.useFakeTimers();
+  await act(async () => {
+    render(<Harness />);
+  });
+  mocks.read.mockRejectedValue(new Error("offline"));
+  await act(async () => vi.advanceTimersByTimeAsync(20_000));
+  expect(latest.loaded).toBeNull();
+  expect(latest.status).toBe("unavailable");
+  expect(useEditor.getState().track.design.title).not.toBe("Server");
+  expect(useEditor.temporal.getState().pastStates).toHaveLength(0);
+});

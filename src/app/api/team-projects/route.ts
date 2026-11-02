@@ -3,6 +3,7 @@ import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import { readBoundedRequestBody } from "@/lib/server/bounded-request-body";
 import { teamProjectCommandSchema } from "@/lib/team-projects";
+import { pollTeamProject } from "@/lib/server/team-project-poll";
 import {
   createTeamProject,
   listTeamProjects,
@@ -28,6 +29,14 @@ export async function GET(request: Request) {
     if (!user) return json({ ok: false, code: "unauthorized" }, 401);
     const params = new URL(request.url).searchParams;
     const projectId = params.get("projectId");
+    const known = params.get("knownRevision");
+    if (
+      known !== null &&
+      (!projectId ||
+        !/^[1-9]\d*$/.test(known) ||
+        !Number.isSafeInteger(Number(known)))
+    )
+      return json({ ok: false, code: "invalid" }, 400);
     if (params.get("previewMove") === "1" && projectId)
       return json({
         ok: true,
@@ -39,7 +48,9 @@ export async function GET(request: Request) {
     return json({
       ok: true,
       ...(projectId
-        ? await readTeamProject(user.id, teamId, projectId)
+        ? known !== null
+          ? await pollTeamProject(user.id, teamId, projectId, Number(known))
+          : await readTeamProject(user.id, teamId, projectId)
         : await listTeamProjects(
             user.id,
             teamId,
