@@ -12,6 +12,15 @@ import ExportDialog from "@/components/dialogs/ExportDialog";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import { useEditor } from "@/store/editor";
 
+vi.hoisted(() => {
+  // happy-dom's partial Web Animations implementation can leave AnimatePresence
+  // waiting for exit completion. Exercise real Motion's JS/RAF fallback instead.
+  Object.defineProperty(Element.prototype, "animate", {
+    configurable: true,
+    value: undefined,
+  });
+});
+
 const mocks = vi.hoisted(() => ({
   downloadJsonFile: vi.fn(),
   exportFlythrough: vi.fn(),
