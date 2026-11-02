@@ -126,13 +126,13 @@ export default function TeamProjectWorkspace({
     <div className="bg-background flex h-dvh flex-col">
       <div
         aria-label={t("workspaceContext")}
-        className="border-border flex shrink-0 flex-col gap-0.5 border-b px-3 py-1 text-xs sm:h-9 sm:flex-row sm:items-center sm:gap-3 sm:py-0 sm:pr-4"
+        className="border-border grid shrink-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-2 border-b px-2 py-2 text-xs sm:flex sm:h-9 sm:gap-3 sm:px-3 sm:py-0 sm:pr-4"
       >
-        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 sm:h-auto sm:gap-3">
+        <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:gap-3">
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 shrink-0 gap-1 px-1.5 font-normal"
+            className="text-muted-foreground hover:bg-muted/50 hover:text-foreground row-span-2 row-start-1 h-10 w-8 shrink-0 gap-1 px-1.5 font-normal sm:h-8 sm:w-auto"
             aria-label={t("back")}
             disabled={
               Boolean(recovery) || status === "saving" || status === "acquiring"
@@ -143,13 +143,16 @@ export default function TeamProjectWorkspace({
             <ChevronLeft className="size-3.5" />
             <span className="hidden sm:inline">{t("projectsShort")}</span>
           </Button>
-          <span aria-hidden="true" className="bg-border h-4 w-px shrink-0" />
+          <span
+            aria-hidden="true"
+            className="bg-border hidden h-4 w-px shrink-0 sm:block"
+          />
           <TeamAvatar
             name={loaded.team.name}
             compact
-            className="size-6 shrink-0"
+            className="hidden size-6 shrink-0 sm:flex"
           />
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="col-start-2 row-start-1 flex min-w-0 items-center gap-2 self-end sm:gap-3 sm:self-auto">
             <span
               className="text-muted-foreground hidden max-w-48 truncate md:inline"
               title={loaded.team.name}
@@ -161,19 +164,19 @@ export default function TeamProjectWorkspace({
               className="text-muted-foreground/60 hidden size-3 shrink-0 md:block"
             />
             <span
-              className="truncate font-medium"
+              className="truncate text-sm font-medium sm:text-xs"
               title={loaded.project.design.title}
             >
               {loaded.project.design.title}
             </span>
           </div>
         </div>
-        <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 sm:min-h-0 sm:justify-end sm:gap-3">
+        <div className="contents sm:flex sm:min-w-0 sm:items-center sm:justify-end sm:gap-3">
           <div
             role="status"
             aria-live="polite"
             aria-atomic="true"
-            className="text-muted-foreground flex min-w-0 items-center gap-2 sm:gap-3"
+            className="text-muted-foreground col-start-2 row-start-2 flex min-w-0 items-center gap-2 self-start text-[11px] sm:gap-3 sm:self-auto sm:text-xs"
           >
             {editing ? (
               <>
@@ -198,12 +201,16 @@ export default function TeamProjectWorkspace({
                 </span>
                 <span
                   aria-hidden="true"
-                  className="bg-border h-4 w-px shrink-0"
+                  className="bg-border hidden h-4 w-px shrink-0 sm:block"
                 />
               </>
             ) : null}
             <span
-              className="flex min-w-0 items-center gap-1.5"
+              className={
+                editing
+                  ? "sr-only sm:not-sr-only sm:flex sm:min-w-0 sm:items-center sm:gap-1.5"
+                  : "flex min-w-0 items-center gap-1.5"
+              }
               title={sessionLabel}
             >
               {editing || editorName ? (
@@ -211,25 +218,35 @@ export default function TeamProjectWorkspace({
               ) : (
                 <LockKeyhole aria-hidden="true" className="size-3.5 shrink-0" />
               )}
-              <span className="truncate">{sessionLabel}</span>
+              <span className="truncate">
+                {!editing && !editorName ? (
+                  <>
+                    <span className="sm:hidden">{t("readOnly")}</span>
+                    <span className="hidden sm:inline">{sessionLabel}</span>
+                  </>
+                ) : (
+                  sessionLabel
+                )}
+              </span>
             </span>
           </div>
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="col-start-3 row-span-2 row-start-1 flex shrink-0 items-center gap-1 sm:gap-2">
             {!editing && !recovery && loaded.team.role === "owner" ? (
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-10 w-9 gap-1.5 px-2 font-normal sm:h-8 sm:w-auto"
                 onClick={() => setShareOpen(true)}
+                aria-label={t("publish")}
               >
                 <Share2 className="size-3.5" />
-                {t("publish")}
+                <span className="hidden sm:inline">{t("publish")}</span>
               </Button>
             ) : null}
             <Button
               size="sm"
               variant="ghost"
-              className={`text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal ${editing ? "sm:hidden" : ""}`}
+              className={`text-muted-foreground hover:bg-muted/50 hover:text-foreground h-10 gap-1.5 px-2 font-normal sm:h-8 ${editing ? "sm:hidden" : ""}`}
               onClick={exportDesign}
               aria-label={t(recovery ? "exportRecovery" : "export")}
               title={t(recovery ? "exportRecovery" : "export")}
@@ -243,17 +260,19 @@ export default function TeamProjectWorkspace({
               <>
                 <span
                   aria-hidden="true"
-                  className="bg-border h-4 w-px shrink-0"
+                  className="bg-border hidden h-4 w-px shrink-0 sm:block"
                 />
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                  className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-10 gap-1.5 px-2 font-normal sm:h-8"
                   onClick={() => void current.release()}
                   disabled={status === "saving"}
+                  aria-label={t("finishEditing")}
                 >
                   <LogOut className="size-3.5" />
-                  {t("finishEditing")}
+                  <span className="sm:hidden">{t("finishEditingShort")}</span>
+                  <span className="hidden sm:inline">{t("finishEditing")}</span>
                 </Button>
               </>
             ) : !recovery &&
@@ -262,7 +281,7 @@ export default function TeamProjectWorkspace({
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-8 gap-1.5 px-2 font-normal"
+                className="text-muted-foreground hover:bg-muted/50 hover:text-foreground h-10 gap-1.5 px-2 font-normal sm:h-8"
                 aria-label={t(
                   status === "acquiring" ? "starting" : "startEditing"
                 )}
