@@ -19,6 +19,8 @@ Research is grouped by implementation status, assessed against the current repos
 
 ## In progress
 
+[Large-track editor performance](in-progress/editor-large-track-performance.md) records the shared browser/Tauri bottlenecks, net-wire instancing, measured limits and remaining 2D interaction investigation.
+
 Tauri 2 is the current desktop runtime, replacing the original Electron host; offline PWA work is parked. The [Electron desktop concept](in-progress/electron-desktop-concept.md) has an isolated POC with native storage, a project library and document tabs. Community feedback refines the direction toward a full browser workspace complemented by dependable offline desktop work at the field, using familiar document workflows with TrackDraw's own identity. The [Desktop Workspace PVA](../pva/desktop-workspace-pva.md) sequences the home-to-field-to-home journey through portable JSON copies first and account continuity later; complete offline acceptance, cloud integration, and desktop release support remain open.
 
 | Research                                                                          | Already present                                                                                                                       | Still open                                                                                                                                                |

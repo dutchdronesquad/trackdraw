@@ -1,6 +1,7 @@
 "use client";
 
 import * as THREE from "three";
+import { NetBarrierWires } from "./net-barrier-wires";
 import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
 import { getBarrierVisualSpec } from "@/lib/track/elements/visual";
@@ -338,10 +339,6 @@ function FenceBarrier3D({
   );
 }
 
-const NET_WIRE_RADIUS = 0.005;
-const NET_CELL_H = 0.12; // vertical wires closer together
-const NET_CELL_V = 0.22; // horizontal wires further apart
-
 function NetBarrier3D({
   shape,
   selected,
@@ -355,20 +352,6 @@ function NetBarrier3D({
   );
   const w = shape.width;
   const h = shape.height;
-
-  const { hWires, vWires } = useMemo(() => {
-    const cols = Math.max(2, Math.round(w / NET_CELL_H));
-    const rows = Math.max(2, Math.round(h / NET_CELL_V));
-
-    const horizontalWires = Array.from({ length: rows + 1 }, (_, r) => ({
-      y: (r / rows) * h,
-    }));
-    const verticalWires = Array.from({ length: cols + 1 }, (_, c) => ({
-      x: -w / 2 + (c / cols) * w,
-    }));
-
-    return { hWires: horizontalWires, vWires: verticalWires };
-  }, [w, h]);
 
   const postColor = new THREE.Color("#9ca3af");
   const wireMat = (
@@ -395,24 +378,9 @@ function NetBarrier3D({
       position={[shape.x, 0, shape.y]}
       rotation={[0, (-shape.rotation * Math.PI) / 180, 0]}
     >
-      {/* Horizontal wires */}
-      {hWires.map((wire, i) => (
-        <mesh
-          key={`h${i}`}
-          position={[0, wire.y, 0]}
-          rotation={[0, 0, Math.PI / 2]}
-        >
-          <cylinderGeometry args={[NET_WIRE_RADIUS, NET_WIRE_RADIUS, w, 5]} />
-          {wireMat}
-        </mesh>
-      ))}
-      {/* Vertical wires */}
-      {vWires.map((wire, i) => (
-        <mesh key={`v${i}`} position={[wire.x, h / 2, 0]}>
-          <cylinderGeometry args={[NET_WIRE_RADIUS, NET_WIRE_RADIUS, h, 5]} />
-          {wireMat}
-        </mesh>
-      ))}
+      <NetBarrierWires width={w} height={h}>
+        {wireMat}
+      </NetBarrierWires>
       {/* Left post */}
       <mesh position={[-w / 2, h / 2, 0]}>
         <cylinderGeometry args={[0.05, 0.05, h + 0.1, 8]} />
