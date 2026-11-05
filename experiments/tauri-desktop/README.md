@@ -28,7 +28,7 @@ For a local macOS debug application bundle:
 npm --prefix experiments/tauri-desktop run package -- --debug --bundles app
 ```
 
-Generated binaries and bundles live under `src-tauri/target/` and are ignored. The existing TrackDraw artwork generates the committed macOS `.icns`, Windows `.ico` and PNG icons. The application and native menus identify as **TrackDraw Desktop Alpha**. Signing, notarization, release installers, updates and file associations remain later delivery work. An unsigned local build is not a distribution release.
+Generated binaries and bundles live under `src-tauri/target/` and are ignored. The existing TrackDraw artwork generates the committed Windows `.ico` and PNG icons. The macOS `.icns` uses `src-tauri/icons/macos.svg`, with an 824 px icon body centered on a transparent 1024 px canvas so it matches the visual size of other Dock icons. From this directory, regenerate with `npx tauri icon src-tauri/icons/macos.svg --output out/macos-icons`, then copy only `out/macos-icons/icon.icns` to `src-tauri/icons/icon.icns`; keep the macOS padding separate from the web and other platform icons. The application and native menus identify as **TrackDraw Desktop Alpha**. Signing, notarization, release installers, updates and file associations remain later delivery work. An unsigned local build is not a distribution release.
 
 ## Offline workspace
 
