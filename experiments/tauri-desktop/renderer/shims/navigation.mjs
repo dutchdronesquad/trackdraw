@@ -52,8 +52,8 @@ export function navigate(href, replace = false) {
   const url = new URL(href, window.location.href);
   const dialog = url.searchParams.get("dialog");
   if (
-    url.protocol !== "trackdraw-poc:" ||
-    url.hostname !== "desktop" ||
+    url.origin !== window.location.origin ||
+    url.protocol !== window.location.protocol ||
     url.pathname !== "/studio" ||
     ["account", "share", "feedback"].includes(dialog)
   ) {

@@ -17,9 +17,20 @@ import { createEditorStore, useEditor } from "@/store/editor";
 import { loadProject, saveProject } from "@/lib/projects";
 import { createMemoryStorage } from "../helpers/storage";
 import fixture from "../fixtures/json-roundtrip.json";
-import { openRepository } from "../../experiments/electron-desktop/repository.cjs";
+import { openRepository } from "../helpers/native-repository.cjs";
 
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+// Animation completion is not driven by happy-dom's rendering loop. Keep the
+// real dialogs and actions, but render the current category synchronously.
+vi.mock("framer-motion", () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  motion: {
+    div: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    span: ({ children }: { children: React.ReactNode }) => (
+      <span>{children}</span>
+    ),
+  },
+}));
 vi.mock("@/components/DesktopModal", () => ({
   DesktopModal: ({
     open,

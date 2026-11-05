@@ -6,8 +6,10 @@ node_modules
 next-env.d.ts
 public
 src/components/ui
-experiments/electron-desktop/dist/
-experiments/electron-desktop/.profile/
-experiments/electron-desktop/.smoke-profile/
-experiments/electron-desktop/artifacts/
-experiments/electron-desktop/.asset-cache/
+experiments/tauri-desktop/dist/
+experiments/tauri-desktop/.profile/
+experiments/tauri-desktop/.smoke-profile/
+experiments/tauri-desktop/artifacts/
+experiments/tauri-desktop/.asset-cache/
+experiments/tauri-desktop/src-tauri/target/
+experiments/tauri-desktop/src-tauri/gen/

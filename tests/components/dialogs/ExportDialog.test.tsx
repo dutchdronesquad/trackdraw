@@ -33,6 +33,17 @@ vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => viewport.isMobile,
 }));
 
+// happy-dom has no paint loop to finish AnimatePresence's exit transition.
+vi.mock("framer-motion", () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  motion: {
+    div: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    span: ({ children }: { children: React.ReactNode }) => (
+      <span>{children}</span>
+    ),
+  },
+}));
+
 vi.mock("@/hooks/useTheme", () => ({
   useTheme: () => "dark",
 }));

@@ -9,7 +9,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const requireRoot = createRequire(path.join(root, "package.json"));
 const { buildManifest, manifestName } = createRequire(import.meta.url)(
-  "./offline-assets.cjs"
+  "./build-manifest.cjs"
 );
 const shim = (name) => path.join(here, "renderer/shims", name);
 
