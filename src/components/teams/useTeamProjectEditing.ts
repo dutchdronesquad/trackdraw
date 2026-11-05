@@ -88,18 +88,34 @@ export function useTeamProjectEditing(
         }),
       }).catch(() => {});
     };
-    const read = async () => {
+    const read = async (force = false) => {
       if (!active || reading || lease || acquiring) return;
       reading = true;
       try {
-        const result = await teamProjectRequest<Loaded>(
-          { teamId, projectId },
+        const result = await teamProjectRequest<
+          Omit<Loaded, "project"> & { project: Loaded["project"] | null }
+        >(
+          {
+            teamId,
+            projectId,
+            ...(!force && loaded && !recovery
+              ? { knownRevision: String(loaded.project.revision) }
+              : {}),
+          },
           undefined,
-          abort.signal
+          AbortSignal.any([abort.signal, AbortSignal.timeout(12_000)])
         );
         if (!active || lease || acquiring) return;
-        loaded = result;
-        if (!recovery) replace(result.project.design);
+        if (result.project) {
+          const changed =
+            !loaded || loaded.project.revision !== result.project.revision;
+          loaded = { ...result, project: result.project };
+          if (!recovery && (force || changed)) replace(result.project.design);
+        } else if (loaded) {
+          loaded = { ...loaded, team: result.team, editing: result.editing };
+        } else {
+          throw new TeamProjectRequestError("failed");
+        }
         useProjectLibrary.getState().select(userId, teamId);
         if (!recovery) status = "viewing";
         publish();
@@ -210,7 +226,7 @@ export function useTeamProjectEditing(
         recovery = null;
         status = "loading";
         publish();
-        await read();
+        await read(true);
       },
       acquire: async () => {
         if (
@@ -281,7 +297,7 @@ export function useTeamProjectEditing(
         } catch {
           /* Bounded expiry remains the fallback. */
         }
-        await read();
+        await read(true);
         return true;
       },
     };

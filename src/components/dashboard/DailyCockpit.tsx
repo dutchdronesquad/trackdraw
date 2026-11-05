@@ -23,26 +23,26 @@ import type {
 } from "@/lib/server/dashboard-cockpit";
 import { cn } from "@/lib/utils";
 
-const METRIC_IDS = ["MTR-001", "MTR-004", "MTR-005", "MTR-006"] as const;
+const METRIC_IDS = ["MTR-001", "MTR-004", "MTR-009", "MTR-006"] as const;
 
 const METRIC_WINDOWS: Record<(typeof METRIC_IDS)[number], number> = {
   "MTR-001": 7,
   "MTR-004": 7,
-  "MTR-005": 30,
+  "MTR-009": 28,
   "MTR-006": 7,
 };
 
 const METRIC_ICONS: Record<(typeof METRIC_IDS)[number], LucideIcon> = {
   "MTR-001": Users,
   "MTR-004": Activity,
-  "MTR-005": RefreshCcw,
+  "MTR-009": Gauge,
   "MTR-006": Eye,
 };
 
 const METRIC_DRILLDOWNS: Record<(typeof METRIC_IDS)[number], string> = {
   "MTR-001": "/dashboard/metrics#creators",
   "MTR-004": "/dashboard/metrics#creation",
-  "MTR-005": "/dashboard/metrics#creators",
+  "MTR-009": "/dashboard/metrics#features",
   "MTR-006": "/dashboard/metrics#distribution",
 };
 
@@ -152,6 +152,10 @@ function MetricCell({
   const measuredSince = metric?.measuredSince
     ? date.format(new Date(`${metric.measuredSince}T00:00:00.000Z`))
     : null;
+  const featureName =
+    id === "MTR-009" && metric?.current
+      ? t(`features.${metric.current.dimension}`)
+      : null;
   const stateLabel = !metric
     ? t("quality.unavailable")
     : currentDisplay
@@ -184,8 +188,13 @@ function MetricCell({
         />
       </span>
       <span className="text-2xl leading-tight font-semibold tabular-nums">
-        {stateLabel}
+        {featureName ?? stateLabel}
       </span>
+      {featureName && currentDisplay ? (
+        <span className="text-muted-foreground text-xs">
+          {t("kpis.featureRate", { rate: currentDisplay })}
+        </span>
+      ) : null}
       {metric?.current?.denominator != null ? (
         <span className="text-muted-foreground block text-xs tabular-nums">
           {t("kpis.rateCounts", {

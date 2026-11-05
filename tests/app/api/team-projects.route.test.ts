@@ -99,3 +99,42 @@ it("bounds input and rejects malformed commands", async () => {
     ).status
   ).toBe(400);
 });
+
+it("validates known revisions and keeps conditional reads private", async () => {
+  for (const revision of [
+    "",
+    "0",
+    "-1",
+    "1.5",
+    "NaN",
+    "9007199254740992",
+    "1e2",
+  ])
+    expect(
+      (await get(`?teamId=club&projectId=missing&knownRevision=${revision}`))
+        .status
+    ).toBe(400);
+  expect((await get("?teamId=club&knownRevision=1")).status).toBe(400);
+  const created = await post({
+    action: "create",
+    teamId: "club",
+    title: "Race",
+  });
+  const body = (await created.json()) as {
+    project: { id: string; revision: number };
+  };
+  const query = `?teamId=club&projectId=${body.project.id}&knownRevision=${body.project.revision}`;
+  const response = await get(query);
+  expect(response.status).toBe(200);
+  expect(response.headers.get("cache-control")).toBe("no-store");
+  expect(response.headers.get("vary")).toBe("Cookie");
+  expect(await response.json()).toMatchObject({
+    ok: true,
+    project: null,
+    revision: body.project.revision,
+  });
+  mocks.user.mockResolvedValue({ id: "outsider" });
+  expect((await get(query)).status).toBe(404);
+  mocks.user.mockResolvedValue(null);
+  expect((await get(query)).status).toBe(401);
+});

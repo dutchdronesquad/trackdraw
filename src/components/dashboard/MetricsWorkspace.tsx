@@ -6,7 +6,6 @@ import {
   EmbedSitesTable,
   ExportFormatTable,
   JourneyFunnel,
-  RetentionTrend,
   SharingHealthGrid,
   TimeToResultHistogram,
   WeeklyViewsChart,
@@ -49,7 +48,6 @@ import {
   ExportReliabilityAside,
   GrowthAside,
   JourneyAside,
-  RetentionAside,
   ShareReachAside,
   TimingAside,
 } from "@/components/dashboard/MetricsAsides";
@@ -127,7 +125,7 @@ type MetricSnapshot = {
 type MetricsView =
   "overview" | "creators" | "audience" | "creation" | "distribution";
 
-const EVIDENCE_METRICS = ["MTR-001", "MTR-004", "MTR-006", "MTR-005"] as const;
+const EVIDENCE_METRICS = ["MTR-001", "MTR-004", "MTR-006"] as const;
 
 const METRICS_VIEWS = [
   { view: "overview", key: "overview", icon: LayoutDashboard },
@@ -144,6 +142,7 @@ const METRICS_VIEWS = [
 const METRICS_HASH_VIEWS: Readonly<Record<string, MetricsView>> = {
   overview: "overview",
   creators: "creators",
+  features: "overview",
   audience: "audience",
   creation: "creation",
   distribution: "distribution",
@@ -481,7 +480,12 @@ function FeatureAdoption({ metric }: { metric: MetricsExplorerMetric }) {
       }),
     [locale]
   );
-  const rows = sortExplorerRows(metric);
+  const rows = [...metric.rows].sort(
+    (left, right) =>
+      right.numerator - left.numerator ||
+      left.dimension.localeCompare(right.dimension)
+  );
+  const number = new Intl.NumberFormat(locale);
 
   if (rows.length === 0) {
     return (
@@ -494,7 +498,7 @@ function FeatureAdoption({ metric }: { metric: MetricsExplorerMetric }) {
   }
 
   return (
-    <div className="grid grid-cols-[120px_minmax(0,1fr)_44px] items-center gap-x-3 gap-y-2.5 text-sm">
+    <div className="grid grid-cols-[minmax(0,120px)_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2.5 text-sm">
       {rows.map((row) => {
         const label = t(`features.${row.dimension}`);
         const value = formatRowValue(row, percent);
@@ -504,111 +508,21 @@ function FeatureAdoption({ metric }: { metric: MetricsExplorerMetric }) {
             <span
               className="bg-muted h-2 overflow-hidden rounded-full"
               role="img"
-              aria-label={`${label}: ${value}`}
+              aria-label={`${label}: ${number.format(row.numerator)} (${value})`}
             >
               <span
                 className="block h-full rounded-full bg-[var(--chart-1)]"
                 style={{
-                  width: `${Math.max(0, Math.min(100, (row.value ?? 0) * 100))}%`,
+                  width: `${rows[0].numerator > 0 ? (row.numerator / rows[0].numerator) * 100 : 0}%`,
                 }}
               />
             </span>
-            <span className="text-right tabular-nums">{value}</span>
+            <span className="text-right tabular-nums">
+              {number.format(row.numerator)} · {value}
+            </span>
           </Fragment>
         );
       })}
-    </div>
-  );
-}
-
-function RetentionTable({ metric }: { metric: MetricsExplorerMetric }) {
-  const t = useTranslations("dashboard.metrics.explorer.retention");
-  const locale = useLocale();
-  const percent = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: "percent",
-        maximumFractionDigits: 0,
-      }),
-    [locale]
-  );
-  const date = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, {
-        day: "numeric",
-        month: "short",
-        timeZone: "UTC",
-      }),
-    [locale]
-  );
-  if (metric.rows.length === 0) {
-    return <MetricsEmpty>{t("empty")}</MetricsEmpty>;
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className={cn(tableClass.table, "min-w-[560px]")}>
-        <thead>
-          <tr className={tableClass.headRow}>
-            <th scope="col" className={tableClass.head}>
-              {t("cohort")}
-            </th>
-            <th scope="col" className={cn(tableClass.head, "text-right")}>
-              {t("activated")}
-            </th>
-            <th scope="col" className={cn(tableClass.head, "text-right")}>
-              {t("returned")}
-            </th>
-            <th scope="col" className={cn(tableClass.head, "w-[34%]")}>
-              {t("rate")}
-            </th>
-            <th scope="col" className={tableClass.head}>
-              {t("quality")}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {metric.rows.map((row) => {
-            const mature = row.quality === "healthy";
-            return (
-              <tr key={row.day} className={tableClass.row}>
-                <td
-                  className={cn(
-                    tableClass.cell,
-                    !mature && "text-muted-foreground"
-                  )}
-                >
-                  {t("weekOf", {
-                    date: date.format(new Date(`${row.day}T00:00:00.000Z`)),
-                  })}
-                </td>
-                <td className={cn(tableClass.cell, "text-right tabular-nums")}>
-                  {row.denominator ?? "—"}
-                </td>
-                <td className={cn(tableClass.cell, "text-right tabular-nums")}>
-                  {row.numerator}
-                </td>
-                <td className={tableClass.cell}>
-                  <MetricsInlineBar
-                    ratio={row.value ?? 0}
-                    value={formatRowValue(row, percent)}
-                    muted={!mature}
-                  />
-                </td>
-                <td className={tableClass.cell}>
-                  {mature ? (
-                    <ToneBadge tone="emerald">{t("mature")}</ToneBadge>
-                  ) : row.quality === "building" ? (
-                    <ToneBadge tone="neutral">{t("maturing")}</ToneBadge>
-                  ) : (
-                    <QualityLabel quality={row.quality} />
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -1030,11 +944,9 @@ export default function MetricsWorkspace({
       if (view) {
         setActiveView(view);
       }
-      if (hash === "operations") {
+      if (hash === "operations" || hash === "features") {
         window.requestAnimationFrame(() => {
-          document
-            .getElementById("operations")
-            ?.scrollIntoView({ block: "start" });
+          document.getElementById(hash)?.scrollIntoView({ block: "start" });
         });
       }
     };
@@ -1247,23 +1159,18 @@ export default function MetricsWorkspace({
             />
           </MetricsSection>
           <MetricsSection
-            title={t("questions.retention")}
-            description={t("questions.retentionDescription")}
+            id="features"
+            title={t("adoption.title")}
+            description={t("adoption.description")}
             status={
               <QualityLabel
-                quality={explorer.retention.quality}
-                measuredSince={explorer.retention.measuredSince}
+                quality={explorer.adoption.quality}
+                measuredSince={explorer.adoption.measuredSince}
                 generatedAt={explorer.generatedAt}
               />
             }
-            aside={
-              <RetentionAside
-                metric={explorer.retention}
-                link={openView("creators")}
-              />
-            }
           >
-            <RetentionTrend metric={explorer.retention} />
+            <FeatureAdoption metric={explorer.adoption} />
           </MetricsSection>
           <MetricsSection
             title={t("questions.reach")}
@@ -1378,12 +1285,9 @@ export default function MetricsWorkspace({
                             "text-muted-foreground text-xs"
                           )}
                         >
-                          {t(
-                            id === "MTR-005"
-                              ? "reportingPeriod.matureCohort"
-                              : "reportingPeriod.completeDays",
-                            { days: snapshot.windowDays }
-                          )}
+                          {t("reportingPeriod.completeDays", {
+                            days: snapshot.windowDays,
+                          })}
                         </td>
                       </tr>
                     );
@@ -1421,21 +1325,6 @@ export default function MetricsWorkspace({
               }}
               showRangePicker={!header}
             />
-          </MetricsSection>
-          <MetricsSection
-            title={t("retention.title")}
-            description={t("retention.description")}
-            bodyClassName="p-0"
-            status={
-              <QualityLabel
-                quality={explorer.retention.quality}
-                measuredSince={explorer.retention.measuredSince}
-                generatedAt={explorer.generatedAt}
-              />
-            }
-            aside={<RetentionAside metric={explorer.retention} />}
-          >
-            <RetentionTable metric={explorer.retention} />
           </MetricsSection>
         </TabsContent>
 

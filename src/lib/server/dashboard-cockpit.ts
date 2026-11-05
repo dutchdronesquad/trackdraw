@@ -50,8 +50,8 @@ const SERIES_RANGES: ReadonlyArray<{
 }> = [
   { metricId: "MTR-001", historyDays: 70 },
   { metricId: "MTR-004", historyDays: 70 },
-  { metricId: "MTR-005", historyDays: 260 },
   { metricId: "MTR-006", historyDays: 70 },
+  { metricId: "MTR-009", historyDays: 70 },
   { metricId: "MTR-010", historyDays: 70 },
 ];
 const UNUSED_API_KEY_AGE_MS = 30 * 24 * 60 * 60 * 1000;
@@ -151,11 +151,8 @@ export async function getDailyCockpit(
         SERIES_RANGES.map(({ metricId, historyDays }) => ({
           metricId,
           fromDay: addUtcDays(today, -historyDays),
-          // Retention and operational failures only use completed days.
-          toDayExclusive:
-            metricId === "MTR-005" || metricId === "MTR-010"
-              ? today
-              : toExclusive,
+          // Operational failures only use completed days.
+          toDayExclusive: metricId === "MTR-010" ? today : toExclusive,
         })),
         now
       ),
