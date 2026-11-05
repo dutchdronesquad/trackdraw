@@ -16,14 +16,14 @@ The native probe uses the packaged Tauri release on macOS, a 1440 × 928 viewpor
 
 `net-barrier-wires.tsx` now renders one instanced wire mesh per net. Each instance uses the original five-sided cylinder, radius, orientation and length. Posts and selected/unselected materials stay the same. Dimension changes update instance matrices and culling bounds. The renderer is shared by Studio's browser and desktop builds.
 
-| Native diagnostic probe | Before | Instanced nets |
-| --- | ---: | ---: |
-| Orbit FPS | 34.75 | 59.875 |
-| Orbit render CPU p95 | 25 ms | 12 ms |
-| Orbit draw calls | 5,670 | 2,850 |
-| Orbit triangles | 365,070 | 365,070 |
-| Move twenty objects draw calls | 5,850 | 3,030 |
-| Move twenty objects triangles | 387,350 | 387,350 |
+| Native diagnostic probe        |  Before | Instanced nets |
+| ------------------------------ | ------: | -------------: |
+| Orbit FPS                      |   34.75 |         59.875 |
+| Orbit render CPU p95           |   25 ms |          12 ms |
+| Orbit draw calls               |   5,670 |          2,850 |
+| Orbit triangles                | 365,070 |        365,070 |
+| Move twenty objects draw calls |   5,850 |          3,030 |
+| Move twenty objects triangles  | 387,350 |        387,350 |
 
 These are individual diagnostic runs with material-submission profiling enabled, not repeated release-wide averages. The candidate reached 38.125 FPS while moving twenty objects; the earlier three-run baseline median was 26.125 FPS, measured without material classification. That comparison is indicative rather than a matched before/after claim.
 
@@ -33,12 +33,12 @@ The original component regression failed with 98 meshes where four were expected
 
 Three runs per version, alternating before/after/after/before/before/after, used the actual production web editor in a dedicated Chromium host. The viewport was 1440 × 928 at DPR 2; the WebGL drawing buffer was 1800 × 1702 in every phase. Every run remained visible and restored the moved shapes to within 1e-6 m of their starting positions.
 
-| Web editor, three-run median | Before | Instanced nets |
-| --- | ---: | ---: |
-| Orbit FPS | 28.5 | 47.875 |
-| Orbit FPS range | 27.375–28.875 | 44–53.125 |
-| Move twenty objects FPS | 14.875 | 19.875 |
-| Move FPS range | 14.375–15.5 | 19.25–20.5 |
+| Web editor, three-run median |        Before | Instanced nets |
+| ---------------------------- | ------------: | -------------: |
+| Orbit FPS                    |          28.5 |         47.875 |
+| Orbit FPS range              | 27.375–28.875 |      44–53.125 |
+| Move twenty objects FPS      |        14.875 |         19.875 |
+| Move FPS range               |   14.375–15.5 |     19.25–20.5 |
 
 Draw calls and triangle counts matched the native diagnostic table in all web runs. The median gains are approximately 68% for orbit and 34% for the synthetic edit loop. Do not compare these absolute web FPS values directly with the native diagnostic: the host, drawing-buffer dimensions and instrumentation differ. Background work on the development machine was not fully controlled, so these are local engineering measurements rather than release performance guarantees.
 
