@@ -6,7 +6,7 @@ Status: Tauri 2 replaces the Electron host on November 5, 2026; offline PWA work
 
 ## Runtime migration boundary
 
-The Tauri increment replaces only the native host, preload bridge, file downloads and platform packaging. It does not adopt the unfinished UI redesign, add cloud authentication/sync, change the web build or rewrite rendering in Rust. Native storage and JSON tests run against the new implementation; Windows/Linux full-app builds and GUI acceptance, signed distribution and updates remain open. See the [Tauri runbook](../../experiments/tauri-desktop/README.md).
+The Tauri increment replaces only the native host, preload bridge, file downloads and platform packaging. It does not adopt the unfinished UI redesign, add cloud authentication/sync, change the web build or rewrite rendering in Rust. Native storage and JSON tests run against the new implementation; Full desktop builds remain local checks; Windows/Linux builds and GUI acceptance, signed distribution and updates remain open. See the [Tauri runbook](../../experiments/tauri-desktop/README.md).
 
 ## Direction
 
@@ -230,7 +230,7 @@ Open these as dependent draft PRs so each diff contains only its own slice. Revi
 
 The initial integration seed is `a780c72d`, the existing pre-desktop baseline. It predates newer `main` changes and contains MCP callback history inherited from the original checkout; that history is not part of the desktop review slices. After the initial stack landed, `main` at `b071bb76` was merged directly into the integration branch at the maintainer's request. The editor retains both desktop starter suppression and the newer managed team-project behavior; the desktop persistence adapter exposes the new project-move guard and rejects unsupported team-move cleanup. Keep future `main` refreshes explicit, resolve browser/desktop compatibility before committing, and rerun web and desktop acceptance. Preserve unrelated working checkouts.
 
-Keep future PRs to one behavior or boundary, for example offline resource handling, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, including headless Rust storage/file tests on Linux, macOS and Windows. The real Tauri smoke flow still requires explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
+Keep future PRs to one behavior or boundary, for example offline resource handling, storage-failure recovery, browser/desktop JSON round-trip, desktop sign-in, or sync conflict recovery. Record dependencies and validation for the exact head under review. Root CI runs on these branches, including headless Rust storage/file tests inside the existing Linux Vitest job. The real Tauri smoke flow still requires explicit validation; a green web pipeline alone does not establish desktop acceptance. Before external distribution, add repeatable desktop CI for the declared platform matrix.
 
 Keep production delivery incremental too: identify small reusable changes suitable for `main` separately, and retain the isolated desktop runtime until its release gates pass. Do not use a single final merge of the long-lived branch as a substitute for reviewing shared-code changes and compatibility with current `main`.
 
