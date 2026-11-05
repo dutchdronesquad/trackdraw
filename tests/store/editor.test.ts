@@ -1562,6 +1562,66 @@ describe("editor store history", () => {
     ).toBeUndefined();
   });
 
+  it("does not notify subscribers for an unchanged group drag preview", () => {
+    const state = useEditor.getState();
+    state.setGroupDragPreview({
+      ids: ["a", "b"],
+      origin: { x: 5, y: 10 },
+      dx: 2,
+      dy: -1,
+    });
+    const before = useEditor.getState();
+    const subscriber = vi.fn();
+    const unsubscribe = useEditor.subscribe(subscriber);
+    try {
+      // The 2D group drag handler supplies a fresh object on each move,
+      // including repeated positions caused by rounded pointer coordinates.
+      state.setGroupDragPreview((current) =>
+        current ? { ...current, dx: 2, dy: -1 } : current
+      );
+      state.setGroupDragPreview({
+        ids: ["a", "b"],
+        origin: { x: 5, y: 10 },
+        dx: 2,
+        dy: -1,
+      });
+      expect(useEditor.getState()).toBe(before);
+      expect(subscriber).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it("keeps changed group drag offsets, origin, members and clearing reactive without editing the design", () => {
+    const state = useEditor.getState();
+    const design = state.track.design;
+    const history = useEditor.temporal.getState().pastStates.length;
+    const preview = {
+      ids: ["a", "b"],
+      origin: { x: 5, y: 10 },
+      dx: 2,
+      dy: -1,
+    };
+    for (const next of [
+      { ...preview, dx: 3 },
+      { ...preview, dy: 4 },
+      { ...preview, origin: { x: 6, y: 10 } },
+      { ...preview, origin: { x: 5, y: 11 } },
+      { ...preview, ids: ["a", "c"] },
+      { ...preview, ids: ["b", "a"] },
+      { ...preview, ids: ["a"] },
+      null,
+    ]) {
+      state.setGroupDragPreview(preview);
+      const before = useEditor.getState();
+      state.setGroupDragPreview(next);
+      expect(useEditor.getState()).not.toBe(before);
+      expect(useEditor.getState().ui.groupDragPreview).toEqual(next);
+      expect(useEditor.getState().track.design).toBe(design);
+      expect(useEditor.temporal.getState().pastStates).toHaveLength(history);
+    }
+  });
+
   it("covers remaining UI setters: waypoint hover, draft path, marquee, patches", () => {
     const state = useEditor.getState();
 
