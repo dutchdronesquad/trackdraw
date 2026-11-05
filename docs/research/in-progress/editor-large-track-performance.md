@@ -46,12 +46,53 @@ Before/after screenshots at the same initial camera pose were visually checked. 
 
 ## Other findings and next steps
 
-1. **2D update scheduling:** the synthetic twenty-object store-update loop rendered about 27 FPS while model mutation p95 was about 1 ms and drawing p95 about 6 ms. Forcing synchronous React commits raised it to about 43 FPS but moved more work into each update. Do not add global `flushSync`: this probe drives the store from animation callbacks, whereas real pointer dragging uses its own event batching and preview/commit path. The next investigation should trace actual single and group dragging, then narrow subscriptions or move transient preview work only where the trace demonstrates redundant commits.
+1. **2D update scheduling:** the synthetic twenty-object store-update loop rendered about 27 FPS while model mutation p95 was about 1 ms and drawing p95 about 6 ms. Forcing synchronous React commits raised it to about 43 FPS but moved more work into each update. Do not add global `flushSync`: this probe drives the store from animation callbacks, whereas real pointer dragging uses its own event batching and preview/commit path. The pointer-drag follow-up below tests the actual single and group drag handlers separately from this synthetic store loop.
 2. **Shadow passes:** disabling shadows reduced draw calls from 5,670 to 4,907, but orbit still reached only about 41 FPS. Freezing the shadow map did not produce a reliable improvement and can leave stale interactive shadows. Neither change is included.
 3. **Remaining 3D work:** instancing other repeated opaque geometry is a follow-up candidate. Measure the composition of real user tracks first; do not assume nets dominate all scenes. Avoid grouping meshes with different materials, selection state, transparency or interaction ownership merely to reduce a counter.
 
 No quality setting, track schema, autosave behavior, toolbar layout, workflow or CI job is changed by this slice. Further optimization of the synthetic editing loop and actual pointer latency remains open.
 
-## Validation
+## 3D validation
 
 The focused renderer suite passes all eight tests. Lint, TypeScript, the production Next.js build and the Tauri frontend production build pass. The first full suite completed with 1,902 passing tests and two dashboard failures under load: a debounce assertion and a five-second timeout. Isolated reruns passed both tests with their original settings once the concurrent build/benchmark workload ended. The metrics test also passed on the unmodified baseline. These reruns do not make the initial full-suite result green. No dashboard code or timeout setting is changed here.
+
+## 2D pointer-drag follow-up
+
+The same 250-obstacle/200-point-route fixture was tested at 65% zoom in a 1440 × 928 viewport at DPR 2, dragging one gate and a selection of twenty gates. Chromium receives native browser input events; the packaged Tauri release receives macOS mouse events. Event trust, actual moved shape count and one undo step per drag are checked. The candidate also verifies that undo restores all shapes and redo restores the complete dragged shape record. Coordinate calibration and all profiling instrumentation stay in temporary test applications and isolated profiles.
+
+### Confirmed unnecessary work
+
+- Single-object drag events bubble to two separate Stage consumers: the viewport listener and the Stage drag callbacks. Both must filter on `event.target`. Otherwise an object drag is treated as viewport panning, marks the view as manual and schedules transform checks even though pan/zoom do not change. Guarding only the viewport listener did not fix the real reproduction; the Stage callbacks required their own regression test.
+- The group drag handler supplies fresh preview objects, including unchanged positions. `setGroupDragPreview` now preserves the current state when offsets, origin and ordered members are equal. Changed positions, origins, selection members and clearing remain reactive. It does not round movement values or alter the design/history.
+
+| Tauri slow-drag diagnostic, approximately eight sampled seconds | Before | After |
+| --------------------------------------------------------------- | -----: | ----: |
+| Single-drag pointer events                                      |    415 |   413 |
+| Canvas component function executions                            |    831 |   415 |
+| Unchanged viewport transform checks                             |    414 |     0 |
+| Group-drag pointer events                                       |    412 |   415 |
+| Group-preview UI updates                                        |    413 |   275 |
+| Repeated identical group previews                               |    140 |     0 |
+| Design commits / undo entries per drag                          |  1 / 1 | 1 / 1 |
+
+Component counts record function execution, including React bailout work, not committed renders. The Chromium desktop host showed the same reduction from about two canvas executions per single-drag event to one. A separate candidate run used the actual production Next.js web editor with browser persistence and the same native browser input; its drag, undo and redo checks also pass. This anonymous editing check does not exercise Cloudflare-backed account or cloud-save flows. Stationary unselected shapes already remained outside React updates in both versions; do not attribute that existing behavior to this change.
+
+### FPS interpretation
+
+The original slow trajectory rounded many successive input events to the same pixel. In that run, 413 group-preview updates contained 140 identical positions, and the scene submitted 273 draws. Approximately 33–35 FPS therefore did not establish a 30 FPS renderer limit. An independent animation-frame observer confirmed the draw counts; the missing distinction was input demand, not idle animation callbacks. CPU sampling of that trajectory spent about three quarters of its time idle.
+
+A faster continuous trajectory counts distinct pointer coordinates alongside scene draws. In the candidate's individual validation runs:
+
+| Runtime                                   | Single drag FPS | Twenty-object drag FPS |
+| ----------------------------------------- | --------------: | ---------------------: |
+| Chromium desktop host                     |            56.3 |                   59.5 |
+| Production Next.js web editor in Chromium |            59.5 |                   58.0 |
+| Packaged Tauri                            |            59.3 |                   59.5 |
+
+Tauri drew 486 frames for 486 distinct single-drag positions and 487 for 487 group-drag positions. Chromium similarly submitted one draw per distinct position, plus a final redraw. These are renderer-cadence observations on the development machine, not compositor or physical input-latency measurements. The faster trajectory also uses a steadier input cadence, so it must not be presented as a before/after FPS improvement over the slow trajectory. The confirmed benefit of this slice is less redundant work with preserved interaction behavior.
+
+### Follow-up validation
+
+Regressions fail against the original Stage callbacks, viewport listener and group-preview setter. All 73 focused interaction/store tests pass after the fixes. The complete suite passes 1,909 tests across 281 files; lint, TypeScript and the production web build pass. The Tauri frontend build and isolated native release build pass. No workflow, quality setting, layout, schema or persistence format is changed.
+
+If another user track remains slow, capture its actual input demand and CPU/GPU profile before changing rendering architecture. This fixture does not justify global synchronous flushing, reduced detail or imperative reparenting of React-owned shapes. More complex tracks, sustained high-rate input, touch interaction latency and physical display presentation remain separate profiling targets.

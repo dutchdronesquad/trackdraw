@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
+import type { KonvaEventObject } from "konva/lib/Node";
 
 interface TrackCanvasViewportParams {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -30,7 +31,9 @@ export function useTrackCanvasViewport({
     const stage = stageInstance;
     if (!stage) return;
 
-    const syncStageTransform = () => {
+    const syncStageTransform = (event: KonvaEventObject<Event>) => {
+      // Content drag events bubble to the Stage without moving the viewport.
+      if (event.target !== stage) return;
       syncTransform();
     };
 
