@@ -9,7 +9,7 @@ it("rejects unsupported team-move cleanup without deleting native or browser pro
   const projects = vi.fn().mockResolvedValue(state);
   vi.stubGlobal("window", { trackdrawDesktop: { projects } });
   const repository =
-    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+    await import("../../experiments/tauri-desktop/renderer/storage/projects.mjs");
   await repository.ready;
   projects.mockClear();
   expect(() => repository.forgetMovedProject("local-track")).toThrow(
@@ -23,7 +23,7 @@ it("does not dispatch a superseded document save after an earlier native request
   const projects = vi.fn().mockResolvedValue(state);
   vi.stubGlobal("window", { trackdrawDesktop: { projects } });
   const repository =
-    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+    await import("../../experiments/tauri-desktop/renderer/storage/projects.mjs");
   await repository.ready;
   projects.mockClear();
   let finish!: () => void;
@@ -52,7 +52,7 @@ it("retains a failure until native acknowledgement and permits a subsequent retr
   const projects = vi.fn().mockResolvedValue(state);
   vi.stubGlobal("window", { trackdrawDesktop: { projects } });
   const repository =
-    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+    await import("../../experiments/tauri-desktop/renderer/storage/projects.mjs");
   await repository.ready;
   const failure = new Error("Disk full");
   projects.mockRejectedValueOnce(failure);
@@ -83,7 +83,7 @@ it("retains independent failed project snapshots until each project is acknowled
   const projects = vi.fn().mockResolvedValue(state);
   vi.stubGlobal("window", { trackdrawDesktop: { projects } });
   const repository =
-    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+    await import("../../experiments/tauri-desktop/renderer/storage/projects.mjs");
   await repository.ready;
   for (const id of ["one", "two"]) {
     projects.mockRejectedValueOnce(new Error("Read-only disk"));

@@ -4,3 +4,6 @@ dist/
 .smoke-profile/
 artifacts/
 .asset-cache/
+out/
+src-tauri/target/
+src-tauri/gen/

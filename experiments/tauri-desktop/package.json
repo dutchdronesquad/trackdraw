@@ -1,0 +1,23 @@
+{
+  "name": "trackdraw-tauri-desktop",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "node ../../scripts/i18n_sync_assets.mjs && vite build",
+    "start": "npm run build && tauri dev",
+    "package": "tauri build",
+    "tauri": "tauri",
+    "test": "cargo test --manifest-path src-tauri/Cargo.toml --locked --no-default-features"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4",
+    "vite": "8.3.4"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.4"
+  }
+}
