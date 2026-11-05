@@ -232,3 +232,9 @@ Four analytical views use existing versioned events inside the selected complete
 - **Export reliability by format (Distribution):** pair `export.completed` and `export.failed` from contract `1.1.0`, grouped by the same format. Failure rate is failed / (successful + failed) recorded terminal attempts. Retries are separate attempts; unfinished or undelivered attempts are unknown. Contract `1.0.0` successes and legacy `operation.failed` export failures are listed together as older events without a format-level rate. Unknown formats also have no rate. Never combine legacy successes with newer format-level failures in one denominator.
 
 Denominators or duration samples below 30 carry a limited-sample label; this is an interpretation guard, not a statistical significance claim. Partial coverage is displayed with the existing period controls and does not qualify for automated trend warnings. The per-week views do not sum overlapping rolling MTR aggregates.
+
+### Most used features replaces returning creators
+
+The dashboard product pulse shows active creators, valuable-session rate, the most used feature, and published browser sessions. The feature headline uses `MTR-009`: the feature with the most eligible editor sessions over 28 complete days, with its eligible-session share. Its comparison and sparkline stay on that same feature; it does not trigger automated warnings. No favorite is shown when every feature count is zero. The Overview replaces the 30-day returning-creator section with a ranked feature breakdown showing session counts and eligible-session shares, also available under Creation. Gallery publication has a narrower eligibility denominator, so ranking uses counts rather than percentages.
+
+The signed-in-only returning-creator metric (`MTR-005`) is no longer shown in the cockpit, Overview, creator view, or evidence table. The versioned metric contract and aggregate history are retained; collection and privacy policies are unchanged.

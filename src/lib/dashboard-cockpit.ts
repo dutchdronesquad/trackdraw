@@ -8,8 +8,8 @@ export type CockpitMetricQuality =
   ProductMetricDailyRow["quality_status"] | "not_started";
 
 export type CockpitMetricDefinition = {
-  id: "MTR-001" | "MTR-004" | "MTR-005" | "MTR-006";
-  windowDays: 7 | 30;
+  id: "MTR-001" | "MTR-004" | "MTR-006" | "MTR-009";
+  windowDays: 7 | 28;
   minimumVolume: number;
   valueKind: "count" | "rate";
   unfavorableDirection: "down";
@@ -34,12 +34,12 @@ export const COCKPIT_METRICS: readonly CockpitMetricDefinition[] = [
     drilldown: "/dashboard/metrics#creation",
   },
   {
-    id: "MTR-005",
-    windowDays: 30,
+    id: "MTR-009",
+    windowDays: 28,
     minimumVolume: 20,
     valueKind: "rate",
     unfavorableDirection: "down",
-    drilldown: "/dashboard/metrics#creators",
+    drilldown: "/dashboard/metrics#features",
   },
   {
     id: "MTR-006",
@@ -100,24 +100,6 @@ function findRow(rows: ProductMetricDailyRow[], day: string, dimension = "") {
   );
 }
 
-function latestCompleteRow(
-  rows: ProductMetricDailyRow[],
-  throughDay: string,
-  dimension = ""
-) {
-  return (
-    rows
-      .filter(
-        (row) =>
-          row.day_utc <= throughDay &&
-          row.dimension === dimension &&
-          row.completeness_state === "complete"
-      )
-      .sort((left, right) => right.day_utc.localeCompare(left.day_utc))[0] ??
-    null
-  );
-}
-
 function historicalPeriodRows(
   rows: ProductMetricDailyRow[],
   current: ProductMetricDailyRow,
@@ -143,12 +125,33 @@ export function buildCockpitHeadlineMetrics(
   return COCKPIT_METRICS.map((definition) => {
     const rows = series[definition.id] ?? [];
     const current =
-      definition.id === "MTR-005"
-        ? latestCompleteRow(rows, lastCompleteDay)
+      definition.id === "MTR-009"
+        ? (rows
+            .filter(
+              (row) =>
+                row.day_utc === lastCompleteDay &&
+                row.completeness_state === "complete" &&
+                row.numerator > 0 &&
+                (row.denominator ?? 0) > 0
+            )
+            .sort(
+              (left, right) =>
+                right.numerator - left.numerator ||
+                left.dimension.localeCompare(right.dimension)
+            )[0] ?? null)
         : findRow(rows, lastCompleteDay);
-    const live = definition.id === "MTR-005" ? null : findRow(rows, today);
+    const live =
+      definition.id === "MTR-009"
+        ? current
+          ? findRow(rows, today, current.dimension)
+          : null
+        : findRow(rows, today);
     const candidate = current
-      ? findRow(rows, addUtcDays(current.day_utc, -definition.windowDays))
+      ? findRow(
+          rows,
+          addUtcDays(current.day_utc, -definition.windowDays),
+          current.dimension
+        )
       : null;
     const previous = hasObservedMetricValue(candidate) ? candidate : null;
 
@@ -236,7 +239,7 @@ export function selectReliableProductWarning(
   const candidates: ReliableProductWarning[] = [];
 
   for (const metric of headlines) {
-    if (!metric.current) continue;
+    if (!metric.current || metric.id === "MTR-009") continue;
     const candidate = warningCandidate(
       series[metric.id] ?? [],
       metric.current,

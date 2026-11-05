@@ -1233,6 +1233,7 @@
     "startEditing": "Edit project",
     "starting": "Opening editing session…",
     "finishEditing": "Finish editing",
+    "finishEditingShort": "Done",
     "editing": "Editing · All changes saved",
     "saving": "Saving changes…",
     "unsaved": "Editing · Unsaved changes",

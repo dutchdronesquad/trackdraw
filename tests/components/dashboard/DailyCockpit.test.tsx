@@ -65,10 +65,32 @@ function cockpitData({
         measuredSince: "2026-08-01",
         trend: [],
       },
-      ...(["MTR-004", "MTR-005", "MTR-006"] as const).map((id) => ({
+      {
+        id: "MTR-009",
+        windowDays: 28,
+        minimumVolume: 20,
+        valueKind: "rate",
+        unfavorableDirection: "down",
+        drilldown: "/dashboard/metrics#features",
+        current: {
+          ...metricRow,
+          metric_id: "MTR-009",
+          window_days: 28,
+          dimension: "export",
+          numerator: 4,
+          denominator: 10,
+        },
+        live: null,
+        previous: null,
+        comparisonReady: false,
+        quality: "low_volume",
+        measuredSince: "2026-08-01",
+        trend: [],
+      },
+      ...(["MTR-004", "MTR-006"] as const).map((id) => ({
         id,
-        windowDays: id === "MTR-005" ? (30 as const) : (7 as const),
-        minimumVolume: id === "MTR-005" ? 20 : 30,
+        windowDays: 7 as const,
+        minimumVolume: 30,
         valueKind: "rate" as const,
         unfavorableDirection: "down" as const,
         drilldown:
@@ -80,7 +102,7 @@ function cockpitData({
         current: {
           ...metricRow,
           metric_id: id,
-          window_days: id === "MTR-005" ? (30 as const) : (7 as const),
+          window_days: 7 as const,
           numerator: 4,
           denominator: 10,
         },
@@ -100,6 +122,19 @@ describe("DailyCockpit", () => {
     render(await DailyCockpit({ data: cockpitData() }));
 
     expect(screen.getByText("No action needs attention")).toBeTruthy();
+    expect(screen.queryByText("30-day returning creators")).toBeNull();
+    expect(screen.getByText("Most used feature")).toBeTruthy();
+    expect(screen.getByText("Export")).toBeTruthy();
+    expect(
+      screen.getByText("Used in 40% of eligible editor sessions")
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", {
+          name: "Open analytical context for Most used feature",
+        })
+        .getAttribute("href")
+    ).toBe("/dashboard/metrics#features");
     expect(
       screen.queryByRole("heading", { name: "Needs attention" })
     ).toBeNull();

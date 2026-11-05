@@ -280,19 +280,31 @@ export function useTrackCanvasInteractions({
     [minWaypointGapMeters]
   );
 
-  const onStageDragStart = useCallback(() => {
-    setIsStageDragging(true);
-    setManualView(true);
-  }, [setIsStageDragging, setManualView]);
+  const onStageDragStart = useCallback(
+    (event: { target: unknown }) => {
+      if (!stageRef.current || event.target !== stageRef.current) return;
+      setIsStageDragging(true);
+      setManualView(true);
+    },
+    [setIsStageDragging, setManualView, stageRef]
+  );
 
-  const onStageDragMove = useCallback(() => {
-    syncTransform();
-  }, [syncTransform]);
+  const onStageDragMove = useCallback(
+    (event: { target: unknown }) => {
+      if (!stageRef.current || event.target !== stageRef.current) return;
+      syncTransform();
+    },
+    [stageRef, syncTransform]
+  );
 
-  const onStageDragEnd = useCallback(() => {
-    setIsStageDragging(false);
-    syncTransform();
-  }, [setIsStageDragging, syncTransform]);
+  const onStageDragEnd = useCallback(
+    (event: { target: unknown }) => {
+      if (!stageRef.current || event.target !== stageRef.current) return;
+      setIsStageDragging(false);
+      syncTransform();
+    },
+    [setIsStageDragging, stageRef, syncTransform]
+  );
 
   const onWheel = useCallback(
     (event: { evt: WheelEvent }) => {

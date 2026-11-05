@@ -7,10 +7,44 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import * as zhCN from "@lang/zh-CN";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import { useEditor } from "@/store/editor";
+
+const { originalAnimateDescriptor } = vi.hoisted(() => {
+  const originalAnimateDescriptor = Object.getOwnPropertyDescriptor(
+    Element.prototype,
+    "animate"
+  );
+  // happy-dom's partial Web Animations implementation can leave AnimatePresence
+  // waiting for exit completion. Exercise real Motion's JS/RAF fallback instead.
+  Object.defineProperty(Element.prototype, "animate", {
+    configurable: true,
+    value: undefined,
+  });
+  return { originalAnimateDescriptor };
+});
+
+afterAll(() => {
+  if (originalAnimateDescriptor) {
+    Object.defineProperty(
+      Element.prototype,
+      "animate",
+      originalAnimateDescriptor
+    );
+  } else {
+    Reflect.deleteProperty(Element.prototype, "animate");
+  }
+});
 
 const mocks = vi.hoisted(() => ({
   downloadJsonFile: vi.fn(),
