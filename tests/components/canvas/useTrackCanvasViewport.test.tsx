@@ -155,6 +155,40 @@ describe("useTrackCanvasViewport", () => {
     );
   });
 
+  it("ignores bubbled content drags while still syncing actual viewport changes", () => {
+    const stage = createStageMock();
+    const syncTransform = vi.fn();
+    render(<Harness stage={stage} syncTransform={syncTransform} />);
+    const listener = stage.on.mock.calls[0][1] as (event: {
+      target: unknown;
+      type: string;
+    }) => void;
+    syncTransform.mockClear();
+
+    // Konva bubbles object and waypoint dragmove events to the Stage listener.
+    // They change content positions, not the viewport transform.
+    act(() => {
+      for (let move = 0; move < 60; move++) {
+        listener({ target: { shapeId: "gate" }, type: "dragmove" });
+        listener({ target: { waypointIndex: 0 }, type: "dragmove" });
+      }
+    });
+    expect(syncTransform).not.toHaveBeenCalled();
+
+    act(() => {
+      for (const type of [
+        "dragmove",
+        "xChange",
+        "yChange",
+        "scaleXChange",
+        "scaleYChange",
+      ]) {
+        listener({ target: stage, type });
+      }
+    });
+    expect(syncTransform).toHaveBeenCalledTimes(5);
+  });
+
   it("reports clamped viewport dimensions from ResizeObserver", () => {
     const setViewportSize = vi.fn();
     render(<Harness setViewportSize={setViewportSize} />);

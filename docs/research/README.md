@@ -19,6 +19,8 @@ Research is grouped by implementation status, assessed against the current repos
 
 ## In progress
 
+[Large-track editor performance](in-progress/editor-large-track-performance.md) records shared 2D/3D optimizations and their browser measurements. Desktop runtime adoption is independent of these changes.
+
 | Research                                                                              | Already present                                                                                                                       | Still open                                                                                                                                                |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Team-project transport comparison](in-progress/team-project-transport-comparison.md) | Single-query conditional polling, local resource comparison, and signed-session/desktop/mobile preview checks.                        | Hosted CPU measurement and physical-device background/resume; Durable Objects remain experimental.                                                        |

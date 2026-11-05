@@ -758,10 +758,21 @@ export const useEditor = create<EditorState>()(
 
       setGroupDragPreview: (value) =>
         set((draft) => {
-          draft.ui.groupDragPreview =
-            typeof value === "function"
-              ? value(draft.ui.groupDragPreview)
-              : value;
+          const previous = draft.ui.groupDragPreview;
+          const next = typeof value === "function" ? value(previous) : value;
+          if (
+            previous &&
+            next &&
+            previous.dx === next.dx &&
+            previous.dy === next.dy &&
+            previous.origin.x === next.origin.x &&
+            previous.origin.y === next.origin.y &&
+            previous.ids.length === next.ids.length &&
+            previous.ids.every((id, index) => id === next.ids[index])
+          ) {
+            return;
+          }
+          draft.ui.groupDragPreview = next;
         }),
 
       setLiveShapePatch: (id, patch) =>
