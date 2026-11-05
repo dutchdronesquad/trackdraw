@@ -62,6 +62,16 @@ mod navigation_tests {
     }
 }
 #[tauri::command]
+fn desktop_platform(window: WebviewWindow) -> Result<&'static str, String> {
+    trusted(&window)?;
+    Ok(match std::env::consts::OS {
+        "macos" => "darwin",
+        "windows" => "win32",
+        other => other,
+    })
+}
+
+#[tauri::command]
 async fn desktop_projects(
     window: WebviewWindow,
     name: String,
@@ -191,10 +201,16 @@ fn create_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     let state = app.state::<DesktopState>();
     state.approved_close.store(false, Ordering::SeqCst);
     state.quitting.store(false, Ordering::SeqCst);
-    WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
+    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
         .title("TrackDraw Desktop Alpha")
         .inner_size(1440.0, 960.0)
-        .min_inner_size(960.0, 640.0)
+        .min_inner_size(960.0, 640.0);
+    #[cfg(target_os = "macos")]
+    let window = window
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(16.0, 15.0));
+    window
         .data_directory(state.profile.join("webview"))
         .on_navigation(|url| {
             let allowed = local_url(url);
@@ -258,6 +274,7 @@ fn main() {
         }))
         .invoke_handler(tauri::generate_handler![
             desktop_projects,
+            desktop_platform,
             finish_close,
             open_project,
             save_project,

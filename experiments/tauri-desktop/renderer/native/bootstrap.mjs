@@ -29,6 +29,7 @@ await listen("desktop:flush-before-close", () => {
   for (const callback of closeListeners) callback();
 });
 window.trackdrawDesktop = Object.freeze({
+  platform: await invoke("desktop_platform"),
   projects: (name, payload = null) =>
     invoke("desktop_projects", { name, payload }),
   finishClose: () => invoke("finish_close"),

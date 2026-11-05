@@ -50,6 +50,12 @@ Import creates an independent project ID and timestamps while retaining the trac
 
 For the browser-to-desktop-to-browser journey, export **Project File** from **Project Data** in the browser, import in desktop, edit and save a copy, then import that JSON back into the browser. Retain the original file/project. Portable data includes all current track/item fields, inventory, map metadata, groups, timing, catalog snapshots, appearances, route altitudes and arbitrary item metadata. Device preferences, undo history, restore points, account rights and cached image bytes are not part of the file. Version-one files use the existing rotation migration; invalid/future schemas are rejected by the shared parser.
 
+## Desktop chrome
+
+On macOS, document tabs share the native title-bar area while retaining the system close/minimize/zoom buttons. Empty title-bar space uses Tauri drag regions; tabs, menus and editor controls remain interactive. Windows/Linux keep their native title bar. Home and save status stay outside the scrolling document tabs; activating a tab reveals it and truncated titles expose their full text. The Home icon is 16 px and the existing padded Tauri Dock artwork remains in use.
+
+The compact project library uses TrackDraw's shared dropdown menu for keyboard navigation, Escape dismissal and focus return. Desktop focus styling is scoped to its chrome/library/recovery controls so it does not add a second outline to Studio buttons. The shared Studio layout and UI primitives are unchanged.
+
 ## Storage and migration
 
 The Tauri app stores `projects.sqlite` in its platform application-data directory under the bundle identifier `app.trackdraw.desktop.alpha`; webview preferences use its `webview/` subdirectory. On macOS this is the Application Support directory. Set `TRACKDRAW_DESKTOP_PROFILE` to a disposable directory for isolated QA. This override skips automatic legacy import. Never point test cleanup at the normal profile.
