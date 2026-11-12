@@ -85,6 +85,7 @@
   },
   "devDependencies": {
     "@babel/parser": "^8.0.0",
+    "@opennextjs/aws": "4.1.16",
     "@opennextjs/cloudflare": "^1.18.0",
     "@tailwindcss/cli": "^4",
     "@tailwindcss/postcss": "^4",
