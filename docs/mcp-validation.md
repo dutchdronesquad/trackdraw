@@ -6,12 +6,24 @@ This checklist tracks [#1000](https://github.com/dutchdronesquad/trackdraw/issue
 
 Record a client version, environment, date and observed OAuth flow before marking it verified. A working transport or a provider unit test alone does not establish client compatibility.
 
-| Client                                       | Flow                                                                                                                                                               | Evidence and limitations                                                                                                                                                                                                                                                                                                                                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Official MCP TypeScript SDK 1.32.1 / 1.32.2  | Streamable HTTP, protected-resource and issuer discovery, public Dynamic Client Registration, authorization code, S256 PKCE, loopback callback, resource indicator | Verified against the deployed development Worker for browser consent, small-track reads/creation/edits/recovery and token lifecycle. The output-schema correction is merged; one post-#1011 full run passed all workflow/auth/budget checks, but the post-#1053 full run still returned 503/1102 during repeated large-track reads and a later OAuth attempt. See the latest evidence below; hosted acceptance remains blocked. |
-| Other desktop, browser and hosted assistants | Not yet tested                                                                                                                                                     | Do not advertise compatibility until that exact client/version completes discovery, consent, callback and the required tools. Clients requiring CIMD have no verified fallback; CIMD is not advertised.                                                                                                                                                                                                                         |
+| Client                                       | Flow                                                                                                                                                               | Evidence and limitations                                                                                                                                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Official MCP TypeScript SDK 1.32.1 / 1.32.2  | Streamable HTTP, protected-resource and issuer discovery, public Dynamic Client Registration, authorization code, S256 PKCE, loopback callback, resource indicator | SDK 1.32.2 passed hosted development acceptance with Workers Paid for read-only, draft creation and reviewed edits. See the November 13 record below.                                                   |
+| Other desktop, browser and hosted assistants | Not yet tested                                                                                                                                                     | Do not advertise compatibility until that exact client/version completes discovery, consent, callback and the required tools. Clients requiring CIMD have no verified fallback; CIMD is not advertised. |
 
 Use the SDK smoke client as a reproducible reference. It does not replace testing the actual assistant a user intends to connect. REST API keys are not an OAuth fallback.
+
+## Development acceptance on Workers Paid — November 13, 2026
+
+[Development deployment 43324941747](https://github.com/dutchdronesquad/trackdraw/actions/runs/43324941747) shipped commit `e7435da5d5aec8183d1854b2cc6f5dd676660141` as Worker version `4f112960-2409-4688-bcd3-8f3ef707e47d`. The account owner confirmed Workers Paid was active. The development Worker had no explicit CPU limit override. The client was the official MCP TypeScript SDK 1.32.2.
+
+- Browser consent and the loopback callback passed on this deployment. The full SDK run passed 50 discovery and 50 unauthenticated challenge checks, DCR and S256 PKCE. It rejected declined consent, an unregistered callback, the wrong resource and a wrong PKCE verifier.
+- The read-only connection listed only active owned projects, hid write tools and returned material quantities and comparisons. The large fixture had 2,001 gates and 6,000 route points. All 41 shape pages, all 60 point pages and 100 additional cursor reads passed. Oversized complete results and invalid cursors returned explicit tool errors.
+- Draft creation with creation-only permission and idempotent retry passed. The 30 × 20 m two-gate draft passed the canonical Studio redirect and authenticated project load. Edit preview, apply, retry, stale revision rejection and prior-version recovery passed.
+- Expired and wrong-resource access returned 401, missing scope returned 403, and the disposable account/client budget returned 429 with Retry-After. Refresh rotation preserved the exhausted budget. Refresh-token replay, revocation and disconnecting through the Connected apps endpoint each invalidated the relevant access token.
+- Cleanup queries returned zero matching disposable accounts, projects, sessions, verifications, OAuth clients, grants, tokens and request budgets. Production discovery and MCP both returned 404.
+
+This completes the development acceptance for #1000 and #994. Release and verification on production follow the normal release process.
 
 ## Development recheck after PR #1053 — October 24, 2026
 
@@ -126,13 +138,13 @@ For each milestone, keep these evidence levels separate:
 3. **Development deployment:** verify migration and deploy jobs, then repeat discovery, auth failures, the milestone workflow, representative track sizes and budget behavior against the deployed origin.
 4. **Production release:** use the normal release process. Verify the actual production commit, migrations and endpoints, then repeat onboarding and the milestone checks with disposable data. A successful dev run is not a production release.
 
-| Milestone                        | Merged implementation | Development deployment                                                              | Production   |
-| -------------------------------- | --------------------- | ----------------------------------------------------------------------------------- | ------------ |
-| Read projects and materials      | #995–#997             | Small-track workflow verified; complete acceptance blocked by the CPU failure above | Not released |
-| Create track projects            | #998                  | Small-track workflow verified; complete acceptance blocked by the CPU failure above | Not released |
-| Preview/apply edits and recovery | #999                  | Small-track workflow verified; complete acceptance blocked by the CPU failure above | Not released |
+| Milestone                        | Merged implementation | Development deployment                   | Production   |
+| -------------------------------- | --------------------- | ---------------------------------------- | ------------ |
+| Read projects and materials      | #995–#997             | Verified with SDK 1.32.2 on Workers Paid | Not released |
+| Create track projects            | #998                  | Verified with SDK 1.32.2 on Workers Paid | Not released |
+| Preview/apply edits and recovery | #999                  | Verified with SDK 1.32.2 on Workers Paid | Not released |
 
-PR #1006 is merged, but its deployed acceptance hit the CPU limit described above. After the CPU correction merges, verify its development deploy and repeat the three milestone workflows against that exact deployed commit, including the corrected oversized-result handling and remaining auth/request-budget checks. Once that passes and the evidence is recorded, #1000 and epic #994 can close. Production rollout follows the normal release process and is not an additional issue-closure condition; keep its availability status explicit. Do not treat merge or green CI alone as deployed-runtime acceptance.
+The [November 13 development run](#development-acceptance-on-workers-paid--november-13-2026) passed the three milestone workflows and the hosted auth, scale and request-budget checks. Production rollout and verification follow the normal release process.
 
 ## Technical reference
 
