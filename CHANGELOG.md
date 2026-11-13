@@ -6,25 +6,27 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-### TrackDraw links and live preview
+## [1.19.0]
 
-Find the editor, community gallery and companion tools at `/bio`, with an interactive example track you can explore in 2D and 3D.
+### Design tracks with your team
 
-### Private team projects and public snapshots
+Create a team, invite members as editors or viewers, and keep shared projects together in Studio. Move an existing personal cloud project into a team you own, or start a new team track. One person edits at a time, while teammates can view and export the track and see who is editing.
 
-Team owners can deliberately share saved track snapshots, embed them or list them in the gallery. Internal changes stay private until the owner updates the link, and publication controls explain what recipients can view, copy and export. Account settings keep the same dialog size when switching sections.
+Team owners control public links, embeds and gallery listings. Each publication is a saved snapshot: internal edits stay private until the owner updates the link. Existing public links and gallery listings stay live when a personal project moves into a team. Owners can transfer ownership to another member, and eligible editors can request to take over if the owner becomes inactive. Members of an ownerless team have 90 days to view and export tracks before permanent removal.
 
-### Team ownership recovery
+### Work on tracks with an AI assistant
 
-An existing editor can take over a team when its owner becomes inactive, after notification and a waiting period. Ownerless teams remain available to members for viewing and export during a 90-day recovery period before permanent removal.
+Connect a compatible AI assistant through MCP to explore your saved cloud tracks, prepare material lists, estimate setup work and compare layouts. Ask it to create a track within your field and inventory limits, or preview changes to an existing project before applying them. Conflicting saves are rejected, and the previous version remains recoverable after an assistant applies changes. See the [connection guide](docs/mcp.md).
 
-### MCP connection foundation
+Choose which permissions to grant and explicitly approve access to a selected team. Review and disconnect connected apps in account settings. API keys can also be limited to selected cloud projects, with optional write access that respects team roles and editing sessions.
 
-Connect a supported MCP client by signing in to TrackDraw and approving its access. Review and disconnect connected apps from account settings. With project-read permission, assistants can find saved cloud projects and inspect track data, overlays and viewer snapshots. Large tracks use paged shapes and route points, with actionable errors when a complete result is too large. They can also request material quantities, route metrics and setup estimates, or compare two selected tracks. The same connection can let assistants create a new track project within your stated field and inventory limits, ready to open and adjust in Studio. With edit permission, assistants can also preview changes to an existing track and apply the reviewed proposal. Newer saved work causes a conflict, and the previous server version remains recoverable. See the [connection guide](docs/mcp.md).
+### More flexible ladders
 
-### Project access for integrations
+Adjust ladder thickness and use one or two gates as well as larger stacks. Ladder height now scales with the gate count.
 
-Limit an API key to selected cloud projects, or allow all current and future projects you own. Choose personal projects or a specific team, then search for projects when creating a key. Optional write access respects team roles and the same editing session as Studio. MCP clients can request explicit team consent and work with a team you select. Existing keys and connections remain personal.
+### Smoother editing on large tracks
+
+The 2D editor handles dragging individual items and groups more efficiently, and the 3D preview is smoother on tracks with many net barriers.
 
 ## [1.18.0]
 
