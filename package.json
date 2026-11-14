@@ -8,7 +8,7 @@
     "build": "npm run build:vinext",
     "analyze": "next experimental-analyze",
     "start": "next start",
-    "preview": "npm run build:vinext && wrangler dev --config dist/server/wrangler.json --port 8787",
+    "preview": "npm run build:vinext && vite preview --port 8787 --strictPort",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "migrate:local": "wrangler d1 migrations apply DB --local --env dev",
     "migrate:up:dev": "wrangler d1 migrations apply DB --remote --env dev",
