@@ -1743,6 +1743,7 @@
     "noResults": "No templates match your search",
     "flows": {
       "authentication": "Authentication",
+      "teams": "Teams",
       "retention": "Account retention"
     },
     "items": {
@@ -1757,6 +1758,26 @@
       "changeEmail": {
         "label": "Email change",
         "description": "Primary account email change confirmation"
+      },
+      "teamInvitation": {
+        "label": "Team invitation",
+        "description": "Sent to someone invited to join a team"
+      },
+      "teamOwnershipRisk": {
+        "label": "Team ownership at risk",
+        "description": "Warning that the team may lose its owner due to inactivity"
+      },
+      "teamOwnershipApplication": {
+        "label": "Team ownership request",
+        "description": "Notice that an editor has requested ownership"
+      },
+      "teamOwnershipRecovery": {
+        "label": "Team without an owner",
+        "description": "Recovery notice and reminders before team removal"
+      },
+      "teamOwnershipTransferred": {
+        "label": "Team ownership transferred",
+        "description": "Confirmation that ownership has changed"
       },
       "retentionFirst": {
         "label": "Inactivity warning",

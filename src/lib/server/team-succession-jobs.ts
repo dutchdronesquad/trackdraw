@@ -1,6 +1,6 @@
 import type { AccountDeletionDatabase as Db } from "./account-deletion";
 import type { TransactionalMailer } from "@/lib/email/plunk-client";
-import { buildEmailShell } from "@/lib/email/email-shell";
+import { buildTeamSuccessionEmail } from "@/lib/email/team-succession-email";
 
 export async function deliverSuccessionNotices(
   db: Db,
@@ -74,26 +74,15 @@ export async function deliverSuccessionNotices(
         applicant: string;
       }>();
     if (!context) continue;
-    const deadline = context.purge_at ?? context.removal_at;
-    const text =
-      n.event === "application"
-        ? `${context.applicant} requested ownership of ${context.name}. Ownership cannot transfer before the 30-day waiting period has elapsed after notice delivery. The first eligible editor to complete the 30-day process becomes owner. If you have concerns, contact TrackDraw support; an administrator can correct ownership. The current team recovery deadline is ${deadline}.`
-        : n.event === "outcome"
-          ? `Ownership of ${context.name} has been transferred. Sign in to review the team's current ownership and access.`
-          : `${context.name} ${context.state === "recovery" ? "has no owner and is read-only" : "may lose its owner through account inactivity"}. ${context.state === "recovery" ? `The team and its published links will be permanently removed after ${deadline}, subject to the notified reminder periods.` : `The owner's account removal is scheduled no earlier than ${deadline}.`} Existing members can review succession in Teams. During recovery you can view and export projects; published links remain accessible until final removal. An eligible editor can request ownership. Downloaded copies cannot be recalled.`;
-    const url = "https://trackdraw.app/studio?dialog=account&section=teams";
     try {
       await mailer.send({
         to: { address: context.email },
-        subject: "TrackDraw team ownership update",
-        textBody: `${text}\n${url}`,
-        htmlBody: buildEmailShell({
-          title: "Team ownership update",
-          eyebrow: "TrackDraw teams",
-          intro: text,
-          actionLabel: "Review team",
-          url,
-          note: "Only existing authorized members can access private team projects.",
+        ...buildTeamSuccessionEmail({
+          event: n.event,
+          teamName: context.name,
+          state: context.state,
+          deadline: context.purge_at ?? context.removal_at,
+          applicant: context.applicant,
         }),
         emailType: "team-succession",
         idempotencyKey: `team-succession-${n.id}-${n.attempt_generation}`,
