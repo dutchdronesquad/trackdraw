@@ -145,7 +145,7 @@ npm run migrate:up:production
 
 `npm run lint` runs Oxlint, including its React Compiler checks.
 
-`npm run build` builds the local vinext Worker. Use `npm run build:vinext -- dev` or `npm run build:vinext -- production` for deployment packages. `npm run dev` uses Next.js with Turbopack for local UI work.
+`npm run build` builds Next.js for Vercel previews. `npm run preview` builds and runs the local vinext Worker. Use `npm run build:vinext -- dev` or `npm run build:vinext -- production` for deployment packages. `npm run dev` uses Next.js with Turbopack for local UI work.
 
 ## Translation Workflow
 

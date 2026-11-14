@@ -5,7 +5,7 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "npm run i18n:sync-assets && next dev --turbopack",
-    "build": "npm run build:vinext",
+    "build": "npm run i18n:sync-assets && next build --webpack",
     "analyze": "next experimental-analyze",
     "start": "next start",
     "preview": "npm run build:vinext && vite preview --port 8787 --strictPort",
