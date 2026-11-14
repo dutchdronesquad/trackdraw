@@ -1,5 +1,12 @@
 import { buildEmailShell } from "@/lib/email/email-shell";
 
+const deadlineFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
 export function buildTeamSuccessionEmail({
   event,
   teamName,
@@ -13,12 +20,14 @@ export function buildTeamSuccessionEmail({
   deadline: string;
   applicant: string;
 }) {
+  const formattedDeadline =
+    event === "outcome" ? "" : deadlineFormatter.format(new Date(deadline));
   const text =
     event === "application"
-      ? `${applicant} requested ownership of ${teamName}. Ownership cannot transfer before the 30-day waiting period has elapsed after notice delivery. The first eligible editor to complete the 30-day process becomes owner. If you have concerns, contact TrackDraw support; an administrator can correct ownership. The current team recovery deadline is ${deadline}.`
+      ? `${applicant} requested ownership of ${teamName}. Ownership cannot transfer before the 30-day waiting period has elapsed after notice delivery. The first eligible editor to complete the 30-day process becomes owner. If you have concerns, contact TrackDraw support; an administrator can correct ownership. The current team recovery deadline is ${formattedDeadline}.`
       : event === "outcome"
         ? `Ownership of ${teamName} has been transferred. Sign in to review the team's current ownership and access.`
-        : `${teamName} ${state === "recovery" ? "has no owner and is read-only" : "may lose its owner through account inactivity"}. ${state === "recovery" ? `The team and its published links will be permanently removed after ${deadline}, subject to the notified reminder periods.` : `The owner's account removal is scheduled no earlier than ${deadline}.`} Existing members can review succession in Teams. During recovery you can view and export projects; published links remain accessible until final removal. An eligible editor can request ownership. Downloaded copies cannot be recalled.`;
+        : `${teamName} ${state === "recovery" ? "has no owner and is read-only" : "may lose its owner through account inactivity"}. ${state === "recovery" ? `The team and its published links will be permanently removed after ${formattedDeadline}, subject to the notified reminder periods.` : `The owner's account removal is scheduled no earlier than ${formattedDeadline}.`} Existing members can review succession in Teams. During recovery you can view and export projects; published links remain accessible until final removal. An eligible editor can request ownership. Downloaded copies cannot be recalled.`;
   const url = "https://trackdraw.app/studio?dialog=account&section=teams";
 
   return {
