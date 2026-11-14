@@ -33,7 +33,9 @@ export function GroundMarkers3D({
       args={[undefined, undefined, markers.length]}
       raycast={ignoreRaycast}
     >
-      <cylinderGeometry args={[GROUND_MARKER_RADIUS, GROUND_MARKER_RADIUS, 0.045, 12]} />
+      <cylinderGeometry
+        args={[GROUND_MARKER_RADIUS, GROUND_MARKER_RADIUS, 0.045, 12]}
+      />
       <meshBasicMaterial color="#ffbc48" />
     </instancedMesh>
   );
