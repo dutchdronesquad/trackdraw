@@ -1,6 +1,6 @@
 # 3D beachflags
 
-Studio, shared track views, and flythrough export build the same Three.js flag model. TrackDraw Viewer vendors the model and live clock under its existing rendering-source convention. Catalog identity, nominal height, anchor, heading, and 2D footprint still come from the track. The MultiGP artwork keeps the existing panel aspect and the source UV orientation on each side. Its alpha channel supplies the outline and the visible cloth shadow in shadow-enabled views. Generic flags have a shaped outline and a solid colour.
+Studio, shared track views, and flythrough export build the same Three.js flag model. TrackDraw Viewer vendors the model and live clock under its existing rendering-source convention. Catalog identity, nominal height, anchor, heading, and 2D footprint still come from the track. The MultiGP artwork keeps the existing panel aspect and the source UV orientation on each side. Its alpha channel supplies the outline and the visible cloth shadow in shadow-enabled views. Generic flags use the same feather profile, including the curved mast and diagonal lower hem, with their chosen solid colour.
 
 The mast, ground collar and leading edge stay fixed. Two relative morph targets deform the cloth and its normals along local Z with a repeatable phase from the obstacle ID. Movement from the resting surface is limited to 8% of cloth width or 8 cm, whichever is smaller. The GPU applies the same deformation during the live shadow pass.
 

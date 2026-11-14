@@ -45,6 +45,38 @@ describe("3D beachflags", () => {
     }
   );
 
+  it("uses the MultiGP feather profile for solid flags at the same height", () => {
+    const height = 3.048;
+    const generic = createBeachflag({
+      height,
+      id: "generic",
+      color: "#a855f7",
+    });
+    const catalog = createBeachflag({
+      height,
+      id: "catalog",
+      color: "#b91c1c",
+      poleColor: "#111111",
+    });
+    const [solid] = cloth(generic);
+    const [fallback] = cloth(catalog);
+    const positions = solid.geometry.getAttribute("position");
+    expect(positions.array).toEqual(
+      fallback.geometry.getAttribute("position").array
+    );
+    expect(solid.material.color.getHexString()).toBe("a855f7");
+
+    // A narrow hem at the mast opens out to the full width above the diagonal cut.
+    const width = new THREE.Box3().setFromBufferAttribute(
+      positions as THREE.BufferAttribute
+    ).max.x;
+    expect(positions.getX(10)).toBeLessThan(width * 0.03);
+    expect(positions.getX(4 * 11 + 10)).toBeCloseTo(width);
+    expect(positions.getX(40 * 11)).toBeCloseTo(width, 2);
+    generic.dispose();
+    catalog.dispose();
+  });
+
   it("uses the same surface and motion for front and back artwork with side-specific UVs", () => {
     const model = createBeachflag({
       height: 3.048,

@@ -10,7 +10,9 @@ const ALPHA_CUTOFF = 0.5;
 
 // Normalized leading edge of the MultiGP front artwork, from its top down.
 const CATALOG_EDGE = [0.995, 0.477, 0.276, 0.155, 0.075, 0.022, 0.002, 0];
-const TRAILING_EDGE = [0.04, 0.45, 0.78, 0.96, 1, 0.95, 0.72, 0.06];
+// The bottom hem rises diagonally across the first 6.6% of the panel.
+const TRAILING_EDGE_AT_BOTTOM = 0.016;
+const TRAILING_EDGE_FULL_WIDTH_AT = 0.066;
 
 type FlagTextures = { front: THREE.Texture; back: THREE.Texture };
 type FlagOptions = {
@@ -26,25 +28,19 @@ function sampleProfile(profile: readonly number[], t: number) {
   return THREE.MathUtils.lerp(profile[index], profile[index + 1], fraction);
 }
 
-function getFlagProfile(height: number, catalog: boolean) {
-  const bottom = height * (catalog ? CATALOG_BOTTOM : 0.18);
-  const width = catalog
-    ? Math.max(height * 0.18, (height - bottom) * CATALOG_ASPECT)
-    : Math.max(height * 0.18, 0.62);
-  const radius = catalog ? 0.03 : 0.024;
+function getFlagProfile(height: number) {
+  const bottom = height * CATALOG_BOTTOM;
+  const width = Math.max(height * 0.18, (height - bottom) * CATALOG_ASPECT);
+  const radius = 0.03;
   const tipRadius = Math.min(radius * 0.34, height * 0.05);
   const mastTop = height - tipRadius;
   const leadingEdge = (y: number) => {
-    if (catalog) {
-      const fromTop = THREE.MathUtils.clamp(
-        (height - y) / (height - bottom),
-        0,
-        1
-      );
-      return width * sampleProfile(CATALOG_EDGE, Math.min(7, fromTop * 20));
-    }
-    const bend = THREE.MathUtils.clamp((y / mastTop - 0.64) / 0.36, 0, 1);
-    return width * 0.7 * bend ** 3;
+    const fromTop = THREE.MathUtils.clamp(
+      (height - y) / (height - bottom),
+      0,
+      1
+    );
+    return width * sampleProfile(CATALOG_EDGE, Math.min(7, fromTop * 20));
   };
   return { bottom, width, radius, tipRadius, mastTop, leadingEdge };
 }
@@ -88,35 +84,43 @@ function createMast(
 function createCloth(
   height: number,
   profile: ReturnType<typeof getFlagProfile>,
-  catalog: boolean,
-  back: boolean,
-  textured = catalog
+  face: "solid" | "front" | "back"
 ) {
-  const { bottom, width, mastTop, leadingEdge } = profile;
-  const top = catalog ? height : mastTop;
+  const { bottom, width, leadingEdge } = profile;
+  const textured = face !== "solid";
+  const back = face === "back";
   const positions: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
   const sway: [number[], number[]] = [[], []];
 
   for (let row = 0; row <= CLOTH_ROWS; row++) {
-    const v = row / CLOTH_ROWS;
-    const y = THREE.MathUtils.lerp(bottom, top, v);
+    // Put a solid-cloth row at the corner so the lower hem stays straight.
+    const v =
+      !textured && row === 3 ? TRAILING_EDGE_FULL_WIDTH_AT : row / CLOTH_ROWS;
+    const y = THREE.MathUtils.lerp(bottom, height, v);
     const leadingX = leadingEdge(y);
-    const span = catalog
-      ? textured
-        ? width
-        : Math.max(width * 0.01, width * Math.min(1, v * 19) - leadingX)
-      : width * sampleProfile(TRAILING_EDGE, v * 7);
+    // Textured faces keep their rectangular UVs and use artwork alpha at the hem.
+    const trailingX =
+      width *
+      THREE.MathUtils.lerp(
+        TRAILING_EDGE_AT_BOTTOM,
+        1,
+        Math.min(1, v / TRAILING_EDGE_FULL_WIDTH_AT)
+      );
     for (let col = 0; col <= CLOTH_COLUMNS; col++) {
       const u = col / CLOTH_COLUMNS;
-      const x = u * span + (textured ? 0 : leadingX);
+      const x = textured
+        ? u * width
+        : THREE.MathUtils.lerp(leadingX, trailingX, u);
+      const panelU = x / width;
       const free = THREE.MathUtils.clamp((x - leadingX) / width, 0, 1);
       const slack = free ** 1.65 * (0.48 + 0.52 * Math.sin(v * Math.PI * 0.86));
       const rest =
         width *
         free *
-        (0.09 * Math.sin(Math.PI * u) + 0.045 * Math.sin(v * 8 - u * 3));
+        (0.09 * Math.sin(Math.PI * panelU) +
+          0.045 * Math.sin(v * 8 - panelU * 3));
       positions.push(x, y, rest);
       uvs.push(back ? 1 - u : u, v);
 
@@ -201,7 +205,7 @@ export function createBeachflag({
     };
   }
   const catalog = poleColor !== undefined;
-  const profile = getFlagProfile(height, catalog);
+  const profile = getFlagProfile(height);
   const mastMaterial = new THREE.MeshStandardMaterial({
     color: poleColor ?? "#9ba5af",
     metalness: catalog ? 0.12 : 0.45,
@@ -220,12 +224,12 @@ export function createBeachflag({
     ? new THREE.MeshStandardMaterial({ roughness: 0.86 })
     : null;
   const front = new THREE.Mesh(
-    createCloth(height, profile, catalog, false, false),
+    createCloth(height, profile, "solid"),
     frontMaterial
   );
   const texturedFront = catalog
     ? new THREE.Mesh(
-        createCloth(height, profile, true, false),
+        createCloth(height, profile, "front"),
         new THREE.MeshStandardMaterial({
           roughness: 0.86,
           shadowSide: THREE.DoubleSide,
@@ -234,7 +238,7 @@ export function createBeachflag({
     : null;
   const back =
     backMaterial &&
-    new THREE.Mesh(createCloth(height, profile, true, true), backMaterial);
+    new THREE.Mesh(createCloth(height, profile, "back"), backMaterial);
   const mast = new THREE.Mesh(createMast(height, profile), mastMaterial);
   const collarHeight = Math.min(height * 0.08, 0.14);
   const collar = new THREE.Mesh(
