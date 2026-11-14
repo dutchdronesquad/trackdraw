@@ -49,6 +49,18 @@
     "off": "Off",
     "exit": "Exit",
     "flyThrough": "Fly-Through",
+    "groundMarkers": {
+      "label": "Ground markers",
+      "off": "Off",
+      "route": "Race Line {number}",
+      "namedRoute": "{number}. {name}",
+      "count": "{count, plural, one {# preview marker} other {# preview markers}}",
+      "empty": "No suitable positions on this Race Line.",
+      "limit": "This layout exceeds the ground marker preview limit.",
+      "projection": "Planning preview only. Dots show ground position, not height or a flight maneuver. Check placements on site.",
+      "nearPass": "Gaps at crossings or nearby passages.",
+      "elevation": "Gaps at high or steep sections."
+    },
     "dragWaypointMobile": "Drag a waypoint grip up or down to adjust elevation",
     "dragWaypointDesktop": "Drag waypoint handles up or down to adjust elevation",
     "dragDiveGateMobile": "Drag ring to rotate · orange puck to tilt",

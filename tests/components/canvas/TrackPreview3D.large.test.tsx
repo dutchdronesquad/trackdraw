@@ -1,7 +1,13 @@
 // @vitest-environment happy-dom
 
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TrackPreview3D from "@/components/canvas/viewer/TrackPreview3D";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
@@ -141,6 +147,12 @@ vi.mock("@/components/canvas/preview3d/overlays", () => ({
   ),
 }));
 
+vi.mock("@/components/canvas/preview3d/GroundMarkers3D", () => ({
+  GroundMarkers3D: ({ markers }: { markers: unknown[] }) => (
+    <div data-testid="ground-marker-mesh" data-markers={markers.length} />
+  ),
+}));
+
 const inventory = {
   gate: 0,
   ladder: 0,
@@ -226,6 +238,44 @@ describe("TrackPreview3D large layouts", () => {
     expect(screen.getByTestId("preview-grid")).toBeTruthy();
     expect(shapeNodes).toHaveLength(90);
     expect(shapeNodes[0]?.getAttribute("data-shape-id")).toBe("long-route");
+  });
+
+  it("only previews the explicitly chosen route and does not switch routes when it is deleted", () => {
+    const route = (id: string, y: number) => ({
+      id,
+      kind: "polyline" as const,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 2, y },
+        { x: 50, y },
+      ],
+    });
+    const design = {
+      ...createDensePreviewDesign(),
+      shapeOrder: ["first", "second"],
+      shapeById: { first: route("first", 10), second: route("second", 30) },
+    };
+    useEditor.getState().replaceDesign(design);
+    render(<TrackPreview3D />);
+    const select = screen.getByRole<HTMLSelectElement>("combobox", {
+      name: "Ground markers",
+    });
+    expect(select.value).toBe("");
+    expect(screen.queryByTestId("ground-marker-mesh")).toBeNull();
+
+    const storedDesign = useEditor.getState().track.design;
+    fireEvent.change(select, { target: { value: "second" } });
+    expect(select.value).toBe("second");
+    expect(screen.getByTestId("ground-marker-mesh").dataset.markers).toBe("11");
+    expect(screen.getAllByTestId("shape-3d")).toHaveLength(2);
+    expect(useEditor.getState().track.design).toBe(storedDesign);
+
+    act(() => useEditor.getState().removeShapes(["second"]));
+    expect(select.value).toBe("");
+    expect(screen.queryByTestId("ground-marker-mesh")).toBeNull();
+    expect(screen.getAllByTestId("shape-3d")).toHaveLength(1);
   });
 
   it("uses the shared themed surface and read-only touch controls on mobile", () => {

@@ -18,6 +18,11 @@ import * as THREE from "three";
 import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
+import { GroundMarkers3D } from "@/components/canvas/preview3d/GroundMarkers3D";
+import {
+  GroundMarkerControls,
+  useGroundMarkerPreview,
+} from "@/components/canvas/preview3d/ground-marker-controls";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { useEditor } from "@/store/editor";
 import {
@@ -65,6 +70,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     const field = useEditor((state) => state.track.design.field);
     const shapes = useEditor(selectDesignShapes);
+    const groundMarkers = useGroundMarkerPreview(shapes, field);
     const primaryPolylineId = useEditor(
       (state) => selectPrimaryPolyline(state)?.id ?? null
     );
@@ -195,6 +201,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
           <TrackSurface3D field={field} theme={t} />
 
+          {groundMarkers.preview && (
+            <GroundMarkers3D markers={groundMarkers.preview.markers} />
+          )}
+
           {shapeNodes}
 
           <FieldWatermark
@@ -264,6 +274,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             />
           )}
         </Canvas>
+
+        <GroundMarkerControls {...groundMarkers} />
 
         <AxisGizmoOverlay
           axisQuaternion={axisQuaternion}

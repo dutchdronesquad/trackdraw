@@ -14,6 +14,11 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { GroundMarkers3D } from "@/components/canvas/preview3d/GroundMarkers3D";
+import {
+  GroundMarkerControls,
+  useGroundMarkerPreview,
+} from "@/components/canvas/preview3d/ground-marker-controls";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -286,6 +291,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const { setPolylinePoints, updateShape } = useTrackActions();
     const { setLiveShapePatch, clearLiveShapePatch } = useUiActions();
     const shapes = useEditor(selectDesignShapes);
+    const groundMarkers = useGroundMarkerPreview(shapes, field);
     useCatalogTextureWarmup(shapes);
     const hasPath = useEditor(selectHasPath);
     const primaryPolyline = useEditor(selectPrimaryPolyline);
@@ -523,6 +529,16 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               setSelection([]);
             }}
           />
+
+          {groundMarkers.preview &&
+          !elevationDrag &&
+          !rotationDrag &&
+          !tiltDrag &&
+          !ladderElevationDrag &&
+          !towerElevationDrag &&
+          !diveGateElevationDrag ? (
+            <GroundMarkers3D markers={groundMarkers.preview.markers} />
+          ) : null}
 
           {shapes.map((shape) => (
             <Suspense key={shape.id} fallback={null}>
@@ -823,6 +839,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             />
           )}
         </Canvas>
+
+        <GroundMarkerControls {...groundMarkers} />
 
         <AxisGizmoOverlay
           axisQuaternion={axisQuaternion}
