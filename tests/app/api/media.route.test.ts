@@ -10,11 +10,11 @@ vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   first: vi.fn(),
-  getCloudflareContext: vi.fn(),
+  getWorkerBindings: vi.fn(),
 }));
 
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: mocks.getCloudflareContext,
+vi.mock("@/lib/server/cloudflare-bindings", () => ({
+  getWorkerBindings: mocks.getWorkerBindings,
 }));
 
 vi.mock("@/lib/server/db", () => ({
@@ -31,7 +31,7 @@ function mediaContext(key: string[]) {
 
 describe("media API route", () => {
   beforeEach(() => {
-    mocks.getCloudflareContext.mockReset();
+    mocks.getWorkerBindings.mockReset();
     mocks.first.mockReset().mockResolvedValue({ id: "entry" });
   });
 
@@ -43,11 +43,11 @@ describe("media API route", () => {
 
     expect(response.status).toBe(400);
     await expect(response.text()).resolves.toBe("Missing media key");
-    expect(mocks.getCloudflareContext).not.toHaveBeenCalled();
+    expect(mocks.getWorkerBindings).not.toHaveBeenCalled();
   });
 
   it("returns a server error when the media bucket binding is missing", async () => {
-    installCloudflareMediaBucket(mocks.getCloudflareContext, null);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, null);
 
     const response = await GET(
       new Request("http://localhost/api/media/gallery/previews/entry-1.webp"),
@@ -60,7 +60,7 @@ describe("media API route", () => {
 
   it("hides media immediately after its gallery entry is deleted, even if R2 cleanup is pending", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
     mocks.first.mockResolvedValue(null);
     const response = await GET(
       new Request("http://localhost/api/media/gallery/previews/deleted.webp"),
@@ -72,7 +72,7 @@ describe("media API route", () => {
 
   it("returns 404 when the R2 object does not exist", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     const response = await GET(
       new Request("http://localhost/api/media/gallery/previews/missing.webp"),
@@ -95,7 +95,7 @@ describe("media API route", () => {
         })
       ),
     });
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     const response = await GET(
       new Request("http://localhost/api/media/gallery/previews/entry-1.webp"),
@@ -119,7 +119,7 @@ describe("media API route", () => {
         })
       ),
     });
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     const response = await GET(
       new Request("http://localhost/api/media/gallery/previews/entry-2.webp"),

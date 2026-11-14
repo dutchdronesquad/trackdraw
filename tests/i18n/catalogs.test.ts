@@ -39,16 +39,16 @@ function addSpanishTranslations() {
   writeNamespace("es-ES", "dashboard", { title: "Panel" });
 }
 
-const { getCloudflareContext } = vi.hoisted(() => ({
-  getCloudflareContext: vi.fn(),
+const { getWorkerBindings } = vi.hoisted(() => ({
+  getWorkerBindings: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
-vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext }));
+vi.mock("@/lib/server/cloudflare-bindings", () => ({ getWorkerBindings }));
 
 describe("Spanish catalogs", () => {
   beforeEach(() => {
     vi.resetModules();
-    getCloudflareContext.mockReset();
+    getWorkerBindings.mockReset();
     fixtureRoot = mkdtempSync(join(tmpdir(), "trackdraw-spanish-catalogs-"));
     mkdirSync(join(fixtureRoot, "lang"));
     copyFileSync(
@@ -83,8 +83,8 @@ describe("Spanish catalogs", () => {
     const fetchAsset = vi.fn(async (_request: Request) =>
       Response.json({ appearance: { title: "Old artwork" } })
     );
-    getCloudflareContext.mockResolvedValue({
-      env: { ASSETS: { fetch: fetchAsset } },
+    getWorkerBindings.mockResolvedValue({
+      ASSETS: { fetch: fetchAsset },
     });
     const { getCatalogForLocale, pickCatalogNamespaces } =
       await import("@/i18n/catalogs");
@@ -117,7 +117,7 @@ describe("Spanish catalogs", () => {
     "loads $scenario Spanish server-side catalogs with English fallback",
     async ({ translated }) => {
       if (translated) addSpanishTranslations();
-      getCloudflareContext.mockRejectedValue(new Error("No Worker context"));
+      getWorkerBindings.mockRejectedValue(new Error("No Worker context"));
       const { getCatalogForLocale } = await import("@/i18n/catalogs");
       const [spanish, english] = await Promise.all([
         getCatalogForLocale("es"),
@@ -159,8 +159,8 @@ describe("Spanish catalogs", () => {
           headers: { "Content-Type": "application/json" },
         });
       });
-      getCloudflareContext.mockResolvedValue({
-        env: { ASSETS: { fetch: fetchAsset } },
+      getWorkerBindings.mockResolvedValue({
+        ASSETS: { fetch: fetchAsset },
       });
       const { pickCatalogNamespaces } = await import("@/i18n/catalogs");
       const namespaces = ["common", "legal", "dashboard"] as const;

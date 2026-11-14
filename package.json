@@ -5,11 +5,10 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "npm run i18n:sync-assets && next dev --turbopack",
-    "build": "npm run i18n:sync-assets && next build --webpack",
+    "build": "npm run build:vinext",
     "analyze": "next experimental-analyze",
     "start": "next start",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview --env dev",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "npm run build:vinext && wrangler dev --config dist/server/wrangler.json --port 8787",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "migrate:local": "wrangler d1 migrations apply DB --local --env dev",
     "migrate:up:dev": "wrangler d1 migrations apply DB --remote --env dev",
@@ -26,8 +25,8 @@
     "type": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build:vinext": "npm run i18n:sync-assets && NEXT_PUBLIC_SITE_URL=https://dev.trackdraw.app NEXT_PUBLIC_APP_ENV=development vite build",
-    "preview:vinext": "vite preview"
+    "build:vinext": "node scripts/build_vinext.mjs",
+    "deploy:vinext": "node scripts/deploy_vinext.mjs"
   },
   "dependencies": {
     "@better-auth/api-key": "^1.6.9",
@@ -90,8 +89,6 @@
     "@babel/parser": "^8.0.0",
     "@babel/plugin-transform-runtime": "^7.29.0",
     "@cloudflare/vite-plugin": "^1",
-    "@opennextjs/aws": "4.1.16",
-    "@opennextjs/cloudflare": "^1.18.0",
     "@rolldown/plugin-babel": "0.3.1",
     "@tailwindcss/cli": "^4",
     "@tailwindcss/postcss": "^4",

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getWorkerBindings } from "@/lib/server/cloudflare-bindings";
 
 type D1PreparedStatement = {
   bind(...values: unknown[]): D1PreparedStatement;
@@ -14,20 +14,16 @@ type D1Database = {
   batch<T>(statements: D1PreparedStatement[]): Promise<{ results: T[] }[]>;
 };
 
-type CloudflareContextWithD1 = {
-  env: {
-    DB?: D1Database;
-  };
+type D1Bindings = {
+  DB?: D1Database;
 };
 
 export async function getDatabase() {
-  const { env } = (await getCloudflareContext({
-    async: true,
-  })) as CloudflareContextWithD1;
+  const env = (await getWorkerBindings()) as D1Bindings;
 
   if (!env.DB) {
     throw new Error(
-      "Missing D1 DB binding. Update wrangler.jsonc with the D1 database binding and use Cloudflare/OpenNext preview or deploy."
+      "Missing D1 DB binding. Update wrangler.jsonc with the D1 database binding and use Cloudflare preview or deploy."
     );
   }
 

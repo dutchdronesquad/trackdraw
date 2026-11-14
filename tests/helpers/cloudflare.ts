@@ -41,10 +41,8 @@ export function createR2ObjectBody({
 }
 
 export function installCloudflareMediaBucket(
-  getCloudflareContext: ReturnType<typeof vi.fn>,
+  getWorkerBindings: ReturnType<typeof vi.fn>,
   bucket: MockMediaBucket | null
 ) {
-  getCloudflareContext.mockResolvedValue({
-    env: bucket ? { MEDIA_BUCKET: bucket } : {},
-  });
+  getWorkerBindings.mockResolvedValue(bucket ? { MEDIA_BUCKET: bucket } : {});
 }
