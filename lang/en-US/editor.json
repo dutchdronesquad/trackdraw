@@ -41,6 +41,10 @@
     "viewerPanZoom": "Drag to pan, wheel to zoom"
   },
   "preview3dOverlay": {
+    "presentation": "3D environment",
+    "designScene": "Design grid",
+    "outdoorScene": "Outdoor · Daylight",
+    "outdoorSceneLow": "Outdoor · Low detail",
     "pause": "Pause",
     "play": "Play",
     "speed": "Speed",

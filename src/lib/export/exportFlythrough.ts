@@ -17,6 +17,10 @@ import {
   getInitialFpvCameraPose,
 } from "@/lib/track/fpvCamera";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
+import {
+  createOutdoorPresentation,
+  type OutdoorQuality,
+} from "@/lib/track/outdoor-presentation";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
 const FPS = 60;
@@ -391,7 +395,8 @@ export function exportFlythrough(
   design: TrackDesign,
   filename: string,
   themeName: FlythroughTheme,
-  onProgress?: (progress: FlythroughProgress) => void
+  onProgress?: (progress: FlythroughProgress) => void,
+  outdoorQuality: OutdoorQuality | null = null
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const shapes = getOrderedShapes(design);
@@ -456,28 +461,51 @@ export function exportFlythrough(
       })
     );
     skySphere.renderOrder = -1;
-    scene.add(skySphere);
-
-    const camera = new THREE.PerspectiveCamera(46, WIDTH / HEIGHT, 0.1, 500);
-    camera.fov = FPV_CAMERA_FOV;
-    camera.updateProjectionMatrix();
-
-    scene.add(new THREE.AmbientLight(0xffffff, t.ambientIntensity));
-    const dirLight = new THREE.DirectionalLight(0xffffff, t.dirIntensity);
-    dirLight.position.set(cx + 12, 28, cz + 8);
-    scene.add(dirLight);
-    if (isDark) {
-      const tealLight = new THREE.PointLight(0x2dd4bf, 0.3);
-      tealLight.position.set(cx - 10, 8, cz - 5);
-      scene.add(tealLight);
-      const blueLight = new THREE.PointLight(0x60a5fa, 0.25);
-      blueLight.position.set(cx + 15, 6, cz + 12);
-      scene.add(blueLight);
+    let outdoor: ReturnType<typeof createOutdoorPresentation> | undefined;
+    if (outdoorQuality) {
+      try {
+        outdoor = createOutdoorPresentation(design.field, outdoorQuality);
+      } catch {
+        // Retain the original render if the optional presentation cannot be created.
+      }
     }
+    const camera = new THREE.PerspectiveCamera(
+      FPV_CAMERA_FOV,
+      WIDTH / HEIGHT,
+      0.1,
+      500
+    );
+    const ownedTextures = new Set<THREE.Texture>();
+    if (outdoor) {
+      scene.fog = outdoor.fog;
+      scene.add(outdoor.group);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.shadowMap.enabled = outdoorQuality === "full";
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      // The course and daylight stay fixed for every frame of the recording.
+      renderer.shadowMap.autoUpdate = false;
+      renderer.shadowMap.needsUpdate = true;
+      skySphere.geometry.dispose();
+      skySphere.material.dispose();
+    } else {
+      scene.add(skySphere);
+      scene.add(new THREE.AmbientLight(0xffffff, t.ambientIntensity));
+      const dirLight = new THREE.DirectionalLight(0xffffff, t.dirIntensity);
+      dirLight.position.set(cx + 12, 28, cz + 8);
+      scene.add(dirLight);
+      if (isDark) {
+        const tealLight = new THREE.PointLight(0x2dd4bf, 0.3);
+        tealLight.position.set(cx - 10, 8, cz - 5);
+        scene.add(tealLight);
+        const blueLight = new THREE.PointLight(0x60a5fa, 0.25);
+        blueLight.position.set(cx + 15, 6, cz + 12);
+        scene.add(blueLight);
+      }
 
-    const surface = createFlythroughSurface(design.field, themeName);
-    scene.add(surface.group);
-    const ownedTextures = new Set<THREE.Texture>(surface.ownedTextures);
+      const surface = createFlythroughSurface(design.field, themeName);
+      scene.add(surface.group);
+      surface.ownedTextures.forEach((texture) => ownedTextures.add(texture));
+    }
 
     const tubeSegments = Math.min(curveResult.segmentCount * 3, 800);
     const tube = new THREE.Mesh(
@@ -494,6 +522,7 @@ export function exportFlythrough(
     const cleanup = () => {
       if (cleanedUp) return;
       cleanedUp = true;
+      outdoor?.dispose();
       disposeFlythroughSceneResources(scene, ownedTextures);
       renderer.dispose();
       if (document.body.contains(canvas)) document.body.removeChild(canvas);
@@ -518,7 +547,7 @@ export function exportFlythrough(
       const pose = getFpvCameraPose(samplePoint, frame * tPerFrame, bankAngle);
       bankAngle = pose.bankAngle;
       camera.position.copy(pose.position);
-      skySphere.position.copy(pose.position);
+      if (!outdoor) skySphere.position.copy(pose.position);
       camera.up.set(0, 1, 0);
       camera.lookAt(pose.lookTarget);
       camera.rotateZ(bankAngle);
@@ -537,7 +566,7 @@ export function exportFlythrough(
       try {
         await addFlythroughShapes(scene, shapes);
 
-        const wmTex = await loadWatermarkTexture(isDark);
+        const wmTex = outdoor ? null : await loadWatermarkTexture(isDark);
         if (wmTex) {
           ownedTextures.add(wmTex);
           const aspect = wmTex.image.width / wmTex.image.height;
@@ -558,7 +587,7 @@ export function exportFlythrough(
 
         const initialPose = getInitialFpvCameraPose(samplePoint);
         camera.position.copy(initialPose.position);
-        skySphere.position.copy(initialPose.position);
+        if (!outdoor) skySphere.position.copy(initialPose.position);
         camera.lookAt(initialPose.lookTarget);
         renderer.render(scene, camera);
 

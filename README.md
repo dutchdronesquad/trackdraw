@@ -49,6 +49,7 @@
 TrackDraw keeps the full race-planning workflow in one design:
 
 - **Design on the real venue.** Work at real-world scale in Metric or Imperial units, place MultiGP-style or custom obstacles, and align the layout with a satellite map when needed.
+- **Present your track outdoors.** Switch from the design grid to a daylight field in Studio or the shared 3D view. Opaque 3D images and fly-throughs can use the same surroundings.
 - **Validate before race day.** Review an editable race line in 2D, 3D, elevation, and FPV fly-through views, and catch route or inventory problems before loading the van.
 - **Hand off one clear plan.** Publish a read-only link or export a Race Pack with the course map, obstacle numbering, material requirements, stock status, and setup guidance.
 

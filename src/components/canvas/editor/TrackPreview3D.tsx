@@ -14,6 +14,9 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { PreviewEnvironment } from "@/components/canvas/preview3d/preview-environment";
+import { useOutdoorQuality } from "@/store/presentation";
+import { PresentationControl } from "@/components/canvas/preview3d/presentation-control";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -51,12 +54,10 @@ import {
 import {
   CameraAxisTracker,
   CameraCapture,
-  GradientSky,
   MemoShape3D,
   OrbitGroundConstraint,
   ORBIT_MAX_POLAR_ANGLE,
   ScreenshotHelper,
-  TrackSurface3D,
   WheelBridge,
   type QuaternionState,
   useCatalogTextureWarmup,
@@ -295,6 +296,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       selectedPolyline && !selectedPolyline.locked ? selectedPolyline : null;
     const theme = useTheme();
     const isMobile = useIsTouchDevice();
+    const outdoorQuality = useOutdoorQuality(isMobile, shapes.length, field);
     const { enabled: devMode } = useDeveloperMode();
     const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
@@ -471,6 +473,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       >
         <Canvas
           shadows="percentage"
+          dpr={outdoorQuality === "low" ? 1 : [1, 2]}
           camera={{
             position: [cx - 14, 18, cz + 20],
             fov: 46,
@@ -479,44 +482,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           }}
           gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
-          <color attach="background" args={[t.skyHorizon]} />
-          <fog attach="fog" args={[t.fog, 80, 260]} />
-          <GradientSky topColor={t.skyTop} horizonColor={t.skyHorizon} />
-          <hemisphereLight
-            color={t.hemisphereSky}
-            groundColor={t.hemisphereGround}
-            intensity={t.hemisphereIntensity}
-          />
-          <ambientLight intensity={t.ambientIntensity} />
-          <directionalLight
-            position={[cx + 12, 28, cz + 8]}
-            color={t.dirColor}
-            intensity={t.dirIntensity}
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0005}
-            shadow-camera-left={-longest * 0.7}
-            shadow-camera-right={longest * 0.7}
-            shadow-camera-top={longest * 0.7}
-            shadow-camera-bottom={-longest * 0.7}
-            shadow-camera-near={1}
-            shadow-camera-far={longest * 2 + 60}
-          />
-          <pointLight
-            position={[cx - 10, 8, cz - 5]}
-            intensity={0.18}
-            color="#2dd4bf"
-          />
-          <pointLight
-            position={[cx + 15, 6, cz + 12]}
-            intensity={0.15}
-            color="#60a5fa"
-          />
-
-          <TrackSurface3D
+          <PreviewEnvironment
             field={field}
             theme={t}
+            outdoorQuality={outdoorQuality}
             onGroundClick={(event) => {
               event.stopPropagation();
               if (event.delta > 3) return;
@@ -730,11 +699,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               );
             })}
 
-          <FieldWatermark
-            fw={field.width}
-            fh={field.height}
-            isDark={theme === "dark"}
-          />
+          {!outdoorQuality && (
+            <FieldWatermark
+              fw={field.width}
+              fh={field.height}
+              isDark={theme === "dark"}
+            />
+          )}
 
           <ScreenshotHelper onReady={handleScreenshotReady} />
           <CameraCapture onCamera={handleCameraCapture} />
@@ -823,6 +794,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             />
           )}
         </Canvas>
+
+        {!flyMode && <PresentationControl />}
 
         <AxisGizmoOverlay
           axisQuaternion={axisQuaternion}

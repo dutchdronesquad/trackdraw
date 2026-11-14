@@ -15,6 +15,8 @@ import {
   TrackSurface3D,
   MemoShape3D,
 } from "@/components/canvas/preview3d/shared-scene";
+import { OutdoorScene } from "@/components/canvas/preview3d/outdoor-scene";
+import type { OutdoorQuality } from "@/lib/track/outdoor-presentation";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import type { Shape, TrackDesign } from "@/lib/types";
 import { fitPresentationCamera, PRESENTATION_FOV } from "./presentation-camera";
@@ -59,6 +61,7 @@ function PresentationScene({
   theme,
   currentCamera,
   transparent,
+  outdoorQuality,
   onReady,
   onError,
 }: {
@@ -66,6 +69,7 @@ function PresentationScene({
   theme: "light" | "dark";
   currentCamera?: THREE.PerspectiveCamera;
   transparent: boolean;
+  outdoorQuality: OutdoorQuality | null;
   onReady: (url: string) => void;
   onError: (error: unknown) => void;
 }) {
@@ -94,6 +98,10 @@ function PresentationScene({
           camera,
           new THREE.Box3().setFromObject(group.current!, true)
         );
+      if (outdoorQuality) {
+        Object.assign(camera, { far: Math.max(camera.far, 500) });
+        camera.updateProjectionMatrix();
+      }
       camera.updateMatrixWorld();
       gl.setClearColor(transparent ? 0x000000 : t.bg, transparent ? 0 : 1);
       await gl.compileAsync(scene, camera);
@@ -102,7 +110,7 @@ function PresentationScene({
     };
     void capture().catch(onError);
   });
-  return (
+  const designLights = (
     <>
       <hemisphereLight
         color={t.hemisphereSky}
@@ -119,8 +127,39 @@ function PresentationScene({
         color={t.dirColor}
         intensity={t.dirIntensity}
       />
+    </>
+  );
+  return (
+    <>
+      {outdoorQuality ? (
+        <OutdoorScene
+          width={design.field.width}
+          height={design.field.height}
+          quality={outdoorQuality}
+          fallback={
+            <>
+              {designLights}
+              <TrackSurface3D field={design.field} theme={t} bounded />
+            </>
+          }
+        />
+      ) : (
+        designLights
+      )}
       <group ref={group}>
-        <TrackSurface3D field={design.field} theme={t} bounded />
+        {/* Fit the course and field only. The outdoor horizon is outside these bounds. */}
+        {outdoorQuality ? (
+          <mesh
+            visible={false}
+            position={[design.field.width / 2, 0, design.field.height / 2]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[design.field.width, design.field.height]} />
+          </mesh>
+        ) : (
+          <TrackSurface3D field={design.field} theme={t} bounded />
+        )}
+
         {design.shapeOrder
           .map((id) => design.shapeById[id])
           .map((shape) => (
@@ -143,7 +182,8 @@ export async function renderTrack3dPng(
   design: TrackDesign,
   theme: "light" | "dark",
   currentCamera?: THREE.PerspectiveCamera,
-  transparent = true
+  transparent = true,
+  outdoorQuality: OutdoorQuality | null = null
 ): Promise<string> {
   let artworkTimer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -190,6 +230,9 @@ export async function renderTrack3dPng(
         <ExportBoundary onError={reject}>
           <Canvas
             dpr={1}
+            shadows={
+              outdoorQuality === "full" && !transparent ? "percentage" : false
+            }
             camera={{ fov: PRESENTATION_FOV }}
             gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}
           >
@@ -199,6 +242,7 @@ export async function renderTrack3dPng(
                 theme={theme}
                 currentCamera={currentCamera}
                 transparent={transparent}
+                outdoorQuality={transparent ? null : outdoorQuality}
                 onReady={resolve}
                 onError={reject}
               />

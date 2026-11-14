@@ -31,6 +31,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
+import { useOutdoorQuality } from "@/store/presentation";
+import { useIsTouchDevice } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { useLocale, useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
@@ -683,6 +685,12 @@ export default function ExportDialog({
   const design = useEditor((s) => s.track.design);
   const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
+  const isTouch = useIsTouchDevice();
+  const outdoorQuality = useOutdoorQuality(
+    isTouch,
+    design.shapeOrder.length,
+    design.field
+  );
   const [busy, setBusy] = useState<string | null>(null);
   const [webmProgress, setWebmProgress] = useState<FlythroughProgress | null>(
     null
@@ -1040,7 +1048,8 @@ export default function ExportDialog({
                   design,
                   exportTheme,
                   camera ?? undefined,
-                  transparent3d
+                  transparent3d,
+                  outdoorQuality
                 );
               } catch {
                 throw new Error(t("export.messages.presentationUnavailable"));
@@ -1129,7 +1138,8 @@ export default function ExportDialog({
                     }),
                     { id: toastId }
                   );
-                }
+                },
+                outdoorQuality
               );
             } finally {
               setWebmProgress(null);

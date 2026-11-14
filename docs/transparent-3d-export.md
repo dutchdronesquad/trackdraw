@@ -15,6 +15,8 @@ TrackDraw issue #972 and Track Viewer issue #21 use this canonical overview conv
 - Fit every corner of the complete scene bounds in camera space with a padding factor of 1.15. Distance, target and clipping planes adapt to the geometry; orientation stays fixed.
 - Retain the field rectangle and its existing 0.45 m border. Remove surrounding terrain, sky and fog; clear the canvas with alpha zero.
 
+Transparent images keep the bounded design surface. Select an outdoor environment in the 3D view and turn off transparency to include the landscape in a PNG.
+
 The implementation lives in `src/lib/export/presentation-camera.ts` and `src/lib/export/export3dPng.tsx`, using the existing Studio item renderers and floor component. The viewer package capability is delivered separately through its companion issue; this change does not require a viewer dependency upgrade.
 
 ## Validation

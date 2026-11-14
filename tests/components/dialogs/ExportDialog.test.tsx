@@ -18,6 +18,7 @@ import {
 } from "vitest";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
+import { usePresentationStore } from "@/store/presentation";
 import { useEditor } from "@/store/editor";
 
 const { originalAnimateDescriptor } = vi.hoisted(() => {
@@ -65,6 +66,7 @@ const viewport = vi.hoisted(() => ({
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => viewport.isMobile,
+  useIsTouchDevice: () => viewport.isMobile,
 }));
 
 vi.mock("@/hooks/useTheme", () => ({
@@ -169,6 +171,7 @@ describe("ExportDialog mobile workflow", () => {
     useEditor.getState().newProject();
     useEditor.getState().clearHistory();
     viewport.isMobile = true;
+    usePresentationStore.getState().setMode("design");
     mocks.downloadJsonFile.mockReset();
     mocks.exportFlythrough.mockReset();
     mocks.exportPdf.mockReset();
@@ -257,7 +260,8 @@ describe("ExportDialog mobile workflow", () => {
         useEditor.getState().track.design,
         "dark",
         undefined,
-        true
+        true,
+        null
       )
     );
     expect(onRequest3DView).not.toHaveBeenCalled();
@@ -301,12 +305,14 @@ describe("ExportDialog mobile workflow", () => {
         useEditor.getState().track.design,
         "dark",
         camera,
-        true
+        true,
+        null
       )
     );
   });
 
-  it("exports an opaque whole-track overview from 2D without switching views", async () => {
+  it("exports the active outdoor quality in an opaque overview from 2D without switching views", async () => {
+    usePresentationStore.getState().setMode("outdoor");
     const user = userEvent.setup();
     const onRequest3DView = vi.fn();
     mocks.renderTrack3dPng.mockResolvedValue("data:image/png;base64,opaque");
@@ -336,7 +342,8 @@ describe("ExportDialog mobile workflow", () => {
         useEditor.getState().track.design,
         "dark",
         undefined,
-        false
+        false,
+        "low"
       )
     );
     expect(onRequest3DView).not.toHaveBeenCalled();
@@ -410,7 +417,8 @@ describe("ExportDialog mobile workflow", () => {
         useEditor.getState().track.design,
         "dark",
         camera,
-        true
+        true,
+        null
       )
     );
     expect(handle.screenshot).not.toHaveBeenCalled();
@@ -836,7 +844,8 @@ describe("ExportDialog mobile workflow", () => {
           /^New_Track_flythrough_light_\d{4}-\d{2}-\d{2}\.webm$/
         ),
         "light",
-        expect.any(Function)
+        expect.any(Function),
+        null
       );
     });
   });
