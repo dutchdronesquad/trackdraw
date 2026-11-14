@@ -146,6 +146,7 @@ export function EditorWorkspace({
             >
               <TrackPreview3D
                 ref={preview3DRef}
+                active={tab === "3d"}
                 showGizmo={mobileGizmoEnabled}
                 onFlyModeChange={onFlyModeChange}
                 readOnly={readOnly}
