@@ -7,14 +7,14 @@ import {
 vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
-  getCloudflareContext: vi.fn(),
+  getWorkerBindings: vi.fn(),
   first: vi.fn(),
   run: vi.fn(),
   all: vi.fn(),
 }));
 
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: mocks.getCloudflareContext,
+vi.mock("@/lib/server/cloudflare-bindings", () => ({
+  getWorkerBindings: mocks.getWorkerBindings,
 }));
 
 vi.mock("@/lib/server/db", () => ({
@@ -33,14 +33,14 @@ import {
 
 describe("gallery media storage", () => {
   beforeEach(() => {
-    mocks.getCloudflareContext.mockReset();
+    mocks.getWorkerBindings.mockReset();
     mocks.first.mockReset().mockResolvedValue({ id: "entry" });
     mocks.run.mockReset();
     mocks.all.mockReset().mockResolvedValue({ results: [] });
   });
 
   it("returns null when no media bucket is configured", async () => {
-    installCloudflareMediaBucket(mocks.getCloudflareContext, null);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, null);
 
     const key = await uploadGalleryPreviewImage({
       galleryEntryId: "entry-1",
@@ -52,7 +52,7 @@ describe("gallery media storage", () => {
 
   it("uploads webp previews with immutable cache metadata", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     const key = await uploadGalleryPreviewImage({
       galleryEntryId: "entry-1",
@@ -76,7 +76,7 @@ describe("gallery media storage", () => {
 
   it("cleans an upload that finishes after its gallery entry was deleted", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
     mocks.first.mockResolvedValue(null);
     mocks.all.mockResolvedValue({
       results: [{ object_key: "gallery/previews/entry-1.webp" }],
@@ -94,7 +94,7 @@ describe("gallery media storage", () => {
 
   it("rejects non-webp preview payloads before upload", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     await expect(
       uploadGalleryPreviewImage({
@@ -107,7 +107,7 @@ describe("gallery media storage", () => {
 
   it("deletes configured preview keys and ignores missing buckets or keys", async () => {
     const bucket = createMockMediaBucket();
-    installCloudflareMediaBucket(mocks.getCloudflareContext, bucket);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, bucket);
 
     await deleteGalleryPreviewImage(null);
     await deleteGalleryPreviewImage("gallery/previews/entry-1.webp");
@@ -115,7 +115,7 @@ describe("gallery media storage", () => {
     expect(bucket.delete).toHaveBeenCalledTimes(1);
     expect(bucket.delete).toHaveBeenCalledWith("gallery/previews/entry-1.webp");
 
-    installCloudflareMediaBucket(mocks.getCloudflareContext, null);
+    installCloudflareMediaBucket(mocks.getWorkerBindings, null);
     await expect(
       deleteGalleryPreviewImage("gallery/previews/missing.webp")
     ).resolves.toBeUndefined();

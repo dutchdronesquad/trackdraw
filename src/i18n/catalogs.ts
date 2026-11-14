@@ -29,10 +29,8 @@ type AssetsBinding = {
   fetch(input: Request): Promise<Response>;
 };
 
-type CloudflareAssetsContext = {
-  env?: {
-    ASSETS?: AssetsBinding;
-  };
+type AssetBindings = {
+  ASSETS?: AssetsBinding;
 };
 
 const englishOnlyNamespaceSet = new Set<MessageNamespace>(
@@ -59,10 +57,9 @@ async function getCloudflareAssetsBinding() {
 
 async function resolveCloudflareAssetsBinding() {
   try {
-    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const { env } = (await getCloudflareContext({
-      async: true,
-    })) as CloudflareAssetsContext;
+    const { getWorkerBindings } =
+      await import("@/lib/server/cloudflare-bindings");
+    const env = (await getWorkerBindings()) as AssetBindings;
     return env?.ASSETS;
   } catch {
     return undefined;

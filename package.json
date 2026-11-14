@@ -8,8 +8,7 @@
     "build": "npm run i18n:sync-assets && next build --webpack",
     "analyze": "next experimental-analyze",
     "start": "next start",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview --env dev",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "npm run build:vinext && vite preview --port 8787 --strictPort",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "migrate:local": "wrangler d1 migrations apply DB --local --env dev",
     "migrate:up:dev": "wrangler d1 migrations apply DB --remote --env dev",
@@ -25,7 +24,9 @@
     "test:watch": "vitest",
     "type": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:vinext": "node scripts/build_vinext.mjs",
+    "deploy:vinext": "node scripts/deploy_vinext.mjs"
   },
   "dependencies": {
     "@better-auth/api-key": "^1.6.9",
@@ -84,9 +85,11 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@babel/parser": "^8.0.0",
-    "@opennextjs/aws": "4.1.16",
-    "@opennextjs/cloudflare": "^1.18.0",
+    "@babel/plugin-transform-runtime": "^7.29.0",
+    "@cloudflare/vite-plugin": "^1",
+    "@rolldown/plugin-babel": "0.3.1",
     "@tailwindcss/cli": "^4",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "^16.3.2",
@@ -95,6 +98,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.187.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "@vitejs/plugin-rsc": "^0.5.37",
     "@vitest/coverage-v8": "^5.0.0",
     "esbuild": "^0.28.0",
     "happy-dom": "^21.0.0",
@@ -103,10 +108,14 @@
     "pg": "^8.20.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "react-server-dom-webpack": "^19.2.0",
     "sharp": "^0.35.0",
     "tailwindcss": "^4",
     "typescript": "^7.0.0",
+    "vinext": "1.4.5",
+    "vite": "8.3.8",
     "vitest": "^5.0.0",
     "wrangler": "^4.78.0"
-  }
+  },
+  "type": "module"
 }

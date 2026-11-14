@@ -1,5 +1,5 @@
 import { getDatabase } from "@/lib/server/db";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getWorkerBindings } from "@/lib/server/cloudflare-bindings";
 
 type MediaRouteContext = {
   params: Promise<{
@@ -20,10 +20,8 @@ type R2BucketBinding = {
   get(key: string): Promise<R2ObjectBody | null>;
 };
 
-type CloudflareContextWithMediaBucket = {
-  env: {
-    MEDIA_BUCKET?: R2BucketBinding;
-  };
+type MediaBindings = {
+  MEDIA_BUCKET?: R2BucketBinding;
 };
 
 export async function GET(_request: Request, context: MediaRouteContext) {
@@ -34,9 +32,7 @@ export async function GET(_request: Request, context: MediaRouteContext) {
     return new Response("Missing media key", { status: 400 });
   }
 
-  const { env } = (await getCloudflareContext({
-    async: true,
-  })) as CloudflareContextWithMediaBucket;
+  const env = (await getWorkerBindings()) as MediaBindings;
 
   if (!env.MEDIA_BUCKET) {
     return new Response("Missing media bucket binding", { status: 500 });

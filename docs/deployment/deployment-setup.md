@@ -8,34 +8,22 @@ TrackDraw uses a split runtime setup:
 
 ## Runtime split
 
-- `npm run dev` is regular Next.js development
-- `npm run preview` is local Cloudflare/OpenNext validation
-- Cloudflare root config is production
-- Cloudflare `env.dev` is the development deployment target
-- GitHub Actions uses the GitHub Environment `cf-dev` for the development deploy from `main`
-- GitHub Actions uses the GitHub Environment `cf-prod` for the production deploy on `release.published`
+- `npm run dev` runs Next.js for local UI work.
+- `npm run preview` builds vinext and starts a local Cloudflare Worker.
+- `wrangler.jsonc` defines the production Worker at the root and the development Worker under `env.dev`.
+- GitHub Actions deploys development from `main` using `cf-dev`. Production releases use `cf-prod`.
 
-### Static public shell
+### Build and deploy
 
-The production build must pre-render `/`, `/studio`, `/bio`, `/privacy`, and `/terms`. OpenNext cache interception reads these five prerenders from the read-only Workers Static Assets incremental cache without loading `NextServer` or executing page rendering. The lightweight Worker routing layer is still invoked for page URLs; this distinction matters when interpreting invocation metrics. Their initial HTML uses the English catalog; a client provider loads the saved or browser locale from `/locales/{locale}/{namespace}.json` after hydration. Theme preference is applied by an inline bootstrap in the document head before the page paints.
+Run `npm run build:vinext -- dev` or `npm run build:vinext -- production` to generate the corresponding Worker config in `dist/server/wrangler.json`. Both workflows run `npm run deploy:vinext -- <dev|production>` to upload and promote the version on the existing Worker. The command verifies the target, keeps existing variables and secrets, and leaves the Cloudflare trigger configuration in place. Add `--dry-run` to inspect the Worker package without uploading it. Use a Cloudflare version override to smoke-test a staged version with the environment's actual bindings.
 
-Do not move request-time auth, database, gallery, share, or embed reads into this shell. `/gallery`, `/share/[token]`, `/embed/[token]`, dashboard/account pages, auth handlers, and API routes must remain dynamic.
-
-Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the five public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/bio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
+Public pages render on request in vinext. The browser loads versioned JavaScript and CSS from Workers Static Assets. Gallery, share, embed, dashboard and auth routes continue to resolve data at request time. Compare Worker CPU and errors against the previous production version when releasing the migration.
 
 ### Auth schema checks
 
 Better Auth's [runtime schema validation](https://better-auth.com/docs/concepts/database#schema-validation) introspects D1 when each auth adapter is initialized. TrackDraw creates request-scoped auth instances; schema checks therefore run separately from ordinary authentication. CI validates the complete auth/plugin configuration against all repository migrations. After applying migrations, both deployment workflows run `node scripts/check_auth_schema.mjs dev` or `node scripts/check_auth_schema.mjs production` before the deploy job can start.
 
 The script reads only table/index definitions from the selected target's `sqlite_master`, validates a disposable in-memory SQLite copy using the actual auth factory with schema validation enabled, and removes the temporary definitions afterward. It never exports account rows or writes to the target database. Missing schema fails deployment. Normal auth instances skip metadata introspection; session/token checks, scopes, live consent, ownership, revocation and durable rate limits still run normally. Manual schema changes after deployment require rerunning this check; they are no longer diagnosed by per-request schema introspection. See [the resource-efficiency investigation](../research/in-progress/cloudflare-free-efficiency.md) for the measured baseline and remaining work.
-
-## Build dependencies
-
-OpenNext 1.20.12 includes [the manifest fix for Next.js 16.4](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) and supports Next.js 16.4.1 and newer. Renovate can update Next.js beyond 16.3.8 without the former `<16.4.0` restriction. Upgrade Next.js and OpenNext together, and verify login and API routes in a Cloudflare preview before deploying the dependency update.
-
-`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md). PR build CI now builds the OpenNext artifact as well. `node scripts/check_worker_size.mjs` enforces the same handler budgets in PR CI and both deploys: 9 MiB raw and 2,200 KiB gzip. These are TrackDraw budgets, not platform upload limits; the previous dev-only gzip warning is now a blocking check. Measure the complete upload separately with `wrangler deploy --dry-run` when changing packaging.
-
-Keep `esbuild` as an explicit development dependency: the OpenNext Cloudflare CLI imports it directly, so deployment must not rely on another tool hoisting it into the root dependency tree. The PR build checks `opennextjs-cloudflare build --help` after `npm ci` to catch missing adapter dependencies before merge; deployment still runs the complete OpenNext build.
 
 ## Database split
 
@@ -68,7 +56,7 @@ Local Cloudflare preview does not need a database connection string anymore.
 Use these local files as needed:
 
 - no env file is required for ordinary `npm run dev`
-- `.dev.vars` is used for Wrangler/OpenNext preview overrides
+- `.dev.vars` is used for Wrangler preview overrides
 - `.dev.vars.example` shows the minimum preview-auth setup
 
 Minimum local setup depends on what you are validating:
@@ -139,7 +127,7 @@ Keep non-secret mail configuration in [`wrangler.jsonc`](../../wrangler.jsonc) s
 
 TrackDraw should protect the Worker both in code and at Cloudflare's edge.
 
-The repository-level guard in [`custom-worker.ts`](../../custom-worker.ts) rejects unsafe non-API page methods before requests reach OpenNext. This specifically protects against invalid Server Action probes such as `POST /studio` with a bogus `next-action` header. TrackDraw does not use Server Actions, and page routes are expected to be `GET`, `HEAD`, or `OPTIONS` only. Legitimate writes should go through `/api/*`.
+The repository-level guard in [`worker.ts`](../../src/lib/server/worker.ts) rejects unsafe non-API page methods before requests reach vinext. This specifically protects against invalid Server Action probes such as `POST /studio` with a bogus `next-action` header. TrackDraw does not use Server Actions, and page routes are expected to be `GET`, `HEAD`, or `OPTIONS` only. Legitimate writes should go through `/api/*`.
 
 Recommended Cloudflare dashboard setup:
 
@@ -249,13 +237,11 @@ Gallery previews use the same public media host. For gallery opt-in to upload pr
 
 ### Locale catalog assets
 
-Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed before local development and inside the production build script. Preview and deploy run the OpenNext build step, which calls `npm run build` and therefore uses the same generated assets.
+Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed before local development and inside the production build script. Preview and deployment builds generate the same assets.
 
 During the Crowdin pilot, target catalogs may temporarily omit new English keys. Asset generation recursively merges each target over English, including nested objects and arrays, so missing or empty translations use English until Crowdin returns an approved value. Local server-side catalog reads apply the same fallback before rendering.
 
-OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, `zh-CN`, `es`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, `zh-CN`, and `es-ES`), while frontend product locale identifiers remain stable. The shared i18n policy maps Spanish product locale `es` to `es-ES`, so its generated assets are served under `public/locales/es-ES/`. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle. If a static shell is rendered inside a Worker after a cache miss, it falls back to the shared catalog loader and the `ASSETS` binding, where the generated English catalogs remain available.
-
-The static shell cache filter uses OpenNext's route-cache key helper to recognize `/`, `/studio`, `/bio`, `/privacy`, and `/terms` in both legacy and scoped Next.js cache keys. Other routes and fetch entries remain outside this read-only cache.
+The Worker serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, `zh-CN`, `es`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, `zh-CN`, and `es-ES`), while frontend product locale identifiers remain stable. The shared i18n policy maps Spanish product locale `es` to `es-ES`, so its generated assets are served under `public/locales/es-ES/`. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle. If a static shell is rendered inside a Worker after a cache miss, it falls back to the shared catalog loader and the `ASSETS` binding, where the generated English catalogs remain available.
 
 `dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en-US/`.
 
@@ -377,7 +363,7 @@ Recommended local auth test flow:
 
 ## MCP OAuth endpoint
 
-`/api/mcp` runs inside the existing OpenNext Worker. Apply migration `0026_mcp_oauth.sql` before deploying its Better Auth MCP/OAuth provider configuration. The migration adds provider clients/resources, hashed access/refresh tokens, grants, assertion records, durable auth rate limiting and MCP request budgets. Foreign keys reference the existing user/session models; deleting an account removes its grants, tokens, budgets and pending authorization codes. No extra binding or secret is needed beyond the existing Better Auth secret and D1.
+`/api/mcp` runs inside the existing Cloudflare Worker. Apply migration `0026_mcp_oauth.sql` before deploying its Better Auth MCP/OAuth provider configuration. The migration adds provider clients/resources, hashed access/refresh tokens, grants, assertion records, durable auth rate limiting and MCP request budgets. Foreign keys reference the existing user/session models; deleting an account removes its grants, tokens, budgets and pending authorization codes. No extra binding or secret is needed beyond the existing Better Auth secret and D1.
 
 Migration `0027_mcp_project_read_scope.sql` adds `projects:read` to existing MCP resource allowlists: the provider otherwise seeds resource policy insert-only. It changes neither client registrations nor existing grants/tokens. Tool discovery and calls use both token scope and live consent. Project reads share the REST ownership services and serializers, with bounded metadata SQL, paged shapes/points and a 32 KiB structured-result limit. Oversized complete overlays/snapshots are refused, never truncated. Track analysis and selected-track comparison reuse `projects:read`, shared item/geometry/setup helpers and the same complete-result limits (512 KiB design / 2,000 shapes before derivation; 32 KiB structured output). No new scope, migration, binding or external artwork fetch is introduced.
 
