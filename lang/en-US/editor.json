@@ -505,7 +505,12 @@
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
     "canvas2dDrawer": "2D Canvas",
-    "preview3dDrawer": "3D Preview"
+    "preview3dDrawer": "3D Preview",
+    "sideBySide": "Side by side",
+    "viewOptions": "View options",
+    "resetSplit": "Reset split layout",
+    "splitDivider": "Resize 2D and 3D views",
+    "splitRatio": "{ratio}% for 2D"
   },
   "desktopInspectorPanel": {
     "ariaLabel": "Inspector",

@@ -30,10 +30,20 @@ import {
   Save,
   Hash,
   Tag,
+  ChevronDown,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
-import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
+import ViewModeSwitch, {
+  type SplitViewOption,
+} from "@/components/editor/ViewModeSwitch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MobileAppMenu = dynamic(
   () => import("@/components/editor/MobileAppMenu"),
@@ -70,6 +80,7 @@ const INSPECTOR_WIDTH = "21.25rem";
 interface HeaderProps {
   tab: "2d" | "3d";
   onTabChange: (t: "2d" | "3d") => void;
+  splitView?: SplitViewOption & { onReset: () => void };
   onShare?: () => void;
   onExport?: () => void;
   onImport?: () => void;
@@ -96,6 +107,7 @@ interface HeaderProps {
 export default function Header({
   tab,
   onTabChange,
+  splitView,
   onShare,
   onExport,
   onImport,
@@ -118,6 +130,7 @@ export default function Header({
 }: HeaderProps) {
   const t = useTranslations("editor.header");
   const tToolbar = useTranslations("editor.toolbar");
+  const tView = useTranslations("editor.viewModeSwitch");
   const resolvedTitle = title ?? t("untitledTitle");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
@@ -152,7 +165,12 @@ export default function Header({
     "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
 
   const viewToggle = (
-    <ViewModeSwitch value={tab} onValueChange={onTabChange} size="desktop" />
+    <ViewModeSwitch
+      value={tab}
+      onValueChange={onTabChange}
+      size="desktop"
+      splitView={splitView}
+    />
   );
 
   const mobileTabToggle = (
@@ -238,7 +256,26 @@ export default function Header({
         )}
 
         <div className="ml-auto flex h-full shrink-0 items-center gap-1">
-          <div className="mr-1 hidden lg:flex">{viewToggle}</div>
+          <div className="mr-1 hidden items-center gap-0.5 lg:flex">
+            {viewToggle}
+            {splitView?.active && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={tView("viewOptions")}
+                  title={tView("viewOptions")}
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex h-7 w-6 cursor-pointer items-center justify-center rounded-md focus-visible:ring-2"
+                >
+                  <ChevronDown className="size-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={splitView.onReset}>
+                    <RotateCcw />
+                    {tView("resetSplit")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
 
           <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
 

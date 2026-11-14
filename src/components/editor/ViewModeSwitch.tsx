@@ -1,16 +1,22 @@
 "use client";
 
-import { Box, Square } from "lucide-react";
+import { Box, Columns2, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type ViewMode = "2d" | "3d";
+
+export interface SplitViewOption {
+  active: boolean;
+  onSelect: () => void;
+}
 
 type ViewModeSwitchProps = {
   value: ViewMode;
   onValueChange: (value: ViewMode) => void;
   size?: "mobile" | "desktop" | "drawer";
   className?: string;
+  splitView?: SplitViewOption;
 };
 
 export default function ViewModeSwitch({
@@ -18,10 +24,11 @@ export default function ViewModeSwitch({
   onValueChange,
   size = "desktop",
   className,
+  splitView,
 }: ViewModeSwitchProps) {
   const t = useTranslations("editor.viewModeSwitch");
   const options: Array<{
-    value: ViewMode;
+    value: ViewMode | "split";
     label: string;
     drawerLabel: string;
     Icon: typeof Square;
@@ -39,6 +46,14 @@ export default function ViewModeSwitch({
       Icon: Box,
     },
   ];
+  if (splitView) {
+    options.push({
+      value: "split",
+      label: t("sideBySide"),
+      drawerLabel: t("sideBySide"),
+      Icon: Columns2,
+    });
+  }
   const isMobile = size === "mobile";
   const isDrawer = size === "drawer";
   const outerRadiusClassName = isDrawer
@@ -63,20 +78,26 @@ export default function ViewModeSwitch({
           : isMobile
             ? "h-8 w-[6.125rem] text-[11px]"
             : "h-7 w-[6.25rem] text-[11px]",
+        splitView && "w-auto grid-cols-[3rem_3rem_auto]",
         outerRadiusClassName,
         className
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "border-brand-primary/60 bg-brand-primary/38 absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] border shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-200 ease-out",
-          innerRadiusClassName,
-          value === "3d" && "translate-x-full"
-        )}
-      />
+      {!splitView && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "border-brand-primary/60 bg-brand-primary/38 absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] border shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-200 ease-out",
+            innerRadiusClassName,
+            value === "3d" && "translate-x-full"
+          )}
+        />
+      )}
       {options.map((option) => {
-        const active = value === option.value;
+        const optionValue = option.value;
+        const active = splitView?.active
+          ? optionValue === "split"
+          : value === optionValue;
         const Icon = option.Icon;
 
         return (
@@ -84,13 +105,22 @@ export default function ViewModeSwitch({
             key={option.value}
             type="button"
             aria-pressed={active}
-            onClick={() => onValueChange(option.value)}
+            onClick={() =>
+              optionValue === "split"
+                ? splitView?.onSelect()
+                : onValueChange(optionValue)
+            }
             className={cn(
               "focus-visible:ring-ring/30 relative z-10 grid h-full cursor-pointer items-center justify-center gap-0.5 leading-none font-semibold transition-colors outline-none focus-visible:ring-2",
               innerRadiusClassName,
-              isDrawer
-                ? "grid-cols-[1rem_auto] px-3.5"
-                : "grid-cols-[0.875rem_1.125rem] px-1.5",
+              optionValue === "split"
+                ? "grid-cols-[0.875rem_auto] gap-1 px-2 whitespace-nowrap"
+                : isDrawer
+                  ? "grid-cols-[1rem_auto] px-3.5"
+                  : "grid-cols-[0.875rem_1.125rem] px-1.5",
+              splitView &&
+                active &&
+                "border-brand-primary/60 bg-brand-primary/38 border",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
