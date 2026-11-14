@@ -185,7 +185,9 @@ function clearPolylineEditSelections(state: EditorState, ids: string[]) {
 export const useEditor = create<EditorState>()(
   temporal(
     immer<EditorState>((set) => ({
-      track: createDefaultEditorTrackState(),
+      track: createDefaultEditorTrackState(
+        typeof window === "undefined" ? "ssr-placeholder" : undefined
+      ),
       session: createDefaultEditorSessionState(),
       ui: createDefaultEditorUiState(),
 

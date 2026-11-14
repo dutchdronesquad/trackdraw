@@ -12,8 +12,14 @@ TrackDraw uses a split runtime setup:
 - `npm run preview` is local Cloudflare/OpenNext validation
 - Cloudflare root config is production
 - Cloudflare `env.dev` is the development deployment target
-- GitHub Actions uses the GitHub Environment `cf-dev` for the development deploy from `main`
+- GitHub Actions uses the GitHub Environment `cf-dev` for the vinext development deploy from `main`
 - GitHub Actions uses the GitHub Environment `cf-prod` for the production deploy on `release.published`
+
+### Development Worker with vinext
+
+Build with `npm run build:vinext`. The build uses `wrangler.vinext.jsonc` and outputs `dist/server/wrangler.json` for `trackdraw-dev`. The development deploy uploads and promotes a Worker version. It uses the existing development D1 database and `trackdraw-media` bucket and keeps the Worker's configured secrets, routes and schedules. D1 migrations and auth schema validation still use the development environment in `wrangler.jsonc`.
+
+The development vinext build renders public pages on request. Production still uses the OpenNext static shell and handler size checks below. Use Cloudflare version overrides to smoke-test a staged development version against the live development bindings while it serves 0% of regular traffic.
 
 ### Static public shell
 
@@ -33,7 +39,7 @@ The script reads only table/index definitions from the selected target's `sqlite
 
 OpenNext 1.20.12 includes [the manifest fix for Next.js 16.4](https://github.com/opennextjs/opennextjs-cloudflare/pull/1356) and supports Next.js 16.4.1 and newer. Renovate can update Next.js beyond 16.3.8 without the former `<16.4.0` restriction. Upgrade Next.js and OpenNext together, and verify login and API routes in a Cloudflare preview before deploying the dependency update.
 
-`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local preview and both deployment workflows use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md). PR build CI now builds the OpenNext artifact as well. `node scripts/check_worker_size.mjs` enforces the same handler budgets in PR CI and both deploys: 9 MiB raw and 2,200 KiB gzip. These are TrackDraw budgets, not platform upload limits; the previous dev-only gzip warning is now a blocking check. Measure the complete upload separately with `wrangler deploy --dry-run` when changing packaging.
+`npm run build` runs `next build --webpack`. The OpenNext build invokes this script, so local OpenNext preview and the production deploy use webpack without separate workflow flags. Bundle-size measurements and the remaining runtime validation for this trial are recorded in [Worker build size](../research/in-progress/worker-build-size.md). PR build CI now builds the OpenNext artifact as well. `node scripts/check_worker_size.mjs` enforces the same handler budgets in PR CI and the OpenNext production deploy: 9 MiB raw and 2,200 KiB gzip. These are TrackDraw budgets, not platform upload limits; the previous dev-only gzip warning is now a blocking check. Measure the complete upload separately with `wrangler deploy --dry-run` when changing packaging.
 
 Keep `esbuild` as an explicit development dependency: the OpenNext Cloudflare CLI imports it directly, so deployment must not rely on another tool hoisting it into the root dependency tree. The PR build checks `opennextjs-cloudflare build --help` after `npm ci` to catch missing adapter dependencies before merge; deployment still runs the complete OpenNext build.
 

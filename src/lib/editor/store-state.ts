@@ -13,9 +13,9 @@ interface EditorUiResetOptions {
   panOffset?: { x: number; y: number };
 }
 
-export function createDefaultEditorTrackState(): EditorTrackState {
+export function createDefaultEditorTrackState(id?: string): EditorTrackState {
   return {
-    design: createDefaultDesign(),
+    design: createDefaultDesign(id),
   };
 }
 
