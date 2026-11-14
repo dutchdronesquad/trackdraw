@@ -7,6 +7,8 @@ import {
   Output,
   WebMOutputFormat,
 } from "mediabunny";
+import { REDUCED_MOTION_QUERY } from "@/lib/track/beachflag";
+import type { addFlagSceneShapes } from "./flythrough/flag";
 import { addFlythroughShapes } from "@/lib/export/flythroughSceneShapes";
 import { isSharedFlythroughTexture } from "@/lib/export/flythrough/shared";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
@@ -438,6 +440,8 @@ export function exportFlythrough(
     renderer.setPixelRatio(1);
 
     const scene = new THREE.Scene();
+    const flags: Array<ReturnType<typeof addFlagSceneShapes>> = [];
+    const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
     scene.background = new THREE.Color(t.bg);
     scene.fog = new THREE.Fog(t.skyHorizon, 80, 260);
 
@@ -494,6 +498,10 @@ export function exportFlythrough(
     const cleanup = () => {
       if (cleanedUp) return;
       cleanedUp = true;
+      for (const flag of flags) {
+        scene.remove(flag.group);
+        flag.dispose();
+      }
       disposeFlythroughSceneResources(scene, ownedTextures);
       renderer.dispose();
       if (document.body.contains(canvas)) document.body.removeChild(canvas);
@@ -535,7 +543,7 @@ export function exportFlythrough(
 
     void (async () => {
       try {
-        await addFlythroughShapes(scene, shapes);
+        await addFlythroughShapes(scene, shapes, flags);
 
         const wmTex = await loadWatermarkTexture(isDark);
         if (wmTex) {
@@ -581,9 +589,12 @@ export function exportFlythrough(
         const frameDuration = 1 / FPS;
         for (let i = 1; i <= totalFrames; i++) {
           tickCamera(i);
+          const timestamp = (i - 1) * frameDuration;
+          for (const flag of flags)
+            flag.setTime(reduceMotion ? null : timestamp);
           renderer.render(scene, camera);
 
-          await videoSource.add((i - 1) * frameDuration, frameDuration);
+          await videoSource.add(timestamp, frameDuration);
 
           if (i % 10 === 0) {
             reportProgress(i);

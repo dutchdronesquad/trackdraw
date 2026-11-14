@@ -10,17 +10,11 @@ import type {
   TexturePanelEdge,
 } from "@/lib/track/elements/catalog";
 import { feetToMeters } from "@/lib/track/units";
-import type {
-  DiveGateShape,
-  FlagShape,
-  GateShape,
-  LadderShape,
-} from "@/lib/types";
+import type { DiveGateShape, GateShape, LadderShape } from "@/lib/types";
 
 export const PANEL_FRAME_PANEL_DEPTH = 0.018;
 export const PANEL_FRAME_TEXTURE_SURFACE_OFFSET = 0.0015;
 export const TEXTURED_PANEL_FRAME_TUBE_SCALE = 0.58;
-const MULTIGP_FEATHER_FLAG_TEXTURE_ASPECT = 1134 / 5811;
 
 export type Point3Tuple = [number, number, number];
 
@@ -808,62 +802,5 @@ export function getMultiGpLaunchGateLayout(
     sidePanelW,
     endPanelD,
     topY,
-  };
-}
-
-export function getCornerFlagLayout(shape: FlagShape, hasTextures = false) {
-  const ph = shape.poleHeight ?? 3.5;
-  const poleRadius = 0.03;
-  const pw = ph * 0.18;
-  const panelDepth = ph * 0.012;
-  const panelStartY = ph * 0.08;
-  const splitY = panelStartY + ph * 0.24;
-  const bannerCenterY = (panelStartY + ph) / 2;
-  const bannerHeight = ph - panelStartY;
-  const bannerTextureWidth = Math.max(
-    pw,
-    bannerHeight * MULTIGP_FEATHER_FLAG_TEXTURE_ASPECT
-  );
-  const bannerLeftX = hasTextures ? 0 : poleRadius;
-  const bannerTextureX = bannerLeftX + bannerTextureWidth / 2;
-  const poleCapRadius = poleRadius * 1.06;
-  const poleTipY = ph - poleCapRadius;
-  const topCurveX = hasTextures
-    ? bannerLeftX + bannerTextureWidth * 0.995
-    : pw * 0.65;
-  const polePoints = hasTextures
-    ? [
-        [0, 0],
-        [0, panelStartY],
-        [bannerLeftX, ph * 0.5],
-        [bannerLeftX + bannerTextureWidth * 0.02, ph * 0.75],
-        [bannerLeftX + bannerTextureWidth * 0.15, ph * 0.86],
-        [bannerLeftX + bannerTextureWidth * 0.38, ph * 0.94],
-        [topCurveX, poleTipY],
-      ]
-    : [
-        [0, 0],
-        [0, ph * 0.85],
-        [topCurveX * 0.28, ph * 0.93],
-        [topCurveX, poleTipY],
-      ];
-
-  return {
-    bannerCenterY,
-    bannerHeight,
-    bannerLeftX,
-    bannerTextureWidth,
-    bannerTextureX,
-    panelDepth,
-    panelStartY,
-    ph,
-    poleCapRadius,
-    polePoints,
-    poleRadius,
-    poleTipX: topCurveX,
-    poleTipY,
-    pw,
-    splitY,
-    topCurveX,
   };
 }
