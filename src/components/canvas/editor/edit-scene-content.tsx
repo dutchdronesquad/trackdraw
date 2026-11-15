@@ -567,7 +567,9 @@ export function PolylineElevationHandles3D({
                 emissive={
                   isHighlighted ? "#fbbf24" : isHovered ? "#bae6fd" : "#93c5fd"
                 }
-                emissiveIntensity={isHighlighted ? 0.7 : isHovered ? 0.38 : 0.16}
+                emissiveIntensity={
+                  isHighlighted ? 0.7 : isHovered ? 0.38 : 0.16
+                }
                 roughness={0.12}
                 metalness={0.08}
               />
