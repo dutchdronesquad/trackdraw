@@ -27,6 +27,12 @@
       "matchUpdateTypes": ["major"]
     },
     {
+      "groupName": "Babel",
+      "groupSlug": "babel",
+      "matchPackageNames": ["@babel/*"],
+      "matchUpdateTypes": ["major"]
+    },
+    {
       "matchManagers": ["github-actions"],
       "extractVersion": "^(?<version>v\\d+\\.\\d+\\.\\d+)$",
       "versioning": "regex:^v(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d+))?$"
