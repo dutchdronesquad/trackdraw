@@ -30,6 +30,8 @@ import type {
   PolylineShape,
   TowerShape,
 } from "@/lib/types";
+import { useEditor } from "@/store/editor";
+import { selectHoveredWaypoint } from "@/store/selectors";
 
 export function TowerElevationHandle3D({
   shape,
@@ -430,30 +432,35 @@ export function PolylineElevationHandles3D({
   onDragStart: (event: ThreeEvent<PointerEvent>, index: number) => void;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const inspectorHoveredIndex = useEditor((state) => {
+    const waypoint = selectHoveredWaypoint(state);
+    return waypoint?.shapeId === path.id ? waypoint.idx : null;
+  });
 
   return (
     <group>
       {path.points.map((point, index) => {
         const pointHeight = Math.max(point.z ?? 0, 0);
-        const isActive = activeIndex === index;
+        const isHighlighted =
+          activeIndex === index || inspectorHoveredIndex === index;
         const isHovered = hoveredIndex === index;
-        const guideColor = isActive
+        const guideColor = isHighlighted
           ? "#f59e0b"
           : isHovered
             ? "#bfdbfe"
             : "#93c5fd";
         const gripRadius = isMobile
-          ? isActive
+          ? isHighlighted
             ? 0.23
             : 0.2
-          : isActive
+          : isHighlighted
             ? 0.19
             : 0.16;
         const gripHeight = isMobile
-          ? isActive
+          ? isHighlighted
             ? 0.24
             : 0.2
-          : isActive
+          : isHighlighted
             ? 0.18
             : 0.15;
         const tubeRadius = Math.max(
@@ -478,7 +485,7 @@ export function PolylineElevationHandles3D({
               <meshBasicMaterial
                 color={guideColor}
                 transparent
-                opacity={isActive ? 0.95 : isHovered ? 0.82 : 0.48}
+                opacity={isHighlighted ? 0.95 : isHovered ? 0.82 : 0.48}
               />
             </mesh>
             <mesh
@@ -487,22 +494,22 @@ export function PolylineElevationHandles3D({
             >
               <ringGeometry args={[ringInnerRadius, ringOuterRadius, 40]} />
               <meshBasicMaterial
-                color={isActive ? "#fbbf24" : "#60a5fa"}
+                color={isHighlighted ? "#fbbf24" : "#60a5fa"}
                 transparent
-                opacity={isActive ? 0.92 : isHovered ? 0.62 : 0.34}
+                opacity={isHighlighted ? 0.92 : isHovered ? 0.62 : 0.34}
                 side={THREE.DoubleSide}
               />
             </mesh>
-            {(isActive || isHovered) && (
+            {(isHighlighted || isHovered) && (
               <mesh
                 position={[point.x, ringY + 0.001, point.y]}
                 rotation={[-Math.PI / 2, 0, 0]}
               >
                 <circleGeometry args={[hoverDiscRadius, 36]} />
                 <meshBasicMaterial
-                  color={isActive ? "#fbbf24" : "#93c5fd"}
+                  color={isHighlighted ? "#fbbf24" : "#93c5fd"}
                   transparent
-                  opacity={isActive ? 0.14 : 0.09}
+                  opacity={isHighlighted ? 0.14 : 0.09}
                   side={THREE.DoubleSide}
                   depthWrite={false}
                 />
@@ -533,11 +540,13 @@ export function PolylineElevationHandles3D({
                 args={[gripRadius, gripRadius, gripHeight, 24]}
               />
               <meshStandardMaterial
-                color={isActive ? "#f59e0b" : isHovered ? "#38bdf8" : "#1e293b"}
-                emissive={
-                  isActive ? "#fbbf24" : isHovered ? "#7dd3fc" : "#60a5fa"
+                color={
+                  isHighlighted ? "#f59e0b" : isHovered ? "#38bdf8" : "#1e293b"
                 }
-                emissiveIntensity={isActive ? 1 : isHovered ? 0.62 : 0.28}
+                emissive={
+                  isHighlighted ? "#fbbf24" : isHovered ? "#7dd3fc" : "#60a5fa"
+                }
+                emissiveIntensity={isHighlighted ? 1 : isHovered ? 0.62 : 0.28}
                 roughness={0.16}
                 metalness={0.14}
               />
@@ -552,20 +561,22 @@ export function PolylineElevationHandles3D({
                 ]}
               />
               <meshStandardMaterial
-                color={isActive ? "#fff3c4" : isHovered ? "#f8fbff" : "#cbd5e1"}
-                emissive={
-                  isActive ? "#fbbf24" : isHovered ? "#bae6fd" : "#93c5fd"
+                color={
+                  isHighlighted ? "#fff3c4" : isHovered ? "#f8fbff" : "#cbd5e1"
                 }
-                emissiveIntensity={isActive ? 0.7 : isHovered ? 0.38 : 0.16}
+                emissive={
+                  isHighlighted ? "#fbbf24" : isHovered ? "#bae6fd" : "#93c5fd"
+                }
+                emissiveIntensity={isHighlighted ? 0.7 : isHovered ? 0.38 : 0.16}
                 roughness={0.12}
                 metalness={0.08}
               />
             </mesh>
-            {(isActive || isHovered) && (
+            {(isHighlighted || isHovered) && (
               <mesh position={[point.x, handleY + 0.14, point.y]}>
                 <sphereGeometry args={[0.05, 16, 16]} />
                 <meshBasicMaterial
-                  color={isActive ? "#fbbf24" : "#60a5fa"}
+                  color={isHighlighted ? "#fbbf24" : "#60a5fa"}
                   transparent
                   opacity={0.95}
                 />
