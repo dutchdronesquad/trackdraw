@@ -222,11 +222,20 @@ export async function saveProjectForUser(
   const existingProject = options.projectId
     ? await getProjectForUser(projectId, ownerUserId)
     : null;
-  const existingSerializedJson = existingProject
-    ? JSON.stringify(serializeDesign(existingProject.design))
-    : null;
+  const designMatches = (project: StoredProject) =>
+    JSON.stringify(serializeDesign(project.design)) === serializedJson;
+  const confirmsSave = (project: StoredProject, sameDesign: boolean) =>
+    sameDesign &&
+    project.title === title &&
+    project.description === description &&
+    (options.baseRevision === undefined ||
+      options.baseRevision <= project.revision);
 
   if (existingProject) {
+    const sameDesign = designMatches(existingProject);
+    // A retry can arrive after its original save committed.
+    if (confirmsSave(existingProject, sameDesign)) return existingProject;
+
     if (
       (options.baseRevision !== undefined &&
         existingProject.revision !== options.baseRevision) ||
@@ -236,7 +245,7 @@ export async function saveProjectForUser(
       (!options.forceWrite &&
         options.baseRevision === undefined &&
         !options.baseDesignUpdatedAt &&
-        existingSerializedJson !== serializedJson)
+        !sameDesign)
     ) {
       throw new ProjectVersionConflictError({
         projectId,
@@ -245,14 +254,6 @@ export async function saveProjectForUser(
         cloudUpdatedAt: existingProject.designUpdatedAt,
         cloudProject: existingProject,
       });
-    }
-
-    if (
-      existingSerializedJson === serializedJson &&
-      existingProject.title === title &&
-      existingProject.description === description
-    ) {
-      return existingProject;
     }
   }
 
@@ -327,6 +328,8 @@ export async function saveProjectForUser(
     if (!current) {
       throw new Error("Failed to load saved cloud project");
     }
+    if (confirmsSave(current, designMatches(current))) return current;
+
     throw new ProjectVersionConflictError({
       projectId,
       title,
