@@ -152,7 +152,8 @@ export default function LoginPage() {
                 fill
                 priority
                 unoptimized
-                className="object-contain dark:hidden"
+                style={{ objectFit: "contain" }}
+                className="dark:hidden"
                 draggable={false}
               />
               <Image
@@ -161,7 +162,8 @@ export default function LoginPage() {
                 fill
                 priority
                 unoptimized
-                className="hidden object-contain dark:block"
+                style={{ objectFit: "contain" }}
+                className="hidden dark:block"
                 draggable={false}
               />
             </span>

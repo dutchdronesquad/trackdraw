@@ -13,7 +13,7 @@ function TrackDrawLogo({ alt }: { alt: string }) {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </div>
       <div className="relative hidden h-8 w-34 dark:block">
@@ -23,7 +23,7 @@ function TrackDrawLogo({ alt }: { alt: string }) {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </div>
     </div>

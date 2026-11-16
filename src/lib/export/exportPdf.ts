@@ -36,7 +36,9 @@ const MUTED: [number, number, number] = [95, 112, 140];
 const BORDER: [number, number, number] = [215, 223, 235];
 const PANEL: [number, number, number] = [245, 248, 252];
 const WARN: [number, number, number] = [180, 83, 9];
-const BRAND_LOGO_ASPECT = 1027 / 200;
+const BRAND_LOGO_WIDTH = 1027;
+const BRAND_LOGO_HEIGHT = 200;
+const BRAND_LOGO_ASPECT = BRAND_LOGO_WIDTH / BRAND_LOGO_HEIGHT;
 
 function formatPdfDate(locale: SupportedLocale | undefined) {
   const dateLocale =
@@ -93,8 +95,8 @@ async function renderDesignPngDataUrl(
 async function loadBrandLogo() {
   return loadSvgAsPng(
     "/assets/brand/trackdraw-logo-mono-lightbg.svg",
-    799,
-    200
+    BRAND_LOGO_WIDTH,
+    BRAND_LOGO_HEIGHT
   );
 }
 
