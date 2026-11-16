@@ -209,7 +209,7 @@ fn create_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     let window = window
         .title_bar_style(tauri::TitleBarStyle::Overlay)
         .hidden_title(true)
-        .traffic_light_position(tauri::LogicalPosition::new(16.0, 15.0));
+        .traffic_light_position(tauri::LogicalPosition::new(16.0, 27.0));
     window
         .data_directory(state.profile.join("webview"))
         .on_navigation(|url| {
