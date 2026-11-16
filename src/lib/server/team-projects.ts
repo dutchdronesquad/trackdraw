@@ -167,7 +167,8 @@ export async function movePersonalProject(
     .prepare(
       `UPDATE projects SET owner_user_id=NULL, owner_team_id=?, updated_at=?, revision=revision+1
     WHERE id=? AND owner_user_id=? AND owner_team_id IS NULL AND archived_at IS NULL AND revision=?
-    AND EXISTS (SELECT 1 FROM team_members WHERE organizationId=? AND userId=? AND role='owner')
+    AND EXISTS (SELECT 1 FROM team_members WHERE organizationId=? AND userId=? AND role IN ('owner','editor')
+      AND NOT EXISTS (SELECT 1 FROM team_succession_cases c WHERE c.team_id=team_members.organizationId AND c.state='recovery'))
     AND NOT EXISTS (SELECT 1 FROM project_edit_leases WHERE project_id=projects.id AND expires_at > ?)
     AND ${publicationsSQL}=? RETURNING id`
     )

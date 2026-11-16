@@ -267,24 +267,40 @@ describe("private team publication", () => {
       /team_owner_required/
     );
   });
-  it("retains existing personal links during a move, and blocks stale personal publication afterwards", async () => {
+  it("retains an editor's personal links and transfers their management to the team owner", async () => {
     db.exec("DELETE FROM projects WHERE id='race'");
     const now = new Date().toISOString();
     db.prepare(
-      "INSERT INTO projects(id,owner_user_id,title,design_json,created_at,updated_at) VALUES('race','owner',?,?,?,?)"
+      "INSERT INTO projects(id,owner_user_id,title,design_json,created_at,updated_at) VALUES('race','editor',?,?,?,?)"
     ).run(design.title, JSON.stringify(serializeDesign(design)), now, now);
     const share = await createShare(design, {
-      ownerUserId: "owner",
+      ownerUserId: "editor",
       projectId: "race",
     });
-    const preview = await previewProjectMove("owner", "race");
+    db.prepare(
+      "INSERT INTO gallery_entries(id,share_token,owner_user_id,gallery_state,gallery_title,gallery_description,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)"
+    ).run("gallery", share.token, "editor", "listed", "Race", "", now, now);
+    const preview = await previewProjectMove("editor", "race");
+    expect(preview).toMatchObject({ shareCount: 1, galleryCount: 1 });
     await movePersonalProject(
-      "owner",
+      "editor",
       "club",
       "race",
       preview.revision,
       preview.publicationVersion
     );
+    await expect(
+      createShare(design, { ownerUserId: "editor", projectId: "race" })
+    ).rejects.toMatchObject({ code: "conflict" });
+    await expect(
+      readTeamPublication("editor", "club", "race")
+    ).rejects.toMatchObject({ code: "not_found" });
+    db.exec(
+      "DELETE FROM team_members WHERE userId='editor'; DELETE FROM users WHERE id='editor'"
+    );
+    expect(
+      db.prepare("SELECT owner_user_id, gallery_state FROM gallery_entries").get()
+    ).toMatchObject({ owner_user_id: "owner", gallery_state: "listed" });
     const retained = await resolveStoredShare(share.token);
     expect(retained.status).toBe("available");
     if (retained.status !== "available") throw Error("missing");
@@ -298,9 +314,6 @@ describe("private team publication", () => {
         (s) => s.token
       )
     ).toContain(share.token);
-    await expect(
-      createShare(design, { ownerUserId: "owner", projectId: "race" })
-    ).rejects.toMatchObject({ code: "conflict" });
     await mutate(share.token, "revoke");
     expect((await resolveStoredShare(share.token)).status).toBe("revoked");
   });
