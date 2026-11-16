@@ -21,7 +21,7 @@ use trackdraw_desktop::assets::digest;
 
 const CLIENT_ID: &str = "trackdraw-desktop";
 const RESOURCE: &str = "https://trackdraw.app/api/desktop/session";
-const SCOPE: &str = "desktop:account offline_access";
+const SCOPE: &str = "desktop:account offline_access desktop:library";
 const CALLBACK: &str = "/callback";
 type Result<T> = std::result::Result<T, &'static str>;
 
@@ -31,6 +31,7 @@ pub struct DesktopLogin {
     key: String,
     busy: Arc<Mutex<()>>,
     cancelled: Arc<AtomicBool>,
+    access: Arc<Mutex<Option<(String, Instant)>>>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -38,6 +39,8 @@ pub struct Account {
     id: String,
     name: Option<String>,
     email: Option<String>,
+    #[serde(default, rename = "libraryAccess")]
+    library_access: bool,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -49,12 +52,26 @@ struct Credential {
 #[derive(Deserialize)]
 struct Tokens {
     access_token: String,
+    expires_in: u64,
     refresh_token: String,
 }
 
 #[derive(Deserialize)]
 struct Session {
     account: Account,
+}
+
+#[derive(Deserialize)]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum StudioTarget {
+    Profile,
+    Teams,
+    Personal { project_id: String },
+    Team { team_id: String, project_id: String },
 }
 
 #[derive(Serialize)]
@@ -80,6 +97,7 @@ impl DesktopLogin {
             key,
             busy: Arc::new(Mutex::new(())),
             cancelled: Arc::new(AtomicBool::new(false)),
+            access: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -170,35 +188,144 @@ impl DesktopLogin {
             .is_ok_and(|response| response.status().is_success())
     }
 
+    fn cache_access(&self, tokens: &Tokens) -> Result<()> {
+        let expires =
+            Instant::now() + Duration::from_secs(tokens.expires_in.min(3600).saturating_sub(30));
+        *self.access.lock().map_err(|_| "unavailable")? =
+            Some((tokens.access_token.clone(), expires));
+        Ok(())
+    }
+
+    fn refresh(&self, http: &Client, credential: &mut Credential) -> Result<Tokens> {
+        let tokens = self.exchange(
+            http,
+            &[
+                ("grant_type", "refresh_token"),
+                ("refresh_token", &credential.refresh_token),
+            ],
+        )?;
+        credential.refresh_token.clone_from(&tokens.refresh_token);
+        // Persist rotation before using the new access token.
+        self.store(credential)?;
+        Ok(tokens)
+    }
+
+    pub fn library(
+        &self,
+        scope: &str,
+        team_id: Option<&str>,
+        after: Option<&str>,
+    ) -> Result<serde_json::Value> {
+        let _guard = self.busy.lock().map_err(|_| "unavailable")?;
+        let mut credential = self.load()?.ok_or("rejected")?;
+        if !credential.account.library_access {
+            return Err("permission");
+        }
+        let http = self.http()?;
+        let cached = self
+            .access
+            .lock()
+            .map_err(|_| "unavailable")?
+            .as_ref()
+            .filter(|(_, expires)| *expires > Instant::now())
+            .map(|(token, _)| token.clone());
+        let token = match cached {
+            Some(token) => token,
+            None => {
+                let tokens = self.refresh(&http, &mut credential)?;
+                self.cache_access(&tokens)?;
+                tokens.access_token
+            }
+        };
+        let mut url = self.url("/api/desktop/library");
+        url.query_pairs_mut()
+            .append_pair("scope", scope)
+            .extend_pairs(team_id.map(|team| ("teamId", team)))
+            .extend_pairs(after.map(|cursor| ("after", cursor)));
+        let response = http
+            .get(url)
+            .bearer_auth(token)
+            .send()
+            .map_err(|_| "unavailable")?;
+        match response.status() {
+            StatusCode::OK => response.json().map_err(|_| "unavailable"),
+            StatusCode::UNAUTHORIZED => {
+                *self.access.lock().map_err(|_| "unavailable")? = None;
+                Err("rejected")
+            }
+            StatusCode::FORBIDDEN | StatusCode::NOT_FOUND => Err("permission"),
+            _ => Err("unavailable"),
+        }
+    }
+
+    pub fn open_studio(&self, target: StudioTarget) -> Result<()> {
+        let url = match target {
+            StudioTarget::Profile | StudioTarget::Teams => {
+                let section = if matches!(target, StudioTarget::Profile) {
+                    "profile"
+                } else {
+                    "teams"
+                };
+                let mut url = self.url("/studio");
+                url.query_pairs_mut()
+                    .extend_pairs([("dialog", "account"), ("section", section)]);
+                url
+            }
+            StudioTarget::Personal { project_id } => {
+                if project_id.is_empty() || project_id.len() > 128 {
+                    return Err("unavailable");
+                }
+                let mut url = self.url("/studio/open/");
+                url.path_segments_mut()
+                    .expect("hierarchical origin")
+                    .pop_if_empty()
+                    .push(&project_id);
+                url
+            }
+            StudioTarget::Team {
+                team_id,
+                project_id,
+            } => {
+                if team_id.is_empty()
+                    || project_id.is_empty()
+                    || team_id.len() > 128
+                    || project_id.len() > 128
+                {
+                    return Err("unavailable");
+                }
+                let mut url = self.url("/studio");
+                url.query_pairs_mut()
+                    .extend_pairs([("teamId", &team_id), ("teamProject", &project_id)]);
+                url
+            }
+        };
+        open::that_detached(url.as_str()).map_err(|_| "browser")
+    }
+
     pub fn restore(&self) -> Result<AccountStatus> {
         let _guard = self.busy.try_lock().map_err(|_| "busy")?;
         let Some(mut credential) = self.load()? else {
             return Ok(AccountStatus::SignedOut);
         };
         let http = self.http()?;
-        let restored = self
-            .exchange(
-                &http,
-                &[
-                    ("grant_type", "refresh_token"),
-                    ("refresh_token", &credential.refresh_token),
-                ],
-            )
-            .and_then(|tokens| {
-                credential.refresh_token = tokens.refresh_token;
-                // Persist the rotated token even if the identity request fails.
-                self.store(&credential)?;
-                self.account(&http, &tokens.access_token)
-            });
+        *self.access.lock().map_err(|_| "unavailable")? = None;
+        let restored = self.refresh(&http, &mut credential).and_then(|tokens| {
+            let account = self.account(&http, &tokens.access_token)?;
+            if credential.account.id != account.id {
+                return Err("rejected");
+            }
+            self.cache_access(&tokens)?;
+            Ok(account)
+        });
         match restored {
-            Ok(account) if credential.account.id == account.id => {
+            Ok(account) => {
                 credential.account = account;
                 self.store(&credential)?;
                 Ok(AccountStatus::Connected {
                     account: credential.account,
                 })
             }
-            Ok(_) | Err("rejected") => {
+            Err("rejected") => {
                 self.clear()?;
                 Ok(AccountStatus::SignedOut)
             }
@@ -210,9 +337,10 @@ impl DesktopLogin {
     }
 
     pub fn sign_out(&self) -> Result<AccountStatus> {
-        let _guard = self.busy.try_lock().map_err(|_| "busy")?;
+        let _guard = self.busy.lock().map_err(|_| "unavailable")?;
         let credential = self.load()?;
         self.clear()?;
+        *self.access.lock().map_err(|_| "unavailable")? = None;
         Ok(match credential {
             Some(credential)
                 if !self
@@ -232,7 +360,11 @@ impl DesktopLogin {
     pub fn sign_in(&self) -> Result<AccountStatus> {
         let _guard = self.busy.try_lock().map_err(|_| "busy")?;
         self.cancelled.store(false, Ordering::Release);
-        if self.load()?.is_some() {
+        let previous = self.load()?;
+        if previous
+            .as_ref()
+            .is_some_and(|credential| credential.account.library_access)
+        {
             return Err("alreadyConnected");
         }
 
@@ -297,11 +429,23 @@ impl DesktopLogin {
                                         if self.cancelled.load(Ordering::Acquire) {
                                             return Err("cancelled");
                                         }
+                                        if !account.library_access {
+                                            return Err("permission");
+                                        }
+                                        if previous.as_ref().is_some_and(|credential| {
+                                            credential.account.id != account.id
+                                        }) {
+                                            return Err("differentAccount");
+                                        }
                                         let credential = Credential {
                                             account,
                                             refresh_token: tokens.refresh_token.clone(),
                                         };
                                         self.store(&credential)?;
+                                        self.cache_access(&tokens)?;
+                                        if let Some(previous) = previous {
+                                            self.revoke(&http, &previous.refresh_token);
+                                        }
                                         Ok(AccountStatus::Connected {
                                             account: credential.account,
                                         })

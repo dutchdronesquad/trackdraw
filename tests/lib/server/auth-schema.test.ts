@@ -20,9 +20,11 @@ import {
 import { getAuth } from "@/lib/server/auth";
 import {
   DESKTOP_CLIENT_ID,
+  DESKTOP_LIBRARY_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
+import { GET as desktopLibrary } from "@/app/api/desktop/library/route";
 import { GET as desktopSession } from "@/app/api/desktop/session/route";
 import { authenticateMcpRequest } from "@/lib/server/mcp/oauth-auth";
 
@@ -122,9 +124,9 @@ describe("full auth configuration and database schema", () => {
     expect(metadataQueries()).toHaveLength(0);
   });
 
-  it.skipIf(!!process.env.TRACKDRAW_AUTH_SCHEMA_JSON)(
-    "exchanges a native code against the seeded client and rotates and revokes its desktop session",
-    async () => {
+  it.skipIf(!!process.env.TRACKDRAW_AUTH_SCHEMA_JSON).each([false, true])(
+    "rotates and revokes a desktop session and respects its library grant (%s)",
+    async (libraryAccess) => {
       const origin = "https://trackdraw.app";
       const auth = await getAuth();
       const context = await auth.$context;
@@ -151,7 +153,9 @@ describe("full auth configuration and database schema", () => {
       const prepare = database.prepare.bind(database);
       const d1 = sqliteD1({ prepare } as DatabaseSync);
       database.prepare = (sql) =>
-        /^SELECT u.id, u.name, u.email FROM users/.test(sql)
+        /^SELECT u.id, u.name, u.email FROM users|SELECT 1 FROM oauthConsent c|FROM teams t JOIN team_members m|FROM team_invitations i JOIN teams t|SELECT teams.id, teams.name, team_members.role|AS shapeCount\s+FROM projects|select\s+id,\s+owner_user_id,\s+title/.test(
+          sql
+        )
           ? (d1.prepare(sql) as unknown as ReturnType<typeof prepare>)
           : prepare(sql);
 
@@ -162,7 +166,11 @@ describe("full auth configuration and database schema", () => {
         redirect_uri: redirect,
         response_type: "code",
         prompt: "consent",
-        scope: DESKTOP_SCOPE + " offline_access",
+        scope: [
+          DESKTOP_SCOPE,
+          "offline_access",
+          ...(libraryAccess ? [DESKTOP_LIBRARY_SCOPE] : []),
+        ].join(" "),
         state: "desktop-test-state",
         code_challenge: createHash("sha256")
           .update(verifier)
@@ -237,8 +245,57 @@ describe("full auth configuration and database schema", () => {
       expect(profile.status).toBe(200);
       expect(profile.headers.get("Cache-Control")).toBe("no-store");
       expect(await profile.json()).toEqual({
-        account: { id: user.id, name: user.name, email: user.email },
+        account: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          libraryAccess,
+        },
       });
+
+      const library = (params: string) =>
+        desktopLibrary(
+          new Request(origin + "/api/desktop/library?" + params, {
+            headers: { authorization: "Bearer " + first.access_token },
+          })
+        );
+      if (libraryAccess) {
+        const now = "2026-11-16T00:00:00.000Z";
+        database.exec(`INSERT INTO teams(id, name, slug, createdAt) VALUES
+          ('club','Club','club','${now}'), ('other','Other','other','${now}')`);
+        prepare(
+          "INSERT INTO team_members(id, organizationId, userId, role, createdAt) VALUES ('test-member','club',?,'viewer',?)"
+        ).run(user.id, now);
+        prepare(
+          "INSERT INTO projects(id,owner_user_id,title,design_json,created_at,updated_at) VALUES ('personal',?,'My track','{}',?,?)"
+        ).run(user.id, now, now);
+        prepare(
+          "INSERT INTO projects(id,owner_team_id,title,design_json,created_at,updated_at) VALUES ('team-track','club','Club track','{}',?,?)"
+        ).run(now, now);
+        const teams = await library("scope=teams");
+        expect(teams.status).toBe(200);
+        expect(await teams.json()).toEqual({
+          teams: [{ id: "club", name: "Club", role: "viewer" }],
+        });
+        const personal = await library("scope=personal");
+        expect(personal.status).toBe(200);
+        expect(await personal.json()).toMatchObject({
+          projects: [{ id: "personal" }],
+          nextCursor: null,
+        });
+        const team = await library("scope=team&teamId=club");
+        expect(team.status).toBe(200);
+        expect(await team.json()).toMatchObject({
+          team: { role: "viewer", canEdit: false },
+          projects: [{ id: "team-track" }],
+          nextCursor: null,
+        });
+        expect((await library("scope=team&teamId=other")).status).toBe(404);
+        database.exec("DELETE FROM team_members WHERE id='test-member'");
+        expect((await library("scope=team&teamId=club")).status).toBe(404);
+      } else {
+        expect((await library("scope=teams")).status).toBe(403);
+      }
 
       const refresh = {
         grant_type: "refresh_token",

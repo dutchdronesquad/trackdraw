@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export function DesktopConsent({
   request,
 }: {
-  request: { account: string; query: string };
+  request: { account: string; query: string; library: boolean };
 }) {
   const t = useTranslations("login.desktopConsent");
   const login = useTranslations("login");
@@ -60,7 +60,7 @@ export function DesktopConsent({
           </div>
         </div>
         <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-          {t("permission")}
+          {t(request.library ? "libraryPermission" : "permission")}
         </p>
         {failed && (
           <p role="alert" className="text-destructive mt-4 text-sm">

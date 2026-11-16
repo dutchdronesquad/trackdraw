@@ -214,6 +214,100 @@ body,
   margin-bottom: 4px;
   color: var(--muted-foreground);
 }
+.library-sidebar .library-profile {
+  width: 100%;
+  min-width: 0;
+  margin: 20px 0 14px;
+  color: var(--foreground);
+  font-weight: 600;
+}
+.library-profile svg,
+.library-contexts svg {
+  flex-shrink: 0;
+}
+.library-profile-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.library-profile-avatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--foreground);
+  background: rgb(var(--brand-primary-rgb) / 0.16);
+  border-radius: 50%;
+}
+.library-contexts {
+  min-height: 0;
+  overflow: auto;
+}
+.library-contexts button,
+.library-local-views button {
+  width: 100%;
+}
+.library-contexts .library-device {
+  padding-top: 16px;
+}
+.library-local-views .library-device {
+  padding-top: 16px;
+}
+.library-nav-status {
+  margin: 0 10px 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.cloud-library-list {
+  margin-top: 24px;
+  border-block: 1px solid var(--border);
+}
+.cloud-library-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+}
+.cloud-library-list li + li {
+  border-top: 1px solid var(--border);
+}
+.cloud-library-list li > svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.cloud-library-project {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.cloud-library-project span,
+.cloud-library-status {
+  color: var(--muted-foreground);
+}
+.cloud-library-status {
+  margin-top: 24px;
+}
+.cloud-library-list button,
+.cloud-library-status button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+}
+.cloud-library-status p + button {
+  margin-top: 8px;
+}
+.cloud-library-list button:hover,
+.cloud-library-status button:hover:not(:disabled) {
+  background: var(--secondary);
+}
 .library-sidebar button.selected {
   background: rgb(var(--brand-primary-rgb) / 0.1);
   color: var(--foreground);

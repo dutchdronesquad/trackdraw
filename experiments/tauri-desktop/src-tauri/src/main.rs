@@ -2,7 +2,7 @@
 
 mod login;
 
-use login::{AccountStatus, DesktopLogin};
+use login::{AccountStatus, DesktopLogin, StudioTarget};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{
@@ -313,6 +313,35 @@ fn desktop_cancel_sign_in(
     Ok(())
 }
 
+#[tauri::command]
+async fn desktop_library(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+    scope: String,
+    team_id: Option<String>,
+    after: Option<String>,
+) -> Result<Value, String> {
+    trusted(&window)?;
+    let login = state.login.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        login
+            .library(&scope, team_id.as_deref(), after.as_deref())
+            .map_err(str::to_owned)
+    })
+    .await
+    .map_err(|_| "unavailable".to_owned())?
+}
+
+#[tauri::command]
+fn desktop_open_studio(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+    target: StudioTarget,
+) -> Result<(), String> {
+    trusted(&window)?;
+    state.login.open_studio(target).map_err(str::to_owned)
+}
+
 fn main() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -329,6 +358,8 @@ fn main() {
             desktop_sign_in,
             desktop_sign_out,
             desktop_cancel_sign_in,
+            desktop_library,
+            desktop_open_studio,
             finish_close,
             open_project,
             save_project,
