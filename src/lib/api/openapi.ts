@@ -487,7 +487,7 @@ export const trackdrawOpenApiSchema = {
       put: projectMutation(
         "updateProject",
         "Save a project",
-        "projects:update. Team writes acquire the shared Studio lease unless session_id identifies an existing REST session. A stale base_revision returns conflict.",
+        "projects:update. Team writes acquire the shared Studio lease unless session_id identifies an existing REST session. An identical personal project save returns the stored revision. Other stale base_revision values return conflict.",
         {
           type: "object",
           additionalProperties: false,
