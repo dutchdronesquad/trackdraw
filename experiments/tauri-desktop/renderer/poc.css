@@ -172,18 +172,6 @@ body,
   border-bottom: 1px solid var(--border);
   color: var(--muted-foreground);
 }
-.desktop-cloud-context button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--foreground);
-}
-.desktop-cloud-context button:hover {
-  background: var(--secondary);
-}
 .desktop-cloud-viewer {
   flex: 1;
   min-height: 0;

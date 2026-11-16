@@ -91,7 +91,7 @@ export default function CloudLibrary({ account, selection }) {
             <p>
               {t("teamAccess", {
                 role: roles[page.team.role],
-                access: t(page.team.canEdit ? "canEdit" : "readOnly"),
+                access: t("readOnly"),
               })}
             </p>
           )}

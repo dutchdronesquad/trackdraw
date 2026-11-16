@@ -281,8 +281,6 @@ export function openCloudDocument(projectId, result) {
     const cloud = {
       accountId: result.accountId,
       team: result.team,
-      projectId,
-      canCopy: result.canCopy,
     };
     const existing = getDocument(id);
     if (existing) {
@@ -290,34 +288,6 @@ export function openCloudDocument(projectId, result) {
       existing.store.getState().replaceDesign(design);
     }
     activate(existing ?? makeDocument(design, id, cloud));
-  });
-}
-
-export function editCloudCopy(id) {
-  return transition(async () => {
-    const document = getDocument(id);
-    if (
-      !document?.cloud?.canCopy ||
-      document.cloud.accountId !== cloudAccountId
-    )
-      throw new Error("This cloud project cannot be copied.");
-    const current = await window.trackdrawDesktop.project(
-      document.cloud.projectId,
-      document.cloud.team?.id
-    );
-    if (!current.canCopy || current.accountId !== cloudAccountId)
-      throw new Error("This cloud project cannot be copied.");
-    const design = document.store.getState().track.design;
-    const copy = createProjectDuplicate(
-      design,
-      design.title,
-      listProjects().map((project) => project.title)
-    );
-    await preserveActive();
-    if (document.cloud.accountId !== cloudAccountId)
-      throw new Error("Cloud account changed.");
-    await saveDesign(copy);
-    activate(makeDocument(copy));
   });
 }
 

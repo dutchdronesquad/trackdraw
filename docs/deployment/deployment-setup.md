@@ -43,7 +43,7 @@ When deploying the desktop sign-in service from the desktop integration branch, 
 
 Apply `0039_desktop_library_scope.sql` before deploying the desktop library. It adds `desktop:library` to the native client's allowed scope set. Existing grants can still restore account identity and can explicitly approve the library scope from Home. `GET /api/desktop/library` returns uncached project summaries and team memberships after checking the desktop grant and current project access.
 
-Apply `0040_desktop_project_read_scope.sql` before deploying native cloud project previews. It allows the first-party client to request `desktop:projects:read`. Library-only grants can still list projects and must approve the new scope before opening designs. `GET /api/desktop/project` checks personal ownership or current team membership and returns an uncached design with the local-copy permission.
+Apply `0040_desktop_project_read_scope.sql` before deploying native cloud project previews. It allows the first-party client to request `desktop:projects:read`. Library-only grants can still list projects and must approve the new scope before opening designs. `GET /api/desktop/project` checks personal ownership or current team membership and returns an uncached design for the native preview.
 
 ### Team ownership foundation
 

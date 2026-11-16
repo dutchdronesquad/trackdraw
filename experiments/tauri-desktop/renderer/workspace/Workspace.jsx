@@ -70,7 +70,6 @@ import {
   deleteDocument,
   retryDocumentSave,
   canCloseWithBackups,
-  editCloudCopy,
   setCloudAccount,
 } from "./workspace.mjs";
 
@@ -828,14 +827,6 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                   <span>
                     {document.cloud.team?.name ?? t("cloudLibrary.personal")}
                   </span>
-                  {document.cloud.canCopy && (
-                    <button
-                      onClick={() => run(() => editCloudCopy(document.id))}
-                    >
-                      <Copy size={14} aria-hidden="true" />{" "}
-                      {t("cloudLibrary.editCopy")}
-                    </button>
-                  )}
                 </div>
                 <div className="desktop-cloud-viewer">
                   <ProjectViewer

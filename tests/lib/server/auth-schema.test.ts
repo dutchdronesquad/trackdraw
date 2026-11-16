@@ -329,7 +329,6 @@ describe("full auth configuration and database schema", () => {
             accountId: user.id,
             design: { title: "My track" },
             team: null,
-            canCopy: true,
           });
           expect((await readProject("projectId=team-track")).status).toBe(404);
           const clubTrack = await readProject(
@@ -338,7 +337,6 @@ describe("full auth configuration and database schema", () => {
           expect(clubTrack.status).toBe(200);
           expect(await clubTrack.json()).toMatchObject({
             team: { id: "club", name: "Club" },
-            canCopy: false,
           });
           expect(
             (await readProject("projectId=team-track&teamId=other")).status

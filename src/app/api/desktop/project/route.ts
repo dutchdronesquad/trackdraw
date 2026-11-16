@@ -33,7 +33,6 @@ export async function GET(request: Request) {
         accountId: account.id,
         design: project.design,
         team: { id: team.id, name: team.name },
-        canCopy: !team.recovery && team.role !== "viewer",
       });
     }
 
@@ -43,7 +42,6 @@ export async function GET(request: Request) {
       accountId: account.id,
       design: result.project.design,
       team: null,
-      canCopy: true,
     });
   } catch (error) {
     if (error instanceof TeamProjectError)

@@ -166,7 +166,6 @@ it("browses personal and team projects without closing local editor tabs", async
   const readProject = vi.fn(async (id: string, teamId?: string) => ({
     accountId: "pilot",
     team: teamId ? { id: teamId, name: "FPV Club" } : null,
-    canCopy: !teamId,
     design: {
       ...createDefaultDesign(id),
       title: teamId ? "Team track" : "My cloud track",
@@ -216,18 +215,13 @@ it("browses personal and team projects without closing local editor tabs", async
     expect(await screen.findByText("Viewer content")).toBeTruthy();
     expect(readProject).toHaveBeenCalledWith("cloud-project", "club");
     expect(openStudio).not.toHaveBeenCalled();
-    expect(
-      screen.queryByRole("button", { name: "Edit a local copy" })
-    ).toBeNull();
     expect(screen.getByRole("tab", { name: first.title })).toBeTruthy();
     await user.click(screen.getByRole("tab", { name: "Home" }));
     await user.click(screen.getByRole("button", { name: "Personal projects" }));
     await user.click(
       await screen.findByRole("button", { name: "Open My cloud track" })
     );
-    expect(
-      await screen.findByRole("button", { name: "Edit a local copy" })
-    ).toBeTruthy();
+    expect(await screen.findByText("Viewer content")).toBeTruthy();
     expect(readProject).toHaveBeenCalledWith(ownProjectId, undefined);
     expect(
       bridge.projects.mock.calls
@@ -244,12 +238,6 @@ it("browses personal and team projects without closing local editor tabs", async
     expect(
       window.localStorage.getItem("trackdraw.desktopWorkspace")
     ).not.toContain("personal-project");
-    await user.click(screen.getByRole("button", { name: "Edit a local copy" }));
-    expect(await screen.findByText("Editor content")).toBeTruthy();
-    expect(readProject).toHaveBeenCalledTimes(3);
-    const written = bridge.projects.mock.calls.at(-1)?.[1]?.design;
-    expect(written?.title).toContain("My cloud track");
-    expect(written?.id).not.toBe(ownProjectId);
     await user.click(screen.getByRole("tab", { name: "Home" }));
     await user.click(screen.getByRole("button", { name: "On this device" }));
     expect(
@@ -263,7 +251,6 @@ it("browses personal and team projects without closing local editor tabs", async
       expect(screen.queryByRole("tab", { name: "Team track" })).toBeNull()
     );
     expect(workspace.useWorkspace.getState().openIds).toContain(first.id);
-    expect(workspace.useWorkspace.getState().openIds).toContain(written.id);
   } finally {
     delete bridge.account;
     delete bridge.library;
