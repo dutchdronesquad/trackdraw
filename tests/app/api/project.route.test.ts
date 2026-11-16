@@ -18,6 +18,7 @@ vi.mock("@/lib/server/csrf", () => ({
 vi.mock("@/lib/server/projects", () => ({
   archiveProjectForUser: vi.fn(),
   getProjectForUser: vi.fn(),
+  readPersonalProject: vi.fn(),
 }));
 
 vi.mock("@/lib/server/audit", () => ({ recordAuditEvent: vi.fn() }));
@@ -29,6 +30,7 @@ import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   archiveProjectForUser,
   getProjectForUser,
+  readPersonalProject,
 } from "@/lib/server/projects";
 
 function projectRequest(method = "GET") {
@@ -52,7 +54,7 @@ describe("project API route", () => {
     const response = await GET(projectRequest(), projectContext());
 
     expect(response.status).toBe(401);
-    expect(getProjectForUser).not.toHaveBeenCalled();
+    expect(readPersonalProject).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
       ok: false,
       error:
@@ -61,12 +63,14 @@ describe("project API route", () => {
   });
 
   it("returns 404 when the project is not owned by the user", async () => {
-    vi.mocked(getProjectForUser).mockResolvedValue(null);
+    vi.mocked(readPersonalProject).mockResolvedValue(null);
 
     const response = await GET(projectRequest(), projectContext());
 
     expect(response.status).toBe(404);
-    expect(getProjectForUser).toHaveBeenCalledWith("project-1", testUser.id);
+    expect(readPersonalProject).toHaveBeenCalledWith("project-1", testUser.id, {
+      knownRevision: undefined,
+    });
     await expect(response.json()).resolves.toEqual({
       ok: false,
       error: "Project not found",
@@ -75,7 +79,10 @@ describe("project API route", () => {
 
   it("returns the stored project for the authenticated owner", async () => {
     const project = createStoredProjectFixture();
-    vi.mocked(getProjectForUser).mockResolvedValue(project);
+    vi.mocked(readPersonalProject).mockResolvedValue({
+      project,
+      revision: project.revision,
+    });
 
     const response = await GET(projectRequest(), projectContext());
 

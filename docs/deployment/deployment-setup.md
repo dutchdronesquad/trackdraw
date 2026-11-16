@@ -35,6 +35,10 @@ TrackDraw uses Cloudflare D1 for persisted share storage.
 - a scheduled Worker cleanup removes expired or revoked shares after a retention window
 - the same scheduled cleanup removes raw, privacy-safe product events after 180 days
 
+### Conditional personal project reads
+
+`GET /api/projects/{projectId}?knownRevision=…` supports a positive safe-integer revision for signed-in owners of active personal projects. A matching revision returns `{ ok: true, revision, project: null }`. A different revision returns the current project from the same authorized read. Without the parameter the response stays `{ ok: true, project }`. Responses are private and uncached. For integration clients, the REST track route offers the equivalent `known_revision` parameter with existing API-key project scopes. This requires no changes to database migrations, Worker bindings or WAF rules.
+
 ### Team ownership foundation
 
 Apply `0030_team_project_ownership.sql` before deploying the team ownership services. It rebuilds `projects` inside the normal D1 migration transaction, preserves existing project/share IDs and pending/applied MCP history, and adds team/member/invitation tables plus exclusive personal-or-team ownership. Deferred foreign keys do not suppress cascades; the migration explicitly preserves the edit history before replacing its parent. Do not split the migration into autocommit statements. No new binding, secret, auth endpoint or user-facing team feature is enabled. See [the ownership and permission contract](../pva/team-project-authorization.md) and its lifecycle activation requirements.
