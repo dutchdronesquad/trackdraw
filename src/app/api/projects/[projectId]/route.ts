@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseKnownProjectRevision } from "@/lib/api/project-revision";
 import { auditEventTypes } from "@/lib/audit-events";
 import { recordAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -6,6 +7,7 @@ import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   archiveProjectForUser,
   getProjectForUser,
+  readPersonalProject,
 } from "@/lib/server/projects";
 
 type ProjectRouteContext = {
@@ -14,8 +16,15 @@ type ProjectRouteContext = {
   }>;
 };
 
+function json(body: unknown, options?: ResponseInit) {
+  return NextResponse.json(body, {
+    ...options,
+    headers: { "Cache-Control": "no-store", Vary: "Cookie" },
+  });
+}
+
 function unauthorizedResponse() {
-  return NextResponse.json(
+  return json(
     {
       ok: false,
       error:
@@ -34,24 +43,34 @@ export async function GET(request: Request, context: ProjectRouteContext) {
 
     const { projectId } = await context.params;
     if (!projectId.trim()) {
-      return NextResponse.json(
-        { ok: false, error: "Missing project id" },
+      return json({ ok: false, error: "Missing project id" }, { status: 400 });
+    }
+
+    const known = new URL(request.url).searchParams.get("knownRevision");
+    const knownRevision =
+      known === null ? null : parseKnownProjectRevision(known);
+    if (known !== null && knownRevision === null) {
+      return json(
+        { ok: false, error: "Invalid knownRevision" },
         { status: 400 }
       );
     }
 
-    const project = await getProjectForUser(projectId, user.id);
-    if (!project) {
-      return NextResponse.json(
-        { ok: false, error: "Project not found" },
-        { status: 404 }
-      );
+    const result = await readPersonalProject(projectId, user.id, {
+      knownRevision: knownRevision ?? undefined,
+    });
+    if (!result) {
+      return json({ ok: false, error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ ok: true, project });
+    return json(
+      knownRevision === null
+        ? { ok: true, project: result.project }
+        : { ok: true, ...result }
+    );
   } catch (error) {
     console.error("[TrackDraw] Failed to load project", { error });
-    return NextResponse.json(
+    return json(
       { ok: false, error: "Failed to load project" },
       { status: 500 }
     );
@@ -60,10 +79,7 @@ export async function GET(request: Request, context: ProjectRouteContext) {
 
 export async function DELETE(request: Request, context: ProjectRouteContext) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json(
-      { ok: false, error: "Forbidden" },
-      { status: 403 }
-    );
+    return json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
 
   try {
@@ -74,18 +90,12 @@ export async function DELETE(request: Request, context: ProjectRouteContext) {
 
     const { projectId } = await context.params;
     if (!projectId.trim()) {
-      return NextResponse.json(
-        { ok: false, error: "Missing project id" },
-        { status: 400 }
-      );
+      return json({ ok: false, error: "Missing project id" }, { status: 400 });
     }
 
     const project = await getProjectForUser(projectId, user.id);
     if (!project) {
-      return NextResponse.json(
-        { ok: false, error: "Project not found" },
-        { status: 404 }
-      );
+      return json({ ok: false, error: "Project not found" }, { status: 404 });
     }
 
     const archived = await archiveProjectForUser(projectId, user.id);
@@ -102,10 +112,10 @@ export async function DELETE(request: Request, context: ProjectRouteContext) {
         },
       });
     }
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (error) {
     console.error("[TrackDraw] Failed to archive project", { error });
-    return NextResponse.json(
+    return json(
       { ok: false, error: "Failed to archive project" },
       { status: 500 }
     );

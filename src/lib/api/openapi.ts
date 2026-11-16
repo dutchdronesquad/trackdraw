@@ -487,7 +487,7 @@ export const trackdrawOpenApiSchema = {
       put: projectMutation(
         "updateProject",
         "Save a project",
-        "projects:update. Team writes acquire the shared Studio lease unless session_id identifies an existing REST session. A stale base_revision returns conflict.",
+        "projects:update. Team writes acquire the shared Studio lease unless session_id identifies an existing REST session. An identical personal project save returns the stored revision. Other stale base_revision values return conflict.",
         {
           type: "object",
           additionalProperties: false,
@@ -579,17 +579,46 @@ export const trackdrawOpenApiSchema = {
         operationId: "getProjectTrack",
         summary: "Get project track package",
         description:
-          "Returns the integration-stable track package for one project owned by the API key account. The package includes sanitized shape geometry and excludes editor-only data.",
+          "Returns the integration-stable track package for one project owned by the API key account. The package includes sanitized shape geometry and excludes editor-only data. With known_revision, a personal project response contains the current revision and a track package only if the revision differs.",
         security: [{ bearerAuth: [] }],
         parameters: [
           { $ref: "#/components/parameters/ProjectId" },
           { $ref: "#/components/parameters/TeamId" },
+          {
+            name: "known_revision",
+            in: "query",
+            description:
+              "Last stored revision for this personal project. Omit for a plain track package.",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: Number.MAX_SAFE_INTEGER,
+            },
+          },
         ],
         responses: {
           "200": {
-            description: "Track package for one project.",
+            description:
+              "Track package, or a revision and nullable track package when known_revision is supplied.",
             content: jsonContent(
-              envelope({ $ref: "#/components/schemas/TrackPackage" }),
+              envelope({
+                oneOf: [
+                  { $ref: "#/components/schemas/TrackPackage" },
+                  {
+                    type: "object",
+                    required: ["revision", "track"],
+                    properties: {
+                      revision: { type: "integer", minimum: 1 },
+                      track: {
+                        oneOf: [
+                          { type: "null" },
+                          { $ref: "#/components/schemas/TrackPackage" },
+                        ],
+                      },
+                    },
+                  },
+                ],
+              }),
               {
                 data: {
                   ...trackPackageExample,
