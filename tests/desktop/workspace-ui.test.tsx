@@ -8,6 +8,9 @@ import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 vi.mock("@/components/editor/EditorShell", () => ({
   default: () => <div>Editor content</div>,
 }));
+vi.mock("@/components/editor/viewer/EditorShell", () => ({
+  default: () => <div>Viewer content</div>,
+}));
 vi.mock("@/components/editor/StudioDialogsProvider", () => ({
   StudioDialogsProvider: ({ children }: { children: ReactNode }) => children,
 }));
@@ -51,9 +54,11 @@ beforeAll(async () => {
           if ((name === "save" || name === "save-copy") && payload) {
             state = {
               ...state,
-              designs: state.designs.map((d) =>
-                d.id === payload.design.id ? payload.design : d
-              ),
+              designs: state.designs.some((d) => d.id === payload.design.id)
+                ? state.designs.map((d) =>
+                    d.id === payload.design.id ? payload.design : d
+                  )
+                : [...state.designs, payload.design],
               draft: name === "save" ? payload.design : state.draft,
             };
           }
@@ -157,6 +162,17 @@ it("browses personal and team projects without closing local editor tabs", async
   };
   const team = { id: "club", name: "FPV Club", role: "viewer" };
   const openStudio = vi.fn(async () => {});
+  const ownProjectId = "personal-project";
+  const readProject = vi.fn(async (id: string, teamId?: string) => ({
+    accountId: "pilot",
+    team: teamId ? { id: teamId, name: "FPV Club" } : null,
+    canCopy: !teamId,
+    design: {
+      ...createDefaultDesign(id),
+      title: teamId ? "Team track" : "My cloud track",
+    },
+  }));
+  const before = bridge.projects.mock.calls.length;
   Object.assign(bridge, {
     account: async () => ({
       status: "connected",
@@ -165,6 +181,7 @@ it("browses personal and team projects without closing local editor tabs", async
         name: "Pilot",
         email: "pilot@example.invalid",
         libraryAccess: true,
+        projectAccess: true,
       },
     }),
     library: vi.fn(async (kind) => {
@@ -178,6 +195,8 @@ it("browses personal and team projects without closing local editor tabs", async
       };
     }),
     openStudio,
+    project: readProject,
+    signOut: async () => ({ status: "signedOut" }),
   });
   try {
     showWorkspace();
@@ -193,22 +212,64 @@ it("browses personal and team projects without closing local editor tabs", async
     await user.click(screen.getByRole("button", { name: "FPV Club" }));
     expect(await screen.findByText("Viewer · Read-only")).toBeTruthy();
     expect(screen.queryByText("My cloud track")).toBeNull();
-    await user.click(
-      screen.getByRole("button", { name: "Open Team track in Web Studio" })
-    );
-    expect(openStudio).toHaveBeenCalledWith({
-      kind: "team",
-      teamId: "club",
-      projectId: "cloud-project",
-    });
+    await user.click(screen.getByRole("button", { name: "Open Team track" }));
+    expect(await screen.findByText("Viewer content")).toBeTruthy();
+    expect(readProject).toHaveBeenCalledWith("cloud-project", "club");
+    expect(openStudio).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: "Edit a local copy" })
+    ).toBeNull();
     expect(screen.getByRole("tab", { name: first.title })).toBeTruthy();
+    await user.click(screen.getByRole("tab", { name: "Home" }));
+    await user.click(screen.getByRole("button", { name: "Personal projects" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Open My cloud track" })
+    );
+    expect(
+      await screen.findByRole("button", { name: "Edit a local copy" })
+    ).toBeTruthy();
+    expect(readProject).toHaveBeenCalledWith(ownProjectId, undefined);
+    expect(
+      bridge.projects.mock.calls
+        .slice(before)
+        .every(
+          ([, payload]: [string, { design?: typeof first }?]) =>
+            !payload?.design ||
+            !["cloud-project", ownProjectId].includes(payload.design.id)
+        )
+    ).toBe(true);
+    await act(async () => {
+      await workspace.flushDocuments();
+    });
+    expect(
+      window.localStorage.getItem("trackdraw.desktopWorkspace")
+    ).not.toContain("personal-project");
+    await user.click(screen.getByRole("button", { name: "Edit a local copy" }));
+    expect(await screen.findByText("Editor content")).toBeTruthy();
+    expect(readProject).toHaveBeenCalledTimes(3);
+    const written = bridge.projects.mock.calls.at(-1)?.[1]?.design;
+    expect(written?.title).toContain("My cloud track");
+    expect(written?.id).not.toBe(ownProjectId);
+    await user.click(screen.getByRole("tab", { name: "Home" }));
     await user.click(screen.getByRole("button", { name: "On this device" }));
     expect(
       screen.getByRole("button", { name: `Actions for ${first.title}` })
     ).toBeTruthy();
+    await user.click(
+      screen.getByRole("button", { name: "Account menu for Pilot" })
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Sign out" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("tab", { name: "Team track" })).toBeNull()
+    );
+    expect(workspace.useWorkspace.getState().openIds).toContain(first.id);
+    expect(workspace.useWorkspace.getState().openIds).toContain(written.id);
   } finally {
     delete bridge.account;
     delete bridge.library;
     delete bridge.openStudio;
+    delete bridge.project;
+    delete bridge.signOut;
+    workspace.setCloudAccount(null);
   }
 });

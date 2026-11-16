@@ -75,6 +75,7 @@ export default function EditorShell({
   initialTab = "2d",
   embedMode = false,
   privateProject = false,
+  contextLabel,
   title,
   studioHref,
   existingShareMode = false,
@@ -82,6 +83,7 @@ export default function EditorShell({
   initialTab?: EditorView;
   embedMode?: boolean;
   privateProject?: boolean;
+  contextLabel?: string;
   title?: string;
   studioHref?: string;
   existingShareMode?: boolean;
@@ -160,7 +162,10 @@ export default function EditorShell({
             tab={tab}
             onTabChange={handleTabChange}
             embedMode={embedMode || privateProject}
-            contextLabel={privateProject ? t("privateTeamPreview") : undefined}
+            contextLabel={
+              contextLabel ??
+              (privateProject ? t("privateTeamPreview") : undefined)
+            }
             title={effectiveTitle}
             studioHref={studioHref}
             showObstacleNumbers={showObstacleNumbers}
