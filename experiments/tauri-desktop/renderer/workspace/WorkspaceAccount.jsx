@@ -6,6 +6,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { flushDocuments } from "./workspace.mjs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -54,10 +55,39 @@ export function useWorkspaceAccount() {
     };
   }, [bridge]);
 
+  useEffect(() => {
+    if (!bridge.account || session.status !== "offline" || pending) return;
+    let active = true;
+    let checking = false;
+    async function reconnect() {
+      if (!navigator.onLine || checking) return;
+      checking = true;
+      try {
+        const next = await bridge.account();
+        if (active) setSession(next);
+      } catch {
+        // A remote save may be using the account connection.
+      } finally {
+        checking = false;
+      }
+    }
+    const timer = setInterval(reconnect, 15000);
+    window.addEventListener("online", reconnect);
+    return () => {
+      active = false;
+      clearInterval(timer);
+      window.removeEventListener("online", reconnect);
+    };
+  }, [bridge, session.status, pending]);
+
   async function run(operation) {
-    setPending(operation);
+    setPending(operation === "signOut" ? "saveBeforeSignOut" : operation);
     setError("");
     try {
+      if (operation === "signOut") {
+        await flushDocuments();
+        setPending("signOut");
+      }
       setSession(await bridge[operation]());
     } catch (reason) {
       if (reason !== "cancelled") setError(reason);
@@ -169,7 +199,8 @@ export default function WorkspaceAccount({ account }) {
   if (!account.available) return null;
   const initialCheck = pending === "account";
   const browserPending = pending === "signIn";
-  const signOutPending = pending === "signOut";
+  const signOutPending =
+    pending === "signOut" || pending === "saveBeforeSignOut";
   const offline = session.status === "offline";
   const failure = {
     keychain: t("keychainError"),
@@ -229,12 +260,14 @@ export default function WorkspaceAccount({ account }) {
             </Button>
           ) : session.account ? (
             <>
-              {!offline && !session.account.projectAccess && (
+              {!offline && !session.account.projectWriteAccess && (
                 <Button disabled={!!pending} onClick={() => run("signIn")}>
                   {t(
-                    session.account.libraryAccess
-                      ? "allowProjectRead"
-                      : "connectLibrary"
+                    session.account.projectAccess
+                      ? "allowProjectSync"
+                      : session.account.libraryAccess
+                        ? "allowProjectRead"
+                        : "connectLibrary"
                   )}
                 </Button>
               )}

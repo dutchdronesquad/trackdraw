@@ -1,6 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod cloud_repository;
 mod login;
+
+use cloud_repository::CloudRepository;
 
 use login::{AccountStatus, DesktopLogin, StudioTarget};
 use serde::Deserialize;
@@ -22,6 +25,7 @@ use trackdraw_desktop::{
 
 struct DesktopState {
     repository: Mutex<Repository>,
+    cloud_repository: Mutex<Option<CloudRepository>>,
     approved_close: AtomicBool,
     quitting: AtomicBool,
     profile: PathBuf,
@@ -351,6 +355,58 @@ async fn desktop_project(
 }
 
 #[tauri::command]
+async fn desktop_cloud_cache(
+    window: WebviewWindow,
+    account_id: String,
+    project_id: Option<String>,
+    team_id: Option<String>,
+    record: Option<Value>,
+) -> Result<Value, String> {
+    trusted(&window)?;
+    let app = window.app_handle().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<DesktopState>();
+        if state.login.account_id()? != account_id {
+            return Err("rejected".into());
+        }
+        let repository = state.cloud_repository.lock().map_err(|_| "unavailable")?;
+        let repository = repository.as_ref().ok_or("unavailable")?;
+        match project_id.as_deref() {
+            None => repository.list(&account_id),
+            Some(project_id) => {
+                let team_id = team_id.as_deref().unwrap_or("");
+                if let Some(record) = record {
+                    repository.put(&account_id, team_id, project_id, &record)?;
+                    Ok(Value::Null)
+                } else {
+                    repository.get(&account_id, team_id, project_id)
+                }
+            }
+        }
+    })
+    .await
+    .map_err(|_| "unavailable".to_owned())?
+}
+
+#[tauri::command]
+async fn desktop_save_cloud_project(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+    account_id: String,
+    body: Value,
+) -> Result<Value, String> {
+    trusted(&window)?;
+    let login = state.login.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        login
+            .save_project(&account_id, &body)
+            .map_err(str::to_owned)
+    })
+    .await
+    .map_err(|_| "unavailable".to_owned())?
+}
+
+#[tauri::command]
 fn desktop_open_studio(
     window: WebviewWindow,
     state: State<'_, DesktopState>,
@@ -378,6 +434,8 @@ fn main() {
             desktop_cancel_sign_in,
             desktop_library,
             desktop_project,
+            desktop_cloud_cache,
+            desktop_save_cloud_project,
             desktop_open_studio,
             finish_close,
             open_project,
@@ -415,6 +473,9 @@ fn main() {
                 Repository::open(&database, Some(manifest)).map_err(std::io::Error::other)?;
             app.manage(DesktopState {
                 repository: Mutex::new(repository),
+                cloud_repository: Mutex::new(
+                    CloudRepository::open(&profile.join("cloud-projects.sqlite")).ok(),
+                ),
                 approved_close: AtomicBool::new(false),
                 quitting: AtomicBool::new(false),
                 login: DesktopLogin::new(&profile),

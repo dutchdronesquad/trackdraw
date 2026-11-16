@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FolderOpen } from "lucide-react";
+import {
+  cacheCloudProject,
+  cachedCloudPage,
+  openCachedCloudProject,
+} from "../storage/cloud-projects.mjs";
 import { openCloudDocument } from "./workspace.mjs";
 import { useFormatter, useTranslations } from "next-intl";
 
@@ -12,14 +17,30 @@ export default function CloudLibrary({ account, selection }) {
   const [error, setError] = useState("");
   const [opening, setOpening] = useState(null);
   const [openError, setOpenError] = useState("");
+  const mounted = useRef(false);
   const scope = selection.kind;
   const teamId = selection.team?.id;
+  const accountId = account.session.account?.id;
+  const offline = account.session.status === "offline";
   const roles = { owner: t("owner"), editor: t("editor"), viewer: t("viewer") };
 
   useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     let active = true;
-    window.trackdrawDesktop
-      .library(scope, teamId)
+    const query = offline
+      ? cachedCloudPage(accountId, teamId)
+      : window.trackdrawDesktop.library(scope, teamId).catch((reason) => {
+          if (reason === "unavailable" && window.trackdrawDesktop.cloudCache)
+            return cachedCloudPage(accountId, teamId);
+          throw reason;
+        });
+    query
       .then((result) => {
         if (active) setPage(result);
       })
@@ -32,7 +53,7 @@ export default function CloudLibrary({ account, selection }) {
     return () => {
       active = false;
     };
-  }, [scope, teamId, retry]);
+  }, [scope, teamId, retry, accountId, offline]);
 
   async function loadMore() {
     setPending(true);
@@ -68,8 +89,23 @@ export default function CloudLibrary({ account, selection }) {
     setOpening(id);
     setOpenError("");
     try {
-      const project = await window.trackdrawDesktop.project(id, teamId);
-      await openCloudDocument(id, project);
+      let project;
+      if (offline) {
+        project = await openCachedCloudProject(accountId, id, teamId);
+        if (!project) throw "unavailable";
+      } else {
+        try {
+          const remote = await window.trackdrawDesktop.project(id, teamId);
+          project = account.session.account.projectWriteAccess
+            ? await cacheCloudProject(accountId, id, remote)
+            : { ...remote, canEdit: false, canRequestWrite: remote.canEdit };
+        } catch (reason) {
+          if (reason !== "unavailable") throw reason;
+          project = await openCachedCloudProject(accountId, id, teamId);
+          if (!project) throw reason;
+        }
+      }
+      if (mounted.current) await openCloudDocument(id, project);
     } catch (reason) {
       setOpenError(
         reason === "permission" || reason === "rejected"
@@ -91,7 +127,11 @@ export default function CloudLibrary({ account, selection }) {
             <p>
               {t("teamAccess", {
                 role: roles[page.team.role],
-                access: t("readOnly"),
+                access: t(
+                  page.team.canEdit === false || page.team.role === "viewer"
+                    ? "readOnly"
+                    : "canEdit"
+                ),
               })}
             </p>
           )}

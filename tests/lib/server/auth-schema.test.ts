@@ -22,10 +22,14 @@ import {
   DESKTOP_CLIENT_ID,
   DESKTOP_LIBRARY_SCOPE,
   DESKTOP_PROJECT_READ_SCOPE,
+  DESKTOP_PROJECT_WRITE_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
-import { GET as desktopProject } from "@/app/api/desktop/project/route";
+import {
+  GET as desktopProject,
+  PUT as saveDesktopProject,
+} from "@/app/api/desktop/project/route";
 import { GET as desktopLibrary } from "@/app/api/desktop/library/route";
 import { GET as desktopSession } from "@/app/api/desktop/session/route";
 import { authenticateMcpRequest } from "@/lib/server/mcp/oauth-auth";
@@ -130,9 +134,10 @@ describe("full auth configuration and database schema", () => {
     { libraryAccess: false, projectAccess: false },
     { libraryAccess: true, projectAccess: false },
     { libraryAccess: true, projectAccess: true },
+    { libraryAccess: true, projectAccess: true, projectWriteAccess: true },
   ])(
     "rotates and revokes a desktop session and respects its library and project grants (%j)",
-    async ({ libraryAccess, projectAccess }) => {
+    async ({ libraryAccess, projectAccess, projectWriteAccess = false }) => {
       const origin = "https://trackdraw.app";
       const auth = await getAuth();
       const context = await auth.$context;
@@ -159,7 +164,7 @@ describe("full auth configuration and database schema", () => {
       const prepare = database.prepare.bind(database);
       const d1 = sqliteD1({ prepare } as DatabaseSync);
       database.prepare = (sql) =>
-        /^SELECT u.id, u.name, u.email FROM users|SELECT DISTINCT scope.value AS scope|FROM projects\s+WHERE id = \?|FROM project_edit_leases l JOIN|FROM teams t JOIN team_members m|FROM team_invitations i JOIN teams t|SELECT teams.id, teams.name, team_members.role|AS shapeCount\s+FROM projects|select\s+id,\s+owner_user_id,\s+title/i.test(
+        /^SELECT u.id, u.name, u.email FROM users|SELECT DISTINCT scope.value AS scope|insert into projects|INSERT INTO project_edit_leases|UPDATE project_edit_leases|UPDATE projects SET title|DELETE FROM project_edit_leases WHERE project_id|FROM projects\s+WHERE id = \?|FROM project_edit_leases l JOIN|FROM teams t JOIN team_members m|FROM team_invitations i JOIN teams t|SELECT teams.id, teams.name, team_members.role|AS shapeCount\s+FROM projects|select\s+id,\s+owner_user_id,\s+title/i.test(
           sql
         )
           ? (d1.prepare(sql) as unknown as ReturnType<typeof prepare>)
@@ -177,6 +182,7 @@ describe("full auth configuration and database schema", () => {
           "offline_access",
           ...(libraryAccess ? [DESKTOP_LIBRARY_SCOPE] : []),
           ...(projectAccess ? [DESKTOP_PROJECT_READ_SCOPE] : []),
+          ...(projectWriteAccess ? [DESKTOP_PROJECT_WRITE_SCOPE] : []),
         ].join(" "),
         state: "desktop-test-state",
         code_challenge: createHash("sha256")
@@ -258,6 +264,7 @@ describe("full auth configuration and database schema", () => {
           email: user.email,
           libraryAccess,
           projectAccess,
+          projectWriteAccess,
         },
       });
 
@@ -273,6 +280,20 @@ describe("full auth configuration and database schema", () => {
             headers: { authorization: "Bearer " + first.access_token },
           })
         );
+      const save = (
+        design: unknown,
+        revision: number,
+        projectId = "personal",
+        teamId: string | null = null
+      ) =>
+        saveDesktopProject(
+          new Request(origin + "/api/desktop/project", {
+            method: "PUT",
+            headers: { authorization: "Bearer " + first.access_token },
+            body: JSON.stringify({ projectId, teamId, revision, design }),
+          })
+        );
+      if (!projectWriteAccess) expect((await save({}, 1)).status).toBe(403);
       if (!projectAccess)
         expect((await readProject("projectId=personal")).status).toBe(403);
       if (libraryAccess) {
@@ -341,6 +362,45 @@ describe("full auth configuration and database schema", () => {
           expect(
             (await readProject("projectId=team-track&teamId=other")).status
           ).toBe(404);
+        }
+        if (projectWriteAccess) {
+          const original = JSON.parse(design("personal", "Synced track"));
+          const saved = await save(original, 1);
+          expect(saved.status).toBe(200);
+          expect(await saved.json()).toEqual({ revision: 2 });
+          expect(await (await save(original, 1)).json()).toEqual({
+            revision: 2,
+          });
+          expect(
+            (await save({ ...original, title: "Stale edit" }, 1)).status
+          ).toBe(409);
+          expect(
+            (await save({ ...original, id: "gone" }, 1, "gone")).status
+          ).toBe(404);
+
+          const teamProject = JSON.parse(design("team-track", "Team synced"));
+          expect(
+            (await save(teamProject, 1, "team-track", "club")).status
+          ).toBe(404);
+          database.exec(
+            "UPDATE team_members SET role='editor' WHERE id='test-member'"
+          );
+          const teamSave = await save(teamProject, 1, "team-track", "club");
+          expect(teamSave.status).toBe(200);
+          expect(await teamSave.json()).toEqual({ revision: 2 });
+          expect(
+            await (await save(teamProject, 1, "team-track", "club")).json()
+          ).toEqual({ revision: 2 });
+          expect(
+            (
+              await save(
+                { ...teamProject, title: "Stale edit" },
+                1,
+                "team-track",
+                "club"
+              )
+            ).status
+          ).toBe(409);
         }
         database.exec("DELETE FROM team_members WHERE id='test-member'");
         expect((await library("scope=team&teamId=club")).status).toBe(404);

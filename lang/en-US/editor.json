@@ -649,7 +649,15 @@
       "owner": "Owner",
       "editor": "Editor",
       "viewer": "Viewer",
-      "readOnly": "Read-only"
+      "readOnly": "Read-only",
+      "canEdit": "Can edit",
+      "savingLocally": "Saving on this device…",
+      "pendingSync": "Saved on this device · Sync pending",
+      "synced": "Synced",
+      "conflict": "Cloud version changed · Local edits kept",
+      "cannotSync": "Cloud save failed · Local edits kept",
+      "localSaveError": "Could not save on this device",
+      "save": "Save project"
     },
     "account": {
       "title": "Account",
@@ -660,6 +668,7 @@
       "differentAccount": "Sign in in your browser with the TrackDraw account already connected to this device.",
       "connectLibrary": "Connect cloud library",
       "allowProjectRead": "Allow opening cloud projects",
+      "allowProjectSync": "Allow editing and syncing",
       "description": "Sign in to TrackDraw through your default browser.",
       "connected": "Your TrackDraw account is connected to this desktop app.",
       "signIn": "Sign in in browser",
@@ -688,7 +697,7 @@
     "recent": "Recents",
     "allProjects": "All projects",
     "onDevice": "On this device",
-    "offlineNotice": "Your projects save on this device and stay editable offline. Online maps and external appearances may be unavailable. Cloud sync is not available in this alpha.",
+    "offlineSyncNotice": "Your edits save on this device. Cloud projects you’ve opened for editing can be reopened offline. Online maps and external appearances may be unavailable.",
     "description": "Your tracks, ready when you are.",
     "newProject": "New track",
     "import": "Import project…",

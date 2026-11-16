@@ -58,6 +58,7 @@ type SaveProjectOptions = {
   forceWrite?: boolean;
   baseDesignUpdatedAt?: string | null;
   baseRevision?: number;
+  requireExisting?: boolean;
 };
 
 export class ProjectVersionConflictError extends Error {
@@ -206,6 +207,8 @@ export async function listProjectSummariesForActor(
   }));
 }
 
+export class PersonalProjectUnavailableError extends Error {}
+
 export async function saveProjectForUser(
   ownerUserId: string,
   design: TrackDesign,
@@ -222,6 +225,8 @@ export async function saveProjectForUser(
   const existingProject = options.projectId
     ? await getProjectForUser(projectId, ownerUserId)
     : null;
+  if (options.requireExisting && !existingProject)
+    throw new PersonalProjectUnavailableError();
   const designMatches = (project: StoredProject) =>
     JSON.stringify(serializeDesign(project.design)) === serializedJson;
   const confirmsSave = (project: StoredProject, sameDesign: boolean) =>
@@ -276,7 +281,15 @@ export async function saveProjectForUser(
           archived_at,
           created_by_user_id
         )
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?)
+        ${
+          options.requireExisting
+            ? `select ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?
+            where exists (
+              select 1 from projects where id = ? and owner_user_id = ?
+                and owner_team_id is null and archived_at is null
+            )`
+            : "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?)"
+        }
         on conflict(id) do update set
           title = excluded.title,
           description = excluded.description,
@@ -318,6 +331,7 @@ export async function saveProjectForUser(
       now,
       now,
       ownerUserId,
+      ...(options.requireExisting ? [projectId, ownerUserId] : []),
       existingProject?.revision ?? 0
     )
     .first<ProjectRow>();
@@ -326,6 +340,7 @@ export async function saveProjectForUser(
     // The DO UPDATE WHERE condition failed — another write raced in between our read and write.
     const current = await getProjectForUser(projectId, ownerUserId);
     if (!current) {
+      if (options.requireExisting) throw new PersonalProjectUnavailableError();
       throw new Error("Failed to load saved cloud project");
     }
     if (confirmsSave(current, designMatches(current))) return current;

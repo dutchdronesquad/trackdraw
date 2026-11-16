@@ -3,3 +3,4 @@ export const DESKTOP_RESOURCE = "https://trackdraw.app/api/desktop/session";
 export const DESKTOP_SCOPE = "desktop:account";
 export const DESKTOP_LIBRARY_SCOPE = "desktop:library";
 export const DESKTOP_PROJECT_READ_SCOPE = "desktop:projects:read";
+export const DESKTOP_PROJECT_WRITE_SCOPE = "desktop:projects:write";

@@ -13,6 +13,7 @@ import {
 import {
   DESKTOP_LIBRARY_SCOPE,
   DESKTOP_PROJECT_READ_SCOPE,
+  DESKTOP_PROJECT_WRITE_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
@@ -28,6 +29,7 @@ export function getMcpOAuthPlugins() {
       DESKTOP_SCOPE,
       DESKTOP_LIBRARY_SCOPE,
       DESKTOP_PROJECT_READ_SCOPE,
+      DESKTOP_PROJECT_WRITE_SCOPE,
     ],
     advertisedMetadata: { scopes_supported: MCP_OAUTH_SCOPES },
     grantTypes: ["authorization_code", "refresh_token"] as (
@@ -54,6 +56,7 @@ export function getMcpOAuthPlugins() {
           DESKTOP_SCOPE,
           DESKTOP_LIBRARY_SCOPE,
           DESKTOP_PROJECT_READ_SCOPE,
+          DESKTOP_PROJECT_WRITE_SCOPE,
           "offline_access",
         ],
       },

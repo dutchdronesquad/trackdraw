@@ -14,6 +14,7 @@ export function DesktopConsent({
     query: string;
     library: boolean;
     projects: boolean;
+    write: boolean;
   };
 }) {
   const t = useTranslations("login.desktopConsent");
@@ -66,11 +67,13 @@ export function DesktopConsent({
         </div>
         <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
           {t(
-            request.projects
-              ? "projectPermission"
-              : request.library
-                ? "libraryPermission"
-                : "permission"
+            request.write
+              ? "writePermission"
+              : request.projects
+                ? "projectPermission"
+                : request.library
+                  ? "libraryPermission"
+                  : "permission"
           )}
         </p>
         {failed && (

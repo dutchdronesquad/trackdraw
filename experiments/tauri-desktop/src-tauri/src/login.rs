@@ -24,7 +24,8 @@ use trackdraw_desktop::assets::digest;
 
 const CLIENT_ID: &str = "trackdraw-desktop";
 const RESOURCE: &str = "https://trackdraw.app/api/desktop/session";
-const SCOPE: &str = "desktop:account offline_access desktop:library desktop:projects:read";
+const SCOPE: &str =
+    "desktop:account offline_access desktop:library desktop:projects:read desktop:projects:write";
 const CALLBACK: &str = "/callback";
 type Result<T> = std::result::Result<T, &'static str>;
 
@@ -46,6 +47,8 @@ pub struct Account {
     library_access: bool,
     #[serde(default, rename = "projectAccess")]
     project_access: bool,
+    #[serde(default, rename = "projectWriteAccess")]
+    project_write_access: bool,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -235,10 +238,36 @@ impl DesktopLogin {
         })
     }
 
+    pub fn account_id(&self) -> Result<String> {
+        self.load()?
+            .map(|credential| credential.account.id)
+            .ok_or("rejected")
+    }
+
+    pub fn save_project(
+        &self,
+        account_id: &str,
+        body: &serde_json::Value,
+    ) -> Result<serde_json::Value> {
+        self.request("/api/desktop/project", &[], Some(body), |account| {
+            account.project_write_access && account.id == account_id
+        })
+    }
+
     fn read(
         &self,
         path: &str,
         query: &[(&str, &str)],
+        permitted: impl Fn(&Account) -> bool,
+    ) -> Result<serde_json::Value> {
+        self.request(path, query, None, permitted)
+    }
+
+    fn request(
+        &self,
+        path: &str,
+        query: &[(&str, &str)],
+        body: Option<&serde_json::Value>,
         permitted: impl Fn(&Account) -> bool,
     ) -> Result<serde_json::Value> {
         let _guard = self.busy.lock().map_err(|_| "unavailable")?;
@@ -264,8 +293,11 @@ impl DesktopLogin {
         };
         let mut url = self.url(path);
         url.query_pairs_mut().extend_pairs(query.iter().copied());
-        let response = http
-            .get(url)
+        let request = match body {
+            Some(body) => http.put(url).json(body),
+            None => http.get(url),
+        };
+        let response = request
             .bearer_auth(token)
             .send()
             .map_err(|_| "unavailable")?;
@@ -276,6 +308,15 @@ impl DesktopLogin {
                 Err("rejected")
             }
             StatusCode::FORBIDDEN | StatusCode::NOT_FOUND => Err("permission"),
+            StatusCode::CONFLICT => {
+                let response: serde_json::Value = response.json().map_err(|_| "unavailable")?;
+                match response["error"].as_str() {
+                    Some("conflict") => Err("conflict"),
+                    _ => Err("lease"),
+                }
+            }
+            StatusCode::PAYLOAD_TOO_LARGE => Err("tooLarge"),
+            StatusCode::BAD_REQUEST => Err("invalid"),
             _ => Err("unavailable"),
         }
     }
@@ -352,7 +393,7 @@ impl DesktopLogin {
         let previous = self.load()?;
         if previous
             .as_ref()
-            .is_some_and(|credential| credential.account.project_access)
+            .is_some_and(|credential| credential.account.project_write_access)
         {
             return Err("alreadyConnected");
         }
@@ -418,7 +459,7 @@ impl DesktopLogin {
                                         if self.cancelled.load(Ordering::Acquire) {
                                             return Err("cancelled");
                                         }
-                                        if !account.project_access {
+                                        if !account.project_write_access {
                                             return Err("permission");
                                         }
                                         if previous.as_ref().is_some_and(|credential| {
