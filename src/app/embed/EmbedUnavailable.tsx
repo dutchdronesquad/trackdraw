@@ -45,7 +45,8 @@ export default async function EmbedUnavailable({
                 fill
                 priority
                 unoptimized
-                className="object-contain dark:hidden"
+                style={{ objectFit: "contain" }}
+                className="dark:hidden"
               />
               <Image
                 src="/assets/brand/trackdraw-logo-color-darkbg.svg"
@@ -53,7 +54,8 @@ export default async function EmbedUnavailable({
                 fill
                 priority
                 unoptimized
-                className="hidden object-contain dark:block"
+                style={{ objectFit: "contain" }}
+                className="hidden dark:block"
               />
             </div>
             <h1 className="mt-4 text-base font-semibold">{copy.title}</h1>

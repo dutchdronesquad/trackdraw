@@ -73,7 +73,7 @@ export function Footer() {
                     alt="TrackDraw"
                     fill
                     unoptimized
-                    className="object-contain"
+                    style={{ objectFit: "contain" }}
                   />
                 </span>
                 <span className="relative hidden h-8 w-35 dark:block">
@@ -82,7 +82,7 @@ export function Footer() {
                     alt="TrackDraw"
                     fill
                     unoptimized
-                    className="object-contain"
+                    style={{ objectFit: "contain" }}
                   />
                 </span>
               </span>

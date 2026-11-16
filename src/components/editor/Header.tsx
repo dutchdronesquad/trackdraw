@@ -194,7 +194,7 @@ export default function Header({
                   alt="TrackDraw"
                   fill
                   unoptimized
-                  className="object-contain"
+                  style={{ objectFit: "contain" }}
                   draggable={false}
                 />
               </span>
@@ -235,7 +235,7 @@ export default function Header({
                 alt="TrackDraw"
                 fill
                 unoptimized
-                className="object-contain"
+                style={{ objectFit: "contain" }}
                 draggable={false}
               />
             </span>

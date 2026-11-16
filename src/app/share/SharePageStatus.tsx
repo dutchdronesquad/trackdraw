@@ -30,7 +30,7 @@ export function TrackDrawLogo() {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </div>
       <div className="relative hidden h-8 w-34 dark:block">
@@ -40,7 +40,7 @@ export function TrackDrawLogo() {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </div>
     </div>

@@ -115,7 +115,7 @@ function BrandLogo({ className = "h-8 w-auto" }: { className?: string }) {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </span>
       <span className="relative hidden aspect-17/4 h-full dark:block">
@@ -125,7 +125,7 @@ function BrandLogo({ className = "h-8 w-auto" }: { className?: string }) {
           fill
           priority
           unoptimized
-          className="object-contain"
+          style={{ objectFit: "contain" }}
         />
       </span>
     </span>

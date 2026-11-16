@@ -310,7 +310,7 @@ export default function DashboardAppSidebar({
                       alt={t("logoAlt")}
                       fill
                       unoptimized
-                      className="object-contain"
+                      style={{ objectFit: "contain" }}
                       draggable={false}
                     />
                   </span>
