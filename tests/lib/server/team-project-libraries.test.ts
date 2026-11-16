@@ -273,7 +273,7 @@ describe("team project libraries", () => {
     ).rejects.toMatchObject({ code: "conflict" });
     expect(await getProjectForUser("personal", "owner")).not.toBeNull();
   });
-  it("requires personal ownership and ownership of the destination team; no reverse or team-to-team move", async () => {
+  it("requires personal ownership and destination membership; no reverse or team-to-team move", async () => {
     const p = await previewProjectMove("owner", "personal");
     await expect(
       previewProjectMove("editor", "personal")
@@ -292,6 +292,35 @@ describe("team project libraries", () => {
       { code: "not_found" }
     );
   });
+  it.each(["viewer", "removed", "recovery"])(
+    "rejects an editor's reviewed move if the destination becomes %s",
+    async (state) => {
+      db.exec("UPDATE projects SET owner_user_id='editor' WHERE id='personal'");
+      const p = await previewProjectMove("editor", "personal");
+      if (state === "viewer") {
+        db.exec("UPDATE team_members SET role='viewer' WHERE userId='editor'");
+      } else if (state === "removed") {
+        db.exec("DELETE FROM team_members WHERE userId='editor'");
+      } else {
+        db.prepare(
+          `INSERT INTO team_succession_cases(id,team_id,activity_at,removal_at,state,opened_at,recovery_at,purge_at)
+           VALUES('case','club',?,?,'recovery',?,?,?)`
+        ).run(now, now, now, now, "2099-01-01");
+      }
+      await expect(
+        movePersonalProject(
+          "editor",
+          "club",
+          p.projectId,
+          p.revision,
+          p.publicationVersion
+        )
+      ).rejects.toMatchObject({ code: "conflict" });
+      expect(await getProjectForUser("personal", "editor")).toMatchObject({
+        revision: p.revision,
+      });
+    }
+  );
   it("has exactly one winner for duplicate move submissions", async () => {
     const p = await previewProjectMove("owner", "personal");
     const results = await Promise.allSettled(
