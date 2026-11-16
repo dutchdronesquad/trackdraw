@@ -133,6 +133,11 @@ body,
   font-size: 11px;
   color: var(--muted-foreground);
 }
+.desktop-account-button {
+  align-self: center;
+  flex-shrink: 0;
+  margin-inline-end: 8px;
+}
 .workspace-status.save-failed {
   color: var(--destructive);
 }

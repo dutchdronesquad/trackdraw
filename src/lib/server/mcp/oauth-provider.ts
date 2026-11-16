@@ -10,13 +10,16 @@ import {
   MCP_DEFAULT_SCOPES,
 } from "./oauth-metadata";
 
+import { DESKTOP_RESOURCE, DESKTOP_SCOPE } from "@/lib/desktop/oauth-contract";
+
 export function getMcpOAuthPlugins() {
   const resource = getMcpResource();
   const options = {
     resource,
     loginPage: "/login",
     consentPage: "/mcp/consent",
-    scopes: MCP_OAUTH_SCOPES,
+    scopes: [...MCP_OAUTH_SCOPES, DESKTOP_SCOPE],
+    advertisedMetadata: { scopes_supported: MCP_OAUTH_SCOPES },
     grantTypes: ["authorization_code", "refresh_token"] as (
       "authorization_code" | "refresh_token"
     )[],
@@ -36,6 +39,10 @@ export function getMcpOAuthPlugins() {
     clientRegistrationRequirePKCE: true,
     resources: [
       {
+        identifier: DESKTOP_RESOURCE,
+        allowedScopes: [DESKTOP_SCOPE, "offline_access"],
+      },
+      {
         identifier: resource,
         allowedScopes: MCP_OAUTH_SCOPES,
         accessTokenTtl: 15 * 60,
@@ -45,11 +52,11 @@ export function getMcpOAuthPlugins() {
   return [
     mcp(options),
     {
-      id: "trackdraw-mcp-token-validation",
+      id: "trackdraw-oauth-token-validation",
       endpoints: {
         // Pathless, server-only API: never expose token introspection without
         // client authentication over HTTP. Reuse the provider's own validation.
-        verifyMcpAccessToken: createAuthEndpoint.serverOnly(
+        verifyOAuthAccessToken: createAuthEndpoint.serverOnly(
           {
             method: "POST",
             body: z.object({ token: z.string().min(1).max(4096) }),

@@ -7,7 +7,7 @@ default-run = "trackdraw-desktop"
 [features]
 default = ["desktop", "custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
-desktop = ["dep:tauri", "dep:tauri-build", "dep:tauri-plugin-dialog", "dep:tauri-plugin-single-instance"]
+desktop = ["dep:tauri", "dep:tauri-build", "dep:tauri-plugin-dialog", "dep:tauri-plugin-single-instance", "dep:base64", "dep:getrandom", "dep:keyring", "dep:open", "dep:reqwest"]
 
 [build-dependencies]
 tauri-build = { version = "2", optional = true }
@@ -24,6 +24,11 @@ uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
 tempfile = "3"
 dirs = "6"
+base64 = { version = "0.23", optional = true }
+getrandom = { version = "0.4", optional = true }
+keyring = { version = "3.6", optional = true, features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust", "vendored"] }
+open = { version = "5", optional = true }
+reqwest = { version = "0.13", default-features = false, optional = true, features = ["blocking", "form", "json", "rustls"] }
 
 [[bin]]
 name = "repository-cli"

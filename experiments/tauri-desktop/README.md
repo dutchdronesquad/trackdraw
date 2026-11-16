@@ -36,7 +36,13 @@ Every project is local by default, with no preparation button, pin or login gate
 
 Each document owns the existing editor store and in-memory undo history. Only the active canvas is mounted. Tab IDs, recent order, selection, 2D viewport, 3D camera and view preferences use Zustand persistence under `trackdraw.desktopWorkspace`. Startup shows Home and restores available tabs. Undo history resets after closing a document or restarting the app; SQLite restore points provide durable recovery. Webview preferences start fresh during the runtime migration; project/history data is migrated separately.
 
-The bundled editor, catalog textures, 2D/3D editing and supported exports require no website or login endpoint. The host denies remote navigation, new windows, permission prompts and uncontrolled webview downloads. CSP blocks remote network resources. Accounts, cloud sync, publishing, feedback and online map selection remain disabled in this alpha. Cloud-only projects cannot be downloaded offline. External map/appearance references remain in projects but their remote images may be unavailable.
+The bundled editor, catalog textures, 2D/3D editing and supported exports require no website or login endpoint. The host denies remote navigation, new windows, permission prompts and uncontrolled webview downloads. CSP blocks remote network resources. Cloud sync, publishing, feedback and online map selection remain disabled in this alpha. Cloud-only projects cannot be downloaded offline. External map/appearance references remain in projects but their remote images may be unavailable.
+
+### Account sign-in
+
+Open **Account** in the desktop title bar and select **Sign in in browser**. Sign in on TrackDraw and approve the desktop connection in your default browser. The browser returns the one-time code to a temporary local listener. The app keeps the connection in the system credential store and can sign out independently of the browser. Local projects remain available with or without a connection. The current grant only provides the desktop app with your account ID, name and email.
+
+The auth service needs D1 migration `0038_desktop_oauth_client.sql` and the matching server routes before an app can use sign-in. To exercise the flow locally, configure `.dev.vars` as described in the root contributor guide, run `npm run migrate:local` and `npm run preview` from the repo root, then launch a debug Tauri build with `TRACKDRAW_DESKTOP_AUTH_ORIGIN=http://localhost:8787` and a separate `TRACKDRAW_DESKTOP_PROFILE`. Linux sign-in requires a running desktop Secret Service. Windows and Linux credential lifecycle and browser return are still platform acceptance items.
 
 ## Files and native menus
 

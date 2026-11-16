@@ -48,6 +48,7 @@ import {
   getSaveFailures,
   getErrorMessage,
 } from "../storage/projects.mjs";
+import WorkspaceAccount from "./WorkspaceAccount.jsx";
 import { DocumentContext } from "./document-context.jsx";
 import {
   useWorkspace,
@@ -563,6 +564,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                 ? t("onDevice")
                 : status}
         </span>
+        <WorkspaceAccount />
       </div>
       {failures.length > 0 && (
         <section

@@ -1,4 +1,16 @@
 {
+  "desktopConsent": {
+    "title": "Connect TrackDraw Desktop",
+    "intro": "Sign in to the desktop app with your TrackDraw account.",
+    "accountTitle": "Confirm your account",
+    "signedInAs": "Signed in as",
+    "permission": "The app can read your name and email and will remember the connection on this device.",
+    "allow": "Connect desktop",
+    "cancel": "Cancel",
+    "pending": "Please wait…",
+    "returnToDesktop": "After connecting, return to TrackDraw Desktop.",
+    "failed": "Could not connect the desktop app. Try again."
+  },
   "metadata": {
     "title": "Sign in",
     "description": "Sign in to TrackDraw with a one-time magic link."

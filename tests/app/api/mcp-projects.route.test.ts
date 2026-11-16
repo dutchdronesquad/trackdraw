@@ -27,7 +27,7 @@ import type { Shape } from "@/lib/types";
 vi.mock("server-only", () => ({}));
 const oauth = vi.hoisted(() => ({ claims: vi.fn() }));
 vi.mock("@/lib/server/auth", () => ({
-  getAuth: async () => ({ api: { verifyMcpAccessToken: oauth.claims } }),
+  getAuth: async () => ({ api: { verifyOAuthAccessToken: oauth.claims } }),
 }));
 vi.mock("@/lib/server/db", () => ({ getDatabase: vi.fn() }));
 let sqlite: ReturnType<typeof createMigratedDatabase>;

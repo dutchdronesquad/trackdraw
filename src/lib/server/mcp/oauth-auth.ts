@@ -41,7 +41,7 @@ export async function authenticateMcpRequest(request: Request) {
   const auth = await getAuth();
   let claims;
   try {
-    claims = await auth.api.verifyMcpAccessToken({
+    claims = await auth.api.verifyOAuthAccessToken({
       body: { token },
       headers: request.headers,
     });

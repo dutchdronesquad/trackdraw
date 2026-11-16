@@ -173,8 +173,8 @@ Start with personal account projects. The first round-trip is to sign in from de
 
 A local probe with the repository's installed Better Auth provider and a disposable memory database registered a native client for a desktop resource, completed PKCE with an ephemeral loopback port, exchanged a resource-bound token, refreshed it and rejected it after revocation. Anonymous registration could not request the desktop scope. The probe used a simulated browser consent response. Validate the real consent page, MCP isolation in both directions, the OS callback and credential lifecycle against a local Cloudflare preview before connecting the editor.
 
-- [ ] Implement sign-in through the system browser with a safe return to desktop and revocable credentials held outside renderer code. Preserve the existing web sign-in flow.
-- [ ] Confirm the existing auth provider's installed-client flow and token lifecycle before choosing transport endpoints. Register a desktop client with an appropriate audience; keep browser CSRF/origin protection and server authorization intact rather than bypassing them for desktop.
+- [x] Implement sign-in through the system browser with a safe return to desktop and revocable credentials held outside renderer code. Preserve the existing web sign-in flow.
+- [x] Confirm the existing auth provider's installed-client flow and token lifecycle before choosing transport endpoints. Register a desktop client with an appropriate audience; keep browser CSRF/origin protection and server authorization intact rather than bypassing them for desktop.
 - [ ] Implement a desktop project transport against the existing ownership/revision model. Do not expose or repurpose users' personal API keys as an implicit login session.
 - [ ] Add a durable sync queue. Coalesce superseded pending saves, retry with backoff, preserve idempotency, and pause on conflict or expired authentication.
 - [ ] Offer existing device projects for explicit account attachment; synchronize new signed-in projects automatically.
