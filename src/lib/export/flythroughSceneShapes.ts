@@ -3,7 +3,6 @@ import type {
   BarrierShape,
   ConeShape,
   DiveGateShape,
-  FlagShape,
   GateShape,
   LadderShape,
   Shape,
@@ -25,7 +24,10 @@ type FlythroughRenderer = (
   scene: THREE.Scene
 ) => Promise<void> | void;
 
-const flythroughRenderers: Record<ShapeKind, FlythroughRenderer> = {
+const flythroughRenderers: Record<
+  Exclude<ShapeKind, "flag">,
+  FlythroughRenderer
+> = {
   barrier: (shape, scene) =>
     addBarrierSceneShapes(shape as BarrierShape, scene),
   gate: (shape, scene) => addGateSceneShapes(shape as GateShape, scene),
@@ -35,7 +37,6 @@ const flythroughRenderers: Record<ShapeKind, FlythroughRenderer> = {
     addStartFinishSceneShapes(shape as StartFinishShape, scene),
   divegate: (shape, scene) =>
     addDiveGateSceneShapes(shape as DiveGateShape, scene),
-  flag: (shape, scene) => addFlagSceneShapes(shape as FlagShape, scene),
   cone: (shape, scene) => addConeSceneShapes(shape as ConeShape, scene),
   label: () => undefined,
   polyline: () => undefined,
@@ -43,9 +44,17 @@ const flythroughRenderers: Record<ShapeKind, FlythroughRenderer> = {
 
 export async function addFlythroughShapes(
   scene: THREE.Scene,
-  shapes: Shape[]
+  shapes: Shape[],
+  flags: Array<ReturnType<typeof addFlagSceneShapes>>
 ): Promise<void> {
   for (const shape of shapes) {
-    await flythroughRenderers[shape.kind](shape, scene);
+    if (shape.kind === "flag") {
+      const flag = addFlagSceneShapes(shape);
+      scene.add(flag.group);
+      flags.push(flag);
+      await flag.loadArtwork();
+    } else {
+      await flythroughRenderers[shape.kind](shape, scene);
+    }
   }
 }

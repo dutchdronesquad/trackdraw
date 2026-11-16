@@ -1,5 +1,7 @@
 "use client";
 
+import { FlagMotion } from "@/components/canvas/preview3d/flag-motion";
+
 import dynamic from "next/dynamic";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
@@ -58,7 +60,7 @@ const DroneCamera = dynamic(
 
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
   function TrackPreview3D(
-    { showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
+    { active = true, showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
     ref
   ) {
     usePerfMetric("render:viewer/TrackPreview3D");
@@ -195,7 +197,9 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
           <TrackSurface3D field={field} theme={t} />
 
-          {shapeNodes}
+          <FlagMotion playing={active && (!flyMode || playing)}>
+            {shapeNodes}
+          </FlagMotion>
 
           <FieldWatermark
             fw={field.width}

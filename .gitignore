@@ -52,3 +52,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 cloudflare-env.d.ts
+
+# vinext
+/.vinext/
+/dist/

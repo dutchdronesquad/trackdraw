@@ -186,7 +186,9 @@ export function createEditorStore() {
   const store = create<EditorState>()(
     temporal(
       immer<EditorState>((set) => ({
-        track: createDefaultEditorTrackState(),
+        track: createDefaultEditorTrackState(
+          typeof window === "undefined" ? "ssr-placeholder" : undefined
+        ),
         session: createDefaultEditorSessionState(),
         ui: createDefaultEditorUiState(),
 

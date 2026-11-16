@@ -194,6 +194,7 @@ export default function EditorShell({
                   >
                     <TrackPreview3D
                       ref={preview3DRef}
+                      active={tab === "3d"}
                       showGizmo={mobileGizmoEnabled}
                       onFlyModeChange={setMobileFlyModeActive}
                       readOnly

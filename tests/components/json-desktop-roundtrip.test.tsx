@@ -17,7 +17,7 @@ import { createEditorStore, useEditor } from "@/store/editor";
 import { loadProject, saveProject } from "@/lib/projects";
 import { createMemoryStorage } from "../helpers/storage";
 import fixture from "../fixtures/json-roundtrip.json";
-import { openRepository } from "../../experiments/electron-desktop/repository.cjs";
+import { openRepository } from "../helpers/native-repository.cjs";
 
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 // Animation completion is not driven by happy-dom's rendering loop. Keep the

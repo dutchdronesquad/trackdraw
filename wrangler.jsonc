@@ -1,11 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "main": "./custom-worker.ts",
-  "minify": true,
+  "main": "./vinext-worker.ts",
   "upload_source_maps": true,
+  "keep_vars": true,
   "name": "trackdraw",
   "compatibility_date": "2026-03-27",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env",
+  ],
   "observability": {
     "enabled": true,
     "logs": {
@@ -18,9 +21,8 @@
     "crons": ["0 0 * * *", "15,30,45 * * * *"],
   },
   "assets": {
-    "directory": ".open-next/assets",
     "binding": "ASSETS",
-    "run_worker_first": false,
+    "run_worker_first": ["/*", "!/_next/static/*"],
   },
   "r2_buckets": [
     {
@@ -43,7 +45,6 @@
   },
   "env": {
     "dev": {
-      "minify": false,
       "name": "trackdraw-dev",
       "observability": {
         "enabled": true,

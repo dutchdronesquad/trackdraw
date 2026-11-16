@@ -2,7 +2,9 @@
 
 Date: October 24, 2026
 
-Status: Electron selected for continued desktop development on October 24, 2026; offline PWA work is parked. An isolated Electron POC exists in `experiments/electron-desktop/` and received positive hands-on feedback. Community feedback refines the direction: retain the browser as a full workspace and focus desktop on reliable offline creation and venue-side changes. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the next delivery phases; production release and broader platform acceptance remain open.
+Status: Historical Electron evaluation, superseded by the November 5, 2026 Tauri runtime migration; offline PWA work is parked. An isolated Electron POC exists in `experiments/tauri-desktop/` and received positive hands-on feedback. Community feedback refines the direction: retain the browser as a full workspace and focus desktop on reliable offline creation and venue-side changes. The [Desktop Workspace PVA](../../pva/desktop-workspace-pva.md) defines the next delivery phases; production release and broader platform acceptance remain open.
+
+The current implementation uses Tauri 2 with Rust storage/file handling. The Electron-specific evaluation below is historical; use the [desktop runbook](../../../experiments/tauri-desktop/README.md) for current setup and migration boundaries.
 
 ## Desktop and web product direction
 
@@ -57,7 +59,7 @@ The PVA's venue availability requirement defines locally available project data,
 
 ## Experiment boundary
 
-Use the same repository and preserve its current structure. A future experiment can live under `experiments/electron-desktop/`, with its own package manifest, lockfile, build scripts, and ignored generated output. Do not register a root workspace or change existing web build and deployment commands for this trial.
+Use the same repository and preserve its current structure. A future experiment can live under `experiments/tauri-desktop/`, with its own package manifest, lockfile, build scripts, and ignored generated output. Do not register a root workspace or change existing web build and deployment commands for this trial.
 
 The POC implements this boundary with a separate Vite build, local aliases for Next.js and authentication integration, and direct imports of the existing editor. Production source files remain in place. If further work requires broad production changes, stop and record the dependency blockers before proceeding.
 
@@ -117,7 +119,7 @@ Only then decide whether shared packages or an `apps/` structure reduce maintena
 
 ## First POC scope
 
-The [POC runbook](../../../experiments/electron-desktop/README.md) covers setup, storage isolation, manual scenarios, automated desktop checks, and removal. The implementation includes a locally bundled editor, an independent Electron profile, native project copy dialogs, offline catalog textures, and an offline-only runtime. It changes no production editor code or root dependency manifest.
+The [POC runbook](../../../experiments/tauri-desktop/README.md) covers setup, storage isolation, manual scenarios, automated desktop checks, and removal. The implementation includes a locally bundled editor, an independent Electron profile, native project copy dialogs, offline catalog textures, and an offline-only runtime. It changes no production editor code or root dependency manifest.
 
 This establishes a candidate for hands-on evaluation, not a released desktop product. Cloud sign-in and synchronization, installer/update delivery, video export acceptance, and support beyond the initial development platform remain open. Decide whether the desktop workflow is useful before extracting packages or replacing storage.
 

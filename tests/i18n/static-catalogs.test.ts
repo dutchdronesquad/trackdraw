@@ -3,26 +3,26 @@ import common from "@lang/en-US/common.json";
 import landing from "@lang/en-US/landing.json";
 import legal from "@lang/en-US/legal.json";
 
-const { readFile, fetchAsset, getCloudflareContext } = vi.hoisted(() => ({
+const { readFile, fetchAsset, getWorkerBindings } = vi.hoisted(() => ({
   readFile: vi.fn(),
   fetchAsset: vi.fn(),
-  getCloudflareContext: vi.fn(),
+  getWorkerBindings: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("node:fs/promises", () => ({
   readFile,
 }));
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext,
+vi.mock("@/lib/server/cloudflare-bindings", () => ({
+  getWorkerBindings,
 }));
 
 describe("static English catalogs in a Worker", () => {
   beforeEach(() => {
     vi.resetModules();
     readFile.mockReset().mockRejectedValue(new Error("ENOENT"));
-    getCloudflareContext.mockReset().mockReturnValue({
-      env: { ASSETS: { fetch: fetchAsset } },
+    getWorkerBindings.mockReset().mockReturnValue({
+      ASSETS: { fetch: fetchAsset },
     });
     const catalogs: Record<string, unknown> = { common, landing, legal };
     fetchAsset.mockReset().mockImplementation((request: Request) => {
@@ -62,7 +62,7 @@ describe("static English catalogs in a Worker", () => {
     await expect(pickStaticEnglishNamespaces(["common"])).resolves.toEqual({
       common,
     });
-    expect(getCloudflareContext).not.toHaveBeenCalled();
+    expect(getWorkerBindings).not.toHaveBeenCalled();
   });
 
   it("uses source catalogs when generated files are unavailable during prerender", async () => {
@@ -74,7 +74,7 @@ describe("static English catalogs in a Worker", () => {
     await expect(pickStaticEnglishNamespaces(["common"])).resolves.toEqual({
       common,
     });
-    expect(getCloudflareContext).not.toHaveBeenCalled();
+    expect(getWorkerBindings).not.toHaveBeenCalled();
   });
 
   it("reports a missing namespace when neither files nor ASSETS contain it", async () => {

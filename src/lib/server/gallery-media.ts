@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getWorkerBindings } from "@/lib/server/cloudflare-bindings";
 import { getDatabase } from "@/lib/server/db";
 import { cleanupAccountDeletionMedia } from "@/lib/server/account-deletion";
 import { buildGalleryPreviewImageKey } from "@/lib/server/gallery-preview";
@@ -19,16 +19,12 @@ type R2Bucket = {
   delete(key: string | string[]): Promise<unknown>;
 };
 
-type CloudflareContextWithMediaBucket = {
-  env: {
-    MEDIA_BUCKET?: R2Bucket;
-  };
+type MediaBindings = {
+  MEDIA_BUCKET?: R2Bucket;
 };
 
 async function getMediaBucket() {
-  const { env } = (await getCloudflareContext({
-    async: true,
-  })) as CloudflareContextWithMediaBucket;
+  const env = (await getWorkerBindings()) as MediaBindings;
 
   return env.MEDIA_BUCKET ?? null;
 }

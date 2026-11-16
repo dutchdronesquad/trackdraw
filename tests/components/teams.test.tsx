@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { renderToReadableStream } from "react-dom/server";
 import {
   cleanup,
   act,
@@ -12,6 +13,7 @@ import userEvent from "@testing-library/user-event";
 import { TeamsView } from "@/components/teams/TeamsView";
 import { TeamManagement } from "@/components/teams/TeamManagement";
 import { InvitationPage } from "@/components/teams/InvitationPage";
+import InvitationRoute from "@/app/teams/invitation/[invitationId]/page";
 import { TeamDialogState } from "@/components/teams/TeamDialogState";
 import type { ReactElement } from "react";
 import type { TeamDetails } from "@/lib/teams";
@@ -26,6 +28,13 @@ const render = (ui: ReactElement) => {
   };
 };
 const toastSuccess = vi.hoisted(() => vi.fn());
+vi.mock("@/i18n/catalogs", async () => {
+  const { dialogs } = await import("@lang/en-US");
+  return {
+    pickCatalogNamespaces: async (_locale: string, namespaces: string[]) =>
+      namespaces.includes("dialogs") ? { dialogs } : {},
+  };
+});
 vi.mock("sonner", () => ({ toast: { success: toastSuccess } }));
 const state = vi.hoisted(() => ({
   user: null as { id: string; email: string } | null,
@@ -210,6 +219,16 @@ it("offers a member only their own role and a confirmed leave action", async () 
       )
     ).toBe(true)
   );
+});
+it("renders the direct invitation route with its own translations", async () => {
+  const page = await InvitationRoute({
+    params: Promise.resolve({ invitationId: "invite" }),
+  });
+  const stream = await renderToReadableStream(page, { onError: () => {} });
+  const html = await new Response(stream).text();
+  expect(html).toContain("Team invitation");
+  expect(html).toContain("Sign in or create an account");
+  expect(html).toContain("/login?callbackURL=%2Fteams%2Finvitation%2Finvite");
 });
 it("preserves the invitation through sign-in and never accepts it on page load", async () => {
   const fetch = vi.fn(async (_url: string, init?: RequestInit) =>

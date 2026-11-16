@@ -27,6 +27,11 @@ const previewItemMessageKeys: Record<EmailPreviewKey, string> = {
   "magic-link": "magicLink",
   "verify-email": "verifyEmail",
   "change-email": "changeEmail",
+  "team-invitation": "teamInvitation",
+  "team-ownership-risk": "teamOwnershipRisk",
+  "team-ownership-application": "teamOwnershipApplication",
+  "team-ownership-recovery": "teamOwnershipRecovery",
+  "team-ownership-transferred": "teamOwnershipTransferred",
   "retention-first": "retentionFirst",
   "retention-final": "retentionFinal",
 };

@@ -37,9 +37,9 @@ it("requires current backups for every unsaved document and retries the latest i
     },
   });
   const repository =
-    await import("../../experiments/electron-desktop/renderer/storage/projects.mjs");
+    await import("../../experiments/tauri-desktop/renderer/storage/projects.mjs");
   const workspace =
-    await import("../../experiments/electron-desktop/renderer/workspace/workspace.mjs");
+    await import("../../experiments/tauri-desktop/renderer/workspace/workspace.mjs");
   await repository.ready;
   workspace.initializeWorkspace();
   const one = createDefaultDesign();

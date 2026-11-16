@@ -1088,32 +1088,34 @@ export default function ElevationChart({ className }: { className?: string }) {
         ];
       });
 
+    markerCandidates.sort(
+      (left, right) => left.d - right.d || left.id.localeCompare(right.id)
+    );
+    const markers: ChartRouteMarker[] = [];
     let splitIndex = 0;
     let fallbackObstacleIndex = 0;
-    return markerCandidates
-      .sort(
-        (left, right) => left.d - right.d || left.id.localeCompare(right.id)
-      )
-      .map((marker) => {
-        if (marker.type === "timing") {
-          if (marker.marker.role === "split") splitIndex += 1;
-          const title = getTimingMarkerTitle(marker.marker, splitIndex);
-          const { marker: _marker, ...routeMarker } = marker;
-          return {
-            ...routeMarker,
-            ariaLabel: t("timingMarkerAria", { label: title }),
-          };
-        }
-
-        fallbackObstacleIndex += 1;
-        const { obstacleNumber, ...routeMarker } = marker;
-        return {
+    for (const marker of markerCandidates) {
+      if (marker.type === "timing") {
+        if (marker.marker.role === "split") splitIndex += 1;
+        const title = getTimingMarkerTitle(marker.marker, splitIndex);
+        const { marker: _marker, ...routeMarker } = marker;
+        markers.push({
           ...routeMarker,
-          ariaLabel: t("obstacleMarkerAria", {
-            index: obstacleNumber ?? fallbackObstacleIndex,
-          }),
-        };
+          ariaLabel: t("timingMarkerAria", { label: title }),
+        });
+        continue;
+      }
+
+      fallbackObstacleIndex += 1;
+      const { obstacleNumber, ...routeMarker } = marker;
+      markers.push({
+        ...routeMarker,
+        ariaLabel: t("obstacleMarkerAria", {
+          index: obstacleNumber ?? fallbackObstacleIndex,
+        }),
       });
+    }
+    return markers;
   }, [design, designShapes, path, t]);
 
   const warningMarkers = useMemo<ChartWarningMarker[]>(() => {
