@@ -224,7 +224,9 @@ Evaluate product reliability and maintenance cost separately from infrastructure
 
 ### Branch and pull request workflow
 
-Use `codex/desktop-integration` as the review destination for desktop development, separate from `main`. While the initial review stack is outstanding, `codex/desktop-identity` is the complete runnable preview. The earlier `codex/desktop-app` branch can be removed after verifying all of its commits are ancestors of that stack tip and the complete preview still works. Removing the redundant branch must not remove the worktree, application-data database or exported projects. Do not reset or force-push branches to manufacture smaller diffs. After the stack lands, create each new feature branch from the accepted integration tip and open a bounded PR back to that integration branch.
+Desktop is a side project. PR #1078 remains open against `codex/desktop-integration`. While it is open, branch from `codex/desktop-tauri` for Tauri work and open a separate PR back to that branch. This applies to fixes, feature work and updates from `main`. Once Tauri becomes the accepted integration baseline, target `codex/desktop-integration` for new desktop PRs.
+
+If a change can ship independently of the desktop app, branch from `main` and open a separate PR against `main` with its own validation. Bring shared prerequisites into desktop through a PR after they land. Desktop sign-in, the native credential store, and the SQLite sync queue belong in desktop PRs. A fix to the existing cloud project revision handling can go to `main` when it has an independently verifiable web or API benefit.
 
 The initial work is split along its existing commit boundaries:
 
