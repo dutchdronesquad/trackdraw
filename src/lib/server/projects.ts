@@ -463,6 +463,23 @@ export async function getProjectForUser(
   ownerUserId: string,
   projectAccess?: ApiKeyProjectAccess
 ) {
+  const result = await readPersonalProject(projectId, ownerUserId, {
+    projectAccess,
+  });
+  return result?.project ?? null;
+}
+
+export async function readPersonalProject(
+  projectId: string,
+  ownerUserId: string,
+  {
+    knownRevision,
+    projectAccess,
+  }: {
+    knownRevision?: number;
+    projectAccess?: ApiKeyProjectAccess;
+  }
+) {
   if (projectAccess?.teamId) return null;
   if (
     projectAccess?.mode === "selected" &&
@@ -474,6 +491,13 @@ export async function getProjectForUser(
     { userId: ownerUserId, scope: { kind: "personal" } },
     "read"
   );
+  // Omit large design data at the database boundary for a matching revision.
+  // Access, the current revision and any returned design come from one read.
+  const designColumn =
+    knownRevision === undefined
+      ? "design_json"
+      : "case when revision = ? then null else design_json end as design_json";
+  const revisionBindings = knownRevision === undefined ? [] : [knownRevision];
   const row = await db
     .prepare(
       `
@@ -483,7 +507,7 @@ export async function getProjectForUser(
           owner_user_id,
           title,
           description,
-          design_json,
+          ${designColumn},
           field_width,
           field_height,
           shape_count,
@@ -495,10 +519,20 @@ export async function getProjectForUser(
         limit 1
       `
     )
-    .bind(projectId, ...access.bindings)
-    .first<ProjectRow>();
+    .bind(...revisionBindings, projectId, ...access.bindings)
+    .first<
+      Omit<ProjectRow, "design_json"> & {
+        design_json: ProjectRow["design_json"] | null;
+      }
+    >();
 
-  return row ? mapProjectRow(row) : null;
+  if (!row) return null;
+  const { design_json } = row;
+  return {
+    revision: row.revision,
+    project:
+      design_json === null ? null : mapProjectRow({ ...row, design_json }),
+  };
 }
 
 export async function listProjectsForUser(ownerUserId: string) {
