@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signed in · TrackDraw Desktop</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: oklch(0.985 0 0);
+        --card: white;
+        --foreground: oklch(0.09 0 0);
+        --muted: oklch(0.45 0 0);
+        --border: oklch(0.88 0 0);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: oklch(0.155 0.012 245);
+          --card: oklch(0.205 0.016 245);
+          --foreground: oklch(0.97 0 0);
+          --muted: oklch(0.68 0.014 245);
+          --border: oklch(0.3 0.022 245);
+        }
+      }
+
+      body {
+        margin: 0;
+        color: var(--foreground);
+        background:
+          radial-gradient(
+            ellipse at 32% 22%,
+            rgb(30 147 219 / 10%),
+            transparent 32rem
+          ),
+          radial-gradient(
+            ellipse at 100% 100%,
+            rgb(240 118 29 / 10%),
+            transparent 25rem
+          ),
+          var(--background);
+        font:
+          1rem/1.5 system-ui,
+          sans-serif;
+      }
+
+      .frame {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        max-width: 72rem;
+        margin-inline: auto;
+        padding: 1.5rem clamp(1.5rem, 4vw, 2.5rem);
+      }
+
+      .wordmark {
+        display: block;
+        width: 10rem;
+        height: auto;
+      }
+
+      main {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 32rem;
+        margin: auto;
+        padding: clamp(1.5rem, 5vw, 2rem);
+        border: 1px solid var(--border);
+        border-radius: 1.75rem;
+        background: var(--card);
+        box-shadow: 0 24px 80px rgb(15 23 42 / 10%);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+      }
+
+      p {
+        margin: 0.75rem 0 0;
+        color: var(--muted);
+      }
+
+      header {
+        padding-bottom: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header>
+        <picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="data:image/svg+xml;base64,__DARK_WORDMARK__"
+          />
+          <img
+            class="wordmark"
+            src="data:image/svg+xml;base64,__LIGHT_WORDMARK__"
+            alt="TrackDraw"
+            width="160"
+            height="31"
+          />
+        </picture>
+      </header>
+      <main>
+        <h1>You’re signed in</h1>
+        <p>You can close this tab and return to TrackDraw Desktop.</p>
+      </main>
+    </div>
+  </body>
+</html>
