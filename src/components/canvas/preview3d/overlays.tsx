@@ -3,12 +3,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import {
+  Focus,
   Move3D,
   MoveVertical,
   Play,
   Pause,
   Route,
   RotateCcw,
+  Scan,
   Wind,
 } from "lucide-react";
 import type { QuaternionState } from "./shared-scene";
@@ -202,6 +204,50 @@ export function AxisGizmoOverlay({
             })}
         </svg>
       </div>
+    </div>
+  );
+}
+
+export function CameraFramingOverlay({
+  disabled,
+  focusItemId,
+  onFrame,
+  showGizmo,
+}: {
+  disabled: boolean;
+  focusItemId?: string;
+  onFrame: (itemId?: string) => void;
+  showGizmo: boolean;
+}) {
+  const t = useTranslations("editor.preview3dOverlay");
+  const buttonClass =
+    "flex size-10 items-center justify-center rounded-md border border-white/10 bg-black/65 text-white/85 shadow-md backdrop-blur-sm hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-white disabled:opacity-40";
+  return (
+    <div
+      className={`absolute right-3 z-20 flex gap-1.5 ${showGizmo ? "top-26" : "top-3"}`}
+    >
+      <button
+        type="button"
+        className={buttonClass}
+        aria-label={t("fitCourse")}
+        title={t("fitCourse")}
+        disabled={disabled}
+        onClick={() => onFrame()}
+      >
+        <Scan className="size-4" aria-hidden="true" />
+      </button>
+      {focusItemId && (
+        <button
+          type="button"
+          className={buttonClass}
+          aria-label={t("focusItem")}
+          title={t("focusItem")}
+          disabled={disabled}
+          onClick={() => onFrame(focusItemId)}
+        >
+          <Focus className="size-4" aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

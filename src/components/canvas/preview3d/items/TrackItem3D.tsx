@@ -109,7 +109,7 @@ const shapeTopYDispatch: Record<ShapeKind, (shape: Shape) => number> = {
   barrier: (shape) => getBarrierTopY(shape as BarrierShape),
 };
 
-function getShapeTopY(shape: Shape): number {
+export function getShapeTopY(shape: Shape): number {
   return shapeTopYDispatch[shape.kind](shape);
 }
 

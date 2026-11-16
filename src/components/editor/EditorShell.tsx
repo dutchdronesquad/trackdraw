@@ -840,7 +840,10 @@ export default function EditorShell({
             saveStatusLabel={managedProject?.statusLabel ?? saveStatusLabel}
             tab={tab}
             onCloseInspector={closeMobileInspector}
-            onFitView={() => canvasRef.current?.fitToWindow()}
+            onFitView={() => {
+              if (tab === "3d") preview3DRef.current?.fitCourse();
+              else canvasRef.current?.fitToWindow();
+            }}
             onCancelPath={() => {
               canvasRef.current?.cancelDraftPath();
               setMobilePathBuilderPinnedOpen(false);
@@ -1002,7 +1005,10 @@ export default function EditorShell({
             mobileGizmoEnabled={mobileGizmoEnabled}
             mobileObstacleNumbersEnabled={showObstacleNumbers}
             mobileRulersEnabled={mobileRulersEnabled}
-            onFitView={() => canvasRef.current?.fitToWindow()}
+            onFitView={() => {
+              if (tab === "3d") preview3DRef.current?.fitCourse();
+              else canvasRef.current?.fitToWindow();
+            }}
             onSetMobileGizmoEnabled={setMobileGizmoEnabled}
             onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
             onSetMobileRulersEnabled={setMobileRulersEnabled}

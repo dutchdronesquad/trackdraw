@@ -17,6 +17,7 @@ export interface EditorTrackState {
 }
 
 export interface EditorUiState {
+  designLoadVersion: number;
   activeTool: EditorTool;
   activePresetId: string | null;
   activePlacementElementId: Partial<Record<EditorTool, TrackElementCatalogId>>;

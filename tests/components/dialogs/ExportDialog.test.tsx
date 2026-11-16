@@ -193,6 +193,7 @@ describe("ExportDialog mobile workflow", () => {
     const handle: TrackPreview3DHandle = {
       screenshot: vi.fn(() => "data:image/png;base64,scene"),
       getCameraView: vi.fn(() => null),
+      fitCourse: vi.fn(),
       startFlyThrough: vi.fn(),
       stopFlyThrough: vi.fn(),
     };
@@ -272,6 +273,7 @@ describe("ExportDialog mobile workflow", () => {
     const handle: TrackPreview3DHandle = {
       screenshot: vi.fn(),
       getCameraView: vi.fn(() => camera),
+      fitCourse: vi.fn(),
       startFlyThrough: vi.fn(),
       stopFlyThrough: vi.fn(),
     };
@@ -388,6 +390,7 @@ describe("ExportDialog mobile workflow", () => {
     const handle: TrackPreview3DHandle = {
       screenshot: vi.fn(),
       getCameraView: vi.fn(() => camera),
+      fitCourse: vi.fn(),
       startFlyThrough: vi.fn(),
       stopFlyThrough: vi.fn(),
     };
@@ -421,6 +424,7 @@ describe("ExportDialog mobile workflow", () => {
     const handle: TrackPreview3DHandle = {
       screenshot: vi.fn(() => "data:image/png;base64,test"),
       getCameraView: vi.fn(),
+      fitCourse: vi.fn(),
       startFlyThrough: vi.fn(),
       stopFlyThrough: vi.fn(),
     };

@@ -7,6 +7,7 @@ import type {
 } from "@/lib/editor/store-types";
 
 interface EditorUiResetOptions {
+  designLoadVersion?: number;
   activePresetId?: string | null;
   activePlacementElementId?: EditorUiState["activePlacementElementId"];
   zoom?: number;
@@ -23,6 +24,7 @@ export function createDefaultEditorUiState(
   options: EditorUiResetOptions = {}
 ): EditorUiState {
   return {
+    designLoadVersion: options.designLoadVersion ?? 0,
     activeTool: "select",
     activePresetId: options.activePresetId ?? null,
     activePlacementElementId: options.activePlacementElementId ?? {
@@ -50,6 +52,7 @@ export function resetEditorUiState(
   options: EditorUiResetOptions = {}
 ): EditorUiState {
   return createDefaultEditorUiState({
+    designLoadVersion: current.designLoadVersion + 1,
     activePresetId: options.activePresetId ?? current.activePresetId,
     activePlacementElementId: options.activePlacementElementId ?? {
       ...current.activePlacementElementId,

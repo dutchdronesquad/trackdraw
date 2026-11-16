@@ -98,6 +98,7 @@ export function ViewControls({
   tab,
 }: EditorMobileViewControlsProps) {
   const t = useTranslations("editor.mobilePanels.viewControls");
+  const tPreview = useTranslations("editor.preview3dOverlay");
   const tCommon = useTranslations("editor.common");
   const modeDescription = !readOnly
     ? `${inspectorHint}. ${saveStatusLabel}.`
@@ -138,16 +139,23 @@ export function ViewControls({
         />
         <button
           type="button"
-          onClick={onFitView}
+          onClick={() => {
+            onFitView();
+            if (tab === "3d") closePanel?.();
+          }}
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors"
         >
           <div className="min-w-0">
             <p className="text-[11px] font-medium">
-              {t("controls.fitToField.label")}
+              {tab === "3d"
+                ? tPreview("fitCourse")
+                : t("controls.fitToField.label")}
             </p>
-            <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
-              {t("controls.fitToField.description")}
-            </p>
+            {tab === "2d" && (
+              <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
+                {t("controls.fitToField.description")}
+              </p>
+            )}
           </div>
           <Scan className="size-4 shrink-0" />
         </button>
