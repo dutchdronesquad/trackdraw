@@ -558,6 +558,11 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   );
   const cloudEditable =
     document?.cloud?.canEdit && syncAllowed && syncStatus !== "permission";
+  const requestCloudWrite = document?.cloud?.canRequestWrite && !syncAllowed;
+  const canExportCloudBackup =
+    document?.cloud?.canEdit &&
+    (document.localSaveError ||
+      ["conflict", "permission", "invalid", "tooLarge"].includes(syncStatus));
   const syncLabel = t(
     document?.localSaveError
       ? "cloudLibrary.localSaveError"
@@ -730,7 +735,11 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                     />
                     <span
                       className="document-tab-title"
-                      title={design?.title || t("untitled")}
+                      title={
+                        doc?.cloud
+                          ? `${design?.title || t("untitled")} · ${doc.cloud.team?.name ?? t("cloudLibrary.personal")}`
+                          : design?.title || t("untitled")
+                      }
                     >
                       {design?.title || t("untitled")}
                     </span>
@@ -896,25 +905,20 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           <DocumentContext.Provider value={document} key={document.id}>
             {document.cloud ? (
               <div className="desktop-cloud-document">
-                <div className="desktop-cloud-context">
-                  <span>
-                    {document.cloud.team?.name ?? t("cloudLibrary.personal")}
-                  </span>
-                  {document.cloud.canRequestWrite && !syncAllowed && (
-                    <button onClick={() => account.setOpen(true)}>
-                      {t("account.allowProjectSync")}
-                    </button>
-                  )}
-                  {(document.localSaveError ||
-                    ["conflict", "permission", "invalid", "tooLarge"].includes(
-                      syncStatus
-                    )) &&
-                    document.cloud.canEdit && (
+                {(requestCloudWrite || canExportCloudBackup) && (
+                  <div className="desktop-cloud-context">
+                    {requestCloudWrite && (
+                      <button onClick={() => account.setOpen(true)}>
+                        {t("account.allowProjectSync")}
+                      </button>
+                    )}
+                    {canExportCloudBackup && (
                       <button onClick={() => run(() => onSave(document.id))}>
                         {t("exportBackup")}
                       </button>
                     )}
-                </div>
+                  </div>
+                )}
                 <div className="desktop-cloud-viewer">
                   {cloudEditable ? (
                     <StudioDialogsProvider>

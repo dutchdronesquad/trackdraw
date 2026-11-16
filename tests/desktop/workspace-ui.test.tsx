@@ -239,6 +239,10 @@ it("syncs the same personal project while team viewers and local tabs keep their
       await screen.findByRole("button", { name: "Open My cloud track" })
     );
     expect(await screen.findByText("Editor content")).toBeTruthy();
+    expect(
+      screen.getByTitle("My cloud track · Personal projects")
+    ).toBeTruthy();
+    expect(screen.queryByText("Personal projects")).toBeNull();
     await act(async () => {
       const current = workspace.getDocument(
         workspace.useWorkspace.getState().activeId
