@@ -10,6 +10,7 @@ import { getMcpIssuer } from "@/lib/server/mcp/oauth-metadata";
 
 import {
   DESKTOP_CLIENT_ID,
+  DESKTOP_LIBRARY_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
@@ -25,17 +26,20 @@ export async function getDesktopConsentRequest(
   const params = new URLSearchParams(query);
   const resources = params.getAll("resource");
   const scopes = new Set(params.get("scope")?.split(" "));
+  const library = scopes.has(DESKTOP_LIBRARY_SCOPE);
   if (
     params.get("client_id") !== DESKTOP_CLIENT_ID ||
     resources.length !== 1 ||
     resources[0] !== DESKTOP_RESOURCE ||
-    scopes.size !== 2 ||
+    scopes.size !== (library ? 3 : 2) ||
     !scopes.has(DESKTOP_SCOPE) ||
     !scopes.has("offline_access")
   )
     return null;
   const user = await getCurrentUserFromHeaders(headers);
-  return user ? { query, account: user.email ?? user.name ?? user.id } : null;
+  return user
+    ? { query, account: user.email ?? user.name ?? user.id, library }
+    : null;
 }
 
 export async function getDesktopAccount(request: Request) {
@@ -65,7 +69,7 @@ export async function getDesktopAccount(request: Request) {
   )
     return null;
   const db = await getDatabase();
-  return db
+  const account = await db
     .prepare(
       `SELECT u.id, u.name, u.email FROM users u WHERE u.id = ? AND u.banned_at IS NULL
       AND EXISTS (SELECT 1 FROM oauthConsent c WHERE c.userId = u.id AND c.clientId = ?
@@ -74,4 +78,24 @@ export async function getDesktopAccount(request: Request) {
     )
     .bind(claims.sub, DESKTOP_CLIENT_ID, DESKTOP_RESOURCE, DESKTOP_SCOPE)
     .first<{ id: string; name: string | null; email: string | null }>();
+  if (!account) return null;
+
+  const libraryAccess =
+    claims.scope.split(" ").includes(DESKTOP_LIBRARY_SCOPE) &&
+    Boolean(
+      await db
+        .prepare(
+          `SELECT 1 FROM oauthConsent c WHERE c.userId = ? AND c.clientId = ?
+        AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)
+        AND EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = ?)`
+        )
+        .bind(
+          account.id,
+          DESKTOP_CLIENT_ID,
+          DESKTOP_RESOURCE,
+          DESKTOP_LIBRARY_SCOPE
+        )
+        .first()
+    );
+  return { ...account, libraryAccess };
 }

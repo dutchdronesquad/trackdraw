@@ -41,6 +41,8 @@ TrackDraw uses Cloudflare D1 for persisted share storage.
 
 When deploying the desktop sign-in service from the desktop integration branch, apply `0038_desktop_oauth_client.sql` before the matching Worker code. The migration seeds the public native client and its dedicated desktop account audience. The client uses the existing OAuth endpoints and signed consent flow, with S256 PKCE and a temporary IPv4 loopback port. `GET /api/desktop/session` checks the active desktop token, account and consent and returns private, uncached identity data. No new binding, client secret or WAF exemption is needed.
 
+Apply `0039_desktop_library_scope.sql` before deploying the desktop library. It adds `desktop:library` to the native client's allowed scope set. Existing grants can still restore account identity and can explicitly approve the library scope from Home. `GET /api/desktop/library` returns uncached project summaries and team memberships after checking the desktop grant and current project access.
+
 ### Team ownership foundation
 
 Apply `0030_team_project_ownership.sql` before deploying the team ownership services. It rebuilds `projects` inside the normal D1 migration transaction, preserves existing project/share IDs and pending/applied MCP history, and adds team/member/invitation tables plus exclusive personal-or-team ownership. Deferred foreign keys do not suppress cascades; the migration explicitly preserves the edit history before replacing its parent. Do not split the migration into autocommit statements. No new binding, secret, auth endpoint or user-facing team feature is enabled. See [the ownership and permission contract](../pva/team-project-authorization.md) and its lifecycle activation requirements.

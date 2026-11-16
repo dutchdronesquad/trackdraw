@@ -140,3 +140,75 @@ it("keeps Home outside the scrolling tabs and reveals an activated document with
   ).toBe("darwin");
   expect(firstTab.hasAttribute("data-tauri-drag-region")).toBe(false);
 });
+
+it("browses personal and team projects without closing local editor tabs", async () => {
+  await act(async () => {
+    await workspace.openDocument(first.id);
+    await workspace.showLibrary();
+  });
+  const bridge = Object.getOwnPropertyDescriptor(
+    window,
+    "trackdrawDesktop"
+  )!.value;
+  const project = {
+    id: "cloud-project",
+    title: "Team track",
+    updatedAt: "2026-11-16T00:00:00Z",
+  };
+  const team = { id: "club", name: "FPV Club", role: "viewer" };
+  const openStudio = vi.fn(async () => {});
+  Object.assign(bridge, {
+    account: async () => ({
+      status: "connected",
+      account: {
+        id: "pilot",
+        name: "Pilot",
+        email: "pilot@example.invalid",
+        libraryAccess: true,
+      },
+    }),
+    library: vi.fn(async (kind) => {
+      if (kind === "teams") return { teams: [team] };
+      if (kind === "team")
+        return { team: { ...team, canEdit: false }, projects: [project] };
+      return {
+        projects: [
+          { ...project, id: "personal-project", title: "My cloud track" },
+        ],
+      };
+    }),
+    openStudio,
+  });
+  try {
+    showWorkspace();
+    const user = userEvent.setup();
+    const profile = await screen.findByRole("button", {
+      name: "Account menu for Pilot",
+    });
+    await user.click(profile);
+    expect(screen.getByText("pilot@example.invalid")).toBeTruthy();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "Personal projects" }));
+    expect(await screen.findByText("My cloud track")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "FPV Club" }));
+    expect(await screen.findByText("Viewer · Read-only")).toBeTruthy();
+    expect(screen.queryByText("My cloud track")).toBeNull();
+    await user.click(
+      screen.getByRole("button", { name: "Open Team track in Web Studio" })
+    );
+    expect(openStudio).toHaveBeenCalledWith({
+      kind: "team",
+      teamId: "club",
+      projectId: "cloud-project",
+    });
+    expect(screen.getByRole("tab", { name: first.title })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "On this device" }));
+    expect(
+      screen.getByRole("button", { name: `Actions for ${first.title}` })
+    ).toBeTruthy();
+  } finally {
+    delete bridge.account;
+    delete bridge.library;
+    delete bridge.openStudio;
+  }
+});

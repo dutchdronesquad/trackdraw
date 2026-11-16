@@ -13,6 +13,9 @@ import {
   Copy,
   Trash2,
   HardDrive,
+  CircleUserRound,
+  Cloud,
+  Users,
   Route,
   Ruler,
   ArrowUpRight,
@@ -48,7 +51,11 @@ import {
   getSaveFailures,
   getErrorMessage,
 } from "../storage/projects.mjs";
-import WorkspaceAccount from "./WorkspaceAccount.jsx";
+import WorkspaceAccount, {
+  useWorkspaceAccount,
+  WorkspaceAccountMenu,
+} from "./WorkspaceAccount.jsx";
+import CloudLibrary from "./CloudLibrary.jsx";
 import { DocumentContext } from "./document-context.jsx";
 import {
   useWorkspace,
@@ -76,7 +83,15 @@ function Preview({ design }) {
   return <img src={src || undefined} alt="" loading="lazy" />;
 }
 
-function Library({ onNew, onImport, onSample, run }) {
+function Library({
+  onNew,
+  onImport,
+  onSample,
+  run,
+  account,
+  selection,
+  setSelection,
+}) {
   const t = useTranslations("editor.desktopWorkspace");
   const locale = useLocale();
   const theme = useTheme();
@@ -89,6 +104,38 @@ function Library({ onNew, onImport, onSample, run }) {
   const [title, setTitle] = useState("");
   const [menu, setMenu] = useState(null);
   const [working, setWorking] = useState(false);
+  const cloud = useTranslations("editor.desktopWorkspace.cloudLibrary");
+  const accountId = account.session.account?.id;
+  const canBrowse =
+    account.pending !== "signOut" &&
+    account.session.status === "connected" &&
+    account.session.account?.libraryAccess;
+  const current =
+    canBrowse && selection?.accountId === accountId ? selection : null;
+  const [overview, setOverview] = useState(null);
+  const [teamRetry, setTeamRetry] = useState(0);
+
+  useEffect(() => {
+    if (!canBrowse) return;
+    let active = true;
+    window.trackdrawDesktop
+      .library("teams")
+      .then(({ teams }) => {
+        if (active) setOverview({ accountId, teams });
+      })
+      .catch(() => {
+        if (active) setOverview({ accountId, failed: true });
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountId, canBrowse, teamRetry]);
+
+  const teamOverview = overview?.accountId === accountId ? overview : null;
+  function selectCloud(kind, team) {
+    setSelection({ accountId, kind, team });
+  }
+
   const designs = [...repository.designs]
     .sort((a, b) =>
       filter === "recent"
@@ -125,180 +172,256 @@ function Library({ onNew, onImport, onSample, run }) {
           />
           <span>{t("desktopAlpha")}</span>
         </div>
-        <p className="library-device">{t("workspace")}</p>
-        <button
-          className={filter === "recent" ? "selected" : ""}
-          aria-pressed={filter === "recent"}
-          onClick={() => setFilter("recent")}
-        >
-          <Home size={16} />
-          {t("recent")}
-        </button>
-        <button
-          className={filter === "all" ? "selected" : ""}
-          aria-pressed={filter === "all"}
-          onClick={() => setFilter("all")}
-        >
-          <FolderOpen size={16} />
-          {t("allProjects")}
-        </button>
+        <WorkspaceAccountMenu account={account} />
+        {canBrowse ? (
+          <nav
+            className="library-contexts"
+            aria-label={cloud("projectLocations")}
+          >
+            <button
+              className={!current ? "selected" : ""}
+              aria-pressed={!current}
+              onClick={() => setSelection(null)}
+            >
+              <HardDrive size={16} aria-hidden="true" /> {t("onDevice")}
+            </button>
+            <button
+              className={current?.kind === "personal" ? "selected" : ""}
+              aria-pressed={current?.kind === "personal"}
+              onClick={() => selectCloud("personal")}
+            >
+              <Cloud size={16} aria-hidden="true" /> {cloud("personal")}
+            </button>
+            <p className="library-device">{cloud("teams")}</p>
+            {!teamOverview && (
+              <p className="library-nav-status" role="status">
+                {cloud("loading")}
+              </p>
+            )}
+            {teamOverview?.failed && (
+              <button
+                onClick={() => {
+                  setOverview(null);
+                  setTeamRetry(teamRetry + 1);
+                }}
+              >
+                {cloud("retryTeams")}
+              </button>
+            )}
+            {teamOverview?.teams?.length === 0 && (
+              <p className="library-nav-status">{cloud("noTeams")}</p>
+            )}
+            {teamOverview?.teams?.map((team) => (
+              <button
+                key={team.id}
+                className={current?.team?.id === team.id ? "selected" : ""}
+                aria-pressed={current?.team?.id === team.id}
+                onClick={() => selectCloud("team", team)}
+              >
+                <Users size={16} aria-hidden="true" />{" "}
+                <span className="truncate">{team.name}</span>
+              </button>
+            ))}
+            <button onClick={() => account.openStudio({ kind: "teams" })}>
+              <ArrowUpRight size={16} aria-hidden="true" />{" "}
+              {cloud("manageTeams")}
+            </button>
+          </nav>
+        ) : account.session.status === "connected" &&
+          account.session.account?.libraryAccess === false ? (
+          <button onClick={() => account.setOpen(true)}>
+            {cloud("connect")}
+          </button>
+        ) : null}
+        {!current && (
+          <div className="library-local-views">
+            <p className="library-device">{t("workspace")}</p>
+            <button
+              className={filter === "recent" ? "selected" : ""}
+              aria-pressed={filter === "recent"}
+              onClick={() => setFilter("recent")}
+            >
+              <Home size={16} />
+              {t("recent")}
+            </button>
+            <button
+              className={filter === "all" ? "selected" : ""}
+              aria-pressed={filter === "all"}
+              onClick={() => setFilter("all")}
+            >
+              <FolderOpen size={16} />
+              {t("allProjects")}
+            </button>
+          </div>
+        )}
         <div className="library-sidebar-bottom">
           <HardDrive size={18} aria-hidden="true" />
           <strong>{t("localWorkspace")}</strong>
           <p>{t("offlineNotice")}</p>
         </div>
       </aside>
-      <main className="library-content">
-        <header className="library-heading">
-          <div>
-            <span className="library-eyebrow">{t("workspace")}</span>
-            <h1>{t("libraryTitle")}</h1>
-            <p>{t("description")}</p>
+      {current ? (
+        <CloudLibrary
+          key={JSON.stringify([accountId, current.kind, current.team?.id])}
+          account={account}
+          selection={current}
+        />
+      ) : (
+        <main className="library-content">
+          <header className="library-heading">
+            <div>
+              <span className="library-eyebrow">{t("workspace")}</span>
+              <h1>{t("libraryTitle")}</h1>
+              <p>{t("description")}</p>
+            </div>
+            <div className="library-actions">
+              <button onClick={onImport}>
+                <FolderOpen size={16} aria-hidden="true" />
+                {t("import")}
+              </button>
+              <button className="primary" onClick={onNew}>
+                <Plus size={16} />
+                {t("newProject")}
+              </button>
+            </div>
+          </header>
+          <div className="library-toolbar">
+            <h2>{t(filter === "recent" ? "recent" : "allProjects")}</h2>
+            <span className="library-count">
+              {t("projectCount", { count: designs.length })}
+            </span>
+            <div className="library-search">
+              <Search size={16} aria-hidden="true" />
+              <input
+                aria-label={t("search")}
+                placeholder={t("search")}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </div>
           </div>
-          <div className="library-actions">
-            <button onClick={onImport}>
-              <FolderOpen size={16} aria-hidden="true" />
-              {t("import")}
-            </button>
-            <button className="primary" onClick={onNew}>
-              <Plus size={16} />
-              {t("newProject")}
-            </button>
-          </div>
-        </header>
-        <div className="library-toolbar">
-          <h2>{t(filter === "recent" ? "recent" : "allProjects")}</h2>
-          <span className="library-count">
-            {t("projectCount", { count: designs.length })}
-          </span>
-          <div className="library-search">
-            <Search size={16} aria-hidden="true" />
-            <input
-              aria-label={t("search")}
-              placeholder={t("search")}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </div>
-        </div>
-        {designs.length ? (
-          <div className="project-grid">
-            {designs.map((design) => (
-              <article className="project-tile" key={design.id}>
-                <button
-                  className="project-open"
-                  aria-label={t("openProject", { title: design.title })}
-                  onClick={() => run(() => openDocument(design.id))}
-                >
-                  <div className="project-preview">
-                    <Preview design={design} />
-                    {(design.mapReference ||
-                      design.shapes.some((shape) => shape.appearance)) && (
-                      <span
-                        className="project-online-note"
-                        title={t("onlineResourcesHelp")}
-                      >
-                        <TriangleAlert size={12} aria-hidden="true" />
-                        {t("onlineResources")}
-                      </span>
-                    )}
-                    <span className="project-field-size">
-                      <Ruler size={12} aria-hidden="true" />
-                      {formatCompactFieldSize(
-                        design.field.width,
-                        design.field.height,
-                        unitSystem
-                      )}
-                    </span>
-                    <span className="project-open-hint" aria-hidden="true">
-                      <ArrowUpRight size={18} />
-                    </span>
-                  </div>
-                  <strong>{design.title || t("untitled")}</strong>
-                  <span className="project-details">
-                    <Route size={13} aria-hidden="true" />
-                    {t("obstacles", { count: design.shapes.length })}
-                    <span
-                      className="project-detail-separator"
-                      aria-hidden="true"
-                    >
-                      ·
-                    </span>
-                    <span>
-                      {t("updated", {
-                        date: new Date(design.updatedAt).toLocaleDateString(
-                          locale,
-                          { month: "short", day: "numeric" }
-                        ),
-                      })}
-                    </span>
-                  </span>
-                </button>
-                <DropdownMenu
-                  open={menu === design.id}
-                  onOpenChange={(open) => setMenu(open ? design.id : null)}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="project-menu-trigger"
-                      aria-label={t("projectActions", { title: design.title })}
-                    >
-                      <MoreHorizontal size={18} aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="desktop-project-menu"
-                    onCloseAutoFocus={(event) => {
-                      if (dialog) event.preventDefault();
-                    }}
+          {designs.length ? (
+            <div className="project-grid">
+              {designs.map((design) => (
+                <article className="project-tile" key={design.id}>
+                  <button
+                    className="project-open"
+                    aria-label={t("openProject", { title: design.title })}
+                    onClick={() => run(() => openDocument(design.id))}
                   >
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setDialog({ kind: "rename", id: design.id });
-                        setTitle(design.title);
+                    <div className="project-preview">
+                      <Preview design={design} />
+                      {(design.mapReference ||
+                        design.shapes.some((shape) => shape.appearance)) && (
+                        <span
+                          className="project-online-note"
+                          title={t("onlineResourcesHelp")}
+                        >
+                          <TriangleAlert size={12} aria-hidden="true" />
+                          {t("onlineResources")}
+                        </span>
+                      )}
+                      <span className="project-field-size">
+                        <Ruler size={12} aria-hidden="true" />
+                        {formatCompactFieldSize(
+                          design.field.width,
+                          design.field.height,
+                          unitSystem
+                        )}
+                      </span>
+                      <span className="project-open-hint" aria-hidden="true">
+                        <ArrowUpRight size={18} />
+                      </span>
+                    </div>
+                    <strong>{design.title || t("untitled")}</strong>
+                    <span className="project-details">
+                      <Route size={13} aria-hidden="true" />
+                      {t("obstacles", { count: design.shapes.length })}
+                      <span
+                        className="project-detail-separator"
+                        aria-hidden="true"
+                      >
+                        ·
+                      </span>
+                      <span>
+                        {t("updated", {
+                          date: new Date(design.updatedAt).toLocaleDateString(
+                            locale,
+                            { month: "short", day: "numeric" }
+                          ),
+                        })}
+                      </span>
+                    </span>
+                  </button>
+                  <DropdownMenu
+                    open={menu === design.id}
+                    onOpenChange={(open) => setMenu(open ? design.id : null)}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="project-menu-trigger"
+                        aria-label={t("projectActions", {
+                          title: design.title,
+                        })}
+                      >
+                        <MoreHorizontal size={18} aria-hidden="true" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="desktop-project-menu"
+                      onCloseAutoFocus={(event) => {
+                        if (dialog) event.preventDefault();
                       }}
                     >
-                      <Pencil size={14} />
-                      {t("rename")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={() =>
-                        run(() =>
-                          duplicateDocument(
-                            design.id,
-                            t("copyOf", { title: design.title })
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setDialog({ kind: "rename", id: design.id });
+                          setTitle(design.title);
+                        }}
+                      >
+                        <Pencil size={14} />
+                        {t("rename")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() =>
+                          run(() =>
+                            duplicateDocument(
+                              design.id,
+                              t("copyOf", { title: design.title })
+                            )
                           )
-                        )
-                      }
-                    >
-                      <Copy size={14} />
-                      {t("duplicate")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() =>
-                        setDialog({ kind: "delete", id: design.id })
-                      }
-                    >
-                      <Trash2 size={14} />
-                      {t("delete")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="library-empty">
-            <LayoutGrid size={36} />
-            <h2>{t(query ? "noResults" : "emptyTitle")}</h2>
-            <p>{t(query ? "trySearch" : "emptyDescription")}</p>
-            {!query && <button onClick={onSample}>{t("sample")}</button>}
-          </div>
-        )}
-      </main>
+                        }
+                      >
+                        <Copy size={14} />
+                        {t("duplicate")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onSelect={() =>
+                          setDialog({ kind: "delete", id: design.id })
+                        }
+                      >
+                        <Trash2 size={14} />
+                        {t("delete")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="library-empty">
+              <LayoutGrid size={36} />
+              <h2>{t(query ? "noResults" : "emptyTitle")}</h2>
+              <p>{t(query ? "trySearch" : "emptyDescription")}</p>
+              {!query && <button onClick={onSample}>{t("sample")}</button>}
+            </div>
+          )}
+        </main>
+      )}
+
       {dialog && (
         <Dialog
           open
@@ -363,6 +486,15 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   const saveFailed = Boolean(getError());
   const [recovering, setRecovering] = useState(null);
   const [status, setStatus] = useState("");
+  const account = useWorkspaceAccount();
+  const [librarySelection, setLibrarySelection] = useState(null);
+  const showingCloud =
+    state.home &&
+    account.pending !== "signOut" &&
+    account.session.status === "connected" &&
+    account.session.account?.libraryAccess &&
+    librarySelection?.accountId === account.session.account.id;
+
   const saving = state.busy || status === t("saving");
   useEffect(() => {
     if (!document) return;
@@ -551,6 +683,8 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
               className="saving-indicator"
               aria-hidden="true"
             />
+          ) : showingCloud ? (
+            <Cloud size={13} aria-hidden="true" />
           ) : state.home ? (
             <HardDrive size={13} aria-hidden="true" />
           ) : (
@@ -560,12 +694,24 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
             ? t("saveFailed")
             : state.busy
               ? t("saving")
-              : state.home
-                ? t("onDevice")
-                : status}
+              : showingCloud
+                ? t("cloudLibrary.cloud")
+                : state.home
+                  ? t("onDevice")
+                  : status}
         </span>
-        <WorkspaceAccount />
+        {!state.home && account.available && (
+          <button
+            className="desktop-account-button"
+            data-desktop-account-trigger
+            aria-label={t("account.title")}
+            onClick={() => account.setOpen(true)}
+          >
+            <CircleUserRound size={18} aria-hidden="true" />
+          </button>
+        )}
       </div>
+      <WorkspaceAccount account={account} />
       {failures.length > 0 && (
         <section
           className="desktop-save-recovery"
@@ -639,6 +785,9 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           onImport={onImport}
           onSample={onSample}
           run={run}
+          account={account}
+          selection={librarySelection}
+          setSelection={setLibrarySelection}
         />
       ) : (
         <div

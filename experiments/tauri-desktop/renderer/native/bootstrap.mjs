@@ -35,6 +35,9 @@ window.trackdrawDesktop = Object.freeze({
   account: () => invoke("desktop_account"),
   signIn: () => invoke("desktop_sign_in"),
   signOut: () => invoke("desktop_sign_out"),
+  library: (scope, teamId = null, after = null) =>
+    invoke("desktop_library", { scope, teamId, after }),
+  openStudio: (target) => invoke("desktop_open_studio", { target }),
   cancelSignIn: () => invoke("desktop_cancel_sign_in"),
   finishClose: () => invoke("finish_close"),
   openProject: () => invoke("open_project"),
