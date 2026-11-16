@@ -101,9 +101,17 @@ body,
   margin: 6px 4px 6px 0;
   border-radius: 4px;
 }
-.desktop-tabs button:hover {
+.desktop-tabs > button:not([aria-selected="true"]):enabled:hover,
+.document-tab:not(.active):has(> [role="tab"]:enabled):hover {
   background: var(--secondary);
+}
+.desktop-tabs > button:enabled:hover,
+.document-tab:hover > [role="tab"]:enabled,
+.desktop-tabs .tab-close:enabled:hover {
   color: var(--foreground);
+}
+.desktop-tabs .tab-close:enabled:hover {
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 .desktop-tabs button:disabled {
   opacity: 0.45;
