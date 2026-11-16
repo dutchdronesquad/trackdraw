@@ -299,7 +299,9 @@ describe("private team publication", () => {
       "DELETE FROM team_members WHERE userId='editor'; DELETE FROM users WHERE id='editor'"
     );
     expect(
-      db.prepare("SELECT owner_user_id, gallery_state FROM gallery_entries").get()
+      db
+        .prepare("SELECT owner_user_id, gallery_state FROM gallery_entries")
+        .get()
     ).toMatchObject({ owner_user_id: "owner", gallery_state: "listed" });
     const retained = await resolveStoredShare(share.token);
     expect(retained.status).toBe("available");

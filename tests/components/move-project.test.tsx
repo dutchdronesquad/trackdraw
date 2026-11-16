@@ -146,7 +146,9 @@ it("submits the reviewed move to a team as an editor, blocks dismissal while pen
   await act(async () => resolve({ ok: true }));
   expect(mocks.forget).toHaveBeenCalledWith("race");
   expect(useProjectLibrary.getState().byUser.alice).toBe("other");
-  expect(navigate).toHaveBeenCalledWith("/studio?teamId=other&teamProject=race");
+  expect(navigate).toHaveBeenCalledWith(
+    "/studio?teamId=other&teamProject=race"
+  );
 });
 it("requires a fresh preview after a failed move and keeps local content untouched", async () => {
   mocks.projects.mockImplementation((query, command) =>
