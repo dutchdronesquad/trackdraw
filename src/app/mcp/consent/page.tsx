@@ -2,6 +2,9 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getConsentRequest } from "@/lib/server/mcp/connections";
+import { DESKTOP_CLIENT_ID } from "@/lib/desktop/oauth-contract";
+import { getDesktopConsentRequest } from "@/lib/server/desktop/oauth";
+import { DesktopConsent } from "@/components/desktop/DesktopConsent";
 import { McpConsent } from "@/components/mcp/consent";
 
 export const dynamic = "force-dynamic";
@@ -21,8 +24,15 @@ export default async function ConsentPage({
         : [value])
       query.append(key, entry);
   }
-  const request = await getConsentRequest(query.toString(), await headers());
-  if (request) return <McpConsent request={request} />;
+  const queryString = query.toString();
+  const requestHeaders = await headers();
+  if (query.get("client_id") === DESKTOP_CLIENT_ID) {
+    const request = await getDesktopConsentRequest(queryString, requestHeaders);
+    if (request) return <DesktopConsent request={request} />;
+  } else {
+    const request = await getConsentRequest(queryString, requestHeaders);
+    if (request) return <McpConsent request={request} />;
+  }
   const t = await getTranslations("login.mcp");
   return (
     <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6 py-12">

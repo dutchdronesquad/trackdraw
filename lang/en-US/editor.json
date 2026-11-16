@@ -626,6 +626,24 @@
     "flip": "flip"
   },
   "desktopWorkspace": {
+    "account": {
+      "title": "Account",
+      "description": "Sign in to TrackDraw through your default browser.",
+      "connected": "Your TrackDraw account is connected to this desktop app.",
+      "signIn": "Sign in in browser",
+      "signOut": "Sign out",
+      "cancel": "Cancel sign-in",
+      "retry": "Check connection",
+      "checking": "Checking your account…",
+      "browserPending": "Finish signing in in your browser. You can then return to TrackDraw.",
+      "signingOut": "Signing out…",
+      "offline": "TrackDraw could not verify your account. You can keep working on local projects.",
+      "signedOutOffline": "You are signed out on this device. TrackDraw could not reach the server to revoke the session.",
+      "keychainError": "TrackDraw could not access your system credential store.",
+      "browserError": "TrackDraw could not open your default browser.",
+      "timeout": "Sign-in timed out. Start a new sign-in from TrackDraw.",
+      "error": "TrackDraw could not connect your account. Try again."
+    },
     "onlineResources": "Online resources",
     "onlineResourcesHelp": "This track is editable offline. Its background map or external appearances may be unavailable without a connection.",
     "desktopAlpha": "Desktop Alpha",

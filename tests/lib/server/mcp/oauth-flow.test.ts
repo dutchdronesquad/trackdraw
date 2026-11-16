@@ -212,7 +212,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(database.oauthAccessToken[0].token).not.toBe(tokens.access_token);
     expect(database.oauthRefreshToken[0].token).not.toBe(tokens.refresh_token);
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: tokens.access_token },
       })
     ).toMatchObject({
@@ -255,12 +255,12 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(response.status).toBe(200);
     const tokens = (await response.json()) as { access_token: string };
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: tokens.access_token },
       })
     ).toMatchObject({ scope: "mcp:read projects:read offline_access" });
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: oldTokens.access_token },
       })
     ).toMatchObject({ scope: "mcp:read offline_access" });
@@ -279,7 +279,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(response.status).toBe(200);
     const tokens = (await response.json()) as { access_token: string };
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: tokens.access_token },
       })
     ).toMatchObject({ scope });
@@ -295,7 +295,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(response.status).toBe(200);
     const tokens = (await response.json()) as { access_token: string };
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: tokens.access_token },
       })
     ).toMatchObject({ scope: "mcp:read projects:read" });
@@ -409,7 +409,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     expect(next.refresh_token).toBeTruthy();
     expect(next.refresh_token).not.toBe(tokens.refresh_token);
     expect(
-      await auth.api.verifyMcpAccessToken({
+      await auth.api.verifyOAuthAccessToken({
         body: { token: next.access_token },
       })
     ).toMatchObject({ active: true, client_id: id });
@@ -425,7 +425,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     ).toBe(400);
     // Reuse detection invalidates the token family, including the rotated access.
     await expect(
-      auth.api.verifyMcpAccessToken({ body: { token: next.access_token } })
+      auth.api.verifyOAuthAccessToken({ body: { token: next.access_token } })
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 
@@ -439,7 +439,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     const row = database.oauthAccessToken[0];
     row.expiresAt = new Date(0);
     await expect(
-      auth.api.verifyMcpAccessToken({ body: { token: tokens.access_token } })
+      auth.api.verifyOAuthAccessToken({ body: { token: tokens.access_token } })
     ).rejects.toMatchObject({ statusCode: 401 });
     row.expiresAt = new Date(Date.now() + 60000);
     const revoked = await request("/api/auth/oauth2/revoke", {
@@ -449,7 +449,7 @@ describe("MCP OAuth authorization flow with the real Better Auth provider", () =
     });
     expect(revoked.status).toBe(200);
     await expect(
-      auth.api.verifyMcpAccessToken({ body: { token: tokens.access_token } })
+      auth.api.verifyOAuthAccessToken({ body: { token: tokens.access_token } })
     ).rejects.toMatchObject({ statusCode: 401 });
     const exposed = await request("/api/auth/verify-mcp-access-token", {
       token: tokens.access_token,

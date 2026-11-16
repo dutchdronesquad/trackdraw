@@ -1,4 +1,11 @@
 {
+  "desktopConsent": {
+    "title": "Connect TrackDraw Desktop",
+    "description": "Let the desktop app sign in as {account} and remember this connection on this computer.",
+    "allow": "Connect desktop",
+    "cancel": "Cancel",
+    "failed": "Could not connect the desktop app. Try again."
+  },
   "metadata": {
     "title": "Sign in",
     "description": "Sign in to TrackDraw with a one-time magic link."

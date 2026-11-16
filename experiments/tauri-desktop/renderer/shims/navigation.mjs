@@ -20,12 +20,17 @@ for (const method of ["pushState", "replaceState"]) {
         return;
       }
       if (
-        ["account", "share", "feedback"].includes(
-          url.searchParams.get("dialog")
-        )
+        requested === "account" &&
+        url.pathname === "/studio" &&
+        url.protocol === window.location.protocol &&
+        url.host === window.location.host
       ) {
+        window.dispatchEvent(new Event("desktop:account"));
+        return;
+      }
+      if (["share", "feedback"].includes(requested)) {
         toast.info(
-          "Cloud, account and website functions are outside this offline POC."
+          "Cloud project and website functions are unavailable in the desktop app."
         );
         return;
       }
@@ -52,13 +57,21 @@ export function navigate(href, replace = false) {
   const url = new URL(href, window.location.href);
   const dialog = url.searchParams.get("dialog");
   if (
+    url.protocol === window.location.protocol &&
+    url.host === window.location.host &&
+    url.pathname === "/login"
+  ) {
+    window.dispatchEvent(new Event("desktop:account"));
+    return;
+  }
+  if (
     url.origin !== window.location.origin ||
     url.protocol !== window.location.protocol ||
     url.pathname !== "/studio" ||
-    ["account", "share", "feedback"].includes(dialog)
+    ["share", "feedback"].includes(dialog)
   ) {
     toast.info(
-      "Cloud, account and website functions are outside this offline POC."
+      "Cloud project and website functions are unavailable in the desktop app."
     );
     return;
   }

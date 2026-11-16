@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
-import { createHmac } from "node:crypto";
-import { createMigratedDatabase } from "../../helpers/sqlite-d1";
+import { createHash, createHmac, randomBytes } from "node:crypto";
+import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
 
 vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({ getDatabase: vi.fn() }));
@@ -13,8 +13,18 @@ vi.mock("@/lib/server/mcp/oauth-provider", async (importOriginal) => {
   return { ...actual, getMcpOAuthPlugins: vi.fn(actual.getMcpOAuthPlugins) };
 });
 import { getMcpOAuthPlugins } from "@/lib/server/mcp/oauth-provider";
-import { getMcpDiscoveryResponse } from "@/lib/server/mcp/oauth-metadata";
+import {
+  getMcpDiscoveryResponse,
+  getMcpResource,
+} from "@/lib/server/mcp/oauth-metadata";
 import { getAuth } from "@/lib/server/auth";
+import {
+  DESKTOP_CLIENT_ID,
+  DESKTOP_RESOURCE,
+  DESKTOP_SCOPE,
+} from "@/lib/desktop/oauth-contract";
+import { GET as desktopSession } from "@/app/api/desktop/session/route";
+import { authenticateMcpRequest } from "@/lib/server/mcp/oauth-auth";
 
 let database: DatabaseSync;
 let queries: string[];
@@ -111,6 +121,152 @@ describe("full auth configuration and database schema", () => {
     expect(await (await getAuth()).api.getSession({ headers })).toBeNull();
     expect(metadataQueries()).toHaveLength(0);
   });
+
+  it.skipIf(!!process.env.TRACKDRAW_AUTH_SCHEMA_JSON)(
+    "exchanges a native code against the seeded client and rotates and revokes its desktop session",
+    async () => {
+      const origin = "https://trackdraw.app";
+      const auth = await getAuth();
+      const context = await auth.$context;
+      const user = await context.internalAdapter.createUser(
+        {
+          name: "Desktop tester",
+          email: "desktop@example.invalid",
+          emailVerified: true,
+        },
+        { method: "magic-link" }
+      );
+      const session = await context.internalAdapter.createSession(user.id);
+      const cookie =
+        context.authCookies.sessionToken.name +
+        "=" +
+        encodeURIComponent(
+          session.token +
+            "." +
+            createHmac("sha256", context.secret)
+              .update(session.token)
+              .digest("base64")
+        );
+      // Keep the real provider adapter on SQLite and emulate the D1 read used by this route.
+      const prepare = database.prepare.bind(database);
+      const d1 = sqliteD1({ prepare } as DatabaseSync);
+      database.prepare = (sql) =>
+        /^SELECT u.id, u.name, u.email FROM users/.test(sql)
+          ? (d1.prepare(sql) as unknown as ReturnType<typeof prepare>)
+          : prepare(sql);
+
+      const redirect = "http://127.0.0.1:52972/callback";
+      const verifier = randomBytes(32).toString("base64url");
+      const authorize = new URLSearchParams({
+        client_id: DESKTOP_CLIENT_ID,
+        redirect_uri: redirect,
+        response_type: "code",
+        prompt: "consent",
+        scope: DESKTOP_SCOPE + " offline_access",
+        state: "desktop-test-state",
+        code_challenge: createHash("sha256")
+          .update(verifier)
+          .digest("base64url"),
+        code_challenge_method: "S256",
+        resource: DESKTOP_RESOURCE,
+      });
+      const authorizeResponse = await auth.handler(
+        new Request(origin + "/api/auth/oauth2/authorize?" + authorize, {
+          headers: { cookie },
+        })
+      );
+      expect(authorizeResponse.status).toBe(302);
+      const consent = new URL(
+        authorizeResponse.headers.get("location")!,
+        origin
+      );
+      expect(consent.pathname).toBe("/mcp/consent");
+      const consentResponse = await auth.handler(
+        new Request(origin + "/api/auth/oauth2/consent", {
+          method: "POST",
+          headers: { cookie, origin, "content-type": "application/json" },
+          body: JSON.stringify({
+            accept: true,
+            oauth_query: consent.search.slice(1),
+          }),
+        })
+      );
+      expect(consentResponse.status).toBe(200);
+      const callback = new URL(
+        ((await consentResponse.json()) as { url: string }).url
+      );
+      expect(callback.origin + callback.pathname).toBe(redirect);
+      expect(callback.searchParams.get("state")).toBe("desktop-test-state");
+      expect(callback.searchParams.get("iss")).toBe(origin + "/api/auth");
+      function oauthForm(endpoint: string, body: Record<string, string>) {
+        return auth.handler(
+          new Request(origin + "/api/auth/oauth2/" + endpoint, {
+            method: "POST",
+            body: new URLSearchParams({
+              client_id: DESKTOP_CLIENT_ID,
+              ...body,
+            }),
+          })
+        );
+      }
+      const tokenResponse = await oauthForm("token", {
+        grant_type: "authorization_code",
+        code: callback.searchParams.get("code")!,
+        redirect_uri: redirect,
+        resource: DESKTOP_RESOURCE,
+        code_verifier: verifier,
+      });
+      expect(tokenResponse.status).toBe(200);
+      type Tokens = { access_token: string; refresh_token: string };
+      const first = (await tokenResponse.json()) as Tokens;
+      const account = (token: string) =>
+        desktopSession(
+          new Request(origin + "/api/desktop/session", {
+            headers: { authorization: "Bearer " + token },
+          })
+        );
+      expect((await account("not-a-token")).status).toBe(401);
+      expect(
+        await authenticateMcpRequest(
+          new Request(getMcpResource(), {
+            headers: { authorization: "Bearer " + first.access_token },
+          })
+        )
+      ).toMatchObject({ ok: false, status: 401 });
+      const profile = await account(first.access_token);
+      expect(profile.status).toBe(200);
+      expect(profile.headers.get("Cache-Control")).toBe("no-store");
+      expect(await profile.json()).toEqual({
+        account: { id: user.id, name: user.name, email: user.email },
+      });
+
+      const refresh = {
+        grant_type: "refresh_token",
+        refresh_token: first.refresh_token,
+      };
+      expect(
+        (await oauthForm("token", { ...refresh, resource: getMcpResource() }))
+          .status
+      ).toBe(400);
+      const refreshResponse = await oauthForm("token", {
+        ...refresh,
+        resource: DESKTOP_RESOURCE,
+      });
+      expect(refreshResponse.status).toBe(200);
+      const next = (await refreshResponse.json()) as Tokens;
+      expect(next.refresh_token).not.toBe(first.refresh_token);
+      expect((await account(next.access_token)).status).toBe(200);
+      expect(
+        (
+          await oauthForm("revoke", {
+            token: next.refresh_token,
+            token_type_hint: "refresh_token",
+          })
+        ).status
+      ).toBe(200);
+      expect((await account(next.access_token)).status).toBe(401);
+    }
+  );
 
   it("initializes auth plugins once across repeated real discovery requests", async () => {
     for (let index = 0; index < 3; index++) {

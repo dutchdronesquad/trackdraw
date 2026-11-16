@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod login;
+
+use login::{AccountStatus, DesktopLogin};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{
@@ -22,6 +25,7 @@ struct DesktopState {
     approved_close: AtomicBool,
     quitting: AtomicBool,
     profile: PathBuf,
+    login: DesktopLogin,
 }
 fn trusted(window: &WebviewWindow) -> Result<(), String> {
     if window.label() != "main" || !local_url(&window.url().map_err(|e| e.to_string())?) {
@@ -263,6 +267,52 @@ fn legacy_directory() -> Option<PathBuf> {
     let root = dirs::config_dir();
     root.map(|path| path.join("TrackDraw Desktop Alpha"))
 }
+async fn run_account_operation(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+    action: fn(&DesktopLogin) -> Result<AccountStatus, &'static str>,
+) -> Result<AccountStatus, String> {
+    trusted(&window)?;
+    let login = state.login.clone();
+    tauri::async_runtime::spawn_blocking(move || action(&login).map_err(str::to_owned))
+        .await
+        .map_err(|_| "unavailable".to_owned())?
+}
+
+#[tauri::command]
+async fn desktop_account(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+) -> Result<AccountStatus, String> {
+    run_account_operation(window, state, DesktopLogin::restore).await
+}
+
+#[tauri::command]
+async fn desktop_sign_in(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+) -> Result<AccountStatus, String> {
+    run_account_operation(window, state, DesktopLogin::sign_in).await
+}
+
+#[tauri::command]
+async fn desktop_sign_out(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+) -> Result<AccountStatus, String> {
+    run_account_operation(window, state, DesktopLogin::sign_out).await
+}
+
+#[tauri::command]
+fn desktop_cancel_sign_in(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+) -> Result<(), String> {
+    trusted(&window)?;
+    state.login.cancel();
+    Ok(())
+}
+
 fn main() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -275,6 +325,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             desktop_projects,
             desktop_platform,
+            desktop_account,
+            desktop_sign_in,
+            desktop_sign_out,
+            desktop_cancel_sign_in,
             finish_close,
             open_project,
             save_project,
@@ -313,6 +367,7 @@ fn main() {
                 repository: Mutex::new(repository),
                 approved_close: AtomicBool::new(false),
                 quitting: AtomicBool::new(false),
+                login: DesktopLogin::new(&profile),
                 profile,
             });
             menus(app.handle())?;

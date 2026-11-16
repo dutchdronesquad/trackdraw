@@ -115,7 +115,7 @@ describe("TrackDraw MCP endpoint", () => {
       };
     });
     vi.mocked(getAuth).mockResolvedValue({
-      api: { verifyMcpAccessToken: verifyAccessToken },
+      api: { verifyOAuthAccessToken: verifyAccessToken },
     } as never);
     vi.mocked(getDatabase).mockResolvedValue(sqliteD1(sqlite));
   });

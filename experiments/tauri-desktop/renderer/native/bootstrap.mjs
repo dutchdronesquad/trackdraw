@@ -32,6 +32,10 @@ window.trackdrawDesktop = Object.freeze({
   platform: await invoke("desktop_platform"),
   projects: (name, payload = null) =>
     invoke("desktop_projects", { name, payload }),
+  account: () => invoke("desktop_account"),
+  signIn: () => invoke("desktop_sign_in"),
+  signOut: () => invoke("desktop_sign_out"),
+  cancelSignIn: () => invoke("desktop_cancel_sign_in"),
   finishClose: () => invoke("finish_close"),
   openProject: () => invoke("open_project"),
   saveProject: (payload) => invoke("save_project", { payload }),
