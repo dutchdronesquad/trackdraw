@@ -43,16 +43,19 @@ vi.mock("@react-three/fiber", () => {
   return {
     Canvas: MockCanvas,
     useFrame: vi.fn(),
-    useThree: vi.fn(() => ({
-      camera: { position: { distanceTo: vi.fn(() => 10) } },
-      gl: {
-        domElement: {
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
-          toDataURL: vi.fn(() => ""),
-        },
-      },
-    })),
+    useThree: vi.fn(
+      (select) =>
+        select?.({ invalidate: vi.fn() }) ?? {
+          camera: { position: { distanceTo: vi.fn(() => 10) } },
+          gl: {
+            domElement: {
+              addEventListener: vi.fn(),
+              removeEventListener: vi.fn(),
+              toDataURL: vi.fn(() => ""),
+            },
+          },
+        }
+    ),
   };
 });
 

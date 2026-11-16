@@ -11,6 +11,8 @@ import {
 import { DesktopInspectorPanel } from "./DesktopInspectorPanel";
 import { ElementPlacementControl } from "./ElementPlacementControl";
 import StatusBar from "./StatusBar";
+import { EditorViewDivider } from "./EditorViewDivider";
+import type { useEditorSplitView } from "@/hooks/editor/useEditorSplitView";
 import type {
   TrackCanvasHandle,
   TrackCanvasProps,
@@ -57,6 +59,8 @@ function Loading3D() {
 
 interface EditorWorkspaceProps {
   tab: EditorView;
+  canvasAreaRef: RefObject<HTMLDivElement | null>;
+  split: ReturnType<typeof useEditorSplitView>[1];
   readOnly: boolean;
   isMobile: boolean;
   canvasRef: RefObject<TrackCanvasHandle | null>;
@@ -85,6 +89,8 @@ interface EditorWorkspaceProps {
 
 export function EditorWorkspace({
   tab,
+  canvasAreaRef,
+  split,
   readOnly,
   isMobile,
   canvasRef,
@@ -114,17 +120,25 @@ export function EditorWorkspace({
     return () => window.clearTimeout(timeoutId);
   }, [hasVisited3D]);
 
+  const show2D = split.active || tab === "2d";
+  const show3D = split.active || tab === "3d";
+
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden">
       {/* Canvas area */}
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="bg-canvas relative min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div
+          ref={canvasAreaRef}
+          className="bg-canvas relative min-h-0 flex-1 overflow-hidden"
+        >
           {/* 2D: always mounted so export always works; hidden visually when not active */}
           <div
-            className="absolute inset-0"
+            id="editor-canvas-2d"
+            className="absolute inset-0 overflow-hidden"
             style={{
-              visibility: tab === "2d" ? "visible" : "hidden",
-              pointerEvents: tab === "2d" ? "auto" : "none",
+              right: split.active ? `${100 - split.ratio}%` : undefined,
+              visibility: show2D ? "visible" : "hidden",
+              pointerEvents: show2D ? "auto" : "none",
             }}
           >
             <TrackCanvas
@@ -138,23 +152,30 @@ export function EditorWorkspace({
               readOnly={readOnly}
               showObstacleNumbers={showObstacleNumbers}
             />
+            {show2D && !readOnly && !isMobile ? (
+              <ElementPlacementControl />
+            ) : null}
           </div>
           {hasVisited3D ? (
             <div
-              className="absolute inset-0"
-              style={{ display: tab === "3d" ? "block" : "none" }}
+              className="absolute inset-0 overflow-hidden"
+              style={{
+                left: split.active ? `${split.ratio}%` : undefined,
+                display: show3D ? "block" : "none",
+              }}
             >
               <TrackPreview3D
                 ref={preview3DRef}
+                active={show3D}
                 showGizmo={mobileGizmoEnabled}
                 onFlyModeChange={onFlyModeChange}
-                readOnly={readOnly}
+                readOnly={readOnly || split.active}
               />
             </div>
           ) : null}
-          {tab === "2d" && !readOnly && !isMobile ? (
-            <ElementPlacementControl />
-          ) : null}
+          {split.active && (
+            <EditorViewDivider canvasAreaRef={canvasAreaRef} split={split} />
+          )}
           {overlay}
         </div>
         <StatusBar cursorPos={cursorPos} snapActive={snapActive} />

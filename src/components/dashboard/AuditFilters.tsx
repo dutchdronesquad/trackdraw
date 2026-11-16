@@ -200,7 +200,6 @@ function FilterCombobox({
   const visibleOptions = options.filter((option) =>
     option.label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
   );
-  let previousGroup: string | undefined;
 
   return (
     <FilterField id={id} label={label} className={className}>
@@ -254,11 +253,10 @@ function FilterCombobox({
             className="max-h-72 overflow-y-auto p-1"
           >
             {visibleOptions.length > 0 ? (
-              visibleOptions.map((option) => {
-                const showGroup = Boolean(
-                  option.group && option.group !== previousGroup
-                );
-                previousGroup = option.group;
+              visibleOptions.map((option, index) => {
+                const showGroup =
+                  option.group &&
+                  option.group !== visibleOptions[index - 1]?.group;
                 return (
                   <div key={option.value}>
                     {showGroup ? (

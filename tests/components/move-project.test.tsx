@@ -43,6 +43,14 @@ beforeEach(() => {
     teams: [
       { id: "club", name: "Drone Club", role: "owner", projectCount: 0 },
       { id: "other", name: "Other club", role: "editor", projectCount: 0 },
+      { id: "viewer", name: "Viewer club", role: "viewer", projectCount: 0 },
+      {
+        id: "recovery",
+        name: "Recovery club",
+        role: "editor",
+        recovery: true,
+        projectCount: 0,
+      },
     ],
   });
   mocks.projects.mockResolvedValue({ preview });
@@ -53,14 +61,18 @@ afterEach(() => {
   vi.clearAllMocks();
   vi.restoreAllMocks();
 });
-async function chooseTeam(user: ReturnType<typeof userEvent.setup>) {
+async function chooseTeam(
+  user: ReturnType<typeof userEvent.setup>,
+  name = "Drone Club"
+) {
   await user.click(
     await screen.findByRole("combobox", { name: "Destination team" })
   );
-  expect(screen.queryByRole("option", { name: "Other club" })).toBeNull();
-  await user.click(await screen.findByRole("option", { name: "Drone Club" }));
+  expect(screen.queryByRole("option", { name: "Viewer club" })).toBeNull();
+  expect(screen.queryByRole("option", { name: "Recovery club" })).toBeNull();
+  await user.click(await screen.findByRole("option", { name }));
 }
-it("explains the move, limits destinations to owned teams and cancels without moving", async () => {
+it("explains the move, offers writable destinations and cancels without moving", async () => {
   const cancel = vi.fn();
   const user = userEvent.setup();
   render(<MoveProject projectId="race" userId="alice" onCancel={cancel} />);
@@ -91,7 +103,7 @@ it("explains the move, limits destinations to owned teams and cancels without mo
   expect(mocks.projects).toHaveBeenCalledTimes(1);
   expect(mocks.forget).not.toHaveBeenCalled();
 });
-it("submits the reviewed revision once, blocks dismissal while pending and opens the team project", async () => {
+it("submits the reviewed move to a team as an editor, blocks dismissal while pending and opens the team project", async () => {
   let resolve!: (value: unknown) => void;
   mocks.projects.mockImplementation((query, command) =>
     command
@@ -106,7 +118,7 @@ it("submits the reviewed revision once, blocks dismissal while pending and opens
   const cancel = vi.fn();
   const user = userEvent.setup();
   render(<MoveProject projectId="race" userId="alice" onCancel={cancel} />);
-  await chooseTeam(user);
+  await chooseTeam(user, "Other club");
   const submit = screen.getByRole("button", {
     name: "Move project",
   });
@@ -126,15 +138,17 @@ it("submits the reviewed revision once, blocks dismissal while pending and opens
     {
       action: "move",
       projectId: "race",
-      teamId: "club",
+      teamId: "other",
       revision: 3,
       publicationVersion: "current",
     }
   );
   await act(async () => resolve({ ok: true }));
   expect(mocks.forget).toHaveBeenCalledWith("race");
-  expect(useProjectLibrary.getState().byUser.alice).toBe("club");
-  expect(navigate).toHaveBeenCalledWith("/studio?teamId=club&teamProject=race");
+  expect(useProjectLibrary.getState().byUser.alice).toBe("other");
+  expect(navigate).toHaveBeenCalledWith(
+    "/studio?teamId=other&teamProject=race"
+  );
 });
 it("requires a fresh preview after a failed move and keeps local content untouched", async () => {
   mocks.projects.mockImplementation((query, command) =>
@@ -168,15 +182,17 @@ it("requires a fresh preview after a failed move and keeps local content untouch
     ).disabled
   ).toBe(false);
 });
-it("offers no move when no owned team is available", async () => {
+it("offers no move when the user only has viewer access", async () => {
   mocks.teams.mockResolvedValue({
     teams: [
-      { id: "other", name: "Other club", role: "editor", projectCount: 0 },
+      { id: "other", name: "Other club", role: "viewer", projectCount: 0 },
     ],
   });
   render(<MoveProject projectId="race" userId="alice" onCancel={() => {}} />);
   expect(
-    await screen.findByText("You must own a team to move a project into it.")
+    await screen.findByText(
+      "You need owner or editor access to a team that allows edits."
+    )
   ).toBeTruthy();
   expect(
     (

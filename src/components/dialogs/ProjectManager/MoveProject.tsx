@@ -114,7 +114,7 @@ export function MoveProject({
             </SelectContent>
           </Select>
           <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
-            {t(teams.length ? "moveDialog.ownership" : "noOwnedTeam")}
+            {t(teams.length ? "moveDialog.ownership" : "noMoveDestination")}
           </p>
           <div className="border-border/60 mt-5 space-y-5 border-t pt-5">
             <div className="flex gap-3">

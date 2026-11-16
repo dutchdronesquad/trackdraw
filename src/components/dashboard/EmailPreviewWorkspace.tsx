@@ -27,10 +27,11 @@ type EmailPreviewWorkspaceProps = {
   textBody: string;
 };
 
-const flows: EmailPreviewFlow[] = ["authentication", "retention"];
+const flows: EmailPreviewFlow[] = ["authentication", "teams", "retention"];
 
 const flowBadgeClassNames: Record<EmailPreviewFlow, string> = {
   authentication: "border-brand-primary/30 text-brand-primary",
+  teams: "border-brand-primary/30 text-brand-primary",
   retention: "border-amber-500/40 text-amber-600 dark:text-amber-400",
 };
 

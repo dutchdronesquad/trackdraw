@@ -39,10 +39,12 @@ export function useProjectMove(
     ])
       .then(([overview, result]) => {
         if (!active) return;
-        const owned = overview.teams.filter((team) => team.role === "owner");
-        setSource({ userId, preview: result.preview, teams: owned });
+        const destinations = overview.teams.filter(
+          (team) => !team.recovery && team.role !== "viewer"
+        );
+        setSource({ userId, preview: result.preview, teams: destinations });
         setTeamId((current) =>
-          owned.some((team) => team.id === current) ? current : ""
+          destinations.some((team) => team.id === current) ? current : ""
         );
       })
       .catch(() => {

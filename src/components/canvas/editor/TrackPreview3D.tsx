@@ -1,5 +1,7 @@
 "use client";
 
+import { FlagMotion } from "@/components/canvas/preview3d/flag-motion";
+
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -258,6 +260,7 @@ export interface TrackPreview3DHandle {
 }
 
 export interface TrackPreview3DProps {
+  active?: boolean;
   showGizmo?: boolean;
   onFlyModeChange?: (active: boolean) => void;
   readOnly?: boolean;
@@ -266,6 +269,7 @@ export interface TrackPreview3DProps {
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
   function TrackPreview3D(
     {
+      active = true,
       showGizmo = true,
       onFlyModeChange,
       readOnly = false,
@@ -524,38 +528,42 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             }}
           />
 
-          {shapes.map((shape) => (
-            <Suspense key={shape.id} fallback={null}>
-              <MemoShape3D
-                isPrimaryPolyline={primaryPolyline?.id === shape.id}
-                isSelected={selectedIdSet.has(shape.id)}
-                onSelect={handleShapeSelect}
-                theme={t}
-                shape={
-                  elevationDrag?.shapeId === shape.id && previewPolyline
-                    ? previewPolyline
-                    : shape
-                }
-                outerRef={
-                  rotationDrag?.shapeId === shape.id
-                    ? dragRotationGroupRef
-                    : undefined
-                }
-                tiltDragRef={
-                  tiltDrag?.shapeId === shape.id ? tiltDragValueRef : undefined
-                }
-                elevationOverrideRef={
-                  ladderElevationDrag?.shapeId === shape.id
-                    ? ladderElevationDragValueRef
-                    : towerElevationDrag?.shapeId === shape.id
-                      ? towerElevationDragValueRef
-                      : diveGateElevationDrag?.shapeId === shape.id
-                        ? diveGateElevationDragValueRef
-                        : undefined
-                }
-              />
-            </Suspense>
-          ))}
+          <FlagMotion playing={active && (!flyMode || playing)}>
+            {shapes.map((shape) => (
+              <Suspense key={shape.id} fallback={null}>
+                <MemoShape3D
+                  isPrimaryPolyline={primaryPolyline?.id === shape.id}
+                  isSelected={selectedIdSet.has(shape.id)}
+                  onSelect={handleShapeSelect}
+                  theme={t}
+                  shape={
+                    elevationDrag?.shapeId === shape.id && previewPolyline
+                      ? previewPolyline
+                      : shape
+                  }
+                  outerRef={
+                    rotationDrag?.shapeId === shape.id
+                      ? dragRotationGroupRef
+                      : undefined
+                  }
+                  tiltDragRef={
+                    tiltDrag?.shapeId === shape.id
+                      ? tiltDragValueRef
+                      : undefined
+                  }
+                  elevationOverrideRef={
+                    ladderElevationDrag?.shapeId === shape.id
+                      ? ladderElevationDragValueRef
+                      : towerElevationDrag?.shapeId === shape.id
+                        ? towerElevationDragValueRef
+                        : diveGateElevationDrag?.shapeId === shape.id
+                          ? diveGateElevationDragValueRef
+                          : undefined
+                  }
+                />
+              </Suspense>
+            ))}
+          </FlagMotion>
 
           {previewPolyline && !flyMode && !readOnly ? (
             <PolylineElevationHandles3D

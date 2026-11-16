@@ -11,7 +11,9 @@ import {
 } from "../../../helpers/api-routes";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: vi.fn() }));
+vi.mock("@/lib/server/cloudflare-bindings", () => ({
+  getWorkerBindings: vi.fn(),
+}));
 vi.mock("@/lib/server/api-keys", () => ({
   trackReadPermission: { tracks: ["read"] },
 }));
@@ -29,7 +31,7 @@ vi.mock("@/lib/server/projects", async (original) => ({
 import { GET } from "@/app/api/v1/projects/[projectId]/viewer-snapshot/route";
 import { authenticateApiRequest } from "@/lib/server/api-v1";
 import { getProjectForUser } from "@/lib/server/projects";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getWorkerBindings } from "@/lib/server/cloudflare-bindings";
 
 const context = () => routeContext({ projectId: "project-1" });
 const request = () =>
@@ -79,7 +81,7 @@ describe("viewer snapshot API", () => {
     expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1", {
       mode: "all",
     });
-    expect(getCloudflareContext).not.toHaveBeenCalled();
+    expect(getWorkerBindings).not.toHaveBeenCalled();
   });
 
   it.each([401, 403, 429])(
@@ -91,14 +93,14 @@ describe("viewer snapshot API", () => {
       });
       expect((await GET(request(), context())).status).toBe(status);
       expect(getProjectForUser).not.toHaveBeenCalled();
-      expect(getCloudflareContext).not.toHaveBeenCalled();
+      expect(getWorkerBindings).not.toHaveBeenCalled();
     }
   );
 
   it("returns 404 for a project outside the API key owner", async () => {
     vi.mocked(getProjectForUser).mockResolvedValue(null);
     expect((await GET(request(), context())).status).toBe(404);
-    expect(getCloudflareContext).not.toHaveBeenCalled();
+    expect(getWorkerBindings).not.toHaveBeenCalled();
   });
 
   it("rejects invalid geometry before returning a snapshot", async () => {
@@ -106,8 +108,8 @@ describe("viewer snapshot API", () => {
     project.design.field.width = -1;
     vi.mocked(getProjectForUser).mockResolvedValue(project);
     const assetFetch = vi.fn();
-    vi.mocked(getCloudflareContext).mockResolvedValue({
-      env: { ASSETS: { fetch: assetFetch } },
+    vi.mocked(getWorkerBindings).mockResolvedValue({
+      ASSETS: { fetch: assetFetch },
     } as never);
     expect((await GET(request(), context())).status).toBe(500);
     expect(assetFetch).not.toHaveBeenCalled();

@@ -214,10 +214,10 @@ export function normalizeDesign(
   };
 }
 
-export function createDefaultDesign(): TrackDesign {
+export function createDefaultDesign(id = nanoid()): TrackDesign {
   const timestamp = nowIso();
   return {
-    id: nanoid(),
+    id,
     version: 2,
     title: "New Track",
     description: "",

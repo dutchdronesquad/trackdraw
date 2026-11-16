@@ -31,6 +31,7 @@ import {
   useDeveloperModeShortcut,
 } from "@/hooks/account/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
+import { useEditorSplitView } from "@/hooks/editor/useEditorSplitView";
 import { useSyncedEditorView } from "@/hooks/editor/useSyncedEditorView";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useOpenCloudProjectLink } from "./useOpenCloudProjectLink";
@@ -205,6 +206,8 @@ export default function EditorShell({
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [tab, setTab] = useSyncedEditorView(initialTab);
+  const [canvasAreaRef, split] = useEditorSplitView(!readOnly && !isMobile);
+  const { setRequested: setSplitRequested } = split;
   const [hasVisited3D, setHasVisited3D] = useState(initialTab === "3d");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -408,6 +411,7 @@ export default function EditorShell({
 
   const handleTabChange = useCallback(
     (nextTab: EditorView, options?: { closeExport?: boolean }) => {
+      setSplitRequested(false);
       if (nextTab === "3d" && tab !== "3d") {
         trackProductEvent(
           "editor.3d_opened",
@@ -427,8 +431,23 @@ export default function EditorShell({
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
       router.replace(nextUrl, { scroll: false });
     },
-    [design.id, pathname, router, searchParams, setTab, tab]
+    [design.id, pathname, router, searchParams, setSplitRequested, setTab, tab]
   );
+
+  const openSplitView = () => {
+    if (tab === "3d") {
+      preview3DRef.current?.stopFlyThrough();
+      handleTabChange("2d");
+    } else {
+      trackProductEvent(
+        "editor.3d_opened",
+        { projectId: design.id },
+        { oncePerSession: `editor-3d:${design.id}` }
+      );
+    }
+    setHasVisited3D(true);
+    split.open();
+  };
 
   const setActiveEditorTool = useCallback(
     (tool: string) => {
@@ -662,6 +681,15 @@ export default function EditorShell({
             <Header
               tab={tab}
               onTabChange={handleTabChange}
+              splitView={
+                split.available
+                  ? {
+                      active: split.active,
+                      onSelect: openSplitView,
+                      onReset: split.reset,
+                    }
+                  : undefined
+              }
               onShare={managedProject ? undefined : () => setShareOpen(true)}
               onExport={() => setExportOpen(true)}
               onImport={managedProject ? undefined : () => setImportOpen(true)}
@@ -707,6 +735,8 @@ export default function EditorShell({
           {/* ── Workspace (canvas + inspector) ───────────────── */}
           <EditorWorkspace
             tab={tab}
+            canvasAreaRef={canvasAreaRef}
+            split={split}
             readOnly={readOnly}
             isMobile={isMobile}
             canvasRef={canvasRef}
