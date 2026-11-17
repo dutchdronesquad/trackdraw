@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
+import { openCloudDocument } from "./workspace.mjs";
 import { useFormatter, useTranslations } from "next-intl";
 
 export default function CloudLibrary({ account, selection }) {
@@ -9,6 +10,8 @@ export default function CloudLibrary({ account, selection }) {
   const [pending, setPending] = useState(true);
   const [retry, setRetry] = useState(0);
   const [error, setError] = useState("");
+  const [opening, setOpening] = useState(null);
+  const [openError, setOpenError] = useState("");
   const scope = selection.kind;
   const teamId = selection.team?.id;
   const roles = { owner: t("owner"), editor: t("editor"), viewer: t("viewer") };
@@ -57,6 +60,27 @@ export default function CloudLibrary({ account, selection }) {
     }
   }
 
+  async function openProject(id) {
+    if (!account.session.account?.projectAccess) {
+      account.setOpen(true);
+      return;
+    }
+    setOpening(id);
+    setOpenError("");
+    try {
+      const project = await window.trackdrawDesktop.project(id, teamId);
+      await openCloudDocument(id, project);
+    } catch (reason) {
+      setOpenError(
+        reason === "permission" || reason === "rejected"
+          ? "accessChanged"
+          : "openError"
+      );
+    } finally {
+      setOpening(null);
+    }
+  }
+
   const team = page?.team ?? selection.team;
   return (
     <main className="library-content">
@@ -67,7 +91,7 @@ export default function CloudLibrary({ account, selection }) {
             <p>
               {t("teamAccess", {
                 role: roles[page.team.role],
-                access: t(page.team.canEdit ? "canEdit" : "readOnly"),
+                access: t("readOnly"),
               })}
             </p>
           )}
@@ -99,6 +123,11 @@ export default function CloudLibrary({ account, selection }) {
           {t("loading")}
         </p>
       )}
+      {openError && (
+        <p className="cloud-library-status" role="alert">
+          {t(openError)}
+        </p>
+      )}
       {page?.projects.length === 0 && (
         <p className="cloud-library-status">{t("empty")}</p>
       )}
@@ -117,15 +146,10 @@ export default function CloudLibrary({ account, selection }) {
               </div>
               <button
                 aria-label={t("openTitle", { title: project.title })}
-                onClick={() =>
-                  account.openStudio({
-                    kind: scope,
-                    projectId: project.id,
-                    ...(teamId ? { teamId } : {}),
-                  })
-                }
+                disabled={opening !== null}
+                onClick={() => void openProject(project.id)}
               >
-                {t("openStudio")} <ArrowUpRight size={15} aria-hidden="true" />
+                {t(opening === project.id ? "opening" : "openProject")}
               </button>
             </li>
           ))}

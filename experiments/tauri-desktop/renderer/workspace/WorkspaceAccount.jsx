@@ -229,9 +229,13 @@ export default function WorkspaceAccount({ account }) {
             </Button>
           ) : session.account ? (
             <>
-              {!offline && !session.account.libraryAccess && (
+              {!offline && !session.account.projectAccess && (
                 <Button disabled={!!pending} onClick={() => run("signIn")}>
-                  {t("connectLibrary")}
+                  {t(
+                    session.account.libraryAccess
+                      ? "allowProjectRead"
+                      : "connectLibrary"
+                  )}
                 </Button>
               )}
               {offline && (

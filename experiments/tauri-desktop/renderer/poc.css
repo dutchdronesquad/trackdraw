@@ -157,6 +157,25 @@ body,
 .desktop-document .h-dvh {
   height: 100%;
 }
+.desktop-cloud-document {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.desktop-cloud-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+.desktop-cloud-viewer {
+  flex: 1;
+  min-height: 0;
+}
 .desktop-library {
   display: flex;
   flex: 1;

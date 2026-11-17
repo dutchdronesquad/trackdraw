@@ -11,6 +11,7 @@ import { getMcpIssuer } from "@/lib/server/mcp/oauth-metadata";
 import {
   DESKTOP_CLIENT_ID,
   DESKTOP_LIBRARY_SCOPE,
+  DESKTOP_PROJECT_READ_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
@@ -27,18 +28,20 @@ export async function getDesktopConsentRequest(
   const resources = params.getAll("resource");
   const scopes = new Set(params.get("scope")?.split(" "));
   const library = scopes.has(DESKTOP_LIBRARY_SCOPE);
+  const projects = scopes.has(DESKTOP_PROJECT_READ_SCOPE);
   if (
     params.get("client_id") !== DESKTOP_CLIENT_ID ||
     resources.length !== 1 ||
     resources[0] !== DESKTOP_RESOURCE ||
-    scopes.size !== (library ? 3 : 2) ||
+    (projects && !library) ||
+    scopes.size !== 2 + Number(library) + Number(projects) ||
     !scopes.has(DESKTOP_SCOPE) ||
     !scopes.has("offline_access")
   )
     return null;
   const user = await getCurrentUserFromHeaders(headers);
   return user
-    ? { query, account: user.email ?? user.name ?? user.id, library }
+    ? { query, account: user.email ?? user.name ?? user.id, library, projects }
     : null;
 }
 
@@ -80,22 +83,23 @@ export async function getDesktopAccount(request: Request) {
     .first<{ id: string; name: string | null; email: string | null }>();
   if (!account) return null;
 
-  const libraryAccess =
-    claims.scope.split(" ").includes(DESKTOP_LIBRARY_SCOPE) &&
-    Boolean(
-      await db
-        .prepare(
-          `SELECT 1 FROM oauthConsent c WHERE c.userId = ? AND c.clientId = ?
-        AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)
-        AND EXISTS (SELECT 1 FROM json_each(c.scopes) WHERE value = ?)`
-        )
-        .bind(
-          account.id,
-          DESKTOP_CLIENT_ID,
-          DESKTOP_RESOURCE,
-          DESKTOP_LIBRARY_SCOPE
-        )
-        .first()
-    );
-  return { ...account, libraryAccess };
+  const tokenScopes = new Set(claims.scope.split(" "));
+  if (!tokenScopes.has(DESKTOP_LIBRARY_SCOPE))
+    return { ...account, libraryAccess: false, projectAccess: false };
+  const { results } = await db
+    .prepare(
+      `SELECT DISTINCT scope.value AS scope FROM oauthConsent c JOIN json_each(c.scopes) scope
+      WHERE c.userId = ? AND c.clientId = ?
+      AND EXISTS (SELECT 1 FROM json_each(c.resources) WHERE value = ?)`
+    )
+    .bind(account.id, DESKTOP_CLIENT_ID, DESKTOP_RESOURCE)
+    .all<{ scope: string }>();
+  const granted = new Set(results.map(({ scope }) => scope));
+  const can = (scope: string) => tokenScopes.has(scope) && granted.has(scope);
+  const libraryAccess = can(DESKTOP_LIBRARY_SCOPE);
+  return {
+    ...account,
+    libraryAccess,
+    projectAccess: libraryAccess && can(DESKTOP_PROJECT_READ_SCOPE),
+  };
 }

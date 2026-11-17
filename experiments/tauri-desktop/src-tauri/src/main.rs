@@ -333,6 +333,24 @@ async fn desktop_library(
 }
 
 #[tauri::command]
+async fn desktop_project(
+    window: WebviewWindow,
+    state: State<'_, DesktopState>,
+    project_id: String,
+    team_id: Option<String>,
+) -> Result<Value, String> {
+    trusted(&window)?;
+    let login = state.login.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        login
+            .project(&project_id, team_id.as_deref())
+            .map_err(str::to_owned)
+    })
+    .await
+    .map_err(|_| "unavailable".to_owned())?
+}
+
+#[tauri::command]
 fn desktop_open_studio(
     window: WebviewWindow,
     state: State<'_, DesktopState>,
@@ -359,6 +377,7 @@ fn main() {
             desktop_sign_out,
             desktop_cancel_sign_in,
             desktop_library,
+            desktop_project,
             desktop_open_studio,
             finish_close,
             open_project,

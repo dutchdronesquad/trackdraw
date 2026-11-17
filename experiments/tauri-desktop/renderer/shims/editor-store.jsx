@@ -6,7 +6,7 @@ import {
 import { useDocument } from "../workspace/document-context.jsx";
 export { createEditorStore };
 let active = browserStore;
-export function setActiveEditorStore(store) {
+export function setActiveEditorStore(store = browserStore) {
   active = store;
 }
 export function useEditor(selector = (state) => state) {

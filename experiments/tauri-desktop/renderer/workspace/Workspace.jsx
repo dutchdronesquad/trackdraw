@@ -41,6 +41,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import EditorShell from "@/components/editor/EditorShell";
+import ProjectViewer from "@/components/editor/viewer/EditorShell";
 import { StudioDialogsProvider } from "@/components/editor/StudioDialogsProvider";
 import { designToSvg } from "@/lib/export/exportSvg";
 import { parseDesign } from "@/lib/track/design";
@@ -69,6 +70,7 @@ import {
   deleteDocument,
   retryDocumentSave,
   canCloseWithBackups,
+  setCloudAccount,
 } from "./workspace.mjs";
 
 function Preview({ design }) {
@@ -481,13 +483,26 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   const t = useTranslations("editor.desktopWorkspace");
   const state = useWorkspace();
   const repository = useSyncExternalStore(subscribe, getState);
-  const document = getDocument(state.activeId);
+  const activeDocument = getDocument(state.activeId);
   const failures = getSaveFailures();
   const saveFailed = Boolean(getError());
   const [recovering, setRecovering] = useState(null);
   const [status, setStatus] = useState("");
   const account = useWorkspaceAccount();
   const [librarySelection, setLibrarySelection] = useState(null);
+  const cloudAccountId =
+    account.pending !== "signOut" &&
+    account.session.status === "connected" &&
+    account.session.account?.projectAccess
+      ? account.session.account.id
+      : null;
+  const accessLost =
+    activeDocument?.cloud && activeDocument.cloud.accountId !== cloudAccountId;
+  const document = accessLost ? null : activeDocument;
+  useEffect(() => {
+    setCloudAccount(cloudAccountId);
+  }, [cloudAccountId]);
+
   const showingCloud =
     state.home &&
     account.pending !== "signOut" &&
@@ -497,7 +512,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
 
   const saving = state.busy || status === t("saving");
   useEffect(() => {
-    if (!document) return;
+    if (!document || document.cloud) return;
     const update = () => {
       const design = document.store.getState().track.design;
       const saved = repository.designs.find((item) => item.id === design.id);
@@ -564,7 +579,11 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
         .getElementById(`desktop-tab-${state.activeId}`)
         ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [state.activeId, state.home]);
-  const tabs = [null, ...state.openIds];
+  const openIds = state.openIds.filter((id) => {
+    const cloud = getDocument(id)?.cloud;
+    return !cloud || cloud.accountId === cloudAccountId;
+  });
+  const tabs = [null, ...openIds];
   const change = (id) => run(() => (id ? openDocument(id) : showLibrary()));
   const keyDown = (event, id) => {
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
@@ -614,7 +633,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
             {t("home")}
           </button>
           <div className="document-tab-scroll">
-            {state.openIds.map((id) => {
+            {openIds.map((id) => {
               const doc = getDocument(id);
               const design = doc?.store.getState().track.design;
               return (
@@ -643,6 +662,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                       {design?.title || t("untitled")}
                     </span>
                     {design &&
+                      !doc?.cloud &&
                       repository.designs.find((item) => item.id === id)
                         ?.updatedAt !== design.updatedAt && (
                         <span aria-label={t("saving")}>•</span>
@@ -677,6 +697,8 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
         >
           {saveFailed ? (
             <TriangleAlert size={13} aria-hidden="true" />
+          ) : document?.cloud && !state.home ? (
+            <Cloud size={13} aria-hidden="true" />
           ) : saving && !state.home ? (
             <LoaderCircle
               size={13}
@@ -692,13 +714,15 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           )}
           {saveFailed
             ? t("saveFailed")
-            : state.busy
-              ? t("saving")
-              : showingCloud
-                ? t("cloudLibrary.cloud")
-                : state.home
-                  ? t("onDevice")
-                  : status}
+            : document?.cloud && !state.home
+              ? t("cloudLibrary.readOnly")
+              : state.busy
+                ? t("saving")
+                : showingCloud
+                  ? t("cloudLibrary.cloud")
+                  : state.home
+                    ? t("onDevice")
+                    : status}
         </span>
         {!state.home && account.available && (
           <button
@@ -797,12 +821,29 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           inert={state.busy || undefined}
         >
           <DocumentContext.Provider value={document} key={document.id}>
-            <StudioDialogsProvider>
-              <EditorShell
-                initialTab={document.view}
-                showStarterExperience={false}
-              />
-            </StudioDialogsProvider>
+            {document.cloud ? (
+              <div className="desktop-cloud-document">
+                <div className="desktop-cloud-context">
+                  <span>
+                    {document.cloud.team?.name ?? t("cloudLibrary.personal")}
+                  </span>
+                </div>
+                <div className="desktop-cloud-viewer">
+                  <ProjectViewer
+                    initialTab={document.view}
+                    privateProject
+                    contextLabel={t("cloudLibrary.readOnly")}
+                  />
+                </div>
+              </div>
+            ) : (
+              <StudioDialogsProvider>
+                <EditorShell
+                  initialTab={document.view}
+                  showStarterExperience={false}
+                />
+              </StudioDialogsProvider>
+            )}
           </DocumentContext.Provider>
         </div>
       )}

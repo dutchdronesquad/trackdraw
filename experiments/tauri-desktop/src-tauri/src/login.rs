@@ -24,7 +24,7 @@ use trackdraw_desktop::assets::digest;
 
 const CLIENT_ID: &str = "trackdraw-desktop";
 const RESOURCE: &str = "https://trackdraw.app/api/desktop/session";
-const SCOPE: &str = "desktop:account offline_access desktop:library";
+const SCOPE: &str = "desktop:account offline_access desktop:library desktop:projects:read";
 const CALLBACK: &str = "/callback";
 type Result<T> = std::result::Result<T, &'static str>;
 
@@ -44,6 +44,8 @@ pub struct Account {
     email: Option<String>,
     #[serde(default, rename = "libraryAccess")]
     library_access: bool,
+    #[serde(default, rename = "projectAccess")]
+    project_access: bool,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -73,8 +75,6 @@ struct Session {
 pub enum StudioTarget {
     Profile,
     Teams,
-    Personal { project_id: String },
-    Team { team_id: String, project_id: String },
 }
 
 #[derive(Serialize)]
@@ -219,9 +219,31 @@ impl DesktopLogin {
         team_id: Option<&str>,
         after: Option<&str>,
     ) -> Result<serde_json::Value> {
+        let mut query = vec![("scope", scope)];
+        query.extend(team_id.map(|team| ("teamId", team)));
+        query.extend(after.map(|cursor| ("after", cursor)));
+        self.read("/api/desktop/library", &query, |account| {
+            account.library_access
+        })
+    }
+
+    pub fn project(&self, project_id: &str, team_id: Option<&str>) -> Result<serde_json::Value> {
+        let mut query = vec![("projectId", project_id)];
+        query.extend(team_id.map(|team| ("teamId", team)));
+        self.read("/api/desktop/project", &query, |account| {
+            account.project_access
+        })
+    }
+
+    fn read(
+        &self,
+        path: &str,
+        query: &[(&str, &str)],
+        permitted: impl Fn(&Account) -> bool,
+    ) -> Result<serde_json::Value> {
         let _guard = self.busy.lock().map_err(|_| "unavailable")?;
         let mut credential = self.load()?.ok_or("rejected")?;
-        if !credential.account.library_access {
+        if !permitted(&credential.account) {
             return Err("permission");
         }
         let http = self.http()?;
@@ -240,11 +262,8 @@ impl DesktopLogin {
                 tokens.access_token
             }
         };
-        let mut url = self.url("/api/desktop/library");
-        url.query_pairs_mut()
-            .append_pair("scope", scope)
-            .extend_pairs(team_id.map(|team| ("teamId", team)))
-            .extend_pairs(after.map(|cursor| ("after", cursor)));
+        let mut url = self.url(path);
+        url.query_pairs_mut().extend_pairs(query.iter().copied());
         let response = http
             .get(url)
             .bearer_auth(token)
@@ -262,46 +281,13 @@ impl DesktopLogin {
     }
 
     pub fn open_studio(&self, target: StudioTarget) -> Result<()> {
-        let url = match target {
-            StudioTarget::Profile | StudioTarget::Teams => {
-                let section = if matches!(target, StudioTarget::Profile) {
-                    "profile"
-                } else {
-                    "teams"
-                };
-                let mut url = self.url("/studio");
-                url.query_pairs_mut()
-                    .extend_pairs([("dialog", "account"), ("section", section)]);
-                url
-            }
-            StudioTarget::Personal { project_id } => {
-                if project_id.is_empty() || project_id.len() > 128 {
-                    return Err("unavailable");
-                }
-                let mut url = self.url("/studio/open/");
-                url.path_segments_mut()
-                    .expect("hierarchical origin")
-                    .pop_if_empty()
-                    .push(&project_id);
-                url
-            }
-            StudioTarget::Team {
-                team_id,
-                project_id,
-            } => {
-                if team_id.is_empty()
-                    || project_id.is_empty()
-                    || team_id.len() > 128
-                    || project_id.len() > 128
-                {
-                    return Err("unavailable");
-                }
-                let mut url = self.url("/studio");
-                url.query_pairs_mut()
-                    .extend_pairs([("teamId", &team_id), ("teamProject", &project_id)]);
-                url
-            }
+        let section = match target {
+            StudioTarget::Profile => "profile",
+            StudioTarget::Teams => "teams",
         };
+        let mut url = self.url("/studio");
+        url.query_pairs_mut()
+            .extend_pairs([("dialog", "account"), ("section", section)]);
         open::that_detached(url.as_str()).map_err(|_| "browser")
     }
 
@@ -366,7 +352,7 @@ impl DesktopLogin {
         let previous = self.load()?;
         if previous
             .as_ref()
-            .is_some_and(|credential| credential.account.library_access)
+            .is_some_and(|credential| credential.account.project_access)
         {
             return Err("alreadyConnected");
         }
@@ -432,7 +418,7 @@ impl DesktopLogin {
                                         if self.cancelled.load(Ordering::Acquire) {
                                             return Err("cancelled");
                                         }
-                                        if !account.library_access {
+                                        if !account.project_access {
                                             return Err("permission");
                                         }
                                         if previous.as_ref().is_some_and(|credential| {
