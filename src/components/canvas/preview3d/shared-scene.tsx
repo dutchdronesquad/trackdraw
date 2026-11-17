@@ -3,7 +3,7 @@
 import { Grid, useTexture } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import type { Scene3DTheme } from "@/components/canvas/preview3d/theme";
 import { getTrackElementCatalogTexturePaths } from "@/lib/track/elements/catalog";
@@ -277,22 +277,6 @@ export function clampOrbitTargetAboveGround(
   return true;
 }
 
-export function OrbitGroundConstraint({
-  controlsRef,
-}: {
-  controlsRef: { current: OrbitControlsImpl | null };
-}) {
-  const { camera } = useThree();
-
-  useFrame(() => {
-    const controls = controlsRef.current;
-    if (!controls || !controls.enabled) return;
-    if (clampOrbitTargetAboveGround(camera, controls)) controls.update();
-  });
-
-  return null;
-}
-
 function panPerspectiveCamera(
   camera: THREE.PerspectiveCamera,
   target: THREE.Vector3,
@@ -323,16 +307,15 @@ export function WheelBridge({
   controlsRef,
   enabled,
   minDistance,
-  maxDistance,
+  targetDistanceRef,
 }: {
   controlsRef: { current: OrbitControlsImpl | null };
   enabled: boolean;
   minDistance: number;
-  maxDistance: number;
+  targetDistanceRef: RefObject<number | null>;
 }) {
   const { camera, gl } = useThree();
   const lastHorizontalScrollTimeRef = useRef(0);
-  const targetDistanceRef = useRef<number | null>(null);
   const gestureScaleRef = useRef(1);
 
   useEffect(() => {
@@ -350,7 +333,7 @@ export function WheelBridge({
       const factor = Math.exp(capped * 0.007);
       targetDistanceRef.current = Math.max(
         minDistance,
-        Math.min(maxDistance, base * factor)
+        Math.min(controls.maxDistance, base * factor)
       );
     };
 
@@ -450,13 +433,13 @@ export function WheelBridge({
         true
       );
     };
-  }, [camera, controlsRef, enabled, gl, maxDistance, minDistance]);
+  }, [camera, controlsRef, enabled, gl, minDistance, targetDistanceRef]);
 
   useEffect(() => {
     if (!enabled) {
       targetDistanceRef.current = null;
     }
-  }, [enabled]);
+  }, [enabled, targetDistanceRef]);
 
   useFrame(() => {
     const target = targetDistanceRef.current;

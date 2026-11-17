@@ -49,6 +49,7 @@ vi.mock("@react-three/fiber", () => {
       (select) =>
         select?.({ invalidate: vi.fn() }) ?? {
           camera: { position: { distanceTo: vi.fn(() => 10) } },
+          size: { width: 640, height: 480 },
           gl: {
             domElement: {
               addEventListener: vi.fn(),
@@ -72,6 +73,7 @@ vi.mock("@react-three/drei", () => ({
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsTouchDevice: () => previewTestState.isMobile,
+  useIsMobileLayout: () => previewTestState.isMobile,
 }));
 
 vi.mock("@/hooks/useTheme", () => ({
@@ -119,7 +121,6 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
     />
   ),
   GradientSky: () => null,
-  OrbitGroundConstraint: () => <div data-testid="orbit-ground-constraint" />,
   ORBIT_MAX_POLAR_ANGLE: Math.PI / 2 - (4 * Math.PI) / 180,
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
   TrackSurface3D: ({
@@ -162,6 +163,7 @@ vi.mock("@/components/canvas/editor/edit-scene-content", () => ({
 }));
 
 vi.mock("@/components/canvas/preview3d/overlays", () => ({
+  CameraFramingOverlay: () => <div data-testid="camera-framing" />,
   AxisGizmoOverlay: () => <div data-testid="axis-gizmo" />,
   FieldWatermark: () => <div data-testid="field-watermark" />,
   FlyThroughControlsOverlay: () => <div data-testid="fly-controls" />,

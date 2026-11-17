@@ -219,6 +219,12 @@ Component tests can opt into a browser-like environment per file:
 
 Keep tests under `tests/`, grouped by product area or module. Prefer shared helpers from `tests/helpers` before adding new local mock factories.
 
+### 3D camera validation
+
+Compare the initial orbit view, **Fit course**, and **Focus item** in Studio and a shared preview with compact, elongated, elevated, and widely spaced tracks. Check open desktop panels, Studio in mobile portrait, and the shared Viewer in both mobile orientations. Exercise drag and pinch interruption, reduced motion, and loading another track. The orbit pose is kept for the current preview, including on return from fly-through, and reset when a design is loaded. The browser's reduced-motion preference applies to fit and focus.
+
+Orbit framing uses placed items, the rendered race line, and labels anchored near the course. The field supplies the bounds for an empty course. The FPV fly-through follows the route at its own FOV, and PNG export fits the supplied export scene at the image's aspect ratio. For replay overview, fit the union of the static course box and the currently relevant pilot extents. Advance a separate box with `updateOverviewBounds` so pilots entering the overview fit immediately and zoom-in eases when they leave. A follow shot can use the same `CameraFrame` world-space pose with a camera position and aim point derived from the pilot's position and heading. Smooth the pose over elapsed time, and clear the sampled pose and bounds when seeking or changing tracks.
+
 ## Flow-Specific Checks
 
 Editor changes:

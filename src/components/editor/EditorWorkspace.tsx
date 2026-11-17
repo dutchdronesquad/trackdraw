@@ -23,6 +23,7 @@ import type {
 } from "@/components/canvas/editor/TrackPreview3D";
 import type { EditorView } from "@/lib/editor/view";
 import type { RefObject } from "react";
+import { useEditor } from "@/store/editor";
 import { Spinner } from "@/components/ui/spinner";
 
 const TrackCanvas = dynamic<TrackCanvasProps>(
@@ -120,6 +121,7 @@ export function EditorWorkspace({
     return () => window.clearTimeout(timeoutId);
   }, [hasVisited3D]);
 
+  const designLoadVersion = useEditor((state) => state.ui.designLoadVersion);
   const show2D = split.active || tab === "2d";
   const show3D = split.active || tab === "3d";
 
@@ -165,6 +167,7 @@ export function EditorWorkspace({
               }}
             >
               <TrackPreview3D
+                key={designLoadVersion}
                 ref={preview3DRef}
                 active={show3D}
                 showGizmo={mobileGizmoEnabled}

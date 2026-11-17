@@ -90,6 +90,7 @@ export default function EditorShell({
 
   const t = useTranslations("editor.shell");
   const hasPath = useEditor(selectHasPath);
+  const designLoadVersion = useEditor((state) => state.ui.designLoadVersion);
   const designTitle = useEditor((state) => state.track.design.title);
   const effectiveTitle = title ?? (designTitle || t("untitledTrack"));
   const isMobile = useIsMobile();
@@ -193,6 +194,7 @@ export default function EditorShell({
                     style={{ display: tab === "3d" ? "block" : "none" }}
                   >
                     <TrackPreview3D
+                      key={designLoadVersion}
                       ref={preview3DRef}
                       active={tab === "3d"}
                       showGizmo={mobileGizmoEnabled}
@@ -214,7 +216,10 @@ export default function EditorShell({
             mobileObstacleNumbersEnabled={showObstacleNumbers}
             mobileRulersEnabled={mobileRulersEnabled}
             embedMode={embedMode || privateProject}
-            onFitView={() => canvasRef.current?.fitToWindow()}
+            onFitView={() => {
+              if (tab === "3d") preview3DRef.current?.fitCourse();
+              else canvasRef.current?.fitToWindow();
+            }}
             onSetMobileGizmoEnabled={setMobileGizmoEnabled}
             onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
             onSetMobileRulersEnabled={setMobileRulersEnabled}

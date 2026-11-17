@@ -41,6 +41,8 @@
     "viewerPanZoom": "Drag to pan, wheel to zoom"
   },
   "preview3dOverlay": {
+    "fitCourse": "Fit course",
+    "focusItem": "Focus item",
     "pause": "Pause",
     "play": "Play",
     "speed": "Speed",

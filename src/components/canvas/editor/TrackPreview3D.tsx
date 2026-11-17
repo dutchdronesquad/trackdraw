@@ -2,7 +2,6 @@
 
 import { FlagMotion } from "@/components/canvas/preview3d/flag-motion";
 
-import { OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -16,8 +15,13 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { PRESENTATION_FOV, type CameraFrame } from "@/lib/track/camera-framing";
+import {
+  OrbitCamera,
+  type FrameTrack,
+} from "@/components/canvas/preview3d/OrbitCamera";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
-import { useIsTouchDevice } from "@/hooks/use-mobile";
+import { useIsMobileLayout, useIsTouchDevice } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import type {
@@ -55,11 +59,8 @@ import {
   CameraCapture,
   GradientSky,
   MemoShape3D,
-  OrbitGroundConstraint,
-  ORBIT_MAX_POLAR_ANGLE,
   ScreenshotHelper,
   TrackSurface3D,
-  WheelBridge,
   type QuaternionState,
   useCatalogTextureWarmup,
 } from "@/components/canvas/preview3d/shared-scene";
@@ -73,6 +74,7 @@ import {
 } from "@/components/canvas/editor/edit-scene-content";
 import {
   AxisGizmoOverlay,
+  CameraFramingOverlay,
   FieldWatermark,
   FlyThroughControlsOverlay,
   TrackPreview3DHintOverlays,
@@ -94,6 +96,8 @@ import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTra
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+
+const PREVIEW_CAMERA = { fov: PRESENTATION_FOV, near: 0.1, far: 500 };
 
 const DroneCamera = dynamic(
   () =>
@@ -255,6 +259,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
 export interface TrackPreview3DHandle {
   screenshot: () => string;
   getCameraView: () => THREE.PerspectiveCamera | null;
+  fitCourse: () => void;
   startFlyThrough: () => void;
   stopFlyThrough: () => void;
 }
@@ -299,6 +304,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       selectedPolyline && !selectedPolyline.locked ? selectedPolyline : null;
     const theme = useTheme();
     const isMobile = useIsTouchDevice();
+    const mobileLayout = useIsMobileLayout();
     const { enabled: devMode } = useDeveloperMode();
     const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
@@ -314,6 +320,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ]);
     const screenshotFnRef = useRef<(() => string) | null>(null);
     const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
+    const frameTrackRef = useRef<FrameTrack | null>(null);
+    const savedOrbitFrame = useRef<CameraFrame | null>(null);
     const selectionRef = useRef(selection);
     const selectedIdSet = useMemo(() => new Set(selection), [selection]);
 
@@ -383,16 +391,20 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         ),
       [selectedIdSet, shapes]
     );
+    const isManipulating = Boolean(
+      elevationDrag ||
+      rotationDrag ||
+      tiltDrag ||
+      ladderElevationDrag ||
+      towerElevationDrag ||
+      diveGateElevationDrag
+    );
     const showMiddleMousePanningCursor =
-      isMiddleMousePanning &&
-      !isMobile &&
-      !flyMode &&
-      !elevationDrag &&
-      !rotationDrag &&
-      !tiltDrag &&
-      !ladderElevationDrag &&
-      !towerElevationDrag &&
-      !diveGateElevationDrag;
+      isMiddleMousePanning && !isMobile && !flyMode && !isManipulating;
+    const focusItemId =
+      selection.length === 1 && shapeById[selection[0]]
+        ? selection[0]
+        : undefined;
 
     useEffect(() => {
       selectionRef.current = selection;
@@ -404,6 +416,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
+      fitCourse: () => frameTrackRef.current?.(),
       getCameraView: () =>
         cameraRef.current instanceof THREE.PerspectiveCamera
           ? cameraRef.current.clone()
@@ -460,27 +473,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         onMouseDownCapture={(event) =>
           handleContainerMouseDownCapture(
             event,
-            isMobile ||
-              flyMode ||
-              Boolean(
-                elevationDrag ||
-                rotationDrag ||
-                tiltDrag ||
-                ladderElevationDrag ||
-                towerElevationDrag ||
-                diveGateElevationDrag
-              )
+            isMobile || flyMode || isManipulating
           )
         }
       >
         <Canvas
           shadows="percentage"
-          camera={{
-            position: [cx - 14, 18, cz + 20],
-            fov: 46,
-            near: 0.1,
-            far: 500,
-          }}
+          camera={PREVIEW_CAMERA}
           gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
           <color attach="background" args={[t.skyHorizon]} />
@@ -746,22 +745,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
           <ScreenshotHelper onReady={handleScreenshotReady} />
           <CameraCapture onCamera={handleCameraCapture} />
-          <WheelBridge
-            controlsRef={orbitControlsRef}
-            enabled={
-              !flyMode &&
-              !isMobile &&
-              !elevationDrag &&
-              !rotationDrag &&
-              !tiltDrag &&
-              !ladderElevationDrag &&
-              !towerElevationDrag &&
-              !diveGateElevationDrag
-            }
-            minDistance={8}
-            maxDistance={Math.max(120, longest * 3)}
-          />
-          <OrbitGroundConstraint controlsRef={orbitControlsRef} />
           {showGizmo ? (
             <CameraAxisTracker onChange={setAxisQuaternion} />
           ) : null}
@@ -774,64 +757,30 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 bankingEnabled={bankingEnabled}
               />
             </Suspense>
-          ) : isMobile ? (
-            <OrbitControls
-              ref={orbitControlsRef}
-              makeDefault
-              enabled={
-                !elevationDrag &&
-                !rotationDrag &&
-                !tiltDrag &&
-                !ladderElevationDrag &&
-                !towerElevationDrag &&
-                !diveGateElevationDrag
-              }
-              enableDamping
-              dampingFactor={0.08}
-              screenSpacePanning
-              target={[cx, 0, cz]}
-              maxPolarAngle={ORBIT_MAX_POLAR_ANGLE}
-              minDistance={8}
-              maxDistance={Math.max(120, longest * 3)}
-              mouseButtons={{
-                LEFT: THREE.MOUSE.ROTATE,
-                MIDDLE: THREE.MOUSE.DOLLY,
-                RIGHT: THREE.MOUSE.PAN,
-              }}
-              touches={{
-                ONE: THREE.TOUCH.ROTATE,
-                TWO: THREE.TOUCH.DOLLY_PAN,
-              }}
-            />
           ) : (
-            <OrbitControls
-              ref={orbitControlsRef}
-              makeDefault
-              enabled={
-                !elevationDrag &&
-                !rotationDrag &&
-                !tiltDrag &&
-                !ladderElevationDrag &&
-                !towerElevationDrag &&
-                !diveGateElevationDrag
-              }
-              enableDamping
-              dampingFactor={0.08}
-              enableZoom={false}
-              screenSpacePanning
-              target={[cx, 0, cz]}
-              maxPolarAngle={ORBIT_MAX_POLAR_ANGLE}
-              minDistance={8}
-              maxDistance={Math.max(120, longest * 3)}
-              mouseButtons={{
-                LEFT: THREE.MOUSE.ROTATE,
-                MIDDLE: THREE.MOUSE.PAN,
-                RIGHT: THREE.MOUSE.PAN,
-              }}
+            <OrbitCamera
+              active={active}
+              enabled={!isManipulating}
+              field={field}
+              frameRef={frameTrackRef}
+              isTouchDevice={isMobile}
+              mobileLayout={mobileLayout}
+              orbitControlsRef={orbitControlsRef}
+              savedFrame={savedOrbitFrame}
+              shapes={shapes}
+              showGizmo={showGizmo}
             />
           )}
         </Canvas>
 
+        {!flyMode && (
+          <CameraFramingOverlay
+            disabled={isManipulating}
+            focusItemId={focusItemId}
+            onFrame={(itemId) => frameTrackRef.current?.(itemId)}
+            showGizmo={showGizmo}
+          />
+        )}
         <AxisGizmoOverlay
           axisQuaternion={axisQuaternion}
           showGizmo={showGizmo}
