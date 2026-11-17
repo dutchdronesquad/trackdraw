@@ -1,4 +1,7 @@
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine,
+};
 use reqwest::{
     blocking::{Client, RequestBuilder},
     StatusCode,
@@ -501,24 +504,64 @@ fn parse_callback(line: &str, state: &str, issuer: &str) -> Option<Option<String
     }
 }
 
-fn reply(stream: &mut TcpStream, success: bool) {
-    let text = if success {
-        "TrackDraw Desktop is connected. You can close this tab."
+fn reply(mut stream: impl Write, success: bool) {
+    let document;
+    let (status, content_type, body) = if success {
+        document = include_str!("login-complete.html")
+            .replace(
+                "__LIGHT_WORDMARK__",
+                &STANDARD.encode(include_bytes!(
+                    "../../../../public/assets/brand/trackdraw-logo-mono-lightbg.svg"
+                )),
+            )
+            .replace(
+                "__DARK_WORDMARK__",
+                &STANDARD.encode(include_bytes!(
+                    "../../../../public/assets/brand/trackdraw-logo-mono-darkbg.svg"
+                )),
+            );
+        ("200 OK", "text/html", document.as_str())
     } else {
-        "TrackDraw Desktop could not connect. Return to the app to try again."
+        (
+            "400 Bad Request",
+            "text/plain",
+            "TrackDraw Desktop could not connect. Return to the app to try again.",
+        )
     };
-    let status = if success { "200 OK" } else { "400 Bad Request" };
     let _ = write!(
         stream,
-        "HTTP/1.1 {status}\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{text}",
-        text.len()
+        "HTTP/1.1 {status}\r\nContent-Type: {content_type}; charset=utf-8\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nContent-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'\r\nX-Content-Type-Options: nosniff\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{body}",
+        body.len()
     );
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_callback, DesktopLogin, CLIENT_ID, RESOURCE};
+    use super::{parse_callback, reply, DesktopLogin, CLIENT_ID, RESOURCE};
     use std::path::Path;
+
+    #[test]
+    fn renders_the_confirmation_only_after_success() {
+        let mut response = Vec::new();
+        reply(&mut response, true);
+        let response = String::from_utf8(response).unwrap();
+        let (headers, body) = response.split_once("\r\n\r\n").unwrap();
+        assert!(headers.starts_with("HTTP/1.1 200 OK"));
+        assert!(headers.contains("Content-Type: text/html"));
+        assert!(headers.contains("Cache-Control: no-store"));
+        assert!(headers.contains("Referrer-Policy: no-referrer"));
+        assert!(headers.contains(&format!("Content-Length: {}", body.len())));
+        assert!(body.contains("<h1>You’re signed in</h1>"));
+        assert!(body.contains("data:image/svg+xml;base64,PHN2Zy"));
+        assert!(!body.contains("_WORDMARK__"));
+
+        let mut response = Vec::new();
+        reply(&mut response, false);
+        let response = String::from_utf8(response).unwrap();
+        assert!(response.starts_with("HTTP/1.1 400 Bad Request"));
+        assert!(response.contains("Content-Type: text/plain"));
+        assert!(!response.contains("You’re signed in"));
+    }
 
     #[test]
     fn includes_the_client_and_resource_in_the_token_form() {
