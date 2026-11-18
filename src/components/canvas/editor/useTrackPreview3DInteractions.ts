@@ -91,6 +91,7 @@ interface UseTrackPreview3DInteractionsParams {
   setLiveShapePatch: (id: string, patch: Partial<Shape>) => void;
   clearLiveShapePatch: (id: string) => void;
   shapeById: Record<string, Shape>;
+  syncSplitView: boolean;
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }
 
@@ -114,6 +115,7 @@ export function useTrackPreview3DInteractions({
   setLiveShapePatch,
   clearLiveShapePatch,
   shapeById,
+  syncSplitView,
   updateShape,
 }: UseTrackPreview3DInteractionsParams) {
   const [elevationDrag, setElevationDrag] = useState<{
@@ -459,7 +461,9 @@ export function useTrackPreview3DInteractions({
       const rotation = snapRotationDegrees(
         drag.startRotation - (deltaRad * 180) / Math.PI
       );
+      if (rotationDragValueRef.current === rotation) return;
       rotationDragValueRef.current = rotation;
+      if (syncSplitView) setLiveShapePatch(drag.shapeId, { rotation });
       if (dragRotationGroupRef.current) {
         dragRotationGroupRef.current.rotation.y = getLiveRotationYawRadians(
           shape,
@@ -467,7 +471,7 @@ export function useTrackPreview3DInteractions({
         );
       }
     },
-    [shapeById]
+    [setLiveShapePatch, shapeById, syncSplitView]
   );
 
   const handleRotateDragStart = useCallback(
@@ -522,6 +526,10 @@ export function useTrackPreview3DInteractions({
       if (finished) return;
       finished = true;
       const drag = rotationDragRef.current;
+      const pendingPoint = pendingRotationClientRef.current;
+      if (rotationDragAnimationFrameRef.current !== null && pendingPoint) {
+        applyRotationDrag(pendingPoint.x, pendingPoint.y);
+      }
       const finalRotation = rotationDragValueRef.current;
       cleanupListeners();
       finishSession(() => {
@@ -537,6 +545,7 @@ export function useTrackPreview3DInteractions({
           rotation: normalizedFinalRotation,
         });
       });
+      if (drag && syncSplitView) clearLiveShapePatch(drag.shapeId);
       rotationDragValueRef.current = null;
       setRotationDrag(null);
     };
@@ -579,6 +588,14 @@ export function useTrackPreview3DInteractions({
       finished = true;
       cleanupListeners();
       rotationDragValueRef.current = null;
+      if (syncSplitView) clearLiveShapePatch(rotationDrag.shapeId);
+      const shape = shapeById[rotationDrag.shapeId];
+      if (shape && dragRotationGroupRef.current) {
+        dragRotationGroupRef.current.rotation.y = getLiveRotationYawRadians(
+          shape,
+          shape.rotation
+        );
+      }
       cancelSession(() => {
         setRotationDrag(null);
       });
@@ -603,8 +620,11 @@ export function useTrackPreview3DInteractions({
   }, [
     applyRotationDrag,
     cancelSession,
+    clearLiveShapePatch,
     finishSession,
     rotationDrag,
+    shapeById,
+    syncSplitView,
     updateShape,
   ]);
 
@@ -651,8 +671,11 @@ export function useTrackPreview3DInteractions({
       if (tiltRad === null) return;
       const tilt = Math.max(0, Math.min(90, (tiltRad * 180) / Math.PI));
       tiltDragValueRef.current = tilt;
+      if (syncSplitView) {
+        setLiveShapePatch(drag.shapeId, { tilt: Math.round(tilt) });
+      }
     },
-    [shapeById]
+    [setLiveShapePatch, shapeById, syncSplitView]
   );
 
   const handleTiltDragStart = useCallback(
@@ -794,6 +817,7 @@ export function useTrackPreview3DInteractions({
         if (!drag || finalTilt === null) return;
         updateShape(drag.shapeId, { tilt: Math.round(finalTilt) });
       });
+      if (drag && syncSplitView) clearLiveShapePatch(drag.shapeId);
       tiltDragValueRef.current = null;
       setTiltDrag(null);
     };
@@ -831,6 +855,7 @@ export function useTrackPreview3DInteractions({
       finished = true;
       cleanupListeners();
       tiltDragValueRef.current = null;
+      if (syncSplitView) clearLiveShapePatch(tiltDrag.shapeId);
       cancelSession(() => {
         setTiltDrag(null);
       });
@@ -852,7 +877,15 @@ export function useTrackPreview3DInteractions({
     return () => {
       cancelDrag();
     };
-  }, [applyTiltDrag, cancelSession, finishSession, tiltDrag, updateShape]);
+  }, [
+    applyTiltDrag,
+    cancelSession,
+    clearLiveShapePatch,
+    finishSession,
+    syncSplitView,
+    tiltDrag,
+    updateShape,
+  ]);
 
   useEffect(() => {
     if (!ladderElevationDrag) return;

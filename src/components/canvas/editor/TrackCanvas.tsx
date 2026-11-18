@@ -131,6 +131,7 @@ export interface TrackCanvasProps {
   mobileMultiSelectEnabled?: boolean;
   readOnly?: boolean;
   showObstacleNumbers?: boolean;
+  syncSplitView?: boolean;
 }
 
 const TrackCanvas = memo(
@@ -144,6 +145,7 @@ const TrackCanvas = memo(
       mobileMultiSelectEnabled = false,
       readOnly = false,
       showObstacleNumbers = false,
+      syncSplitView = false,
     },
     ref
   ) {
@@ -208,6 +210,38 @@ const TrackCanvas = memo(
     );
     const marqueeRect = useEditor((state) => state.ui.marqueeRect);
     const rotationSession = useEditor((state) => state.ui.rotationSession);
+    const liveShapePatches = useEditor((state) =>
+      syncSplitView ? state.ui.liveShapePatches : null
+    );
+    // 2D movements are drawn by Konva during the drag. Apply only the
+    // orientation and geometry preview supplied by the 3D tools here.
+    const getDisplayShape = useCallback(
+      (shape: Shape): Shape => {
+        const patch = liveShapePatches?.[shape.id];
+        const rotation =
+          rotationSession?.shapeId === shape.id
+            ? rotationSession.previewRotation
+            : (patch?.rotation ?? shape.rotation);
+        const elevation =
+          patch && "elevation" in patch ? patch.elevation : undefined;
+        const tilt = patch && "tilt" in patch ? patch.tilt : undefined;
+        if (
+          rotation === shape.rotation &&
+          elevation === undefined &&
+          tilt === undefined
+        ) {
+          return shape;
+        }
+        return {
+          ...shape,
+          rotation,
+          ...(elevation !== undefined ? { elevation } : {}),
+          ...(tilt !== undefined ? { tilt } : {}),
+        };
+      },
+      // Keep the committed shape available separately for gesture calculations.
+      [liveShapePatches, rotationSession]
+    );
     const groupDragPreview = useEditor((state) => state.ui.groupDragPreview);
     const {
       setActiveTool,
@@ -399,16 +433,10 @@ const TrackCanvas = memo(
       () => (selection.length === 1 ? (shapeById[selection[0]] ?? null) : null),
       [selection, shapeById]
     );
-    const displaySingleSelectedShape = useMemo(() => {
-      if (!singleSelectedShape) return null;
-      if (rotationSession?.shapeId !== singleSelectedShape.id) {
-        return singleSelectedShape;
-      }
-      return {
-        ...singleSelectedShape,
-        rotation: rotationSession.previewRotation,
-      };
-    }, [rotationSession, singleSelectedShape]);
+    const displaySingleSelectedShape = useMemo(
+      () => (singleSelectedShape ? getDisplayShape(singleSelectedShape) : null),
+      [getDisplayShape, singleSelectedShape]
+    );
     const rotationGuide = useMemo(() => {
       if (
         !displaySingleSelectedShape ||
@@ -1636,7 +1664,7 @@ const TrackCanvas = memo(
 
         const previewRotation = ((normalizedRotation % 360) + 360) % 360;
         setRotationSession((current) =>
-          current
+          current && current.previewRotation !== previewRotation
             ? {
                 ...current,
                 previewRotation,
@@ -1671,7 +1699,7 @@ const TrackCanvas = memo(
       const handlePointerUp = () => {
         if (finished) return;
         finished = true;
-        const activeSession = rotationSessionRef.current;
+        const activeSession = useEditor.getState().ui.rotationSession;
         cleanupListeners();
         finishRotationHistorySession(() => {
           if (!activeSession) return;
@@ -1778,10 +1806,6 @@ const TrackCanvas = memo(
         ];
         return ordered.map((shape) => {
           const allowInteraction = activeTool === "select" && !readOnly;
-          const displayShape =
-            rotationSession?.shapeId === shape.id
-              ? { ...shape, rotation: rotationSession.previewRotation }
-              : shape;
           return (
             <TrackShapeNode
               key={shape.id}
@@ -1825,7 +1849,8 @@ const TrackCanvas = memo(
               }
               setSegmentSelection={setSegmentSel}
               setVertexSel={setVertexSel}
-              shape={displayShape}
+              shape={getDisplayShape(shape)}
+              syncSplitView={syncSplitView}
               shapeRef={(node) => {
                 shapeRefs.current[shape.id] = node;
               }}
@@ -1851,6 +1876,7 @@ const TrackCanvas = memo(
         dragSnapRef,
         draftSourceShapeId,
         effectiveVertexSel,
+        getDisplayShape,
         groupDragIdSet,
         groupDragPreview,
         hoveredShapeId,
@@ -1863,8 +1889,8 @@ const TrackCanvas = memo(
         readOnly,
         resolveShapeDragPosition,
         resolveWaypointDragPosition,
-        rotationSession,
         snapEnabled,
+        syncSplitView,
         shapeNodeViewportScale,
         segmentSel,
         selectOnlyShape,

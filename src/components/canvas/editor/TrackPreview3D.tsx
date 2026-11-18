@@ -3,7 +3,7 @@
 import { FlagMotion } from "@/components/canvas/preview3d/flag-motion";
 
 import { OrbitControls } from "@react-three/drei";
-import { Canvas, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useStore, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   Suspense,
@@ -38,6 +38,7 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
+import { px2m } from "@/lib/track/units";
 import { has3dRotateHandle } from "@/lib/track/items/registry";
 import {
   getDiveGateVisualSpec,
@@ -104,6 +105,53 @@ const DroneCamera = dynamic(
 );
 
 const POPUP_TRANSITION = { duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
+
+function SyncSplitCanvasSize() {
+  const store = useStore();
+
+  useEffect(() => {
+    const { gl } = store.getState();
+    const viewport = gl.domElement.parentElement;
+    if (!viewport) return;
+
+    // Resizing clears the WebGL buffer. Draw the scene in the same update,
+    // after Fiber has resized the renderer and recalculated the projection.
+    const unsubscribe = store.subscribe(
+      ({ size, viewport, scene, camera }, previous) => {
+        if (
+          size.width !== previous.size.width ||
+          size.height !== previous.size.height ||
+          viewport.dpr !== previous.viewport.dpr
+        ) {
+          gl.render(scene, camera);
+        }
+      }
+    );
+
+    // The pane moves outside React during the drag. Resize the renderer and
+    // camera together when the browser lays out the pane.
+    const observer = new ResizeObserver(() => {
+      const { width, height, top, left } = viewport.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      const { size, setSize } = store.getState();
+      if (
+        size.width !== width ||
+        size.height !== height ||
+        size.top !== top ||
+        size.left !== left
+      ) {
+        setSize(width, height, top, left);
+      }
+    });
+    observer.observe(viewport);
+    return () => {
+      observer.disconnect();
+      unsubscribe();
+    };
+  }, [store]);
+
+  return null;
+}
 
 function TextureDebugPopup({ catalogId }: { catalogId: string }) {
   const t = useTranslations("editor.textureDebug");
@@ -264,6 +312,7 @@ export interface TrackPreview3DProps {
   showGizmo?: boolean;
   onFlyModeChange?: (active: boolean) => void;
   readOnly?: boolean;
+  syncSplitView?: boolean;
 }
 
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
@@ -273,6 +322,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       showGizmo = true,
       onFlyModeChange,
       readOnly = false,
+      syncSplitView = false,
     }: TrackPreview3DProps,
     ref
   ) {
@@ -289,8 +339,59 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     } = useSessionActions();
     const { setPolylinePoints, updateShape } = useTrackActions();
     const { setLiveShapePatch, clearLiveShapePatch } = useUiActions();
-    const shapes = useEditor(selectDesignShapes);
-    useCatalogTextureWarmup(shapes);
+    const designShapes = useEditor(selectDesignShapes);
+    const rotationSession = useEditor((state) =>
+      syncSplitView ? state.ui.rotationSession : null
+    );
+    const groupDragPreview = useEditor((state) =>
+      syncSplitView ? state.ui.groupDragPreview : null
+    );
+    const liveShapePatches = useEditor((state) =>
+      syncSplitView ? state.ui.liveShapePatches : null
+    );
+    const shapes = useMemo(() => {
+      if (!rotationSession && !groupDragPreview && !liveShapePatches) {
+        return designShapes;
+      }
+      const groupIds = new Set(groupDragPreview?.ids);
+      const dx = px2m(groupDragPreview?.dx ?? 0, field.ppm);
+      const dy = px2m(groupDragPreview?.dy ?? 0, field.ppm);
+      return designShapes.map((shape) => {
+        const inDraggedGroup = !shape.locked && groupIds.has(shape.id);
+        const patch = liveShapePatches?.[shape.id];
+        if (shape.kind === "polyline") {
+          if (inDraggedGroup) {
+            return {
+              ...shape,
+              points: shape.points.map((point) => ({
+                ...point,
+                x: point.x + dx,
+                y: point.y + dy,
+              })),
+            };
+          }
+          return patch && "points" in patch && patch.points
+            ? { ...shape, points: patch.points }
+            : shape;
+        }
+        const x = inDraggedGroup ? shape.x + dx : (patch?.x ?? shape.x);
+        const y = inDraggedGroup ? shape.y + dy : (patch?.y ?? shape.y);
+        const rotation =
+          rotationSession?.shapeId === shape.id
+            ? rotationSession.previewRotation
+            : shape.rotation;
+        return x === shape.x && y === shape.y && rotation === shape.rotation
+          ? shape
+          : { ...shape, x, y, rotation };
+      });
+    }, [
+      designShapes,
+      field.ppm,
+      groupDragPreview,
+      liveShapePatches,
+      rotationSession,
+    ]);
+    useCatalogTextureWarmup(designShapes);
     const hasPath = useEditor(selectHasPath);
     const primaryPolyline = useEditor(selectPrimaryPolyline);
     const shapeById = useEditor(selectShapeRecordMap);
@@ -359,6 +460,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       setLiveShapePatch,
       clearLiveShapePatch,
       shapeById,
+      syncSplitView,
       updateShape,
     });
 
@@ -474,6 +576,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         }
       >
         <Canvas
+          // react-use-measure also applies the scroll debounce to its resize observer.
+          resize={syncSplitView ? { debounce: 0 } : undefined}
           shadows="percentage"
           camera={{
             position: [cx - 14, 18, cz + 20],
@@ -483,6 +587,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           }}
           gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
+          {syncSplitView && <SyncSplitCanvasSize />}
           <color attach="background" args={[t.skyHorizon]} />
           <fog attach="fog" args={[t.fog, 80, 260]} />
           <GradientSky topColor={t.skyTop} horizonColor={t.skyHorizon} />

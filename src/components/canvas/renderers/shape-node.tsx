@@ -10,6 +10,7 @@ import {
   getMobileTouchTargetMinScreenPx,
   getShapeCanvasRenderRotationOffset,
 } from "@/lib/track/items/registry";
+import { useEditor } from "@/store/editor";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   renderLockedIndicator,
@@ -60,6 +61,7 @@ export interface TrackShapeNodeProps {
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
   snapEnabled: boolean;
+  syncSplitView?: boolean;
   resolveShapeDragPosition: (
     pos: Vector2d,
     snapEnabled: boolean,
@@ -121,6 +123,7 @@ function TrackShapeNodeComponent({
   shape,
   shapeRef,
   snapEnabled,
+  syncSplitView = false,
   resolveShapeDragPosition,
   resolveWaypointDragPosition,
   setPolylinePoints,
@@ -128,9 +131,28 @@ function TrackShapeNodeComponent({
   zmax,
   zmin,
 }: TrackShapeNodeProps) {
+  const getDragPatch = (position: Vector2d): Partial<Shape> => {
+    const x = px2m(position.x, designPpm);
+    const y = px2m(position.y, designPpm);
+    return shape.kind === "polyline"
+      ? {
+          points: shape.points.map((point) => ({
+            ...point,
+            x: point.x + x,
+            y: point.y + y,
+          })),
+        }
+      : { x, y };
+  };
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const dragTriggeredRef = useRef(false);
+  const hasDragPreviewRef = useRef(false);
+  const clearDragPreview = () => {
+    if (!hasDragPreviewRef.current) return;
+    hasDragPreviewRef.current = false;
+    useEditor.getState().clearLiveShapePatch(shape.id);
+  };
   const selected = isSelected;
   const highlighted = isSelected || isHovered;
   const touchBounds =
@@ -181,6 +203,11 @@ function TrackShapeNodeComponent({
       Math.abs(current.x - resolved.x) > 0.5 ||
       Math.abs(current.y - resolved.y) > 0.5;
     setDragSnapPreview(isSnapping ? resolved : null);
+    if (syncSplitView) {
+      // The 2D canvas shows the unsnapped position and a separate snap marker.
+      hasDragPreviewRef.current = true;
+      useEditor.getState().setLiveShapePatch(shape.id, getDragPatch(current));
+    }
   };
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
@@ -191,31 +218,21 @@ function TrackShapeNodeComponent({
       shape.id
     );
     setDragSnapPreview(null);
-    if (shape.kind === "polyline") {
-      const dx = px2m(resolved.x, designPpm);
-      const dy = px2m(resolved.y, designPpm);
+    const patch = getDragPatch(resolved);
+    if ("points" in patch && patch.points) {
       event.currentTarget.position({ x: 0, y: 0 });
-      setPolylinePoints(
-        shape.id,
-        shape.points.map((point) => ({
-          ...point,
-          x: point.x + dx,
-          y: point.y + dy,
-        }))
-      );
-      return;
+      setPolylinePoints(shape.id, patch.points);
+    } else {
+      event.currentTarget.position(resolved);
+      updateShape(shape.id, patch);
     }
-
-    event.currentTarget.position(resolved);
-    updateShape(shape.id, {
-      x: px2m(resolved.x, designPpm),
-      y: px2m(resolved.y, designPpm),
-    });
+    clearDragPreview();
   };
 
   const handleDragCancel = () => {
     contentDragActiveRef.current = false;
     setDragSnapPreview(null);
+    clearDragPreview();
   };
 
   const clearLongPress = () => {
@@ -233,6 +250,15 @@ function TrackShapeNodeComponent({
     },
     [contentDragActiveRef, setDragSnapPreview]
   );
+
+  useEffect(() => {
+    if (!syncSplitView) return;
+    return () => {
+      if (!hasDragPreviewRef.current) return;
+      hasDragPreviewRef.current = false;
+      useEditor.getState().clearLiveShapePatch(shape.id);
+    };
+  }, [shape.id, syncSplitView]);
 
   return (
     <Group
@@ -408,6 +434,7 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.isSelected === next.isSelected &&
     prev.isPrimaryPolyline === next.isPrimaryPolyline &&
     prev.snapEnabled === next.snapEnabled &&
+    prev.syncSplitView === next.syncSplitView &&
     prev.selectedSegmentIndex === next.selectedSegmentIndex &&
     samePoint(prev.selectedSegmentPoint, next.selectedSegmentPoint) &&
     prev.selectionCount === next.selectionCount &&

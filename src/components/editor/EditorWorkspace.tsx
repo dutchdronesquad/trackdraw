@@ -136,7 +136,9 @@ export function EditorWorkspace({
             id="editor-canvas-2d"
             className="absolute inset-0 overflow-hidden"
             style={{
-              right: split.active ? `${100 - split.ratio}%` : undefined,
+              right: split.active
+                ? "calc(100% - var(--editor-split-ratio, 50%))"
+                : undefined,
               visibility: show2D ? "visible" : "hidden",
               pointerEvents: show2D ? "auto" : "none",
             }}
@@ -150,6 +152,7 @@ export function EditorWorkspace({
               mobileRulersEnabled={mobileRulersEnabled}
               mobileMultiSelectEnabled={mobileMultiSelectEnabled}
               readOnly={readOnly}
+              syncSplitView={split.active}
               showObstacleNumbers={showObstacleNumbers}
             />
             {show2D && !readOnly && !isMobile ? (
@@ -160,7 +163,9 @@ export function EditorWorkspace({
             <div
               className="absolute inset-0 overflow-hidden"
               style={{
-                left: split.active ? `${split.ratio}%` : undefined,
+                left: split.active
+                  ? "var(--editor-split-ratio, 50%)"
+                  : undefined,
                 display: show3D ? "block" : "none",
               }}
             >
@@ -169,7 +174,8 @@ export function EditorWorkspace({
                 active={show3D}
                 showGizmo={mobileGizmoEnabled}
                 onFlyModeChange={onFlyModeChange}
-                readOnly={readOnly || split.active}
+                readOnly={readOnly}
+                syncSplitView={split.active}
               />
             </div>
           ) : null}

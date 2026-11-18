@@ -2,12 +2,14 @@
 
 import { Box, Columns2, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 type ViewMode = "2d" | "3d";
 
 export interface SplitViewOption {
   active: boolean;
+  available: boolean;
   onSelect: () => void;
 }
 
@@ -27,6 +29,7 @@ export default function ViewModeSwitch({
   splitView,
 }: ViewModeSwitchProps) {
   const t = useTranslations("editor.viewModeSwitch");
+  const spaceHintId = useId();
   const options: Array<{
     value: ViewMode | "split";
     label: string;
@@ -93,23 +96,35 @@ export default function ViewModeSwitch({
           )}
         />
       )}
+      {splitView && !splitView.available && (
+        <span id={spaceHintId} hidden>
+          {t("splitNeedsSpace")}
+        </span>
+      )}
       {options.map((option) => {
         const optionValue = option.value;
         const active = splitView?.active
           ? optionValue === "split"
           : value === optionValue;
         const Icon = option.Icon;
+        const unavailable = optionValue === "split" && !splitView?.available;
+        const unavailableHint = unavailable ? t("splitNeedsSpace") : undefined;
 
         return (
           <button
             key={option.value}
             type="button"
             aria-pressed={active}
-            onClick={() =>
-              optionValue === "split"
-                ? splitView?.onSelect()
-                : onValueChange(optionValue)
-            }
+            aria-disabled={unavailable || undefined}
+            aria-describedby={unavailable ? spaceHintId : undefined}
+            title={unavailableHint}
+            onClick={() => {
+              if (optionValue !== "split") {
+                onValueChange(optionValue);
+              } else if (splitView?.available) {
+                splitView.onSelect();
+              }
+            }}
             className={cn(
               "focus-visible:ring-ring/30 relative z-10 grid h-full cursor-pointer items-center justify-center gap-0.5 leading-none font-semibold transition-colors outline-none focus-visible:ring-2",
               innerRadiusClassName,
@@ -121,6 +136,7 @@ export default function ViewModeSwitch({
               splitView &&
                 active &&
                 "border-brand-primary/60 bg-brand-primary/38 border",
+              unavailable && "cursor-default opacity-50",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"

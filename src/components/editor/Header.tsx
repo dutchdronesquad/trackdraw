@@ -31,7 +31,6 @@ import {
   Hash,
   Tag,
   ChevronDown,
-  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
@@ -41,7 +40,8 @@ import ViewModeSwitch, {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -80,7 +80,10 @@ const INSPECTOR_WIDTH = "21.25rem";
 interface HeaderProps {
   tab: "2d" | "3d";
   onTabChange: (t: "2d" | "3d") => void;
-  splitView?: SplitViewOption & { onReset: () => void };
+  splitView?: SplitViewOption & {
+    ratio: number;
+    onRatioChange: (ratio: number) => void;
+  };
   onShare?: () => void;
   onExport?: () => void;
   onImport?: () => void;
@@ -268,10 +271,22 @@ export default function Header({
                   <ChevronDown className="size-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={splitView.onReset}>
-                    <RotateCcw />
-                    {tView("resetSplit")}
-                  </DropdownMenuItem>
+                  <DropdownMenuRadioGroup
+                    value={String(splitView.ratio)}
+                    onValueChange={(value) =>
+                      splitView.onRatioChange(Number(value))
+                    }
+                  >
+                    <DropdownMenuRadioItem value="60">
+                      {tView("splitMore2d")}
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="50">
+                      {tView("splitBalanced")}
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="40">
+                      {tView("splitMore3d")}
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
