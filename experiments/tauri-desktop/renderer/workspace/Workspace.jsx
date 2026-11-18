@@ -57,6 +57,13 @@ import WorkspaceAccount, {
   WorkspaceAccountMenu,
 } from "./WorkspaceAccount.jsx";
 import CloudLibrary from "./CloudLibrary.jsx";
+import {
+  cacheCloudProject,
+  cachedCloudTeams,
+  cloudStatus,
+  subscribeCloudStatus,
+  syncCloudProjects,
+} from "../storage/cloud-projects.mjs";
 import { DocumentContext } from "./document-context.jsx";
 import {
   useWorkspace,
@@ -71,6 +78,8 @@ import {
   retryDocumentSave,
   canCloseWithBackups,
   setCloudAccount,
+  persistDocument,
+  openCloudDocument,
 } from "./workspace.mjs";
 
 function Preview({ design }) {
@@ -110,7 +119,7 @@ function Library({
   const accountId = account.session.account?.id;
   const canBrowse =
     account.pending !== "signOut" &&
-    account.session.status === "connected" &&
+    ["connected", "offline"].includes(account.session.status) &&
     account.session.account?.libraryAccess;
   const current =
     canBrowse && selection?.accountId === accountId ? selection : null;
@@ -120,8 +129,15 @@ function Library({
   useEffect(() => {
     if (!canBrowse) return;
     let active = true;
-    window.trackdrawDesktop
-      .library("teams")
+    const query =
+      account.session.status === "offline"
+        ? cachedCloudTeams(accountId)
+        : window.trackdrawDesktop.library("teams").catch((reason) => {
+            if (reason === "unavailable" && window.trackdrawDesktop.cloudCache)
+              return cachedCloudTeams(accountId);
+            throw reason;
+          });
+    query
       .then(({ teams }) => {
         if (active) setOverview({ accountId, teams });
       })
@@ -131,7 +147,7 @@ function Library({
     return () => {
       active = false;
     };
-  }, [accountId, canBrowse, teamRetry]);
+  }, [accountId, canBrowse, teamRetry, account.session.status]);
 
   const teamOverview = overview?.accountId === accountId ? overview : null;
   function selectCloud(kind, team) {
@@ -229,7 +245,7 @@ function Library({
               {cloud("manageTeams")}
             </button>
           </nav>
-        ) : account.session.status === "connected" &&
+        ) : ["connected", "offline"].includes(account.session.status) &&
           account.session.account?.libraryAccess === false ? (
           <button onClick={() => account.setOpen(true)}>
             {cloud("connect")}
@@ -259,7 +275,7 @@ function Library({
         <div className="library-sidebar-bottom">
           <HardDrive size={18} aria-hidden="true" />
           <strong>{t("localWorkspace")}</strong>
-          <p>{t("offlineNotice")}</p>
+          <p>{t("offlineSyncNotice")}</p>
         </div>
       </aside>
       {current ? (
@@ -492,7 +508,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   const [librarySelection, setLibrarySelection] = useState(null);
   const cloudAccountId =
     account.pending !== "signOut" &&
-    account.session.status === "connected" &&
+    ["connected", "offline"].includes(account.session.status) &&
     account.session.account?.projectAccess
       ? account.session.account.id
       : null;
@@ -502,11 +518,73 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
   useEffect(() => {
     setCloudAccount(cloudAccountId);
   }, [cloudAccountId]);
+  const syncAllowed =
+    !!cloudAccountId && account.session.account?.projectWriteAccess;
+  useEffect(() => {
+    if (!syncAllowed || !window.trackdrawDesktop.cloudCache) return;
+    const sync = () => {
+      void syncCloudProjects(cloudAccountId).catch(() => {});
+    };
+    sync();
+    const timer = setInterval(sync, 3000);
+    window.addEventListener("online", sync);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("online", sync);
+    };
+  }, [cloudAccountId, syncAllowed]);
+  useEffect(() => {
+    const cloud = document?.cloud;
+    if (state.home || !cloud?.canRequestWrite || !syncAllowed) return;
+    let active = true;
+    window.trackdrawDesktop
+      .project(cloud.projectId, cloud.team?.id)
+      .then(async (remote) => {
+        if (!active) return;
+        const record = await cacheCloudProject(
+          cloud.accountId,
+          cloud.projectId,
+          remote
+        );
+        if (active) await openCloudDocument(cloud.projectId, record);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [document, state.home, syncAllowed]);
+  const syncStatus = useSyncExternalStore(subscribeCloudStatus, () =>
+    cloudStatus(document?.cloud)
+  );
+  const cloudEditable =
+    document?.cloud?.canEdit && syncAllowed && syncStatus !== "permission";
+  const requestCloudWrite = document?.cloud?.canRequestWrite && !syncAllowed;
+  const canExportCloudBackup =
+    document?.cloud?.canEdit &&
+    (document.localSaveError ||
+      ["conflict", "permission", "invalid", "tooLarge"].includes(syncStatus));
+  const syncLabel = t(
+    document?.localSaveError
+      ? "cloudLibrary.localSaveError"
+      : syncStatus === "permission"
+        ? "cloudLibrary.accessChanged"
+        : syncStatus === "conflict"
+          ? "cloudLibrary.conflict"
+          : syncStatus === "tooLarge" || syncStatus === "invalid"
+            ? "cloudLibrary.cannotSync"
+            : !cloudEditable
+              ? "cloudLibrary.readOnly"
+              : document?.localSavePending
+                ? "cloudLibrary.savingLocally"
+                : syncStatus === "pending"
+                  ? "cloudLibrary.pendingSync"
+                  : "cloudLibrary.synced"
+  );
 
   const showingCloud =
     state.home &&
     account.pending !== "signOut" &&
-    account.session.status === "connected" &&
+    ["connected", "offline"].includes(account.session.status) &&
     account.session.account?.libraryAccess &&
     librarySelection?.accountId === account.session.account.id;
 
@@ -657,7 +735,11 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
                     />
                     <span
                       className="document-tab-title"
-                      title={design?.title || t("untitled")}
+                      title={
+                        doc?.cloud
+                          ? `${design?.title || t("untitled")} · ${doc.cloud.team?.name ?? t("cloudLibrary.personal")}`
+                          : design?.title || t("untitled")
+                      }
                     >
                       {design?.title || t("untitled")}
                     </span>
@@ -715,7 +797,7 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           {saveFailed
             ? t("saveFailed")
             : document?.cloud && !state.home
-              ? t("cloudLibrary.readOnly")
+              ? syncLabel
               : state.busy
                 ? t("saving")
                 : showingCloud
@@ -823,17 +905,44 @@ export function Workspace({ onNew, onImport, onSave, onSample, run }) {
           <DocumentContext.Provider value={document} key={document.id}>
             {document.cloud ? (
               <div className="desktop-cloud-document">
-                <div className="desktop-cloud-context">
-                  <span>
-                    {document.cloud.team?.name ?? t("cloudLibrary.personal")}
-                  </span>
-                </div>
+                {(requestCloudWrite || canExportCloudBackup) && (
+                  <div className="desktop-cloud-context">
+                    {requestCloudWrite && (
+                      <button onClick={() => account.setOpen(true)}>
+                        {t("account.allowProjectSync")}
+                      </button>
+                    )}
+                    {canExportCloudBackup && (
+                      <button onClick={() => run(() => onSave(document.id))}>
+                        {t("exportBackup")}
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div className="desktop-cloud-viewer">
-                  <ProjectViewer
-                    initialTab={document.view}
-                    privateProject
-                    contextLabel={t("cloudLibrary.readOnly")}
-                  />
+                  {cloudEditable ? (
+                    <StudioDialogsProvider>
+                      <EditorShell
+                        initialTab={document.view}
+                        showStarterExperience={false}
+                        managedProject={{
+                          onSave: () =>
+                            run(async () => {
+                              await persistDocument(document);
+                              await syncCloudProjects(cloudAccountId);
+                            }),
+                          saveLabel: t("cloudLibrary.save"),
+                          statusLabel: syncLabel,
+                        }}
+                      />
+                    </StudioDialogsProvider>
+                  ) : (
+                    <ProjectViewer
+                      initialTab={document.view}
+                      privateProject
+                      contextLabel={t("cloudLibrary.readOnly")}
+                    />
+                  )}
                 </div>
               </div>
             ) : (

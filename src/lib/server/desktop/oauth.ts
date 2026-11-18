@@ -12,6 +12,7 @@ import {
   DESKTOP_CLIENT_ID,
   DESKTOP_LIBRARY_SCOPE,
   DESKTOP_PROJECT_READ_SCOPE,
+  DESKTOP_PROJECT_WRITE_SCOPE,
   DESKTOP_RESOURCE,
   DESKTOP_SCOPE,
 } from "@/lib/desktop/oauth-contract";
@@ -29,19 +30,27 @@ export async function getDesktopConsentRequest(
   const scopes = new Set(params.get("scope")?.split(" "));
   const library = scopes.has(DESKTOP_LIBRARY_SCOPE);
   const projects = scopes.has(DESKTOP_PROJECT_READ_SCOPE);
+  const write = scopes.has(DESKTOP_PROJECT_WRITE_SCOPE);
   if (
     params.get("client_id") !== DESKTOP_CLIENT_ID ||
     resources.length !== 1 ||
     resources[0] !== DESKTOP_RESOURCE ||
     (projects && !library) ||
-    scopes.size !== 2 + Number(library) + Number(projects) ||
+    (write && !projects) ||
+    scopes.size !== 2 + Number(library) + Number(projects) + Number(write) ||
     !scopes.has(DESKTOP_SCOPE) ||
     !scopes.has("offline_access")
   )
     return null;
   const user = await getCurrentUserFromHeaders(headers);
   return user
-    ? { query, account: user.email ?? user.name ?? user.id, library, projects }
+    ? {
+        query,
+        account: user.email ?? user.name ?? user.id,
+        library,
+        projects,
+        write,
+      }
     : null;
 }
 
@@ -85,7 +94,12 @@ export async function getDesktopAccount(request: Request) {
 
   const tokenScopes = new Set(claims.scope.split(" "));
   if (!tokenScopes.has(DESKTOP_LIBRARY_SCOPE))
-    return { ...account, libraryAccess: false, projectAccess: false };
+    return {
+      ...account,
+      libraryAccess: false,
+      projectAccess: false,
+      projectWriteAccess: false,
+    };
   const { results } = await db
     .prepare(
       `SELECT DISTINCT scope.value AS scope FROM oauthConsent c JOIN json_each(c.scopes) scope
@@ -101,5 +115,9 @@ export async function getDesktopAccount(request: Request) {
     ...account,
     libraryAccess,
     projectAccess: libraryAccess && can(DESKTOP_PROJECT_READ_SCOPE),
+    projectWriteAccess:
+      libraryAccess &&
+      can(DESKTOP_PROJECT_READ_SCOPE) &&
+      can(DESKTOP_PROJECT_WRITE_SCOPE),
   };
 }

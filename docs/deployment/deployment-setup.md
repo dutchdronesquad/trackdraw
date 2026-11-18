@@ -45,6 +45,8 @@ Apply `0039_desktop_library_scope.sql` before deploying the desktop library. It 
 
 Apply `0040_desktop_project_read_scope.sql` before deploying native cloud project previews. It allows the first-party client to request `desktop:projects:read`. Library-only grants can still list projects and must approve the new scope before opening designs. `GET /api/desktop/project` checks personal ownership or current team membership and returns an uncached design for the native preview.
 
+Apply `0041_desktop_project_write_scope.sql` before enabling desktop autosave. It adds `desktop:projects:write` to the first-party client. `PUT /api/desktop/project` requires that scope and checks the existing desktop grant and project ID. Personal writes reuse revision-guarded project updates that require an existing project. Team writes acquire and release the existing edit lease around a revision-guarded update. Retry recognition uses identical design content. Requests are limited to 2 MiB and responses are uncached.
+
 ### Team ownership foundation
 
 Apply `0030_team_project_ownership.sql` before deploying the team ownership services. It rebuilds `projects` inside the normal D1 migration transaction, preserves existing project/share IDs and pending/applied MCP history, and adds team/member/invitation tables plus exclusive personal-or-team ownership. Deferred foreign keys do not suppress cascades; the migration explicitly preserves the edit history before replacing its parent. Do not split the migration into autocommit statements. No new binding, secret, auth endpoint or user-facing team feature is enabled. See [the ownership and permission contract](../pva/team-project-authorization.md) and its lifecycle activation requirements.

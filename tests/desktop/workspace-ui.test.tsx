@@ -146,7 +146,7 @@ it("keeps Home outside the scrolling tabs and reveals an activated document with
   expect(firstTab.hasAttribute("data-tauri-drag-region")).toBe(false);
 });
 
-it("browses personal and team projects without closing local editor tabs", async () => {
+it("syncs the same personal project while team viewers and local tabs keep their boundaries", async () => {
   await act(async () => {
     await workspace.openDocument(first.id);
     await workspace.showLibrary();
@@ -165,12 +165,16 @@ it("browses personal and team projects without closing local editor tabs", async
   const ownProjectId = "personal-project";
   const readProject = vi.fn(async (id: string, teamId?: string) => ({
     accountId: "pilot",
+    revision: 5,
+    canEdit: !teamId,
     team: teamId ? { id: teamId, name: "FPV Club" } : null,
     design: {
       ...createDefaultDesign(id),
       title: teamId ? "Team track" : "My cloud track",
     },
   }));
+  const cache = new Map<string, unknown>();
+  const saveCloudProject = vi.fn(async () => ({ revision: 6 }));
   const before = bridge.projects.mock.calls.length;
   Object.assign(bridge, {
     account: async () => ({
@@ -181,6 +185,7 @@ it("browses personal and team projects without closing local editor tabs", async
         email: "pilot@example.invalid",
         libraryAccess: true,
         projectAccess: true,
+        projectWriteAccess: true,
       },
     }),
     library: vi.fn(async (kind) => {
@@ -195,6 +200,18 @@ it("browses personal and team projects without closing local editor tabs", async
     }),
     openStudio,
     project: readProject,
+    saveCloudProject,
+    cloudCache: async (
+      accountId: string,
+      id?: string,
+      team?: string,
+      record?: unknown
+    ) => {
+      if (!id) return structuredClone([...cache.values()]);
+      const key = JSON.stringify([accountId, team, id]);
+      if (record) cache.set(key, structuredClone(record));
+      return structuredClone(cache.get(key) ?? null);
+    },
     signOut: async () => ({ status: "signedOut" }),
   });
   try {
@@ -221,7 +238,32 @@ it("browses personal and team projects without closing local editor tabs", async
     await user.click(
       await screen.findByRole("button", { name: "Open My cloud track" })
     );
-    expect(await screen.findByText("Viewer content")).toBeTruthy();
+    expect(await screen.findByText("Editor content")).toBeTruthy();
+    expect(
+      screen.getByTitle("My cloud track · Personal projects")
+    ).toBeTruthy();
+    expect(screen.queryByText("Personal projects")).toBeNull();
+    await act(async () => {
+      const current = workspace.getDocument(
+        workspace.useWorkspace.getState().activeId
+      );
+      current.store.getState().updateDesignMeta({ title: "Edited in desktop" });
+      await workspace.flushDocuments();
+      window.dispatchEvent(new Event("online"));
+    });
+    await waitFor(() =>
+      expect(saveCloudProject).toHaveBeenCalledWith(
+        "pilot",
+        expect.objectContaining({
+          projectId: ownProjectId,
+          revision: 5,
+          design: expect.objectContaining({
+            id: ownProjectId,
+            title: "Edited in desktop",
+          }),
+        })
+      )
+    );
     expect(readProject).toHaveBeenCalledWith(ownProjectId, undefined);
     expect(
       bridge.projects.mock.calls
@@ -256,6 +298,8 @@ it("browses personal and team projects without closing local editor tabs", async
     delete bridge.library;
     delete bridge.openStudio;
     delete bridge.project;
+    delete bridge.cloudCache;
+    delete bridge.saveCloudProject;
     delete bridge.signOut;
     workspace.setCloudAccount(null);
   }

@@ -21,6 +21,8 @@ import {
   waitForWrites,
 } from "../storage/projects.mjs";
 
+import { saveCloudDraft, setSyncAccount } from "../storage/cloud-projects.mjs";
+
 const documents = new Map();
 const exportedBackups = new Map();
 let queue = Promise.resolve();
@@ -77,7 +79,7 @@ export function getDocument(id) {
 }
 export function getRecoveryDesign(id) {
   return (
-    (!getDocument(id)?.cloud &&
+    ((!getDocument(id)?.cloud || getDocument(id)?.cloud?.canEdit) &&
       getDocument(id)?.store.getState().track.design) ||
     getSaveFailures().find((failure) => failure.design.id === id)?.design
   );
@@ -85,6 +87,7 @@ export function getRecoveryDesign(id) {
 export function retryDocumentSave(id) {
   const design = getRecoveryDesign(id);
   if (!design) throw new Error("This project is no longer available.");
+  if (getDocument(id)?.cloud) return persistDocument(getDocument(id));
   return useWorkspace.getState().activeId === id
     ? saveDesign(design)
     : saveCopy(design);
@@ -166,11 +169,47 @@ function makeDocument(design, id = design.id, cloud = null) {
       )
     );
   document.unsubscribe = store.subscribe((state, previous) => {
-    if (state.track.design !== previous.track.design) useWorkspace.setState({});
+    const designChanged = state.track.design !== previous.track.design;
+    if (designChanged) useWorkspace.setState({});
+    const editing =
+      state.session.historyPaused || state.session.interactionSessionDepth;
+    const wasEditing =
+      previous.session.historyPaused ||
+      previous.session.interactionSessionDepth;
+    if (
+      !document.cloud?.canEdit ||
+      document.reloading ||
+      editing ||
+      (!designChanged && !wasEditing)
+    )
+      return;
+    document.localSaveError = null;
+    document.localSavePending = true;
+    clearTimeout(document.saveTimer);
+    document.saveTimer = setTimeout(() => {
+      persistDocument(document).catch(() => {});
+    }, 350);
   });
   documents.set(id, document);
   return document;
 }
+export async function persistDocument(document) {
+  if (!document?.cloud?.canEdit) return;
+  clearTimeout(document.saveTimer);
+  const design = document.store.getState().track.design;
+  try {
+    await saveCloudDraft(document.cloud, design);
+    document.localSaveError = null;
+    document.localSavePending =
+      design !== document.store.getState().track.design;
+  } catch (error) {
+    document.localSaveError = error;
+    throw error;
+  } finally {
+    useWorkspace.setState({});
+  }
+}
+
 function rememberDocument(document) {
   if (
     document.id === useWorkspace.getState().activeId &&
@@ -197,7 +236,8 @@ async function preserveActive() {
   if (!useWorkspace.getState().home)
     document.view =
       new URLSearchParams(location.search).get("view") === "3d" ? "3d" : "2d";
-  if (!document.cloud) await saveDesign(document.store.getState().track.design);
+  if (document.cloud) await persistDocument(document);
+  else await saveDesign(document.store.getState().track.design);
   rememberDocument(document);
 }
 function activate(document) {
@@ -240,9 +280,11 @@ export function openDocument(id) {
 }
 export function setCloudAccount(accountId) {
   cloudAccountId = accountId;
+  setSyncAccount(accountId);
   const discarded = [];
   for (const document of documents.values()) {
     if (!document.cloud || document.cloud.accountId === accountId) continue;
+    clearTimeout(document.saveTimer);
     document.unsubscribe();
     documents.delete(document.id);
     discarded.push(document.id);
@@ -281,11 +323,24 @@ export function openCloudDocument(projectId, result) {
     const cloud = {
       accountId: result.accountId,
       team: result.team,
+      projectId,
+      canEdit: result.canEdit === true,
+      canRequestWrite: result.canRequestWrite === true,
     };
     const existing = getDocument(id);
     if (existing) {
       existing.cloud = cloud;
-      existing.store.getState().replaceDesign(design);
+      existing.reloading = true;
+      try {
+        if (
+          JSON.stringify(
+            serializeDesign(existing.store.getState().track.design)
+          ) !== JSON.stringify(serializeDesign(design))
+        )
+          existing.store.getState().replaceDesign(design);
+      } finally {
+        existing.reloading = false;
+      }
     }
     activate(existing ?? makeDocument(design, id, cloud));
   });
@@ -314,8 +369,8 @@ export function closeDocument(id) {
   return transition(async () => {
     const document = getDocument(id);
     if (document) {
-      if (!document.cloud)
-        await saveCopy(document.store.getState().track.design);
+      if (document.cloud) await persistDocument(document);
+      else await saveCopy(document.store.getState().track.design);
       rememberDocument(document);
     }
     const state = useWorkspace.getState();
@@ -338,7 +393,10 @@ export async function flushDocuments() {
   await queue;
   await waitForWrites();
   for (const document of documents.values()) {
-    if (document.cloud) continue;
+    if (document.cloud) {
+      await persistDocument(document);
+      continue;
+    }
     const design = document.store.getState().track.design;
     const saved = getState().designs.find((item) => item.id === document.id);
     if (JSON.stringify(saved) !== JSON.stringify(serializeDesign(design)))

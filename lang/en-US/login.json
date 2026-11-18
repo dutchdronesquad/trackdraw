@@ -7,6 +7,7 @@
     "permission": "The app can read your name and email and will remember the connection on this device.",
     "libraryPermission": "The app can read your name, email, team memberships and project listings. It will remember the connection on this device.",
     "projectPermission": "The app can read your profile, teams and the projects you can access. It will remember the connection on this device.",
+    "writePermission": "The app can read your profile, teams and projects, save your edits on this device and sync them back to projects you can edit.",
     "allow": "Connect desktop",
     "cancel": "Cancel",
     "pending": "Please wait…",

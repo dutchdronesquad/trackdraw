@@ -166,7 +166,7 @@ body,
 .desktop-cloud-context {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 7px 12px;
   border-bottom: 1px solid var(--border);
