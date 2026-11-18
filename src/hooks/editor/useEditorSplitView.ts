@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "trackdraw.editorSplitRatio";
-const DEFAULT_RATIO = 60;
-const MIN_WORKSPACE_WIDTH = 1600;
-const MIN_PANE_WIDTH = 640;
+const DEFAULT_RATIO = 50;
+const MIN_WORKSPACE_WIDTH = 1000;
+const MIN_PANE_WIDTH = 400;
 
 export function useEditorSplitView(enabled: boolean) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -30,6 +30,10 @@ export function useEditorSplitView(enabled: boolean) {
     return () => observer.disconnect();
   }, [enabled]);
 
+  useEffect(() => {
+    canvasRef.current?.style.setProperty("--editor-split-ratio", `${ratio}%`);
+  }, [ratio]);
+
   function open() {
     try {
       const saved = Number(window.localStorage.getItem(STORAGE_KEY));
@@ -44,6 +48,7 @@ export function useEditorSplitView(enabled: boolean) {
 
   function commit(value: number) {
     const next = clamp(value);
+    canvasRef.current?.style.setProperty("--editor-split-ratio", `${next}%`);
     setPreferredRatio(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, String(next));
@@ -64,7 +69,11 @@ export function useEditorSplitView(enabled: boolean) {
       setRequested,
       resize(value: number) {
         const next = clamp(value);
-        setPreferredRatio(next);
+        // Preview layout directly. Committing on release updates React and storage.
+        canvasRef.current?.style.setProperty(
+          "--editor-split-ratio",
+          `${next}%`
+        );
         return next;
       },
       commit,

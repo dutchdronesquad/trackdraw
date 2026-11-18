@@ -676,11 +676,13 @@ export default function EditorShell({
               tab={tab}
               onTabChange={handleTabChange}
               splitView={
-                split.available
+                !readOnly
                   ? {
                       active: split.active,
+                      available: split.available,
                       onSelect: openSplitView,
-                      onReset: split.reset,
+                      ratio: split.ratio,
+                      onRatioChange: split.commit,
                     }
                   : undefined
               }

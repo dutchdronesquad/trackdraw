@@ -509,6 +509,11 @@
     "sideBySide": "Side by side",
     "viewOptions": "View options",
     "resetSplit": "Reset split layout",
+    "splitNeedsSpace": "Widen the editor or collapse a sidebar to use side-by-side view.",
+    "splitMore2d": "More space for 2D",
+    "splitBalanced": "Equal space",
+    "splitMore3d": "More space for 3D",
+    "splitResizeHint": "Drag to resize. Double-click or press Enter to center.",
     "splitDivider": "Resize 2D and 3D views",
     "splitRatio": "{ratio}% for 2D"
   },
