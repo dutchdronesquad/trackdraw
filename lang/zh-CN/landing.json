@@ -159,6 +159,14 @@
       {
         "question": "TrackDraw 能帮我提前看出路径问题吗？",
         "answer": "可以。3D 预览和路径审阅警告会提前暴露出门距不匀、节奏断裂和线路对位问题，让你在分享出去或开始布场前先修掉它们。"
+      },
+      {
+        "question": "我的俱乐部可以作为团队共同设计赛道吗？",
+        "answer": "可以。有账户即可创建团队并邀请编辑者或查看者。每次由一人编辑共享项目，其他成员可查看和导出。团队所有者和编辑者可为飞手和工作人员发布或更新已保存的版本。"
+      },
+      {
+        "question": "可以将 TrackDraw 与 AI 助手搭配使用吗？",
+        "answer": "可以。通过 MCP 连接兼容的助手来处理云端项目：准备材料清单、比较赛道、起草布局或预览编辑。你可选择权限，并在应用前批准修改建议。助手不能发布赛道或更改分享设置。"
       }
     ]
   },
@@ -196,7 +204,11 @@
       "sections": "赛道片段",
       "sectionsDetail": "把任意画布选择保存成命名预设，并从预设选择器里再次放置。会跟随账户在多设备间同步。",
       "api": "REST API 访问",
-      "apiDetail": "Bearer 鉴权，支持 API Key 管理"
+      "apiDetail": "Bearer 鉴权，支持 API Key 管理",
+      "teams": "共享团队项目",
+      "teamsDetail": "邀请编辑者和查看者。每次由一人编辑，其他成员可查看和导出。",
+      "assistant": "AI 助手连接（MCP）",
+      "assistantDetail": "使用兼容的助手处理云端项目，并自行选择权限。"
     },
     "categories": {
       "design": "设计",
@@ -292,5 +304,93 @@
   "screenshotPlaceholder": {
     "label": "截图占位",
     "plannedAsset": "待补素材"
+  },
+  "bio": {
+    "name": "TrackDraw",
+    "tagline": "设计并分享 FPV 竞速赛道。",
+    "metadata": {
+      "title": "链接与精选",
+      "description": "探索 TrackDraw：设计 FPV 竞速赛道、浏览社区布局，并了解查看器和图案设计器。"
+    },
+    "featured": "精选推荐",
+    "explore": "设计你的下一条赛道",
+    "socials": "关注 TrackDraw",
+    "home": "trackdraw.app",
+    "items": {
+      "intro": {
+        "label": "从第一道门到比赛日。",
+        "description": "在 2D 中绘制赛道，在 3D 中寻找流畅路线，并与团队分享计划。"
+      },
+      "studio": {
+        "label": "打开 TrackDraw",
+        "description": "无需账户。"
+      },
+      "gallery": {
+        "label": "探索赛道",
+        "description": "社区布局"
+      },
+      "viewer": {
+        "label": "TrackDraw Viewer",
+        "description": "将赛道嵌入你的网站"
+      },
+      "artwork": {
+        "label": "图案设计器",
+        "description": "赛道门和旗帜图案"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "description": "Instagram"
+      },
+      "facebook": {
+        "label": "Facebook",
+        "description": "Facebook"
+      },
+      "github": {
+        "label": "GitHub",
+        "description": "GitHub"
+      }
+    },
+    "track": {
+      "heading": "从各个角度查看赛道",
+      "title": "Skyline Circuit 互动赛道预览",
+      "viewLabel": "赛道视图",
+      "2d": "2D",
+      "3d": "3D",
+      "hint2D": "切换到 3D，探索交叉路线、塔和俯冲段。",
+      "hint3D": "拖动以旋转，双指缩放或滚动以缩放。",
+      "loading": "正在加载示例赛道…",
+      "error": "无法加载赛道。链接仍可正常使用。",
+      "retry": "重试",
+      "loading3D": "正在加载 3D 预览…",
+      "unavailable3D": "此设备不支持 3D。你仍可在 2D 中探索赛道。",
+      "grid": "网格：{grid}",
+      "panZoom": "平移和缩放",
+      "fit": "让赛道适应窗口"
+    }
+  },
+  "collaboration": {
+    "eyebrow": "共同规划",
+    "heading": "以团队形式设计赛道",
+    "description": "无需账户即可开始设计。需要共享团队项目或已连接的 AI 助手协助时，再登录即可。",
+    "teams": {
+      "title": "为团队提供协作空间。",
+      "description": "集中管理俱乐部从每周训练到比赛日的所有赛道。邀请团队成员，在同一个共享工作区准备下一份布局。",
+      "action": "组建你的团队",
+      "bullets": [
+        "邀请编辑者和查看者加入团队",
+        "一人编辑，其他成员查看和导出",
+        "发布已保存的版本，后续编辑保持私密"
+      ],
+      "accountNote": "拥有 TrackDraw 账户即可使用。",
+      "screenshotAlt": "TrackDraw 团队项目库，展示某俱乐部的比赛和训练布局",
+      "screenshotCaption": "团队赛道齐聚 Studio。展示的项目为示例。"
+    },
+    "assistant": {
+      "title": "获得规划协助",
+      "description": "通过 MCP 连接兼容的 AI 助手，准备材料清单、比较云端赛道或起草布局。请在应用前审核修改建议。",
+      "example": "这条赛道需要哪些材料，我们应预留多少搭建工作量？",
+      "note": "使用云端项目并遵循你授予的权限。助手不能发布赛道或更改分享设置。",
+      "action": "阅读连接指南"
+    }
   }
 }

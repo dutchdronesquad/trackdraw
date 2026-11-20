@@ -505,7 +505,17 @@
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
     "canvas2dDrawer": "Lienzo 2D",
-    "preview3dDrawer": "Vista previa 3D"
+    "preview3dDrawer": "Vista previa 3D",
+    "sideBySide": "En paralelo",
+    "viewOptions": "Opciones de vista",
+    "resetSplit": "Restablecer distribución dividida",
+    "splitNeedsSpace": "Amplía el editor o contrae una barra lateral para usar la vista en paralelo.",
+    "splitMore2d": "Más espacio para 2D",
+    "splitBalanced": "Espacio igual",
+    "splitMore3d": "Más espacio para 3D",
+    "splitResizeHint": "Arrastra para ajustar el tamaño. Haz doble clic o pulsa Enter para centrar.",
+    "splitDivider": "Ajustar tamaño de las vistas 2D y 3D",
+    "splitRatio": "{ratio}% para 2D"
   },
   "desktopInspectorPanel": {
     "ariaLabel": "Inspector",
@@ -589,7 +599,8 @@
     "loading3d": "Cargando 3D…",
     "portraitOnlyEyebrow": "Editor móvil",
     "portraitOnlyTitle": "Pon el teléfono en vertical",
-    "portraitOnlyDescription": "El editor de TrackDraw está diseñado para usarse en vertical en el móvil. Gira el teléfono para seguir editando."
+    "portraitOnlyDescription": "El editor de TrackDraw está diseñado para usarse en vertical en el móvil. Gira el teléfono para seguir editando.",
+    "privateTeamPreview": "Proyecto privado del equipo"
   },
   "languagePicker": {
     "ariaLabel": "Idioma"

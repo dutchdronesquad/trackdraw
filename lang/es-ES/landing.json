@@ -159,6 +159,14 @@
       {
         "question": "¿Puede TrackDraw ayudar a detectar problemas del recorrido antes de la carrera?",
         "answer": "Sí. La vista previa 3D y los avisos de revisión del recorrido ayudan a detectar distancias irregulares, cambios de ritmo y problemas de alineación antes de compartir el diseño o empezar a montarlo."
+      },
+      {
+        "question": "¿Puede mi club trabajar en circuitos como equipo?",
+        "answer": "Sí. Con una cuenta, crea un equipo e invita a editores o lectores. Una persona edita un proyecto compartido a la vez, mientras los compañeros pueden verlo y exportarlo. Los propietarios y editores pueden publicar o actualizar una versión guardada para pilotos y personal de apoyo."
+      },
+      {
+        "question": "¿Puedo usar TrackDraw con un asistente de IA?",
+        "answer": "Sí. Conecta un asistente compatible mediante MCP para trabajar con proyectos en la nube: preparar listas de materiales, comparar circuitos, diseñar trazados o previsualizar cambios. Tú eliges los permisos y apruebas las propuestas antes de aplicarlas. El asistente no puede publicar circuitos ni cambiar las opciones para compartir."
       }
     ]
   },
@@ -196,7 +204,11 @@
       "sections": "Secciones de pista",
       "sectionsDetail": "Guarda cualquier selección del lienzo como un preajuste con nombre y vuelve a colocarlo desde el selector de preajustes. Se sincroniza con tu cuenta entre dispositivos.",
       "api": "Acceso a la API REST",
-      "apiDetail": "Autenticación Bearer y gestión de claves de API"
+      "apiDetail": "Autenticación Bearer y gestión de claves de API",
+      "teams": "Proyectos de equipo compartidos",
+      "teamsDetail": "Invita a editores y lectores. Una persona edita a la vez; los compañeros pueden ver y exportar.",
+      "assistant": "Conexión con asistente de IA (MCP)",
+      "assistantDetail": "Usa asistentes compatibles con proyectos en la nube y los permisos que elijas."
     },
     "categories": {
       "design": "Diseño",
@@ -292,5 +304,93 @@
   "screenshotPlaceholder": {
     "label": "Marcador de posición de captura de pantalla",
     "plannedAsset": "Recurso previsto"
+  },
+  "bio": {
+    "name": "TrackDraw",
+    "tagline": "Diseña y comparte circuitos de carreras FPV.",
+    "metadata": {
+      "title": "Enlaces y destacados",
+      "description": "Explora TrackDraw: diseña circuitos FPV, descubre trazados de la comunidad y conoce el visor y el diseñador gráfico."
+    },
+    "featured": "Destacado",
+    "explore": "Crea tu próximo circuito",
+    "socials": "Sigue a TrackDraw",
+    "home": "trackdraw.app",
+    "items": {
+      "intro": {
+        "label": "De la primera puerta al día de la carrera.",
+        "description": "Dibuja tu circuito en 2D, encuentra la fluidez en 3D y comparte el plan con tu equipo."
+      },
+      "studio": {
+        "label": "Abrir TrackDraw",
+        "description": "No necesitas una cuenta."
+      },
+      "gallery": {
+        "label": "Explorar circuitos",
+        "description": "Trazados de la comunidad"
+      },
+      "viewer": {
+        "label": "TrackDraw Viewer",
+        "description": "Incrusta un circuito en tu sitio web"
+      },
+      "artwork": {
+        "label": "Diseñador gráfico",
+        "description": "Diseños para puertas y banderas"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "description": "Instagram"
+      },
+      "facebook": {
+        "label": "Facebook",
+        "description": "Facebook"
+      },
+      "github": {
+        "label": "GitHub",
+        "description": "GitHub"
+      }
+    },
+    "track": {
+      "heading": "Un circuito desde todos los ángulos",
+      "title": "Vista previa interactiva del circuito Skyline Circuit",
+      "viewLabel": "Vista del circuito",
+      "2d": "2D",
+      "3d": "3D",
+      "hint2D": "Cambia a 3D para explorar el cruce, la torre y el descenso.",
+      "hint3D": "Arrastra para girar. Pellizca o desplázate para ampliar.",
+      "loading": "Cargando circuito de ejemplo…",
+      "error": "No se ha podido cargar el circuito. Tus enlaces siguen disponibles.",
+      "retry": "Intentar de nuevo",
+      "loading3D": "Cargando vista previa 3D…",
+      "unavailable3D": "3D no está disponible en este dispositivo. Puedes seguir explorando el circuito en 2D.",
+      "grid": "Cuadrícula: {grid}",
+      "panZoom": "Desplazar y ampliar",
+      "fit": "Ajustar circuito a la ventana"
+    }
+  },
+  "collaboration": {
+    "eyebrow": "Planificad juntos",
+    "heading": "Diseñad circuitos como equipo",
+    "description": "Empieza a diseñar sin cuenta. Inicia sesión cuando quieras compartir proyectos de equipo o recibir ayuda de un asistente de IA conectado.",
+    "teams": {
+      "title": "Dale a tu equipo un lugar para trabajar.",
+      "description": "Reúne los circuitos de tu club, desde los entrenamientos semanales hasta el día de la carrera. Invita a tus compañeros y preparad el próximo trazado en un espacio compartido.",
+      "action": "Configura tu equipo",
+      "bullets": [
+        "Invita a editores y lectores a tu equipo",
+        "Una persona edita mientras los compañeros ven y exportan",
+        "Publica una versión guardada; mantén privadas las ediciones posteriores"
+      ],
+      "accountNote": "Disponible con una cuenta de TrackDraw.",
+      "screenshotAlt": "Biblioteca de proyectos de equipo de TrackDraw con circuitos de carreras y entrenamientos de un club",
+      "screenshotCaption": "Los circuitos de tu equipo, juntos en Studio. Se muestran proyectos de ejemplo."
+    },
+    "assistant": {
+      "title": "Ayuda con la planificación",
+      "description": "Conecta un asistente de IA compatible mediante MCP para preparar listas de materiales, comparar circuitos en la nube o diseñar un trazado. Revisa los cambios propuestos antes de aplicarlos.",
+      "example": "¿Qué materiales necesitamos para este circuito y cuánto trabajo de montaje debemos prever?",
+      "note": "Funciona con proyectos en la nube y los permisos que concedas. Tu asistente no puede publicar circuitos ni cambiar las opciones para compartir.",
+      "action": "Lee la guía de conexión"
+    }
   }
 }

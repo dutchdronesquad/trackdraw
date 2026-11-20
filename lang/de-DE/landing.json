@@ -159,6 +159,14 @@
       {
         "question": "Kann TrackDraw helfen, Routenprobleme vor dem Renntag zu erkennen?",
         "answer": "Ja. Die 3D-Vorschau und Routenprüfungswarnungen helfen, ungleichmäßige Abstände, Rhythmusbrüche und Ausrichtungsprobleme sichtbar zu machen, bevor du das Layout teilst oder mit dem Aufbau beginnst."
+      },
+      {
+        "question": "Kann mein Verein gemeinsam als Team an Strecken arbeiten?",
+        "answer": "Ja. Erstelle mit einem Konto ein Team und lade Bearbeiter oder Betrachter ein. Jeweils eine Person bearbeitet ein gemeinsames Projekt, während Teammitglieder es ansehen und exportieren können. Teameigentümer und Bearbeiter können eine gespeicherte Version für Piloten und Helfer veröffentlichen oder aktualisieren."
+      },
+      {
+        "question": "Kann ich TrackDraw mit einem KI-Assistenten nutzen?",
+        "answer": "Ja. Verbinde einen kompatiblen Assistenten über MCP, um mit Cloud-Projekten zu arbeiten: Materiallisten vorbereiten, Strecken vergleichen, Layouts entwerfen oder Änderungen vorab ansehen. Du wählst die Berechtigungen und genehmigst Vorschläge vor der Anwendung. Der Assistent kann keine Strecken veröffentlichen oder Freigaben ändern."
       }
     ]
   },
@@ -196,7 +204,11 @@
       "sections": "Track-Abschnitte",
       "sectionsDetail": "Speichere jede Canvas-Auswahl als benanntes Preset und platziere sie erneut aus dem Preset-Picker. Synchronisiert sich geräteübergreifend mit deinem Konto.",
       "api": "REST-API-Zugriff",
-      "apiDetail": "Bearer-authentifiziert, API-Key-Verwaltung"
+      "apiDetail": "Bearer-authentifiziert, API-Key-Verwaltung",
+      "teams": "Gemeinsame Teamprojekte",
+      "teamsDetail": "Lade Bearbeiter und Betrachter ein. Jeweils eine Person bearbeitet; Teammitglieder können ansehen und exportieren.",
+      "assistant": "KI-Assistent verbinden (MCP)",
+      "assistantDetail": "Nutze kompatible Assistenten mit Cloud-Projekten und selbst gewählten Berechtigungen."
     },
     "categories": {
       "design": "Design",
@@ -292,5 +304,93 @@
   "screenshotPlaceholder": {
     "label": "Screenshot-Platzhalter",
     "plannedAsset": "Geplantes Asset"
+  },
+  "bio": {
+    "name": "TrackDraw",
+    "tagline": "FPV-Rennstrecken entwerfen und teilen.",
+    "metadata": {
+      "title": "Links und Highlights",
+      "description": "Entdecke TrackDraw: Entwirf FPV-Rennstrecken, erkunde Community-Layouts und entdecke den Viewer und Artwork-Designer."
+    },
+    "featured": "Im Mittelpunkt",
+    "explore": "Entwirf deine nächste Strecke",
+    "socials": "TrackDraw folgen",
+    "home": "trackdraw.app",
+    "items": {
+      "intro": {
+        "label": "Vom ersten Gate bis zum Renntag.",
+        "description": "Zeichne deine Strecke in 2D, finde den Flow in 3D und teile den Plan mit deinem Team."
+      },
+      "studio": {
+        "label": "TrackDraw öffnen",
+        "description": "Kein Konto erforderlich."
+      },
+      "gallery": {
+        "label": "Strecken entdecken",
+        "description": "Community-Layouts"
+      },
+      "viewer": {
+        "label": "TrackDraw Viewer",
+        "description": "Eine Strecke in deine Website einbetten"
+      },
+      "artwork": {
+        "label": "Artwork-Designer",
+        "description": "Artwork für Gates und Flaggen"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "description": "Instagram"
+      },
+      "facebook": {
+        "label": "Facebook",
+        "description": "Facebook"
+      },
+      "github": {
+        "label": "GitHub",
+        "description": "GitHub"
+      }
+    },
+    "track": {
+      "heading": "Eine Strecke aus jedem Blickwinkel",
+      "title": "Interaktive Streckenvorschau von Skyline Circuit",
+      "viewLabel": "Streckenansicht",
+      "2d": "2D",
+      "3d": "3D",
+      "hint2D": "Wechsle zu 3D, um Kreuzung, Turm und Dive zu erkunden.",
+      "hint3D": "Zum Drehen ziehen. Zum Zoomen Finger zusammenführen oder scrollen.",
+      "loading": "Beispielstrecke wird geladen…",
+      "error": "Die Strecke konnte nicht geladen werden. Deine Links bleiben nutzbar.",
+      "retry": "Erneut versuchen",
+      "loading3D": "3D-Vorschau wird geladen…",
+      "unavailable3D": "3D ist auf diesem Gerät nicht verfügbar. Du kannst die Strecke weiterhin in 2D erkunden.",
+      "grid": "Raster: {grid}",
+      "panZoom": "Verschieben und zoomen",
+      "fit": "Strecke an Fenster anpassen"
+    }
+  },
+  "collaboration": {
+    "eyebrow": "Gemeinsam planen",
+    "heading": "Strecken als Team entwerfen",
+    "description": "Beginne ohne Konto mit dem Entwerfen. Melde dich an, wenn du gemeinsame Teamprojekte oder Hilfe von einem verbundenen KI-Assistenten möchtest.",
+    "teams": {
+      "title": "Gib deinem Team einen Arbeitsbereich.",
+      "description": "Halte die Strecken deines Vereins zusammen, vom wöchentlichen Training bis zum Renntag. Lade dein Team ein und bereite das nächste Layout in einem gemeinsamen Arbeitsbereich vor.",
+      "action": "Team einrichten",
+      "bullets": [
+        "Lade Bearbeiter und Betrachter in dein Team ein",
+        "Eine Person bearbeitet, während Teammitglieder ansehen und exportieren",
+        "Veröffentliche eine gespeicherte Version; weitere Änderungen bleiben privat"
+      ],
+      "accountNote": "Mit einem TrackDraw-Konto verfügbar.",
+      "screenshotAlt": "TrackDraw-Teamprojektbibliothek mit Renn- und Trainingslayouts eines Vereins",
+      "screenshotCaption": "Die Strecken deines Teams gemeinsam in Studio. Gezeigte Projekte sind Beispiele."
+    },
+    "assistant": {
+      "title": "Hilfe bei der Planung",
+      "description": "Verbinde einen kompatiblen KI-Assistenten über MCP, um Materiallisten vorzubereiten, Cloud-Strecken zu vergleichen oder ein Layout zu entwerfen. Prüfe vorgeschlagene Änderungen vor der Anwendung.",
+      "example": "Welche Materialien benötigen wir für diese Strecke und wie viel Aufbauarbeit sollten wir einplanen?",
+      "note": "Funktioniert mit Cloud-Projekten und den von dir gewährten Berechtigungen. Dein Assistent kann keine Strecken veröffentlichen oder Freigaben ändern.",
+      "action": "Verbindungsanleitung lesen"
+    }
   }
 }
