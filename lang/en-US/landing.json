@@ -16,8 +16,8 @@
     "featuresTooltip": "Jump to the product overview",
     "galleryNav": "Gallery",
     "galleryTooltip": "Browse public community layouts",
-    "pricingNav": "Pricing",
-    "pricingTooltip": "See plans and pricing",
+    "pricingNav": "Account",
+    "pricingTooltip": "Compare use with and without an account",
     "faqNav": "FAQ",
     "faqTooltip": "Read common questions and answers",
     "logoAriaLabel": "TrackDraw",
@@ -35,11 +35,11 @@
     "eyebrow": "Built for FPV race directors",
     "headingLine1": "Race day starts",
     "headingLine2": "with a plan.",
-    "description": "TrackDraw is a browser-based drone race track builder for FPV race directors. Draw to scale in 2D, review the flow in 3D, share a read-only layout with pilots and crew, and keep the plan usable from desktop or mobile.",
+    "description": "Design your FPV race track to scale, edit in 2D and 3D, and get the plan ready with your team. Share a read-only layout with pilots and crew, or take it to the venue on your phone.",
     "ctaStudio": "Open Studio",
     "ctaFeatures": "See the features",
     "feature1": "Official obstacle catalog",
-    "feature2": "Track sections",
+    "feature2": "Shared team projects",
     "feature3": "3D preview and flythrough",
     "feature4": "Race Pack PDF and SVG",
     "videoAlt": "TrackDraw drone race track builder demo",
@@ -47,19 +47,19 @@
   },
   "features": {
     "sectionTitle": "Features",
-    "sectionHeading": "Design, review, and share.",
-    "sectionDescription": "TrackDraw gives FPV race directors a practical way to design tracks properly: real field dimensions, the right obstacle set, and one workflow that carries the same plan from layout to review to team hand-off.",
+    "sectionHeading": "Design, check, and get race-ready.",
+    "sectionDescription": "Start with your field and available obstacles. Review the route, prepare the build, and give pilots and crew a clear plan they can open on any device.",
     "trueToScale": {
       "title": "True-to-scale canvas",
       "description": "Set the field size, place elements to scale, and work on a grid that matches the real venue."
     },
     "obstacleCatalog": {
       "title": "Official obstacle catalog",
-      "description": "Place official MultiGP obstacles (gates, flags, ladders, hurdles, and barriers) with real dimensions and accurate 3D rendering."
+      "description": "Build with real dimensions using MultiGP obstacles and the RaceGOW Gate, plus flags, ladders, cones and barriers. Add published artwork to compatible gates."
     },
     "preview3d": {
-      "title": "Realistic 3D preview",
-      "description": "Orbit in 3D, add elevation to the race line, review maneuver curves, and fly through the route to catch flow problems before build day."
+      "title": "2D and 3D together",
+      "description": "Edit both views side by side on wide workspaces. Check waypoint elevation and fly through the race line to review the flow before build day."
     },
     "shareLinks": {
       "title": "Shared review links",
@@ -76,8 +76,8 @@
   },
   "workflow": {
     "sectionEyebrow": "In depth",
-    "sectionHeading": "From first layout to team hand-off.",
-    "sectionDescription": "The tool works best as a sequence: map the drone race track in 2D, check it in 3D, make practical edits when reality changes, then hand the same plan to pilots and crew.",
+    "sectionHeading": "From first layout to race day.",
+    "sectionDescription": "Lay out the field, check the route in 3D, and refine the plan before sharing it with pilots and crew. Keep editing on a phone or tablet when the venue calls for a change.",
     "layout": {
       "title": "2D Layout",
       "subtitle": "Build the track on a field that matches reality.",
@@ -101,26 +101,26 @@
       ]
     },
     "preview": {
-      "title": "3D Preview",
-      "subtitle": "Walk the track before you build it.",
-      "description": "One click switches from the flat 2D plan to a live 3D scene. Assign elevation to each waypoint on the race line to model the full vertical profile. Catch dangerous approaches before a single peg is in the ground.",
-      "screenshotAlt": "TrackDraw 3D preview showing track flow and elevation",
+      "title": "2D + 3D",
+      "subtitle": "See the change from both angles.",
+      "description": "On wide workspaces, keep 2D and 3D open side by side while you move and rotate obstacles. Adjust the divider to suit the task, then review race-line elevation or fly through the route.",
+      "screenshotAlt": "TrackDraw Studio with the same FPV track open in 2D and 3D side by side",
       "bullets": [
-        "Live 3D rendered directly from your 2D design",
-        "Per-waypoint altitude on the race line",
-        "Elevation graph in the inspector panel"
+        "Edit the layout with a live 3D view alongside it",
+        "Adjust the split to give either view more room",
+        "Review waypoint elevation and fly through the race line"
       ]
     },
     "handOff": {
       "title": "Hand-Off",
       "subtitle": "Give pilots and crew the same current version.",
-      "description": "A plan only matters if other people can open it. Shared read-only links and exports turn the layout into something pilots can review, crew can print and organizers can reuse later.",
+      "description": "Publish a saved version for pilots and crew to review, while further edits stay private until you update the link. Export a Race Pack for briefing and setup, or a portable viewer archive for offline review.",
       "screenshotAlt": "TrackDraw read-only shared view open on mobile",
       "gallery": "Browse the gallery for inspiration",
       "bullets": [
-        "Read-only links that open on any device",
-        "PDF, PNG and SVG for briefing and print workflows",
-        "JSON export to archive and reuse layouts later"
+        "Read-only links and website embeds",
+        "Race Pack PDF, PNG and SVG for briefing and print",
+        "JSON projects and portable offline viewer archives"
       ]
     }
   },
@@ -146,38 +146,46 @@
       },
       {
         "question": "What export formats are available?",
-        "answer": "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review."
+        "answer": "Export a Race Pack PDF, PNG, SVG, editable JSON, a flythrough video, or a portable viewer archive. Use the archive with a compatible external viewer for offline review."
       },
       {
         "question": "Do I need an account to get started?",
-        "answer": "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds."
+        "answer": "No. Open Studio and start designing, saving on your device, sharing and exporting right away. An account adds cloud projects, teams, durable published links, gallery publishing, embeds and connections to compatible AI assistants."
       },
       {
         "question": "Can I reuse a layout for a future event?",
-        "answer": "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event."
+        "answer": "Yes. Use Duplicate in Project Manager to make an independent copy for your next event. You can also save selections as reusable track sections, or export and import a full project as JSON."
       },
       {
         "question": "Can TrackDraw help catch route problems before race day?",
         "answer": "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it."
+      },
+      {
+        "question": "Can my club work on tracks as a team?",
+        "answer": "Yes. With an account, create a team and invite editors or viewers. One person edits a shared project at a time, while teammates can view and export it. Team owners and editors can publish or update a saved version for pilots and crew."
+      },
+      {
+        "question": "Can I use TrackDraw with an AI assistant?",
+        "answer": "Yes. Connect a compatible assistant through MCP to work with cloud projects: prepare material lists, compare tracks, draft layouts or preview edits. You choose the permissions and approve proposed edits before they are applied. The assistant cannot publish tracks or change sharing."
       }
     ]
   },
   "pricing": {
-    "sectionEyebrow": "Plans",
+    "sectionEyebrow": "Your workspace",
     "sectionHeading": "Start now, sign up when you need more.",
-    "sectionDescription": "Both current options are free. Guest mode keeps the core editor open without setup; accounts add durable publishing, embeds, gallery listing, and project continuity across devices.",
+    "sectionDescription": "Design, review and export without an account. Sign in to keep cloud projects, work with a team, publish lasting links and connect compatible AI assistants.",
     "guest": {
       "badge": "No sign-up",
       "name": "Guest",
-      "price": "Free",
+      "price": "On this device",
       "description": "Best for quick drafts, one-off temporary review links, and local export without creating an account.",
       "cta": "Open Studio"
     },
     "account": {
       "badge": "With account",
       "name": "Account",
-      "price": "Free",
-      "description": "Best for durable published links, embeds, gallery, track sections, REST API access, and cross-device project continuity.",
+      "price": "Across devices",
+      "description": "Keep projects across devices, work with your team, publish lasting links and connect your planning tools.",
       "cta": "Create account"
     },
     "features": {
@@ -196,7 +204,11 @@
       "sections": "Track sections",
       "sectionsDetail": "Save any canvas selection as a named preset and place it again from the preset picker. Syncs with your account across devices.",
       "api": "REST API access",
-      "apiDetail": "Bearer-authenticated, API key management"
+      "apiDetail": "Bearer-authenticated, API key management",
+      "teams": "Shared team projects",
+      "teamsDetail": "Invite editors and viewers. One person edits at a time; teammates can view and export.",
+      "assistant": "AI assistant connection (MCP)",
+      "assistantDetail": "Use compatible assistants with cloud projects and permissions you choose."
     },
     "categories": {
       "design": "Design",
@@ -354,6 +366,31 @@
       "grid": "Grid: {grid}",
       "panZoom": "Pan and zoom",
       "fit": "Fit track to window"
+    }
+  },
+  "collaboration": {
+    "eyebrow": "Plan together",
+    "heading": "Design tracks as a team",
+    "description": "Start designing without an account. Sign in when you want shared team projects or help from a connected AI assistant.",
+    "teams": {
+      "title": "Give your team a place to work.",
+      "description": "Keep your club’s tracks together, from weekly practice to race day. Invite your crew and get the next layout ready in one shared workspace.",
+      "action": "Set up your team",
+      "bullets": [
+        "Invite editors and viewers to your team",
+        "One person edits while teammates view and export",
+        "Publish a saved version; keep further edits private"
+      ],
+      "accountNote": "Available with a TrackDraw account.",
+      "screenshotAlt": "TrackDraw team project library showing a club’s race and practice layouts",
+      "screenshotCaption": "Your team’s tracks, together in Studio. Example projects shown."
+    },
+    "assistant": {
+      "title": "Get a hand with the planning",
+      "description": "Connect a compatible AI assistant through MCP to prepare material lists, compare cloud tracks or draft a layout. Review proposed edits before applying them.",
+      "example": "What materials do we need for this track, and how much setup work should we plan?",
+      "note": "Works with cloud projects and the permissions you grant. Your assistant cannot publish tracks or change sharing.",
+      "action": "Read the connection guide"
     }
   }
 }
