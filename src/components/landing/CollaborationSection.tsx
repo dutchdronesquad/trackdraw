@@ -14,8 +14,8 @@ export function CollaborationSection() {
       className="border-border/40 border-t"
     >
       <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-          <Reveal>
+        <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+          <Reveal className="order-first lg:order-last">
             <p className="text-brand-primary inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
               <Users aria-hidden="true" className="size-3.5" />
               {t("eyebrow")}
@@ -55,7 +55,7 @@ export function CollaborationSection() {
               {t("teams.accountNote")}
             </p>
           </Reveal>
-          <figure className="mx-auto w-full max-w-sm min-w-0 lg:max-w-none">
+          <figure className="order-last mx-auto w-full max-w-sm min-w-0 lg:order-first lg:max-w-none">
             <Reveal className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/5">
               <picture>
                 <source

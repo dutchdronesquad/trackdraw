@@ -428,9 +428,9 @@ export default function Home() {
                   <Screenshot
                     src="/assets/screenshots/editor-side-by-side.jpg"
                     alt={t("workflow.preview.screenshotAlt")}
-                    className="order-last lg:order-first"
+                    className="order-last"
                   />
-                  <div className="order-first lg:order-last">
+                  <div className="order-first">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-purple-400 uppercase">
                       <Orbit className="size-3" /> {t("workflow.preview.title")}
                     </div>
@@ -458,8 +458,8 @@ export default function Home() {
               </Reveal>
 
               <Reveal>
-                <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
-                  <div>
+                <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[0.72fr_1.28fr] lg:gap-14">
+                  <div className="order-first lg:order-last">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-emerald-400 uppercase">
                       <ClipboardCheck className="size-3" />{" "}
                       {t("workflow.fineTune.title")}
@@ -491,7 +491,7 @@ export default function Home() {
                     alt={t("workflow.fineTune.screenshotAlt")}
                     aspect="portrait"
                     accentClassName="bg-emerald-500/16"
-                    className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
+                    className="order-last mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:order-first lg:max-w-62.5"
                   />
                 </div>
               </Reveal>
@@ -547,9 +547,9 @@ export default function Home() {
 
         <CollaborationSection />
 
-        <RelatedToolsSection />
-
         <PricingSection />
+
+        <RelatedToolsSection />
 
         {/* ── FAQ ──────────────────────────────────────────── */}
         <section id="faq" className="border-border/40 border-t">
