@@ -374,12 +374,20 @@
     "description": "Start designing without an account. Sign in when you want shared team projects or help from a connected AI assistant.",
     "teams": {
       "title": "Give your team a place to work.",
-      "description": "Keep club tracks together, invite editors and viewers, and see who is editing. One person edits at a time; teammates can view and export the design. Owners and editors can publish a saved version when it is ready.",
-      "action": "Set up your team"
+      "description": "Keep your club’s tracks together, from weekly practice to race day. Invite your crew and get the next layout ready in one shared workspace.",
+      "action": "Set up your team",
+      "bullets": [
+        "Invite editors and viewers to your team",
+        "One person edits while teammates view and export",
+        "Publish a saved version; keep further edits private"
+      ],
+      "accountNote": "Free with a TrackDraw account.",
+      "screenshotAlt": "TrackDraw team project library showing a club’s race and practice layouts",
+      "screenshotCaption": "Your team’s tracks, together in Studio. Example projects shown."
     },
     "assistant": {
-      "title": "Bring your assistant into the planning.",
-      "description": "Connect a compatible AI assistant through MCP to prepare material lists, compare saved layouts, or draft a track from your field and inventory. Review proposed edits before they are applied.",
+      "title": "Get a hand with the planning",
+      "description": "Connect a compatible AI assistant through MCP to prepare material lists, compare cloud tracks or draft a layout. Review proposed edits before applying them.",
       "example": "What materials do we need for this track, and how much setup work should we plan?",
       "note": "Works with cloud projects and the permissions you grant. Your assistant cannot publish tracks or change sharing.",
       "action": "Read the connection guide"

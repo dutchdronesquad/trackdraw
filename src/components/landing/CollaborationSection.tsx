@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Bot, Users } from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, Users } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/landing/Motion";
@@ -14,62 +14,102 @@ export function CollaborationSection() {
       className="border-border/40 border-t"
     >
       <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-        <Reveal className="mb-10">
-          <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-            {t("eyebrow")}
-          </p>
-          <h2
-            id="collaboration-heading"
-            className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
-            {t("heading")}
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-            {t("description")}
-          </p>
-        </Reveal>
-
-        <div className="grid gap-10 md:grid-cols-2 md:gap-12">
-          <Reveal className="border-border/50 border-t pt-6">
-            <Users aria-hidden="true" className="text-brand-primary size-6" />
-            <h3 className="mt-4 text-xl font-semibold tracking-tight">
-              {t("teams.title")}
-            </h3>
-            <p className="text-muted-foreground mt-3 text-sm leading-7">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+          <Reveal>
+            <p className="text-brand-primary inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
+              <Users aria-hidden="true" className="size-3.5" />
+              {t("eyebrow")}
+            </p>
+            <h2
+              id="collaboration-heading"
+              className="mt-4 max-w-sm text-3xl leading-tight font-semibold tracking-tight sm:text-4xl"
+            >
+              {t("heading")}
+            </h2>
+            <p className="text-muted-foreground mt-4 text-sm leading-7">
               {t("teams.description")}
             </p>
+            <ul className="mt-5 space-y-3">
+              {(t.raw("teams.bullets") as string[]).map((benefit) => (
+                <li
+                  key={benefit}
+                  className="text-muted-foreground flex items-start gap-2.5 text-sm leading-6"
+                >
+                  <CheckCircle2
+                    aria-hidden="true"
+                    className="text-brand-primary mt-1 size-3.5 shrink-0"
+                  />
+                  {benefit}
+                </li>
+              ))}
+            </ul>
             <Link
               href="/studio?dialog=account&section=teams"
               prefetch={false}
-              className="text-brand-primary hover:text-brand-primary/85 mt-5 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+              className="bg-brand-primary mt-7 inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-medium text-white transition hover:brightness-110"
             >
-              {t("teams.action")}{" "}
-              <ArrowRight aria-hidden="true" className="size-4" />
+              {t("teams.action")}
+              <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
+            <p className="text-muted-foreground mt-3 text-xs">
+              {t("teams.accountNote")}
+            </p>
           </Reveal>
-          <Reveal className="border-border/50 border-t pt-6">
-            <Bot aria-hidden="true" className="text-brand-secondary size-6" />
-            <h3 className="mt-4 text-xl font-semibold tracking-tight">
-              {t("assistant.title")}
-            </h3>
+          <figure className="mx-auto w-full max-w-sm min-w-0 lg:max-w-none">
+            <Reveal className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/5">
+              <picture>
+                <source
+                  media="(min-width: 1024px)"
+                  srcSet="/assets/screenshots/team-project-library.jpg"
+                />
+                {/* oxlint-disable-next-line nextjs/no-img-element */}
+                <img
+                  src="/assets/screenshots/team-project-library-mobile.jpg"
+                  alt={t("teams.screenshotAlt")}
+                  className="block h-auto w-full"
+                  loading="lazy"
+                />
+              </picture>
+            </Reveal>
+            <Reveal>
+              <figcaption className="text-muted-foreground mt-4 text-center text-xs leading-5">
+                {t("teams.screenshotCaption")}
+              </figcaption>
+            </Reveal>
+          </figure>
+        </div>
+
+        <Reveal className="border-border/50 mt-12 grid gap-6 border-t pt-8 sm:mt-16 md:grid-cols-[0.85fr_1.15fr] md:gap-12 lg:gap-16">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <Bot
+                aria-hidden="true"
+                className="text-brand-secondary size-5 shrink-0"
+              />
+              <h3 className="text-base font-semibold tracking-tight">
+                {t("assistant.title")}
+              </h3>
+            </div>
             <p className="text-muted-foreground mt-3 text-sm leading-7">
               {t("assistant.description")}
             </p>
-            <blockquote className="border-brand-secondary/40 mt-4 border-l-2 pl-4 text-sm leading-7 italic">
+            <a
+              href="https://github.com/dutchdronesquad/trackdraw/blob/main/docs/mcp.md"
+              className="text-brand-secondary hover:text-brand-secondary/85 mt-4 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+            >
+              {t("assistant.action")}
+              <ArrowRight aria-hidden="true" className="size-3.5" />
+            </a>
+          </div>
+          <div className="self-center">
+            <blockquote className="border-brand-secondary/40 border-l-2 pl-4 text-sm leading-7 italic">
               {t("assistant.example")}
             </blockquote>
             <p className="text-muted-foreground mt-3 text-xs leading-6">
               {t("assistant.note")}
             </p>
-            <a
-              href="https://github.com/dutchdronesquad/trackdraw/blob/main/docs/mcp.md"
-              className="text-brand-secondary hover:text-brand-secondary/85 mt-5 inline-flex items-center gap-2 text-sm font-medium transition-colors"
-            >
-              {t("assistant.action")}{" "}
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </a>
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
