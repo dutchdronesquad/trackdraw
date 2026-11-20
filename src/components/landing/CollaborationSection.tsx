@@ -51,9 +51,6 @@ export function CollaborationSection() {
               {t("teams.action")}
               <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
-            <p className="text-muted-foreground mt-3 text-xs">
-              {t("teams.accountNote")}
-            </p>
           </Reveal>
           <figure className="order-last mx-auto w-full max-w-sm min-w-0 lg:order-first lg:max-w-none">
             <Reveal className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/5">
