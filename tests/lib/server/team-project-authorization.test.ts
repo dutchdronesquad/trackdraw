@@ -84,7 +84,16 @@ afterEach(() => db.close());
 describe("team project access", () => {
   const permissions: Record<string, readonly ProjectAction[]> = {
     owner: projectActions,
-    editor: ["list", "read", "export", "create", "update", "archive"],
+    editor: [
+      "list",
+      "read",
+      "export",
+      "create",
+      "update",
+      "archive",
+      "publish",
+      "revoke",
+    ],
     viewer: ["list", "read", "export"],
     outsider: [],
     creator: [],

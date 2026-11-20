@@ -29,7 +29,16 @@ export type ProjectAction = (typeof projectActions)[number];
 
 const roleActions: Record<TeamRole, readonly ProjectAction[]> = {
   owner: projectActions,
-  editor: ["list", "read", "export", "create", "update", "archive"],
+  editor: [
+    "list",
+    "read",
+    "export",
+    "create",
+    "update",
+    "archive",
+    "publish",
+    "revoke",
+  ],
   viewer: ["list", "read", "export"],
 };
 

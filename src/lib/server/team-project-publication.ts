@@ -14,9 +14,10 @@ const tokenFor = customAlphabet(
   16
 );
 // Include this in every statement that reads management metadata or changes publication.
-const ownerGuard = `EXISTS (SELECT 1 FROM projects p JOIN team_members m ON m.organizationId=p.owner_team_id
+const publicationGuard = `EXISTS (SELECT 1 FROM projects p JOIN team_members m ON m.organizationId=p.owner_team_id
  WHERE p.id=? AND p.owner_team_id=? AND p.owner_user_id IS NULL AND p.archived_at IS NULL
- AND m.userId=? AND m.role='owner')`;
+ AND m.userId=? AND m.role IN ('owner','editor')
+ AND NOT EXISTS (SELECT 1 FROM team_succession_cases c WHERE c.team_id=p.owner_team_id AND c.state='recovery'))`;
 
 export async function readTeamPublication(
   userId: string,
@@ -27,7 +28,7 @@ export async function readTeamPublication(
   const bindings = [projectId, teamId, userId];
   if (
     !(await db
-      .prepare(`SELECT 1 AS allowed WHERE ${ownerGuard}`)
+      .prepare(`SELECT 1 AS allowed WHERE ${publicationGuard}`)
       .bind(...bindings)
       .first())
   )
@@ -38,7 +39,7 @@ export async function readTeamPublication(
     g.gallery_state AS galleryState, g.gallery_title AS galleryTitle, g.gallery_description AS galleryDescription
     FROM shares s LEFT JOIN gallery_entries g ON g.share_token=s.token
     WHERE s.project_id=? AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR julianday(s.expires_at)>julianday('now'))
-    AND ${ownerGuard} ORDER BY s.updated_at DESC, s.token LIMIT 101`
+    AND ${publicationGuard} ORDER BY s.updated_at DESC, s.token LIMIT 101`
     )
     .bind(projectId, ...bindings)
     .all<{
@@ -91,12 +92,12 @@ export async function changeTeamPublication(
     const snapshot = publicTeamSnapshot(project.design, token);
     const serialized = JSON.stringify(serializeDesignForShare(snapshot));
     const description = getShareDescription(snapshot);
-    // The revision/owner check and snapshot write are one statement, including retries on a stable token.
+    // The revision/permission check and snapshot write are one statement, including retries on a stable token.
     const row = await db
       .prepare(
         `INSERT INTO shares
       (id,token,design_json,title,description,field_width,field_height,shape_count,created_at,updated_at,published_at,owner_user_id,project_id,share_type)
-      SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,'published' WHERE ${ownerGuard}
+      SELECT ?,?,?,?,?,?,?,?,?,?,?,(SELECT userId FROM team_members WHERE organizationId=? AND role='owner'),?,'published' WHERE ${publicationGuard}
       AND EXISTS (SELECT 1 FROM projects WHERE id=? AND revision=?)
       ON CONFLICT(token) DO UPDATE SET design_json=excluded.design_json,title=excluded.title,description=excluded.description,
       field_width=excluded.field_width,field_height=excluded.field_height,shape_count=excluded.shape_count,
@@ -116,7 +117,7 @@ export async function changeTeamPublication(
         now,
         now,
         now,
-        userId,
+        teamId,
         projectId,
         ...bindings,
         projectId,
@@ -128,7 +129,7 @@ export async function changeTeamPublication(
     await db
       .prepare(
         `UPDATE gallery_entries SET gallery_preview_image=NULL,updated_at=? WHERE share_token=?
-      AND ${ownerGuard} RETURNING id`
+      AND ${publicationGuard} RETURNING id`
       )
       .bind(now, token, ...bindings)
       .first();
@@ -143,7 +144,7 @@ export async function changeTeamPublication(
     const row = await db
       .prepare(
         `UPDATE shares SET revoked_at=?,updated_at=? WHERE token=? AND project_id=?
-      AND revoked_at IS NULL AND ${ownerGuard} RETURNING token`
+      AND revoked_at IS NULL AND ${publicationGuard} RETURNING token`
       )
       .bind(now, now, token, projectId, ...bindings)
       .first();
@@ -161,7 +162,7 @@ export async function changeTeamPublication(
     return null;
   }
   const activeGuard = `EXISTS(SELECT 1 FROM shares WHERE token=? AND project_id=? AND revoked_at IS NULL
-    AND (expires_at IS NULL OR julianday(expires_at)>julianday('now'))) AND ${ownerGuard}`;
+    AND (expires_at IS NULL OR julianday(expires_at)>julianday('now'))) AND ${publicationGuard}`;
   const activeBindings = [token, projectId, ...bindings];
   if (command.action === "unlist") {
     const row = await db
@@ -178,7 +179,7 @@ export async function changeTeamPublication(
       .prepare(
         `INSERT INTO gallery_entries
       (id,share_token,owner_user_id,gallery_state,gallery_title,gallery_description,gallery_published_at,created_at,updated_at)
-      SELECT ?,?,?,'listed',?,?,?,?,? WHERE ${activeGuard}
+      SELECT ?,?,(SELECT userId FROM team_members WHERE organizationId=? AND role='owner'),'listed',?,?,?,?,? WHERE ${activeGuard}
       ${command.action === "update" ? `AND EXISTS(SELECT 1 FROM gallery_entries WHERE share_token=? AND gallery_state IN ('listed','featured'))` : ""}
       ON CONFLICT(share_token) DO UPDATE SET gallery_title=excluded.gallery_title,gallery_description=excluded.gallery_description,
         gallery_state=CASE WHEN gallery_entries.gallery_state='featured' THEN 'featured' ELSE 'listed' END,
@@ -189,7 +190,7 @@ export async function changeTeamPublication(
       .bind(
         crypto.randomUUID(),
         token,
-        userId,
+        teamId,
         command.title,
         command.description,
         now,

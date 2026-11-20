@@ -116,7 +116,7 @@ async function snapshot() {
   return share.token;
 }
 describe("private team publication", () => {
-  it.each(["editor", "viewer", "outsider"])(
+  it.each(["viewer", "outsider"])(
     "%s cannot publish or read management metadata",
     async (user) => {
       await expect(changeTeamPublication(user, command)).rejects.toMatchObject({
@@ -128,6 +128,113 @@ describe("private team publication", () => {
       expect(await getProjectForUser("race", user)).toBeNull();
     }
   );
+  it("lets editors publish, update, list, unlist and revoke team snapshots while retaining team attribution", async () => {
+    const share = await changeTeamPublication("editor", command);
+    if (!share) throw Error("missing");
+    expect(await canManageShare("editor", share.token)).toBe(true);
+    expect(
+      (await readTeamPublication("editor", "club", "race")).share?.token
+    ).toBe(share.token);
+    expect((await changeTeamPublication("editor", command))?.token).toBe(
+      share.token
+    );
+    const listing = {
+      ...context,
+      action: "list" as const,
+      token: share.token,
+      title: "Team race",
+      description: "Public team race",
+    };
+    await changeTeamPublication("editor", listing);
+    await changeTeamPublication("editor", {
+      ...listing,
+      action: "update",
+      title: "Updated race",
+    });
+    expect(await listPublicGalleryEntries()).toHaveLength(1);
+    expect(db.prepare("SELECT owner_user_id FROM shares").get()).toMatchObject({
+      owner_user_id: "owner",
+    });
+    expect(
+      db.prepare("SELECT owner_user_id FROM gallery_entries").get()
+    ).toMatchObject({ owner_user_id: "owner" });
+    await changeTeamPublication("editor", {
+      ...context,
+      action: "unlist",
+      token: share.token,
+    });
+    expect(await listPublicGalleryEntries()).toHaveLength(0);
+    await changeTeamPublication("editor", listing);
+    db.exec(
+      "DELETE FROM team_members WHERE userId='editor'; DELETE FROM users WHERE id='editor'"
+    );
+    expect((await resolveStoredShare(share.token)).status).toBe("available");
+    expect(await listPublicGalleryEntries()).toHaveLength(1);
+    await changeTeamPublication("owner", {
+      ...context,
+      action: "revoke",
+      token: share.token,
+    });
+    expect((await resolveStoredShare(share.token)).status).toBe("revoked");
+  });
+  it("rechecks editor membership at the publication write", async () => {
+    let raced = false;
+    mocks.db.mockResolvedValue(
+      sqliteD1(db, (sql) => {
+        if (!raced && sql.includes("INSERT INTO shares")) {
+          raced = true;
+          db.exec(
+            "UPDATE team_members SET role='viewer' WHERE userId='editor'"
+          );
+        }
+      })
+    );
+    await expect(
+      changeTeamPublication("editor", command)
+    ).rejects.toMatchObject({ code: "conflict" });
+    expect(db.prepare("SELECT count(*) n FROM shares").get()).toMatchObject({
+      n: 0,
+    });
+  });
+  it("blocks publication management immediately after editor demotion", async () => {
+    const token = await snapshot();
+    db.exec("UPDATE team_members SET role='viewer' WHERE userId='editor'");
+    expect(await canManageShare("editor", token)).toBe(false);
+    for (const action of ["revoke", "unlist"] as const) {
+      await expect(
+        changeTeamPublication("editor", { ...context, action, token })
+      ).rejects.toMatchObject({ code: "not_found" });
+    }
+    await expect(
+      changeTeamPublication("editor", command)
+    ).rejects.toMatchObject({ code: "not_found" });
+  });
+  it("lets editors revoke through the team publication route", async () => {
+    const token = await snapshot();
+    mocks.user.mockResolvedValue({ id: "editor" });
+    const response = await POST(
+      new Request("http://localhost/api/team-projects/publication", {
+        method: "POST",
+        body: JSON.stringify({ ...context, action: "revoke", token }),
+      })
+    );
+    expect(response.status).toBe(200);
+    expect((await resolveStoredShare(token)).status).toBe("revoked");
+  });
+  it("keeps recovery teams read-only for publication management", async () => {
+    const token = await snapshot();
+    db.exec(
+      "INSERT INTO team_succession_cases(id,team_id,owner_id,activity_at,removal_at,state,opened_at) VALUES('case','club','owner','2026-01-01','2026-11-20','recovery','2026-01-01')"
+    );
+    expect(await canManageShare("editor", token)).toBe(false);
+    await expect(
+      changeTeamPublication("editor", command)
+    ).rejects.toMatchObject({ code: "not_found" });
+    await expect(
+      changeTeamPublication("editor", { ...context, action: "revoke", token })
+    ).rejects.toMatchObject({ code: "not_found" });
+    expect((await resolveStoredShare(token)).status).toBe("available");
+  });
   it("publishes a sanitized independent snapshot, preserving catalog geometry and public timing", async () => {
     const catalog = createCatalogShapeDraft("multigp-standard-gate-5x5", {
       x: 3,
@@ -235,7 +342,7 @@ describe("private team publication", () => {
     expect((await resolveStoredShare(token)).status).toBe("revoked");
     expect(await listPublicGalleryEntries()).toHaveLength(0);
   });
-  it.each(["editor", "viewer", "outsider"])(
+  it.each(["viewer", "outsider"])(
     "%s cannot mutate any share or gallery through legacy token routes",
     async (user) => {
       const token = await snapshot();
@@ -267,7 +374,7 @@ describe("private team publication", () => {
       /team_owner_required/
     );
   });
-  it("retains an editor's personal links and transfers their management to the team owner", async () => {
+  it("retains an editor's personal links and transfers their management to the team", async () => {
     db.exec("DELETE FROM projects WHERE id='race'");
     const now = new Date().toISOString();
     db.prepare(
@@ -292,9 +399,9 @@ describe("private team publication", () => {
     await expect(
       createShare(design, { ownerUserId: "editor", projectId: "race" })
     ).rejects.toMatchObject({ code: "conflict" });
-    await expect(
-      readTeamPublication("editor", "club", "race")
-    ).rejects.toMatchObject({ code: "not_found" });
+    expect(
+      (await readTeamPublication("editor", "club", "race")).share?.token
+    ).toBe(share.token);
     db.exec(
       "DELETE FROM team_members WHERE userId='editor'; DELETE FROM users WHERE id='editor'"
     );
