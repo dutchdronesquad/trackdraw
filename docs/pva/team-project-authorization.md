@@ -17,7 +17,7 @@ Better Auth 1.7.11's organization/member/invitation models fit the product Team 
 | List/read/export project                | Yes            | Yes        | Yes    | Yes    | No       |
 | Create/update/archive project           | Yes            | Yes        | Yes    | No     | No       |
 | Move own personal project into the team | Required       | Yes        | Yes    | No     | No       |
-| Publish/revoke snapshot                 | Yes            | Yes        | No     | No     | No       |
+| Publish/revoke snapshot                 | Yes            | Yes        | Yes    | No     | No       |
 | Manage team membership                  | Not applicable | Yes        | No     | No     | No       |
 
 `ProjectActor` always includes a user ID and an explicit personal or team scope. `projectAuthorizationPredicate` checks the matching owner and current membership/role in SQL. Embed it inside the actual mutation, not just a preflight read: a role can change between requests or between a read and a write. Design writes must additionally enforce the editing lease and expected revision from #1022. The permission matrix alone is not permission to bypass those conditions.

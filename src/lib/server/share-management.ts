@@ -8,7 +8,8 @@ export function shareManagementPredicate(userId: string) {
     SELECT 1 FROM projects p WHERE p.id=shares.project_id AND p.archived_at IS NULL AND (
       (p.owner_team_id IS NULL AND p.owner_user_id=?) OR
       (p.owner_user_id IS NULL AND EXISTS(SELECT 1 FROM team_members m
-        WHERE m.organizationId=p.owner_team_id AND m.userId=? AND m.role='owner')))))`,
+        WHERE m.organizationId=p.owner_team_id AND m.userId=? AND m.role IN ('owner','editor')
+        AND NOT EXISTS (SELECT 1 FROM team_succession_cases c WHERE c.team_id=p.owner_team_id AND c.state='recovery'))))))`,
     bindings: [userId, userId, userId],
   };
 }

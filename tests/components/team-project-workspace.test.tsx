@@ -35,7 +35,14 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("next/dynamic", () => ({
   default: () =>
-    function Viewer({ privateProject }: { privateProject: boolean }) {
+    function Viewer({
+      privateProject,
+      open,
+    }: {
+      privateProject: boolean;
+      open?: boolean;
+    }) {
+      if (open) return <p>Team sharing dialog</p>;
       return <p>{privateProject ? "Private viewer" : "Public viewer"}</p>;
     },
 }));
@@ -77,6 +84,25 @@ it("loads only into the private viewer, without persisting the design or exposin
   expect(localStorage.getItem("trackdraw-design")).toBeNull();
   expect(localStorage.getItem("trackdraw-project-private-race")).toBeNull();
 });
+it.each(["owner", "editor"])(
+  "shows sharing for a team %s after finishing editing",
+  async (role) => {
+    mocks.request.mockResolvedValue({
+      project: { design: privateDesign, revision: 1 },
+      team: { id: "club", name: "Club", role },
+      editing: null,
+    });
+    render(
+      <TeamProjectWorkspace
+        teamId="club"
+        projectId="private-race"
+        initialTab="2d"
+      />
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Share" }));
+    expect(await screen.findByText("Team sharing dialog")).toBeTruthy();
+  }
+);
 it("clears the canvas and history when membership revalidation fails", async () => {
   render(
     <TeamProjectWorkspace
@@ -141,6 +167,7 @@ it("exports the unsaved recovery design rather than the older server design", as
   );
   fireEvent.click(await screen.findByRole("button", { name: "Edit project" }));
   await screen.findByRole("button", { name: "Finish editing" });
+  expect(screen.queryByRole("button", { name: "Share" })).toBeNull();
   act(() =>
     useEditor.getState().updateDesignMeta({ title: "My unsaved draft" })
   );
@@ -186,6 +213,7 @@ async function startEditableWorkspace() {
   );
   fireEvent.click(await screen.findByRole("button", { name: "Edit project" }));
   await screen.findByRole("button", { name: "Finish editing" });
+  expect(screen.queryByRole("button", { name: "Share" })).toBeNull();
 }
 it("saves and releases before navigating back from the compact context bar", async () => {
   await startEditableWorkspace();

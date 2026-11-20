@@ -105,6 +105,11 @@ export default function TeamProjectWorkspace({
         {back}
       </main>
     );
+  const canPublish =
+    !editing &&
+    !recovery &&
+    !loaded.team.recovery &&
+    (loaded.team.role === "owner" || loaded.team.role === "editor");
   const editorName = loaded.editing?.name;
   const saveLabel = t(
     status === "saving"
@@ -231,7 +236,7 @@ export default function TeamProjectWorkspace({
             </span>
           </div>
           <div className="col-start-3 row-span-2 row-start-1 flex shrink-0 items-center gap-1 sm:gap-2">
-            {!editing && !recovery && loaded.team.role === "owner" ? (
+            {canPublish ? (
               <Button
                 size="sm"
                 variant="ghost"
@@ -321,7 +326,7 @@ export default function TeamProjectWorkspace({
           </Button>
         </div>
       ) : null}
-      {shareOpen && !editing && !recovery && loaded.team.role === "owner" ? (
+      {shareOpen && canPublish ? (
         <ShareDialog
           key={`${teamId}:${projectId}:${userId}`}
           open

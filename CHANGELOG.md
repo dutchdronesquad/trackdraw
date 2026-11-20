@@ -6,6 +6,8 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+Team editors can now publish team tracks, update or revoke public links, and manage gallery listings after finishing editing.
+
 - Beachflags have curved fabric and gentle movement in 3D previews and flythrough videos. TrackDraw follows your reduced-motion preference.
 
 ## [1.19.0]
