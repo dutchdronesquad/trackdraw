@@ -17,14 +17,14 @@ export const SITE_AUTHOR = {
   url: "https://dutchdronesquad.nl",
 };
 export const DEFAULT_SOCIAL_IMAGE_PATH =
-  "/landing/screenshots/editor-element-library.png";
-export const DEFAULT_SOCIAL_IMAGE_WIDTH = 1280;
-export const DEFAULT_SOCIAL_IMAGE_HEIGHT = 720;
+  "/assets/screenshots/editor-layout-light.jpg";
+export const DEFAULT_SOCIAL_IMAGE_WIDTH = 1600;
+export const DEFAULT_SOCIAL_IMAGE_HEIGHT = 900;
 export const DEFAULT_OG_IMAGE_ALT =
   "TrackDraw interface for planning FPV race tracks";
 export const SITE_MEDIA_BASE_URL = "https://media.trackdraw.app";
 export const DEFAULT_LANDING_DEMO_POSTER =
-  "https://media.trackdraw.app/landing/screenshots/editor-3d-flythroug.png";
+  "/assets/screenshots/editor-3d-light.jpg";
 export const LANDING_DEMO_VIDEO_PATH = "/landing/video-demo.webm";
 
 const JSON_LD_ESCAPE_LOOKUP: Record<string, string> = {
@@ -63,4 +63,7 @@ export function serializeJsonLd(value: unknown) {
   );
 }
 
-export const DEFAULT_SOCIAL_IMAGE = getSiteMediaUrl(DEFAULT_SOCIAL_IMAGE_PATH);
+export const DEFAULT_SOCIAL_IMAGE = new URL(
+  DEFAULT_SOCIAL_IMAGE_PATH,
+  getSiteUrl()
+).toString();

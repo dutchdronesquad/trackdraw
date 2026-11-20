@@ -7,7 +7,6 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME,
   getLandingDemoVideoUrl,
-  getSiteMediaUrl,
   getSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
@@ -90,7 +89,7 @@ const videoObjectJsonLd = {
   name: "TrackDraw drone race track builder demo",
   description:
     "A quick product demo showing how TrackDraw helps FPV race directors build a drone race track layout, review it in 3D, and share it with pilots and crew.",
-  thumbnailUrl: [landingDemoPosterSrc],
+  thumbnailUrl: [new URL(landingDemoPosterSrc, landingPageUrl).toString()],
   contentUrl: landingDemoVideoSrc,
   embedUrl: landingPageUrl,
 };
@@ -390,9 +389,7 @@ export default function Home() {
               <Reveal>
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
-                    src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-element-library.png"
-                    )}
+                    src="/assets/screenshots/editor-layout-light.jpg"
                     alt={t("workflow.layout.screenshotAlt")}
                     className="order-last lg:order-first"
                   />
@@ -485,9 +482,7 @@ export default function Home() {
                     </ul>
                   </div>
                   <Screenshot
-                    src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-mobile-settings.png"
-                    )}
+                    src="/assets/screenshots/editor-mobile-inspector-light.jpg"
                     alt={t("workflow.fineTune.screenshotAlt")}
                     aspect="portrait"
                     accentClassName="bg-emerald-500/16"
@@ -531,9 +526,7 @@ export default function Home() {
                     </Link>
                   </div>
                   <Screenshot
-                    src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-share-readonly-mobile.png"
-                    )}
+                    src="/assets/screenshots/shared-mobile-light.jpg"
                     alt={t("workflow.handOff.screenshotAlt")}
                     aspect="portrait"
                     accentClassName="bg-brand-secondary/18"
