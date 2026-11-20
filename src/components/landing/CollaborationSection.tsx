@@ -60,11 +60,11 @@ export function CollaborationSection() {
               <picture>
                 <source
                   media="(min-width: 1024px)"
-                  srcSet="/assets/screenshots/team-project-library.jpg"
+                  srcSet="/assets/screenshots/team-project-library-light.jpg"
                 />
                 {/* oxlint-disable-next-line nextjs/no-img-element */}
                 <img
-                  src="/assets/screenshots/team-project-library-mobile.jpg"
+                  src="/assets/screenshots/team-project-library-mobile-light.jpg"
                   alt={t("teams.screenshotAlt")}
                   className="block h-auto w-full"
                   loading="lazy"
