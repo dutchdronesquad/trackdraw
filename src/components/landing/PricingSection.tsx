@@ -187,6 +187,12 @@ export function PricingSection() {
           info: t("pricing.features.cloudProjectsDetail"),
         },
         {
+          label: t("pricing.features.teams"),
+          guest: false,
+          account: true,
+          info: t("pricing.features.teamsDetail"),
+        },
+        {
           label: t("pricing.features.sections"),
           guest: false,
           account: true,
@@ -197,6 +203,12 @@ export function PricingSection() {
     {
       title: t("pricing.categories.integration"),
       rows: [
+        {
+          label: t("pricing.features.assistant"),
+          guest: false,
+          account: true,
+          accountDetail: t("pricing.features.assistantDetail"),
+        },
         {
           label: t("pricing.features.api"),
           guest: false,

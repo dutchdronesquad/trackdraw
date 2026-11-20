@@ -32,6 +32,7 @@ import {
 import { Screenshot } from "@/components/landing/Screenshot";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { CollaborationSection } from "@/components/landing/CollaborationSection";
 import { RelatedToolsSection } from "@/components/landing/RelatedToolsSection";
 import {
   Reveal,
@@ -423,6 +424,40 @@ export default function Home() {
               </Reveal>
 
               <Reveal>
+                <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
+                  <Screenshot
+                    src="/assets/screenshots/editor-side-by-side.jpg"
+                    alt={t("workflow.preview.screenshotAlt")}
+                    className="order-last lg:order-first"
+                  />
+                  <div className="order-first lg:order-last">
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-purple-400 uppercase">
+                      <Orbit className="size-3" /> {t("workflow.preview.title")}
+                    </div>
+                    <h3 className="mt-4 text-xl font-semibold tracking-tight">
+                      {t("workflow.preview.subtitle")}
+                    </h3>
+                    <p className="text-muted-foreground mt-3 text-sm leading-7">
+                      {t("workflow.preview.description")}
+                    </p>
+                    <ul className="mt-5 space-y-2.5">
+                      {(t.raw("workflow.preview.bullets") as string[]).map(
+                        (b) => (
+                          <li
+                            key={b}
+                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                          >
+                            <CheckCircle2 className="size-3.5 shrink-0 text-purple-400" />{" "}
+                            {b}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal>
                 <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
                   <div>
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-emerald-400 uppercase">
@@ -458,42 +493,6 @@ export default function Home() {
                     accentClassName="bg-emerald-500/16"
                     className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
                   />
-                </div>
-              </Reveal>
-
-              <Reveal>
-                <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
-                  <Screenshot
-                    src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-3d-flythroug.png"
-                    )}
-                    alt={t("workflow.preview.screenshotAlt")}
-                    className="order-last lg:order-first"
-                  />
-                  <div className="order-first lg:order-last">
-                    <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-purple-400 uppercase">
-                      <Orbit className="size-3" /> {t("workflow.preview.title")}
-                    </div>
-                    <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      {t("workflow.preview.subtitle")}
-                    </h3>
-                    <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      {t("workflow.preview.description")}
-                    </p>
-                    <ul className="mt-5 space-y-2.5">
-                      {(t.raw("workflow.preview.bullets") as string[]).map(
-                        (b) => (
-                          <li
-                            key={b}
-                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                          >
-                            <CheckCircle2 className="size-3.5 shrink-0 text-purple-400" />{" "}
-                            {b}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
                 </div>
               </Reveal>
 
@@ -545,6 +544,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <CollaborationSection />
 
         <RelatedToolsSection />
 
