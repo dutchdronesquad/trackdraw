@@ -6,9 +6,21 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-Team editors can now publish team tracks, update or revoke public links, and manage gallery listings after finishing editing.
+## [1.20.0]
 
-- Beachflags have curved fabric and gentle movement in 3D previews and flythrough videos. TrackDraw follows your reduced-motion preference.
+### Edit in 2D and 3D side by side
+
+On wide workspaces, edit your track in 2D and 3D at the same time. Rotations appear in both views during the drag, and the 3D view follows track items as you move them in 2D. Hovered race-line waypoints are now highlighted in 3D to make route editing easier to follow.
+
+Drag the divider or choose a layout preset to give either view more space. Double-click the divider to center it. TrackDraw remembers your preferred split layout in this browser.
+
+### More natural beachflags
+
+Beachflags now have curved fabric and gentle movement in 3D previews and flythrough videos. TrackDraw follows your reduced-motion preference.
+
+### Easier team collaboration
+
+Team editors can now move their personal cloud projects into a team they can edit, alongside team owners. Existing public links and gallery listings stay live. After finishing editing, owners and editors can publish team tracks, update or revoke public links, and manage gallery listings. Team invitation links work again, and ownership recovery emails show readable deadlines.
 
 ## [1.19.0]
 
