@@ -505,7 +505,17 @@
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
     "canvas2dDrawer": "2D-Canvas",
-    "preview3dDrawer": "3D-Vorschau"
+    "preview3dDrawer": "3D-Vorschau",
+    "sideBySide": "Nebeneinander",
+    "viewOptions": "Ansichtsoptionen",
+    "resetSplit": "Geteiltes Layout zurücksetzen",
+    "splitNeedsSpace": "Verbreitere den Editor oder klappe eine Seitenleiste ein, um die Ansichten nebeneinander zu nutzen.",
+    "splitMore2d": "Mehr Platz für 2D",
+    "splitBalanced": "Gleich viel Platz",
+    "splitMore3d": "Mehr Platz für 3D",
+    "splitResizeHint": "Zum Anpassen ziehen. Zum Zentrieren doppelklicken oder Enter drücken.",
+    "splitDivider": "Größe der 2D- und 3D-Ansichten ändern",
+    "splitRatio": "{ratio}% für 2D"
   },
   "desktopInspectorPanel": {
     "ariaLabel": "Inspector",
@@ -589,7 +599,8 @@
     "loading3d": "3D wird geladen…",
     "portraitOnlyEyebrow": "Mobiler Editor",
     "portraitOnlyTitle": "Halte dein Telefon aufrecht",
-    "portraitOnlyDescription": "Der TrackDraw-Editor ist für den Hochformat-Modus auf Mobilgeräten ausgelegt. Drehe dein Telefon, um weiter zu bearbeiten."
+    "portraitOnlyDescription": "Der TrackDraw-Editor ist für den Hochformat-Modus auf Mobilgeräten ausgelegt. Drehe dein Telefon, um weiter zu bearbeiten.",
+    "privateTeamPreview": "Privates Teamprojekt"
   },
   "languagePicker": {
     "ariaLabel": "Sprache"

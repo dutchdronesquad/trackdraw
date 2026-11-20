@@ -505,7 +505,17 @@
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
     "canvas2dDrawer": "2D-canvas",
-    "preview3dDrawer": "3D-preview"
+    "preview3dDrawer": "3D-preview",
+    "sideBySide": "Naast elkaar",
+    "viewOptions": "Weergaveopties",
+    "resetSplit": "Gesplitste indeling herstellen",
+    "splitNeedsSpace": "Maak de editor breder of klap een zijbalk in om de weergaven naast elkaar te gebruiken.",
+    "splitMore2d": "Meer ruimte voor 2D",
+    "splitBalanced": "Evenveel ruimte",
+    "splitMore3d": "Meer ruimte voor 3D",
+    "splitResizeHint": "Sleep om het formaat te wijzigen. Dubbelklik of druk op Enter om te centreren.",
+    "splitDivider": "Formaat van 2D- en 3D-weergaven wijzigen",
+    "splitRatio": "{ratio}% voor 2D"
   },
   "desktopInspectorPanel": {
     "ariaLabel": "Inspector",
@@ -589,7 +599,8 @@
     "loading3d": "3D laden…",
     "portraitOnlyEyebrow": "Mobiele editor",
     "portraitOnlyTitle": "Draai je telefoon rechtop",
-    "portraitOnlyDescription": "De TrackDraw-editor is ontworpen voor portretmodus op mobiel. Draai je telefoon om verder te gaan met bewerken."
+    "portraitOnlyDescription": "De TrackDraw-editor is ontworpen voor portretmodus op mobiel. Draai je telefoon om verder te gaan met bewerken.",
+    "privateTeamPreview": "Privéteamproject"
   },
   "languagePicker": {
     "ariaLabel": "Taal"

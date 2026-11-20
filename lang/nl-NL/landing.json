@@ -159,6 +159,14 @@
       {
         "question": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
         "answer": "Ja. De 3D-preview en routebeoordelingswaarschuwingen helpen ongelijkmatige afstanden, ritmeproblemen en uitlijningsproblemen op te sporen voordat je de lay-out deelt of begint met bouwen."
+      },
+      {
+        "question": "Kan mijn club als team aan banen werken?",
+        "answer": "Ja. Maak met een account een team aan en nodig bewerkers of kijkers uit. Eén persoon bewerkt een gedeeld project tegelijk, terwijl teamgenoten het kunnen bekijken en exporteren. Teameigenaren en bewerkers kunnen een opgeslagen versie publiceren of bijwerken voor piloten en crew."
+      },
+      {
+        "question": "Kan ik TrackDraw met een AI-assistent gebruiken?",
+        "answer": "Ja. Koppel een compatibele assistent via MCP om met cloudprojecten te werken: materiaallijsten maken, banen vergelijken, ontwerpen maken of wijzigingen bekijken. Jij kiest de rechten en keurt voorgestelde wijzigingen goed voordat ze worden toegepast. De assistent kan geen banen publiceren of deelinstellingen wijzigen."
       }
     ]
   },
@@ -196,7 +204,11 @@
       "sections": "Tracksecties",
       "sectionsDetail": "Sla elke canvasselectie op als een benoemde preset en plaats hem opnieuw vanuit de presetpicker. Synchroniseert met je account op alle apparaten.",
       "api": "REST API-toegang",
-      "apiDetail": "Bearer-authenticatie, API-sleutelbeheer"
+      "apiDetail": "Bearer-authenticatie, API-sleutelbeheer",
+      "teams": "Gedeelde teamprojecten",
+      "teamsDetail": "Nodig bewerkers en kijkers uit. Eén persoon bewerkt tegelijk; teamgenoten kunnen bekijken en exporteren.",
+      "assistant": "AI-assistent koppelen (MCP)",
+      "assistantDetail": "Gebruik compatibele assistenten met cloudprojecten en rechten die je zelf kiest."
     },
     "categories": {
       "design": "Ontwerpen",
@@ -292,5 +304,93 @@
   "screenshotPlaceholder": {
     "label": "Screenshot-placeholder",
     "plannedAsset": "Geplande asset"
+  },
+  "bio": {
+    "name": "TrackDraw",
+    "tagline": "Ontwerp en deel FPV-racebanen.",
+    "metadata": {
+      "title": "Links en uitgelicht",
+      "description": "Ontdek TrackDraw: ontwerp FPV-racebanen, bekijk banen van de community en ontdek de viewer en artworkontwerper."
+    },
+    "featured": "Uitgelicht",
+    "explore": "Maak je volgende baan",
+    "socials": "Volg TrackDraw",
+    "home": "trackdraw.app",
+    "items": {
+      "intro": {
+        "label": "Van eerste gate tot racedag.",
+        "description": "Teken je baan in 2D, vind de flow in 3D en deel het plan met je crew."
+      },
+      "studio": {
+        "label": "TrackDraw openen",
+        "description": "Geen account nodig."
+      },
+      "gallery": {
+        "label": "Banen ontdekken",
+        "description": "Banen van de community"
+      },
+      "viewer": {
+        "label": "TrackDraw Viewer",
+        "description": "Een baan op je website insluiten"
+      },
+      "artwork": {
+        "label": "Artworkontwerper",
+        "description": "Artwork voor gates en vlaggen"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "description": "Instagram"
+      },
+      "facebook": {
+        "label": "Facebook",
+        "description": "Facebook"
+      },
+      "github": {
+        "label": "GitHub",
+        "description": "GitHub"
+      }
+    },
+    "track": {
+      "heading": "Een baan vanuit elke hoek",
+      "title": "Interactieve baanweergave van Skyline Circuit",
+      "viewLabel": "Baanweergave",
+      "2d": "2D",
+      "3d": "3D",
+      "hint2D": "Schakel naar 3D om de kruising, toren en duik te bekijken.",
+      "hint3D": "Sleep om te draaien. Knijp of scroll om te zoomen.",
+      "loading": "Voorbeeldbaan laden…",
+      "error": "De baan kon niet worden geladen. Je links blijven bruikbaar.",
+      "retry": "Opnieuw proberen",
+      "loading3D": "3D-preview laden…",
+      "unavailable3D": "3D is niet beschikbaar op dit apparaat. Je kunt de baan nog steeds in 2D bekijken.",
+      "grid": "Raster: {grid}",
+      "panZoom": "Verschuiven en zoomen",
+      "fit": "Baan passend in venster"
+    }
+  },
+  "collaboration": {
+    "eyebrow": "Samen plannen",
+    "heading": "Ontwerp banen als team",
+    "description": "Begin met ontwerpen zonder account. Log in als je gedeelde teamprojecten wilt of hulp van een gekoppelde AI-assistent.",
+    "teams": {
+      "title": "Geef je team een werkplek.",
+      "description": "Houd de banen van je club bij elkaar, van wekelijkse training tot racedag. Nodig je crew uit en bereid de volgende baan voor op één gedeelde werkplek.",
+      "action": "Stel je team samen",
+      "bullets": [
+        "Nodig bewerkers en kijkers uit voor je team",
+        "Eén persoon bewerkt terwijl teamgenoten bekijken en exporteren",
+        "Publiceer een opgeslagen versie; houd verdere wijzigingen privé"
+      ],
+      "accountNote": "Beschikbaar met een TrackDraw-account.",
+      "screenshotAlt": "TrackDraw-teamprojectbibliotheek met race- en trainingsbanen van een club",
+      "screenshotCaption": "De banen van je team bij elkaar in Studio. Getoonde projecten zijn voorbeelden."
+    },
+    "assistant": {
+      "title": "Hulp bij het plannen",
+      "description": "Koppel een compatibele AI-assistent via MCP om materiaallijsten te maken, cloudbanen te vergelijken of een baan te ontwerpen. Bekijk voorgestelde wijzigingen voordat je ze toepast.",
+      "example": "Welke materialen hebben we nodig voor deze baan en hoeveel opbouwwerk moeten we inplannen?",
+      "note": "Werkt met cloudprojecten en de rechten die je verleent. Je assistent kan geen banen publiceren of deelinstellingen wijzigen.",
+      "action": "Lees de verbindingshandleiding"
+    }
   }
 }

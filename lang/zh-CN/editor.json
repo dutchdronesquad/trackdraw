@@ -505,7 +505,17 @@
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
     "canvas2dDrawer": "2D 画布",
-    "preview3dDrawer": "3D 预览"
+    "preview3dDrawer": "3D 预览",
+    "sideBySide": "并排显示",
+    "viewOptions": "视图选项",
+    "resetSplit": "重置分屏布局",
+    "splitNeedsSpace": "加宽编辑器或折叠侧边栏以使用并排视图。",
+    "splitMore2d": "为 2D 留出更多空间",
+    "splitBalanced": "均等空间",
+    "splitMore3d": "为 3D 留出更多空间",
+    "splitResizeHint": "拖动以调整大小。双击或按 Enter 居中。",
+    "splitDivider": "调整 2D 和 3D 视图大小",
+    "splitRatio": "2D 占 {ratio}%"
   },
   "desktopInspectorPanel": {
     "ariaLabel": "检查器",
@@ -589,7 +599,8 @@
     "loading3d": "正在加载 3D…",
     "portraitOnlyEyebrow": "移动端编辑器",
     "portraitOnlyTitle": "请将手机竖直握持",
-    "portraitOnlyDescription": "TrackDraw 编辑器在移动端专为竖屏设计。请旋转手机以继续编辑。"
+    "portraitOnlyDescription": "TrackDraw 编辑器在移动端专为竖屏设计。请旋转手机以继续编辑。",
+    "privateTeamPreview": "私人团队项目"
   },
   "languagePicker": {
     "ariaLabel": "语言"
