@@ -16,8 +16,8 @@
     "featuresTooltip": "Jump to the product overview",
     "galleryNav": "Gallery",
     "galleryTooltip": "Browse public community layouts",
-    "pricingNav": "Pricing",
-    "pricingTooltip": "See plans and pricing",
+    "pricingNav": "Account",
+    "pricingTooltip": "Compare use with and without an account",
     "faqNav": "FAQ",
     "faqTooltip": "Read common questions and answers",
     "logoAriaLabel": "TrackDraw",
@@ -150,7 +150,7 @@
       },
       {
         "question": "Do I need an account to get started?",
-        "answer": "No. Open Studio and start designing, saving on your device, sharing and exporting right away. A free account adds cloud projects, teams, durable published links, gallery publishing, embeds and connections to compatible AI assistants."
+        "answer": "No. Open Studio and start designing, saving on your device, sharing and exporting right away. An account adds cloud projects, teams, durable published links, gallery publishing, embeds and connections to compatible AI assistants."
       },
       {
         "question": "Can I reuse a layout for a future event?",
@@ -162,7 +162,7 @@
       },
       {
         "question": "Can my club work on tracks as a team?",
-        "answer": "Yes. With a free account, create a team and invite editors or viewers. One person edits a shared project at a time, while teammates can view and export it. Team owners and editors can publish or update a saved version for pilots and crew."
+        "answer": "Yes. With an account, create a team and invite editors or viewers. One person edits a shared project at a time, while teammates can view and export it. Team owners and editors can publish or update a saved version for pilots and crew."
       },
       {
         "question": "Can I use TrackDraw with an AI assistant?",
@@ -171,20 +171,20 @@
     ]
   },
   "pricing": {
-    "sectionEyebrow": "Plans",
+    "sectionEyebrow": "Your workspace",
     "sectionHeading": "Start now, sign up when you need more.",
-    "sectionDescription": "Both options are free. Design, review and export as a guest. An account adds cloud projects, teams, durable publishing and connections to compatible AI assistants.",
+    "sectionDescription": "Design, review and export without an account. Sign in to keep cloud projects, work with a team, publish lasting links and connect compatible AI assistants.",
     "guest": {
       "badge": "No sign-up",
       "name": "Guest",
-      "price": "Free",
+      "price": "On this device",
       "description": "Best for quick drafts, one-off temporary review links, and local export without creating an account.",
       "cta": "Open Studio"
     },
     "account": {
       "badge": "With account",
       "name": "Account",
-      "price": "Free",
+      "price": "Across devices",
       "description": "Keep projects across devices, work with your team, publish lasting links and connect your planning tools.",
       "cta": "Create account"
     },
@@ -381,7 +381,7 @@
         "One person edits while teammates view and export",
         "Publish a saved version; keep further edits private"
       ],
-      "accountNote": "Free with a TrackDraw account.",
+      "accountNote": "Available with a TrackDraw account.",
       "screenshotAlt": "TrackDraw team project library showing a club’s race and practice layouts",
       "screenshotCaption": "Your team’s tracks, together in Studio. Example projects shown."
     },
