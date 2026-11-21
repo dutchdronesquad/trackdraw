@@ -7,6 +7,7 @@ import {
   cleanup,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { YearInNumbersView } from "@/components/dashboard/YearInNumbersView";
 import { getYearInNumbers } from "@/lib/year-in-numbers";
 const push = vi.hoisted(() => vi.fn());
@@ -71,16 +72,16 @@ describe("Year in numbers", () => {
       within(recap).getByText(/Partial figures cover the measured interval/)
     ).toBeTruthy();
   });
-  it("navigates to the selected year and opens the empty recap without inventing zeros", () => {
+  it("navigates to the selected year and opens the empty recap without inventing zeros", async () => {
+    const user = userEvent.setup();
     render(
       <YearInNumbersView
         report={getYearInNumbers(2026, [], new Date("2027-01-01"))}
         currentYear={2027}
       />
     );
-    fireEvent.change(screen.getByLabelText("Year"), {
-      target: { value: "2027" },
-    });
+    await user.click(screen.getByRole("combobox", { name: "Year" }));
+    await user.click(screen.getByRole("option", { name: "2027" }));
     expect(push).toHaveBeenCalledWith(
       "/dashboard/metrics/year-in-numbers?year=2027"
     );

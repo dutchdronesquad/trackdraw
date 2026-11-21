@@ -14,6 +14,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -83,26 +90,31 @@ export function YearInNumbersView({
           <label htmlFor="report-year" className="sr-only">
             {t("year")}
           </label>
-          <select
-            id="report-year"
+          <Select
             name="year"
-            value={report.year}
-            onChange={(event) =>
-              router.push(
-                `/dashboard/metrics/year-in-numbers?year=${event.target.value}`
-              )
+            value={String(report.year)}
+            onValueChange={(year) =>
+              router.push(`/dashboard/metrics/year-in-numbers?year=${year}`)
             }
-            className="border-input bg-background h-10 rounded-md border px-4 text-sm shadow-xs"
           >
-            {Array.from(
-              { length: currentYear - 2025 },
-              (_, index) => currentYear - index
-            ).map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              id="report-year"
+              aria-label={t("year")}
+              className="bg-background h-10 w-24"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from(
+                { length: currentYear - 2025 },
+                (_, index) => currentYear - index
+              ).map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant="outline"
             className="h-10 px-5"
