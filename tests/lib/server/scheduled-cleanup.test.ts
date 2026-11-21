@@ -9,6 +9,9 @@ import {
 } from "@/lib/server/scheduled-cleanup";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/server/year-in-numbers", () => ({
+  aggregateYearNumbers: vi.fn(async () => {}),
+}));
 
 const mailer = { isConfigured: () => false, send: vi.fn(async () => {}) };
 

@@ -18,7 +18,7 @@ it.each([
     media: 0,
     sql: 6,
   },
-  { cron: "0 0 * * *", minute: 0, sent: 0, removed: 0, media: 0, sql: 24 },
+  { cron: "0 0 * * *", minute: 0, sent: 0, removed: 0, media: 0, sql: 27 },
   {
     cron: "15,30,45 * * * *",
     minute: 15,
