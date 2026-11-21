@@ -11,6 +11,9 @@ type D1PreparedStatement = {
 
 export type ProductMetricDatabase = {
   prepare(query: string): D1PreparedStatement;
+  batch(
+    statements: D1PreparedStatement[]
+  ): Promise<{ results: unknown[]; meta?: { changes?: number } }[]>;
 };
 
 export type ProductMetricId =
@@ -70,7 +73,16 @@ function daysBetween(from: string, toExclusive: string) {
   );
 }
 
-const DAILY_METRIC_CTES = `
+type MetricGroup = "primary" | "secondary";
+
+function metricGroup(metricId: ProductMetricId): MetricGroup {
+  return metricId <= "MTR-005" ? "primary" : "secondary";
+}
+
+// D1 limits expanded CTE references across the whole statement, even when the
+// actual nesting is shallow. Resolve each existing metric group separately.
+function dailyMetricCtes(group: MetricGroup) {
+  return `
 with
   bounds as (
     select ? as day_utc, ? as start_at, ? as end_at, ? as updated_at, ? as is_complete_day
@@ -295,9 +307,7 @@ with
     left join operation_outcomes on operation_outcomes.operation = failure_rows.operation
   ),
   metric_rows as (
-    select * from metric_rows_primary
-    union all
-    select * from metric_rows_secondary
+    select * from metric_rows_${group}
   ),
   final_rows as (
     select
@@ -328,6 +338,7 @@ with
     where bounds.day_utc >= state.measured_since
   )
 `;
+}
 
 function bindDailyStatement(
   statement: D1PreparedStatement,
@@ -376,31 +387,42 @@ async function aggregateDay(
   updatedAt: string,
   metricId?: ProductMetricId
 ) {
-  const statement = db.prepare(`
-    ${DAILY_METRIC_CTES}
-    insert into product_metric_daily_aggregates (
-      metric_id, day_utc, dimension, window_days, numerator, denominator, sample_size,
-      completeness_state, quality_status, updated_at
-    )
-    select * from final_rows where ${metricId ? "metric_id = ?" : "true"}
-    on conflict(metric_id, day_utc, dimension) do update set
-      numerator = excluded.numerator,
-      denominator = excluded.denominator,
-      sample_size = excluded.sample_size,
-      completeness_state = excluded.completeness_state,
-      quality_status = excluded.quality_status,
-      updated_at = excluded.updated_at
-  `);
-  return bindDailyStatement(
-    statement,
-    day,
-    `${addUtcDays(day, 1)}T00:00:00.000Z`,
-    updatedAt,
-    true,
-    ...(metricId ? [metricId] : [])
-  ).run<{
-    meta?: { changes?: number };
-  }>();
+  const groups: MetricGroup[] = metricId
+    ? [metricGroup(metricId)]
+    : ["primary", "secondary"];
+  const statements = groups.map((group) => {
+    const statement = db.prepare(`
+      ${dailyMetricCtes(group)}
+      insert into product_metric_daily_aggregates (
+        metric_id, day_utc, dimension, window_days, numerator, denominator, sample_size,
+        completeness_state, quality_status, updated_at
+      )
+      select * from final_rows where ${metricId ? "metric_id = ?" : "true"}
+      on conflict(metric_id, day_utc, dimension) do update set
+        numerator = excluded.numerator,
+        denominator = excluded.denominator,
+        sample_size = excluded.sample_size,
+        completeness_state = excluded.completeness_state,
+        quality_status = excluded.quality_status,
+        updated_at = excluded.updated_at
+    `);
+    return bindDailyStatement(
+      statement,
+      day,
+      `${addUtcDays(day, 1)}T00:00:00.000Z`,
+      updatedAt,
+      true,
+      ...(metricId ? [metricId] : [])
+    );
+  });
+  // Keep each completed UTC day atomic: a failed second group must roll back
+  // the first group, and the caller must not advance progress or expire raw data.
+  const results = await db.batch(statements);
+  return {
+    meta: {
+      changes: results.reduce((sum, result) => sum + changes(result), 0),
+    },
+  };
 }
 
 async function cleanupExpiredAggregates(db: ProductMetricDatabase) {
@@ -567,25 +589,29 @@ export async function getProductMetricSeries(
     .filter(includesToday)
     .map((range) => range.metricId);
 
-  // Each metric reuses overlapping raw-event windows in the same CTE.
+  // Each group reuses overlapping raw-event windows in its own bounded CTE.
   // Share this work explicitly within this request; never cache a D1 promise
   // across Worker requests or reuse incomplete rows after the UTC day changes.
-  const livePromise =
-    liveMetricIds.length > 0
-      ? bindDailyStatement(
-          db.prepare(`
-          ${DAILY_METRIC_CTES}
-          select * from final_rows
-          where metric_id in (${liveMetricIds.map(() => "?").join(", ")})
-          order by metric_id, dimension
-        `),
-          today,
-          now.toISOString(),
-          now.toISOString(),
-          false,
-          ...liveMetricIds
-        ).all<ProductMetricDailyRow>()
-      : Promise.resolve({ results: [] as ProductMetricDailyRow[] });
+  const liveGroups = [...new Set(liveMetricIds.map(metricGroup))];
+  const livePromise = Promise.all(
+    liveGroups.map(async (group) => {
+      const ids = liveMetricIds.filter((id) => metricGroup(id) === group);
+      const { results } = await bindDailyStatement(
+        db.prepare(`
+        ${dailyMetricCtes(group)}
+        select * from final_rows
+        where metric_id in (${ids.map(() => "?").join(", ")})
+        order by metric_id, dimension
+      `),
+        today,
+        now.toISOString(),
+        now.toISOString(),
+        false,
+        ...ids
+      ).all<ProductMetricDailyRow>();
+      return results;
+    })
+  ).then((groups) => groups.flat());
 
   const historicalPromise = Promise.all(
     ranges.map(async (range) => {
@@ -615,7 +641,7 @@ export async function getProductMetricSeries(
       [
         ...historical[index],
         ...(includesToday(range)
-          ? live.results.filter((row) => row.metric_id === range.metricId)
+          ? live.filter((row) => row.metric_id === range.metricId)
           : []),
       ],
     ])

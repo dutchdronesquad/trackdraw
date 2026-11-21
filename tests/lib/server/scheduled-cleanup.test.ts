@@ -172,9 +172,12 @@ describe("scheduled cleanup", () => {
     };
     const prepare = vi.fn(() => statement);
 
-    const db = { prepare, batch: vi.fn(async () => []) } as Parameters<
-      typeof createScheduledCleanupTasks
-    >[1];
+    const db = {
+      prepare,
+      batch: vi.fn(async (statements: { run(): Promise<unknown> }[]) =>
+        Promise.all(statements.map((statement) => statement.run()))
+      ),
+    } as Parameters<typeof createScheduledCleanupTasks>[1];
     const schedules: string[] = JSON.parse(
       readFileSync("wrangler.jsonc", "utf8").match(
         /"crons"\s*:\s*(\[[^\]]*\])/
@@ -275,7 +278,7 @@ describe("scheduled cleanup", () => {
     const statements = [
       refreshStatement,
       stateStatement,
-      ...Array.from({ length: 7 }, () => ({
+      ...Array.from({ length: 14 }, () => ({
         bind: vi.fn(function (this: unknown) {
           return this;
         }),
@@ -309,7 +312,9 @@ describe("scheduled cleanup", () => {
       scheduledContext,
       {
         prepare,
-        batch: vi.fn(async () => []),
+        batch: vi.fn(async (statements: { run(): Promise<unknown> }[]) =>
+          Promise.all(statements.map((statement) => statement.run()))
+        ),
       } as Parameters<typeof createScheduledCleanupTasks>[1],
       mailer
     ).find((task) => task.name === "product_events");

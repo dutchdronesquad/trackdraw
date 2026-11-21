@@ -9,15 +9,27 @@ import {
   runProductMetricMaintenance,
 } from "@/lib/server/product-metric-aggregates";
 
+function mockDatabase(prepare: ReturnType<typeof vi.fn>) {
+  return {
+    prepare,
+    batch: async (statements: { run<T>(): Promise<T> }[]) => {
+      const results = await Promise.all(
+        statements.map((statement) =>
+          statement.run<{ meta?: { changes?: number } }>()
+        )
+      );
+      return results.map((result) => ({ results: [], ...result }));
+    },
+  } as Parameters<typeof runProductMetricMaintenance>[0];
+}
+
 describe("product metric aggregates", () => {
   it("keeps independent metric contracts out of product-event pipeline state", async () => {
     const prepare = vi.fn();
     const statement = createD1Statement({ all: { results: [] } });
     installD1Statements(prepare, [statement]);
 
-    await getProductMetricMeasurementStates({
-      prepare,
-    } as Parameters<typeof getProductMetricMeasurementStates>[0]);
+    await getProductMetricMeasurementStates(mockDatabase(prepare));
 
     expect(statement.sql).toContain("where contract_version = ?");
     expect(statement.bind).toHaveBeenCalledWith("1.1.0");
@@ -35,18 +47,22 @@ describe("product metric aggregates", () => {
     const aggregate = createD1Statement({
       run: { meta: { changes: 12 } },
     });
+    const secondaryAggregate = createD1Statement({
+      run: { meta: { changes: 8 } },
+    });
     const updateState = createD1Statement({ run: {} });
     const cleanup = createD1Statement({ run: { meta: { changes: 2 } } });
     installD1Statements(prepare, [
       activation,
       state,
       aggregate,
+      secondaryAggregate,
       updateState,
       cleanup,
     ]);
 
     const result = await runProductMetricMaintenance(
-      { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
+      mockDatabase(prepare),
       new Date("2026-08-14T00:00:00.000Z")
     );
 
@@ -81,7 +97,7 @@ describe("product metric aggregates", () => {
     );
     expect(result.health).toEqual({
       aggregated_days: 1,
-      aggregate_rows: 12,
+      aggregate_rows: 20,
       last_aggregated_day: "2026-08-13",
       remaining_backfill_days: 0,
       unrecoverable_backfill_days: 0,
@@ -99,14 +115,14 @@ describe("product metric aggregates", () => {
           last_aggregated_day: "2026-06-30",
         },
       }),
-      ...Array.from({ length: 7 }, () => createD1Statement({ run: {} })),
+      ...Array.from({ length: 14 }, () => createD1Statement({ run: {} })),
       createD1Statement({ run: {} }),
       createD1Statement({ run: {} }),
     ];
     installD1Statements(prepare, statements);
 
     const result = await runProductMetricMaintenance(
-      { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
+      mockDatabase(prepare),
       new Date("2026-08-14T00:00:00.000Z")
     );
 
@@ -129,7 +145,7 @@ describe("product metric aggregates", () => {
     installD1Statements(prepare, [activation, state, invalidate, cleanup]);
 
     const result = await runProductMetricMaintenance(
-      { prepare } as Parameters<typeof runProductMetricMaintenance>[0],
+      mockDatabase(prepare),
       new Date("2026-08-14T00:00:00.000Z")
     );
 
@@ -172,7 +188,7 @@ describe("product metric aggregates", () => {
     installD1Statements(prepare, [live, historical]);
 
     const rows = await getProductMetricSeries(
-      { prepare } as Parameters<typeof getProductMetricSeries>[0],
+      mockDatabase(prepare),
       [
         {
           metricId: "MTR-001",
