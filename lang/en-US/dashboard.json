@@ -15,7 +15,8 @@
       "emailPreview": "Email Preview",
       "openStudio": "Open Studio",
       "publicSite": "Public Site",
-      "teams": "Teams"
+      "teams": "Teams",
+      "yearInNumbers": "Year in numbers"
     }
   },
   "navUser": {
@@ -1841,5 +1842,53 @@
     "changeConsequence": "The previous owner becomes an editor. Any pending recovery ends. The reason and ownership change are recorded in the audit log.",
     "ownerChanged": "Team owner updated",
     "changeFailed": "The owner could not be changed. Refresh the team and check its current owner and eligible editors."
+  },
+  "yearInNumbers": {
+    "title": "Year in numbers",
+    "description": "A look at what you created together.",
+    "year": "Year",
+    "yearToDate": "Year to date",
+    "calendarYear": "Calendar year",
+    "reportPeriod": "Reporting period: {from} to {to} (UTC).",
+    "noCompleteDays": "No complete days yet",
+    "limits": "Activity figures count received browser events, not all TrackDraw use. Opt-outs, blocked or failed delivery, and uninstrumented actions are absent. Signed-in admins and detected bots are excluded at intake. Anonymous staff/test use cannot be reliably excluded. Partial figures are not full-year totals.",
+    "coverage": "Recorded interval: {from} to {to} (UTC); {days} of {expected} reporting days aggregated. Missing days are not zero.",
+    "updated": "Updated {at} · UTC",
+    "noData": "No supported complete-day data available.",
+    "lowVolume": "Too few contributing accounts or sessions to report.",
+    "status": {
+      "verified": "Verified for stated scope",
+      "partial": "Partial recorded activity",
+      "unavailable": "Unavailable"
+    },
+    "labels": {
+      "elements": "Element placements",
+      "exports": "Successful exports",
+      "shares": "Share links created",
+      "views": "Shared-track views",
+      "accounts": "New accounts",
+      "sessions": "Active design sessions"
+    },
+    "definitions": {
+      "elements": "Includes gates and all other placed elements. Sum of insertion counts received from Studio; repeated insertions count again. Imports and undo/redo restoration are excluded.",
+      "exports": "Success events received from the Studio export dialog. Repeated successful exports count again; other export paths are not covered.",
+      "shares": "Creation events received from the Studio share dialog, deduplicated per share within each measurement version. Other creation paths are not covered.",
+      "views": "Received share/embed views, deduplicated per browser session and share within each measurement version. These are not unique people.",
+      "accounts": "Committed account insertions since collection began, excluding accounts inserted with the admin role. Later promotion or deletion does not change the count. Includes staff/test registrations made with an ordinary role; not unique people.",
+      "sessions": "Browser sessions with at least one received meaningful edit. Multiple edits and projects in one session count once. Sessions are assigned to their first recorded arrival day; edits received after that day was finalized are absent. Sessions without a recorded arrival are excluded."
+    },
+    "viewRecap": "View recap",
+    "measurementCoverage": "Measurement coverage",
+    "partialYear": "Partial year",
+    "recordedPeriod": "Recorded activity: {from} – {to} (UTC)",
+    "noRecordedPeriod": "No complete-day activity data yet",
+    "recordedActivity": "Recorded activity",
+    "registrationActivity": "Recorded registrations",
+    "summaryLimits": "Received events only. Partial figures cover the measured interval, not the full year.",
+    "definitionsTitle": "Definitions and sources",
+    "noHistoricalAccounts": "Historical total not recoverable",
+    "recapTitle": "Your {year} recap",
+    "recapHeading": "{year}, drawn together.",
+    "noReportableFigures": "No reportable figures are available for this year."
   }
 }

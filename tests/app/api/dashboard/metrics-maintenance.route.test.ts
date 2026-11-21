@@ -7,9 +7,13 @@ const mocks = vi.hoisted(() => ({
   getDatabase: vi.fn(),
   runProductMetricMaintenance: vi.fn(),
   recordAuditEvent: vi.fn(),
+  aggregateYearNumbers: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/server/year-in-numbers", () => ({
+  aggregateYearNumbers: mocks.aggregateYearNumbers,
+}));
 vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: mocks.getCurrentUserFromHeaders,
 }));
@@ -49,6 +53,7 @@ describe("dashboard metrics maintenance route", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(mocks.aggregateYearNumbers).toHaveBeenCalledOnce();
     expect(mocks.recordAuditEvent).toHaveBeenCalledWith({
       actorUserId: "admin-1",
       eventType: "system.metrics.maintenance.completed",
@@ -56,6 +61,18 @@ describe("dashboard metrics maintenance route", () => {
       entityId: null,
       metadata: null,
     });
+  });
+
+  it("can maintain annual totals independently of rolling metrics", async () => {
+    const response = await POST(
+      new Request(
+        "https://trackdraw.app/api/dashboard/metrics/maintenance?scope=year-in-numbers",
+        { method: "POST" }
+      )
+    );
+    expect(response.status).toBe(200);
+    expect(mocks.aggregateYearNumbers).toHaveBeenCalledOnce();
+    expect(mocks.runProductMetricMaintenance).not.toHaveBeenCalled();
   });
 
   it("does not audit a failed maintenance run", async () => {

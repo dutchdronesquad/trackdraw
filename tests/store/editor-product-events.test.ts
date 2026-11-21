@@ -15,6 +15,22 @@ describe("editor product events", () => {
     resetEditorStore();
   });
 
+  it("counts bulk insertions by kind without treating undo and redo as new placements", () => {
+    useEditor
+      .getState()
+      .addShapes(Array.from({ length: 501 }, () => gateDraft()));
+    const placements = () =>
+      trackProductEvent.mock.calls.filter(
+        ([event]) => event === "editor.element_placed"
+      );
+    expect(placements().map(([, context]) => context.properties.count)).toEqual(
+      [500, 1]
+    );
+    useEditor.temporal.getState().undo();
+    useEditor.temporal.getState().redo();
+    expect(placements()).toHaveLength(2);
+  });
+
   it("deduplicates meaningful edits per session, project and edit type", () => {
     const projectId = useEditor.getState().track.design.id;
 

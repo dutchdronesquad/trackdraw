@@ -40,7 +40,11 @@ import type { DashboardModule } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
 type SidebarNavKey =
-  DashboardModule | "email-preview" | "metrics-planning" | "teams";
+  | DashboardModule
+  | "email-preview"
+  | "metrics-planning"
+  | "year-in-numbers"
+  | "teams";
 
 type DashboardAppSidebarProps = {
   currentUser: {
@@ -118,6 +122,13 @@ const topNavItems: NavItem[] = [
 ] as const;
 
 const insightsNavItems: NavItem[] = [
+  {
+    key: "year-in-numbers",
+    titleKey: "yearInNumbers",
+    href: "/dashboard/metrics/year-in-numbers",
+    icon: BarChart2,
+    activePrefix: "/dashboard/metrics/year-in-numbers",
+  },
   {
     key: "metrics",
     titleKey: "metrics",
@@ -277,7 +288,11 @@ export default function DashboardAppSidebar({
   });
 
   const filteredInsightsItems = insightsNavItems.filter((item) => {
-    if (item.key === "metrics" || item.key === "metrics-planning") {
+    if (
+      item.key === "metrics" ||
+      item.key === "metrics-planning" ||
+      item.key === "year-in-numbers"
+    ) {
       return visibleModules.includes("metrics");
     }
     return true;

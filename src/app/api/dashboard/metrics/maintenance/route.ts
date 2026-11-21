@@ -6,6 +6,7 @@ import { hasCapability } from "@/lib/server/authorization";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import { getDatabase } from "@/lib/server/db";
 import { runProductMetricMaintenance } from "@/lib/server/product-metric-aggregates";
+import { aggregateYearNumbers } from "@/lib/server/year-in-numbers";
 
 export async function POST(request: Request) {
   if (!isTrustedRequest(request)) {
@@ -35,7 +36,10 @@ export async function POST(request: Request) {
 
   try {
     const db = await getDatabase();
-    await runProductMetricMaintenance(db);
+    await aggregateYearNumbers(db);
+    if (new URL(request.url).searchParams.get("scope") !== "year-in-numbers") {
+      await runProductMetricMaintenance(db);
+    }
     await recordAuditEvent({
       actorUserId: actor.id,
       eventType: auditEventTypes.systemMetricsMaintenanceCompleted,

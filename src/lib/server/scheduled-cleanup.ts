@@ -16,6 +16,7 @@ import { cleanupMcpOauth } from "@/lib/server/mcp/oauth-retention";
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
+import { aggregateYearNumbers } from "@/lib/server/year-in-numbers";
 import { runProductMetricMaintenance } from "@/lib/server/product-metric-aggregates";
 import { cleanupExpiredLocalizationDemand } from "@/lib/server/localization-demand-retention";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
@@ -172,6 +173,7 @@ export function createScheduledCleanupTasks(
     {
       name: "product_events",
       run: async () => {
+        await aggregateYearNumbers(db, new Date(scheduledTime));
         // Aggregate first so an extended outage cannot race raw-event expiry.
         // A failed aggregation deliberately prevents raw deletion on this run.
         const aggregateResult = await runProductMetricMaintenance(db);

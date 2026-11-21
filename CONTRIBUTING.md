@@ -211,6 +211,8 @@ Useful lightweight checks:
 git diff --check
 ```
 
+The metrics regression test also starts a disposable local D1 runtime through the installed Wrangler API. It requires local loopback/process access, keeps persistence and remote bindings disabled, and does not access production data.
+
 Component tests can opt into a browser-like environment per file:
 
 ```ts

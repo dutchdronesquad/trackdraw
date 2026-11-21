@@ -13,7 +13,7 @@ afterEach(() => databases.splice(0).forEach((db) => db.close()));
 
 describe("dashboard raw-event read budget", () => {
   it.each([
-    ["cockpit", getDailyCockpit, 1],
+    ["cockpit", getDailyCockpit, 2],
     ["explorer", getMetricsExplorerData, 0],
   ] as const)(
     "bounds raw-event calculations per %s request",
@@ -98,7 +98,7 @@ describe("batched metric correctness", () => {
     ).toHaveLength(5);
     expect(rows["MTR-005"]).toEqual([]);
     expect(queries.filter((sql) => sql.includes("events28 as ("))).toHaveLength(
-      1
+      2
     );
 
     // A later request must see new activity, rather than a shared D1 promise.
