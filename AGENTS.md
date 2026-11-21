@@ -35,6 +35,7 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 - Do not introduce `card in card` UI patterns.
 - Keep TypeScript strictness intact. Avoid `any` unless there is a clear boundary reason.
 - Reuse existing helpers and types before adding parallel abstractions.
+- Prefer the project's shadcn components in `src/components/ui/` for standard controls such as selects, buttons, inputs, and dialogs. Reuse the existing component before introducing a native control or custom equivalent.
 - Treat `src/components/ui/*` as a design-system boundary. Do not modify shared UI primitives unless the task explicitly asks for a design-system change or there is no safer alternative.
 - Be precise with filenames, imports, and symbols. Do not rename identifiers unless the change is intentional and usage has been checked.
 - When fixing lint or type errors, match the exact reported file and symbol before editing.
