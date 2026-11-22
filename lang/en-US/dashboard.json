@@ -1874,7 +1874,7 @@
       "exports": "Success events received from the Studio export dialog. Repeated successful exports count again; other export paths are not covered.",
       "shares": "Creation events received from the Studio share dialog, deduplicated per share within each measurement version. Other creation paths are not covered.",
       "views": "Received share/embed views, deduplicated per browser session and share within each measurement version. These are not unique people.",
-      "accounts": "Committed account insertions since collection began, excluding accounts inserted with the admin role. Later promotion or deletion does not change the count. Includes staff/test registrations made with an ordinary role; not unique people.",
+      "accounts": "Before collection began: a one-time lower-bound snapshot of surviving non-admin accounts by creation date. Deleted accounts and current admins are absent. The partial collection-start day is excluded. Later complete days count committed account insertions, excluding accounts inserted with the admin role. Later promotion or deletion does not change the count. Includes staff/test registrations made with an ordinary role; not unique people.",
       "sessions": "Browser sessions with at least one received meaningful edit. Multiple edits and projects in one session count once. Sessions are assigned to their first recorded arrival day; edits received after that day was finalized are absent. Sessions without a recorded arrival are excluded."
     },
     "viewRecap": "View recap",
@@ -1884,9 +1884,11 @@
     "noRecordedPeriod": "No complete-day activity data yet",
     "recordedActivity": "Recorded activity",
     "registrationActivity": "Recorded registrations",
-    "summaryLimits": "Received events only. Partial figures cover the measured interval, not the full year.",
+    "summaryLimits": "Activity figures use received events only. Partial figures cover the measured interval, not the full year.",
     "definitionsTitle": "Definitions and sources",
-    "noHistoricalAccounts": "Historical total not recoverable",
+    "noHistoricalAccounts": "No historical account snapshot or complete-day registration counts available",
+    "historicalRegistrationActivity": "Recorded registrations, including a historical lower bound",
+    "historicalAccountsLimits": "Historical registrations use creation dates of surviving non-admin accounts. Deleted accounts and current admins are absent, so the actual total may be higher. The partial day when the new counter started is excluded; later complete days use that counter without overlap.",
     "recapTitle": "Your {year} recap",
     "recapHeading": "{year}, drawn together.",
     "noReportableFigures": "No reportable figures are available for this year."

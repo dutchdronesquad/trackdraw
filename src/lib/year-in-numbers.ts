@@ -13,7 +13,7 @@ export type YearNumberDailyTotal = {
   metric: YearNumberMetric;
   total: number;
   contributors: number;
-  source: "product-events-v1" | "registration-trigger";
+  source: "product-events-v1" | "registration-trigger" | "registration-history";
   updated_at: string;
 };
 
@@ -59,6 +59,9 @@ export function getYearInNumbers(
       const days = eligible
         .filter((row) => row.metric === metric)
         .sort((a, b) => a.day_utc.localeCompare(b.day_utc));
+      const historicalAccounts = days.some(
+        (day) => day.source === "registration-history"
+      );
       const receivedTotal = days.reduce((sum, day) => sum + day.total, 0);
       // Account insertions are distinct accounts. For events, require one day with
       // five distinct contributors: summing daily distinct counts would overstate it.
@@ -70,11 +73,14 @@ export function getYearInNumbers(
       const status =
         days.length === 0 || !safeToReport
           ? "unavailable"
-          : metric === "accounts" && days.length === expectedDays
+          : metric === "accounts" &&
+              !historicalAccounts &&
+              days.length === expectedDays
             ? "verified"
             : "partial";
       return {
         metric,
+        historicalAccounts,
         total: days.length > 0 && safeToReport ? receivedTotal : null,
         reason:
           days.length === 0 ? "noData" : !safeToReport ? "lowVolume" : null,
