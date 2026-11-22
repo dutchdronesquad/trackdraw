@@ -404,7 +404,7 @@
     "eyebrow": "Get in touch",
     "title": "Contact TrackDraw",
     "description": "Have a question, want to collaborate, or need a hand? We’d like to hear from you.",
-    "emailTitle": "Let’s talk",
+    "emailTitle": "Email the team",
     "emailDescription": "For general questions, collaboration, or private account and privacy requests, send us an email.",
     "emailAction": "Email TrackDraw",
     "feedbackTitle": "Bugs and ideas",
@@ -412,6 +412,8 @@
     "feedbackAction": "Open GitHub issues",
     "faqTitle": "Looking for a quick answer?",
     "faqDescription": "Our FAQ covers common questions about designing, saving, and sharing tracks.",
-    "faqAction": "Read the FAQ"
+    "faqAction": "Read the FAQ",
+    "headingLine1": "Let’s talk about",
+    "headingLine2": "TrackDraw."
   }
 }
