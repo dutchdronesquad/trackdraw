@@ -136,6 +136,7 @@ export function useAccountProjectSync({
   const [projectSyncMetaById, setProjectSyncMetaById] = useState<
     Record<string, ProjectSyncMeta>
   >({});
+  const archivedProjectIdsRef = useRef(new Set<string>());
   const accountProjectsRef = useRef<AccountProjectListItem[]>([]);
   const [projectVersionConflict, setProjectVersionConflict] =
     useState<ProjectVersionConflict | null>(null);
@@ -216,14 +217,16 @@ export function useAccountProjectSync({
           throw new Error(payload.error ?? "Failed to load account projects");
         }
 
-        const nextProjects = (payload.projects ?? []).map((project) => ({
-          id: project.id,
-          title: project.title,
-          updatedAt: project.updatedAt,
-          designUpdatedAt: project.designUpdatedAt,
-          shapeCount: project.shapeCount,
-          revision: project.revision,
-        }));
+        const nextProjects = (payload.projects ?? [])
+          .filter((project) => !archivedProjectIdsRef.current.has(project.id))
+          .map((project) => ({
+            id: project.id,
+            title: project.title,
+            updatedAt: project.updatedAt,
+            designUpdatedAt: project.designUpdatedAt,
+            shapeCount: project.shapeCount,
+            revision: project.revision,
+          }));
 
         const current = designRef.current;
         const cloud = nextProjects.find((project) => project.id === current.id);
@@ -355,6 +358,51 @@ export function useAccountProjectSync({
     // oxlint-disable-next-line react/set-state-in-effect -- refresh share data when the manager opens
     void refreshAccountShares();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountShares]);
+
+  const handleArchiveAccountProject = useCallback(
+    async (projectId: string) => {
+      if (
+        !authUserId ||
+        readOnly ||
+        !cloudProjectsAvailable ||
+        syncInFlightByIdRef.current[projectId]
+      ) {
+        throw new Error(t("archiveFailed"));
+      }
+      syncInFlightByIdRef.current[projectId] = true;
+      try {
+        const response = await fetch(
+          `/api/projects/${encodeURIComponent(projectId)}`,
+          { method: "DELETE" }
+        );
+        const payload = (await response.json()) as { ok?: boolean };
+        if (!response.ok || !payload.ok) throw new Error(t("archiveFailed"));
+
+        archivedProjectIdsRef.current.add(projectId);
+        autoPromoteAttemptedIdsRef.current.add(projectId);
+        setAccountProjects((previous) =>
+          previous.filter((project) => project.id !== projectId)
+        );
+        setAccountShares((previous) =>
+          previous.filter((share) => share.projectId !== projectId)
+        );
+        setProjectSyncMetaById((previous) => ({
+          ...previous,
+          [projectId]: { status: "local-only" },
+        }));
+        setProjectVersionConflict((previous) =>
+          previous?.projectId === projectId ? null : previous
+        );
+        delete loadedVersionByIdRef.current[projectId];
+        if (designRef.current.id === projectId)
+          setSaveStatusLabel(t("keptAsLocalCopy"));
+        toast.success(t("projectArchived"));
+      } finally {
+        delete syncInFlightByIdRef.current[projectId];
+      }
+    },
+    [authUserId, readOnly, cloudProjectsAvailable, setSaveStatusLabel, t]
+  );
 
   const handleRevokeShare = useCallback(async (token: string) => {
     try {
@@ -598,6 +646,8 @@ export function useAccountProjectSync({
         forceCloudWrite?: boolean;
       }
     ) => {
+      if (archivedProjectIdsRef.current.has(targetDesign.id))
+        throw new Error(t("projectArchived"));
       if (isMovedTeamProject(targetDesign.id))
         throw new Error(
           "This project has moved to a team. Reopen it from Cloud projects."
@@ -1217,6 +1267,7 @@ export function useAccountProjectSync({
     handleSyncProject,
     handleOpenAccountProject,
     handleDuplicateAccountProject,
+    handleArchiveAccountProject,
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,

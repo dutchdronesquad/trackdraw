@@ -562,7 +562,9 @@
       "changesPending": "Changes pending",
       "syncedAt": "Synced {time}",
       "syncedProject": "Synced project"
-    }
+    },
+    "archiveFailed": "Could not archive this project. Try again when syncing has finished.",
+    "projectArchived": "Cloud project archived"
   },
   "shell": {
     "untitledTrack": "Untitled track",

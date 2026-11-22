@@ -114,6 +114,7 @@ export interface EditorDialogsHostProps {
   onRenameProject?: (id: string, title: string) => void;
   onDuplicateProject?: (id: string) => void;
   onDuplicateAccountProject?: (id: string) => void;
+  onArchiveAccountProject?: (id: string) => Promise<void>;
   onExportProject?: (id: string) => void;
   onRestorePoint?: (id: string) => void;
   onDeleteRestorePoint?: (id: string) => void;
@@ -199,6 +200,7 @@ export function EditorDialogsHost({
   onRenameProject,
   onDuplicateProject,
   onDuplicateAccountProject,
+  onArchiveAccountProject,
   onExportProject,
   onRestorePoint,
   onDeleteRestorePoint,
@@ -300,6 +302,7 @@ export function EditorDialogsHost({
           onRenameProject={onRenameProject}
           onDuplicateProject={onDuplicateProject}
           onDuplicateAccountProject={onDuplicateAccountProject}
+          onArchiveAccountProject={onArchiveAccountProject}
           onExportProject={onExportProject}
           onRestorePoint={onRestorePoint}
           onDeleteRestorePoint={onDeleteRestorePoint}

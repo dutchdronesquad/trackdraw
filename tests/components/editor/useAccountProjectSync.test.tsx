@@ -13,6 +13,7 @@ import {
 } from "@/components/editor/useAccountProjectSync";
 import {
   forgetMovedProject,
+  loadProject,
   saveProject,
   type ProjectMeta,
 } from "@/lib/projects";
@@ -89,6 +90,87 @@ describe("useAccountProjectSync", () => {
     cleanup();
     vi.useRealTimers();
     vi.unstubAllGlobals();
+  });
+
+  it("archives the active cloud project, keeps its local copy, and stops cloud writes", async () => {
+    const design = createDefaultDesign();
+    saveProject(design);
+    const savedLocal = loadProject(design.id);
+    const project = {
+      id: design.id,
+      title: design.title,
+      updatedAt: design.updatedAt,
+      designUpdatedAt: design.updatedAt,
+      shapeCount: 0,
+    };
+    const fetch = vi.fn(async (_url: string, init?: RequestInit) =>
+      Response.json(
+        init?.method === "DELETE"
+          ? { ok: true }
+          : { ok: true, projects: [project] }
+      )
+    );
+    vi.stubGlobal("fetch", fetch);
+    const { result } = renderAccountProjectSync({
+      authUserId: "owner",
+      design,
+    });
+    await waitFor(() => expect(result.current.accountProjects).toHaveLength(1));
+    await act(async () => {
+      await result.current.handleArchiveAccountProject(design.id);
+    });
+    expect(fetch).toHaveBeenCalledWith(`/api/projects/${design.id}`, {
+      method: "DELETE",
+    });
+    expect(result.current.accountProjects).toHaveLength(0);
+    expect(result.current.isAccountProject).toBe(false);
+    expect(result.current.projectSyncMetaById[design.id].status).toBe(
+      "local-only"
+    );
+    expect(loadProject(design.id)).toEqual(savedLocal);
+    await expect(result.current.syncDesignToAccount(design)).rejects.toThrow(
+      "archived"
+    );
+    // A stale list response must not restore the project after archiving.
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(result.current.accountProjects).toHaveLength(0);
+    expect(fetch.mock.calls.some(([, init]) => init?.method === "POST")).toBe(
+      false
+    );
+  });
+
+  it("retains cloud project and sync state when archiving fails", async () => {
+    const design = createDefaultDesign();
+    const project = {
+      id: design.id,
+      title: design.title,
+      updatedAt: design.updatedAt,
+      designUpdatedAt: design.updatedAt,
+      shapeCount: 0,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: RequestInit) =>
+        init?.method === "DELETE"
+          ? Response.json({ ok: false }, { status: 403 })
+          : Response.json({ ok: true, projects: [project] })
+      )
+    );
+    const { result } = renderAccountProjectSync({
+      authUserId: "owner",
+      design,
+    });
+    await waitFor(() => expect(result.current.accountProjects).toHaveLength(1));
+    await act(async () => {
+      await expect(
+        result.current.handleArchiveAccountProject(design.id)
+      ).rejects.toThrow();
+    });
+    expect(result.current.accountProjects).toHaveLength(1);
+    expect(result.current.isAccountProject).toBe(true);
+    expect(result.current.projectSyncMetaById[design.id].status).toBe("synced");
   });
 
   it("never resubmits a draft after its project moved to a team", async () => {

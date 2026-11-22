@@ -59,6 +59,8 @@ The inspector separates obstacle type and dimensions from appearance. Select mul
 
 Open the Studio and work immediately. Projects are stored in the browser, can be restored to earlier versions, and can be imported, exported, and temporarily shared without signing in. An account adds cross-device sync, durable published links, gallery publishing, embeds, and share management.
 
+You can archive personal projects from Studio’s Cloud projects list. Archiving revokes their share links and gallery publication while keeping copies already saved on your devices.
+
 TrackDraw supports English, Dutch, German, Simplified Chinese, and Spanish, with an independent choice of Metric or Imperial units. Untranslated messages use English until reviewed translations arrive through Crowdin. The editor supports desktop and mobile, while shared designs open in a dedicated read-only view.
 
 TrackDraw is actively developed. See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for current priorities and progress.

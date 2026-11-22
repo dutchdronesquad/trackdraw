@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { ConfirmationDialog } from "@/components/dialogs/ConfirmationDialog";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Cloud, CloudUpload, Copy, Users } from "lucide-react";
+import { Archive, Cloud, CloudUpload, Copy, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
@@ -37,6 +39,7 @@ interface ProjectManagerAccountTabProps {
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
   onDuplicateAccountProject?: (id: string) => void;
+  onArchiveAccountProject?: (id: string) => Promise<void>;
   onResolveConflict?: (id: string) => void;
   onOpenChange: (open: boolean) => void;
 }
@@ -53,12 +56,38 @@ export function ProjectManagerAccountTab({
   onOpenAccountProject,
   onSyncProject,
   onDuplicateAccountProject,
+  onArchiveAccountProject,
   onResolveConflict,
   onOpenChange,
 }: ProjectManagerAccountTabProps) {
   const t = useTranslations("dialogs");
   const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
+  const [archiveProject, setArchiveProject] =
+    useState<AccountProjectItem | null>(null);
+  const [archiving, setArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const submittingArchive = useRef(false);
+  const confirmArchive = async () => {
+    if (
+      !archiveProject ||
+      !onArchiveAccountProject ||
+      submittingArchive.current
+    )
+      return;
+    submittingArchive.current = true;
+    setArchiving(true);
+    setArchiveError(null);
+    try {
+      await onArchiveAccountProject(archiveProject.id);
+      setArchiveProject(null);
+    } catch {
+      setArchiveError(t("projectManager.account.archive.failed"));
+    } finally {
+      submittingArchive.current = false;
+      setArchiving(false);
+    }
+  };
   const sorted = [...accountProjects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
@@ -314,6 +343,23 @@ export function ProjectManagerAccountTab({
                   </DesktopActionTooltip>
                 )
               ) : null}
+              {onArchiveAccountProject ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isSyncing || archiving}
+                  aria-label={t("projectManager.account.archive.aria", {
+                    title: projectTitle,
+                  })}
+                  title={t("projectManager.account.archive.action")}
+                  onClick={() => {
+                    setArchiveError(null);
+                    setArchiveProject(proj);
+                  }}
+                >
+                  <Archive className="size-3.5" />
+                </Button>
+              ) : null}
               {!showSyncButton && !onDuplicateAccountProject ? (
                 <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
               ) : null}
@@ -321,6 +367,25 @@ export function ProjectManagerAccountTab({
           </div>
         );
       })}
+      <ConfirmationDialog
+        open={archiveProject !== null}
+        onOpenChange={(open) => {
+          if (!open) setArchiveProject(null);
+        }}
+        title={t("projectManager.account.archive.title", {
+          title: archiveProject
+            ? getDisplayTitle(
+                archiveProject.title,
+                t("projectManager.account.fallback.untitled")
+              )
+            : "",
+        })}
+        description={t("projectManager.account.archive.description")}
+        confirmLabel={t("projectManager.account.archive.action")}
+        onConfirm={() => void confirmArchive()}
+        busy={archiving}
+        error={archiveError}
+      />
     </div>
   );
 }
