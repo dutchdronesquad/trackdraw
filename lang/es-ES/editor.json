@@ -562,7 +562,9 @@
       "changesPending": "Cambios pendientes",
       "syncedAt": "Sincronizado a las {time}",
       "syncedProject": "Proyecto sincronizado con la cuenta"
-    }
+    },
+    "archiveFailed": "No se ha podido archivar este proyecto. Inténtalo de nuevo cuando termine la sincronización.",
+    "projectArchived": "Proyecto en la nube archivado"
   },
   "shell": {
     "untitledTrack": "Pista sin título",

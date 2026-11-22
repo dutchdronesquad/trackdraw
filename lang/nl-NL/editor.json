@@ -562,7 +562,9 @@
       "changesPending": "Wijzigingen in afwachting",
       "syncedAt": "Gesynchroniseerd {time}",
       "syncedProject": "Gesynchroniseerd project"
-    }
+    },
+    "archiveFailed": "Kan dit project niet archiveren. Probeer het opnieuw zodra de synchronisatie is voltooid.",
+    "projectArchived": "Cloudproject gearchiveerd"
   },
   "shell": {
     "untitledTrack": "Naamloze track",

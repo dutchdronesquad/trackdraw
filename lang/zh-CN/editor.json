@@ -562,7 +562,9 @@
       "changesPending": "更改待同步",
       "syncedAt": "{time} 已同步",
       "syncedProject": "已同步项目"
-    }
+    },
+    "archiveFailed": "无法归档此项目。请在同步完成后重试。",
+    "projectArchived": "云端项目已归档"
   },
   "shell": {
     "untitledTrack": "未命名赛道",

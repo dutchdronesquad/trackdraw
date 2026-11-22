@@ -842,6 +842,13 @@
       },
       "fallback": {
         "untitled": "未命名"
+      },
+      "archive": {
+        "action": "归档项目",
+        "aria": "归档 {title}",
+        "title": "归档“{title}”？",
+        "description": "此操作会将项目从云端项目列表中移除，并撤销其分享链接和图库发布。已保存在你设备上的副本仍然可用。此操作无法在 Studio 中撤销。",
+        "failed": "无法归档此项目。请检查网络连接后重试。"
       }
     },
     "restore": {

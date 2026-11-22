@@ -842,6 +842,13 @@
       },
       "fallback": {
         "untitled": "Unbenannt"
+      },
+      "archive": {
+        "action": "Projekt archivieren",
+        "aria": "{title} archivieren",
+        "title": "„{title}“ archivieren?",
+        "description": "Dadurch wird das Projekt aus den Cloud-Projekten entfernt. Seine Freigabelinks und die Veröffentlichung in der Galerie werden widerrufen. Bereits auf deinen Geräten gespeicherte Kopien bleiben verfügbar. Diese Aktion kann in Studio nicht rückgängig gemacht werden.",
+        "failed": "Dieses Projekt konnte nicht archiviert werden. Prüfe deine Verbindung und versuche es erneut."
       }
     },
     "restore": {
