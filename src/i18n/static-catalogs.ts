@@ -81,3 +81,13 @@ export async function getStaticBioMetadata(): Promise<{
   };
   return catalog.bio.metadata;
 }
+
+export async function getStaticContactMetadata(): Promise<{
+  title: string;
+  description: string;
+}> {
+  const catalog = (await readEnglishNamespace("landing")) as {
+    contact: { metadata: { title: string; description: string } };
+  };
+  return catalog.contact.metadata;
+}

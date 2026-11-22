@@ -9,6 +9,7 @@ import {
   FileText,
   Heart,
   Languages,
+  Mail,
   Palette,
   Pencil,
   ScrollText,
@@ -189,6 +190,16 @@ export function Footer() {
                 {t("footer.communityTitle")}
               </h3>
               <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    href="/contact"
+                    prefetch={false}
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Mail aria-hidden="true" className="size-4 shrink-0" />
+                    {t("footer.contact")}
+                  </Link>
+                </li>
                 <li>
                   <a
                     href="https://github.com/dutchdronesquad/trackdraw"

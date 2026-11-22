@@ -29,7 +29,9 @@
     "languageTooltip": "Switch the site language.",
     "login": "Log in",
     "account": "Account",
-    "openStudio": "Open Studio"
+    "openStudio": "Open Studio",
+    "contactNav": "Contact",
+    "contactTooltip": "Get in touch with the TrackDraw team"
   },
   "hero": {
     "eyebrow": "Built for FPV race directors",
@@ -255,7 +257,8 @@
     "kofi": "Ko-fi",
     "copyright": "© {year} <organization>Dutch Drone Squad</organization>. Open source project.",
     "madeWithPre": "Made with",
-    "madeWithPost": "for the FPV community"
+    "madeWithPost": "for the FPV community",
+    "contact": "Contact"
   },
   "translationCta": {
     "eyebrow": "Community translations",
@@ -392,5 +395,23 @@
       "note": "Works with cloud projects and the permissions you grant. Your assistant cannot publish tracks or change sharing.",
       "action": "Read the connection guide"
     }
+  },
+  "contact": {
+    "metadata": {
+      "title": "Contact TrackDraw",
+      "description": "Get in touch with TrackDraw for questions, collaboration, privacy or account support, or share bugs and ideas on GitHub."
+    },
+    "eyebrow": "Get in touch",
+    "title": "Contact TrackDraw",
+    "description": "Have a question, want to collaborate, or need a hand? We’d like to hear from you.",
+    "emailTitle": "Let’s talk",
+    "emailDescription": "For general questions, collaboration, or private account and privacy requests, send us an email.",
+    "emailAction": "Email TrackDraw",
+    "feedbackTitle": "Bugs and ideas",
+    "feedbackDescription": "Found a problem or have an idea for TrackDraw? Share it on GitHub so the community can follow along. GitHub issues are public, so please keep personal and account details in email.",
+    "feedbackAction": "Open GitHub issues",
+    "faqTitle": "Looking for a quick answer?",
+    "faqDescription": "Our FAQ covers common questions about designing, saving, and sharing tracks.",
+    "faqAction": "Read the FAQ"
   }
 }
