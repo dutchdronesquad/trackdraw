@@ -842,6 +842,13 @@
       },
       "fallback": {
         "untitled": "Untitled"
+      },
+      "archive": {
+        "action": "Archive project",
+        "aria": "Archive {title}",
+        "title": "Archive “{title}”?",
+        "description": "This removes the project from Cloud projects and revokes its share links and gallery publication. Copies already saved on your devices remain available. This action cannot be undone in Studio.",
+        "failed": "Could not archive this project. Check your connection and try again."
       }
     },
     "restore": {

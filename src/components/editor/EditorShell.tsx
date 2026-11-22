@@ -337,6 +337,7 @@ export default function EditorShell({
     handleSyncProject,
     handleOpenAccountProject,
     handleDuplicateAccountProject,
+    handleArchiveAccountProject,
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,
@@ -1180,6 +1181,11 @@ export default function EditorShell({
           onDuplicateAccountProject={
             authUser && cloudProjectsAvailable
               ? handleDuplicateAccountProject
+              : undefined
+          }
+          onArchiveAccountProject={
+            authUser && cloudProjectsAvailable
+              ? handleArchiveAccountProject
               : undefined
           }
           onExportProject={handleExportProject}

@@ -32,6 +32,100 @@ describe("ProjectManagerAccountTab", () => {
     cleanup();
   });
 
+  it("requires confirmation, allows cancellation, and does not open the project", async () => {
+    const user = userEvent.setup();
+    const archive = vi.fn().mockResolvedValue(undefined);
+    const open = vi.fn();
+    render(
+      <ProjectManagerAccountTab
+        accountProjects={[project]}
+        error={null}
+        loading={false}
+        onOpenChange={vi.fn()}
+        onOpenAccountProject={open}
+        onArchiveAccountProject={archive}
+        projectSyncMetaById={{}}
+      />
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Archive Race day layout" })
+    );
+    expect(archive).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    expect(screen.getByRole("alertdialog")).toBeTruthy();
+    expect(screen.getByText(/revokes its share links/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(archive).not.toHaveBeenCalled();
+    await user.click(
+      screen.getByRole("button", { name: "Archive Race day layout" })
+    );
+    await user.click(screen.getByRole("button", { name: "Archive project" }));
+    expect(archive).toHaveBeenCalledExactlyOnceWith(project.id);
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+
+  it("keeps a failed archive open for retry and blocks repeated submissions", async () => {
+    const user = userEvent.setup();
+    let rejectArchive: (error: Error) => void = () => {};
+    const archive = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((_, reject) => {
+            rejectArchive = reject;
+          })
+      )
+      .mockResolvedValue(undefined);
+    render(
+      <ProjectManagerAccountTab
+        accountProjects={[project]}
+        error={null}
+        loading={false}
+        onOpenChange={vi.fn()}
+        onArchiveAccountProject={archive}
+        projectSyncMetaById={{}}
+      />
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Archive Race day layout" })
+    );
+    await user.click(screen.getByRole("button", { name: "Archive project" }));
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Archive project",
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+    await user.click(screen.getByRole("button", { name: "Archive project" }));
+    expect(archive).toHaveBeenCalledTimes(1);
+    rejectArchive(new Error("Offline"));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Archive project" }));
+    expect(archive).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+
+  it("disables archiving while the project is syncing", () => {
+    render(
+      <ProjectManagerAccountTab
+        accountProjects={[project]}
+        error={null}
+        loading={false}
+        onOpenChange={vi.fn()}
+        onArchiveAccountProject={vi.fn()}
+        projectSyncMetaById={{ [project.id]: { status: "syncing" } }}
+      />
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Archive Race day layout",
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+  });
+
   it("announces account project loading state", () => {
     render(
       <ProjectManagerAccountTab
