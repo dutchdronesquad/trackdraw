@@ -22,6 +22,10 @@ Beachflags now have curved fabric and gentle movement in 3D previews and flythro
 
 Team editors can now move their personal cloud projects into a team they can edit, alongside team owners. Existing public links and gallery listings stay live. After finishing editing, owners and editors can publish team tracks, update or revoke public links, and manage gallery listings. Team invitation links work again, and ownership recovery emails show readable deadlines.
 
+### Manage personal cloud projects
+
+Archive personal cloud projects from Studio with a confirmation. Archiving revokes their share links and gallery publication while keeping copies already saved on your devices.
+
 ## [1.19.0]
 
 ### Design tracks with your team
