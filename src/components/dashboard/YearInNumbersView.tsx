@@ -193,10 +193,17 @@ export function YearInNumbersView({
                   row.status === "unavailable"
                     ? "status.unavailable"
                     : row.metric === "accounts"
-                      ? "registrationActivity"
+                      ? row.historicalAccounts
+                        ? "historicalRegistrationActivity"
+                        : "registrationActivity"
                       : "recordedActivity"
                 )}
               </p>
+              {row.historicalAccounts && (
+                <p className="text-muted-foreground mt-1 text-xs leading-5">
+                  {t("historicalAccountsLimits")}
+                </p>
+              )}
               {row.reason && (
                 <p className="text-muted-foreground mt-1 max-w-xs text-xs leading-5">
                   {t(
@@ -284,6 +291,11 @@ export function YearInNumbersView({
                       </strong>{" "}
                       {t(`labels.${row.metric}`)}
                     </p>
+                    {row.historicalAccounts && (
+                      <p className="text-muted-foreground text-xs">
+                        {t("historicalAccountsLimits")}
+                      </p>
+                    )}
                     <p className="text-muted-foreground text-xs">
                       {t("coverage", {
                         from: row.from!,

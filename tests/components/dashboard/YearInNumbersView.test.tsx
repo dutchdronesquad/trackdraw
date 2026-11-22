@@ -93,3 +93,33 @@ describe("Year in numbers", () => {
     ).toBeTruthy();
   });
 });
+
+it("shows the historical lower-bound caveat on the account figure and in the recap", () => {
+  const historical = getYearInNumbers(
+    2026,
+    [
+      {
+        day_utc: "2026-01-01",
+        metric: "accounts",
+        total: 5,
+        contributors: 5,
+        source: "registration-history",
+        updated_at: "2026-01-02",
+      },
+    ],
+    new Date("2026-01-02")
+  );
+  render(<YearInNumbersView report={historical} currentYear={2026} />);
+  const accounts = within(screen.getByRole("region", { name: "New accounts" }));
+  expect(accounts.getByText("5")).toBeTruthy();
+  expect(accounts.getByText(/historical lower bound/)).toBeTruthy();
+  expect(
+    accounts.getByText(/Deleted accounts and current admins are absent/)
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "View recap" }));
+  expect(
+    within(screen.getByRole("dialog")).getByText(
+      /Deleted accounts and current admins are absent/
+    )
+  ).toBeTruthy();
+});

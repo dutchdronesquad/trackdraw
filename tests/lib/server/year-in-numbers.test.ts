@@ -1,15 +1,26 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { createMigratedDatabase, sqliteD1 } from "../../helpers/sqlite-d1";
-import { aggregateYearNumbers } from "@/lib/server/year-in-numbers";
+import {
+  aggregateYearNumbers,
+  loadYearInNumbers,
+} from "@/lib/server/year-in-numbers";
 import {
   getYearInNumbers,
   type YearNumberDailyTotal,
 } from "@/lib/year-in-numbers";
 
 vi.mock("server-only", () => ({}));
+const database = vi.hoisted(() => ({ current: null as unknown }));
+vi.mock("@/lib/server/db", () => ({
+  getDatabase: async () => database.current,
+}));
 
 function fixture() {
   const sqlite = createMigratedDatabase();
+  sqlite.exec(
+    "DELETE FROM year_number_daily_totals WHERE source = 'registration-history'"
+  );
   sqlite
     .prepare(
       "UPDATE year_number_collection SET started_at = '2026-08-15T12:00:00.000Z'"
@@ -371,5 +382,136 @@ describe("year in numbers reporting", () => {
     });
     expect(() => getYearInNumbers(2028, [], now)).toThrow();
     expect(() => getYearInNumbers(2026.5, [], now)).toThrow();
+  });
+});
+
+describe("historical account migration", () => {
+  it("snapshots surviving non-admin accounts once, preserves totals and trigger, and reads disjoint complete days", async () => {
+    const sqlite = createMigratedDatabase("0038_year_in_numbers.sql");
+    try {
+      sqlite.exec(
+        "UPDATE year_number_collection SET started_at = '2026-08-15T12:00:00Z'"
+      );
+      const user = sqlite.prepare(
+        "INSERT INTO users(id,email,role,createdAt,updatedAt) VALUES (?,?,?,?,?)"
+      );
+      for (let i = 0; i < 5; i++)
+        user.run(
+          `old-${i}`,
+          `old-${i}@example.invalid`,
+          "user",
+          "2026-08-14T23:59:59Z",
+          "2026-08-14"
+        );
+      user.run(
+        "admin",
+        "admin@example.invalid",
+        "admin",
+        "2026-08-14",
+        "2026-08-14"
+      );
+      user.run(
+        "deleted",
+        "deleted@example.invalid",
+        "user",
+        "2026-08-14",
+        "2026-08-14"
+      );
+      sqlite.exec("DELETE FROM users WHERE id='deleted'");
+      user.run(
+        "transition",
+        "transition@example.invalid",
+        "user",
+        "2026-08-15T00:00:00Z",
+        "2026-08-15"
+      );
+      user.run(
+        "after",
+        "after@example.invalid",
+        "user",
+        "2026-08-16T00:00:00Z",
+        "2026-08-16"
+      );
+      sqlite.exec(
+        "INSERT INTO year_number_daily_totals VALUES ('2026-08-16','accounts',2,2,'registration-trigger','2026-08-17'); INSERT INTO year_number_daily_totals VALUES ('2026-08-15','accounts',1,1,'registration-trigger','2026-08-15'); INSERT INTO year_number_daily_totals VALUES ('2026-08-14','elements',10,5,'product-events-v1','2026-08-15')"
+      );
+      sqlite.exec("BEGIN");
+      sqlite.exec(
+        readFileSync(
+          new URL(
+            "../../../migrations/0039_year_number_account_history.sql",
+            import.meta.url
+          ),
+          "utf8"
+        )
+      );
+      sqlite.exec("COMMIT");
+      expect(
+        sqlite
+          .prepare(
+            "SELECT total,source FROM year_number_daily_totals WHERE day_utc='2026-08-14' AND metric='accounts'"
+          )
+          .get()
+      ).toMatchObject({ total: 5, source: "registration-history" });
+      database.current = sqliteD1(sqlite);
+      const report = await loadYearInNumbers(
+        2026,
+        new Date("2026-08-17T12:00:00Z")
+      );
+      expect(
+        report.metrics.find((row) => row.metric === "accounts")
+      ).toMatchObject({
+        total: 7,
+        status: "partial",
+        historicalAccounts: true,
+        from: "2026-01-01",
+        to: "2026-08-16",
+      });
+      expect(
+        report.metrics.find((row) => row.metric === "elements")
+      ).toMatchObject({ total: 10 });
+      sqlite.exec("DELETE FROM users WHERE id='old-0'");
+      user.run(
+        "backdated",
+        "backdated@example.invalid",
+        "user",
+        "2026-08-14",
+        "2026-08-14"
+      );
+      expect(
+        sqlite
+          .prepare(
+            "SELECT total FROM year_number_daily_totals WHERE day_utc='2026-08-14' AND metric='accounts'"
+          )
+          .get()
+      ).toMatchObject({ total: 5 });
+      expect(
+        sqlite
+          .prepare(
+            "SELECT total FROM year_number_daily_totals WHERE day_utc=date('now') AND metric='accounts'"
+          )
+          .get()
+      ).toMatchObject({ total: 9 });
+    } finally {
+      sqlite.close();
+    }
+  });
+  it("never verifies historical lower bounds even when every reporting day has a snapshot", () => {
+    expect(
+      getYearInNumbers(
+        2026,
+        [
+          {
+            day_utc: "2026-01-01",
+            metric: "accounts",
+            total: 5,
+            contributors: 5,
+            source: "registration-history",
+            updated_at: "2026-01-02",
+          },
+        ],
+        new Date("2026-01-02")
+      ).metrics.find((row) => row.metric === "accounts")
+    ).toMatchObject({ status: "partial", historicalAccounts: true });
   });
 });

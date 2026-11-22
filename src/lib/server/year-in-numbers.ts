@@ -77,7 +77,7 @@ export async function aggregateYearNumbers(
     .bind(retainedFrom, today, today, now.toISOString())
     .run();
 
-  // The deployment day has only partial trigger coverage. Never infer historical registrations.
+  // The deployment day has only partial trigger coverage. Historical snapshots are kept separate from these complete trigger days.
   await db
     .prepare(
       `
@@ -110,7 +110,9 @@ export async function loadYearInNumbers(year: number, now = new Date()) {
       `
     SELECT day_utc, metric, total, contributors, source, updated_at FROM year_number_daily_totals
     WHERE day_utc >= ? AND day_utc < ?
-      AND (metric <> 'accounts' OR day_utc > (SELECT date(started_at) FROM year_number_collection))
+      AND (metric <> 'accounts'
+        OR (source = 'registration-history' AND day_utc < (SELECT date(started_at) FROM year_number_collection))
+        OR (source = 'registration-trigger' AND day_utc > (SELECT date(started_at) FROM year_number_collection)))
     ORDER BY day_utc, metric
   `
     )
