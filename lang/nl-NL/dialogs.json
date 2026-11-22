@@ -842,6 +842,13 @@
       },
       "fallback": {
         "untitled": "Naamloos"
+      },
+      "archive": {
+        "action": "Project archiveren",
+        "aria": "{title} archiveren",
+        "title": "‘{title}’ archiveren?",
+        "description": "Dit verwijdert het project uit Cloudprojecten en trekt de deellinks en galeriepublicatie in. Kopieën die al op je apparaten zijn opgeslagen, blijven beschikbaar. Je kunt deze actie niet ongedaan maken in Studio.",
+        "failed": "Kan dit project niet archiveren. Controleer je verbinding en probeer het opnieuw."
       }
     },
     "restore": {

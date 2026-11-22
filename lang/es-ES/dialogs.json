@@ -842,6 +842,13 @@
       },
       "fallback": {
         "untitled": "Sin título"
+      },
+      "archive": {
+        "action": "Archivar proyecto",
+        "aria": "Archivar {title}",
+        "title": "¿Archivar «{title}»?",
+        "description": "Esto elimina el proyecto de Proyectos en la nube y revoca sus enlaces compartidos y su publicación en la galería. Las copias ya guardadas en tus dispositivos seguirán disponibles. Esta acción no se puede deshacer en Studio.",
+        "failed": "No se ha podido archivar este proyecto. Comprueba tu conexión e inténtalo de nuevo."
       }
     },
     "restore": {

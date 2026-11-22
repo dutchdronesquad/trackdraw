@@ -562,7 +562,9 @@
       "changesPending": "Änderungen ausstehend",
       "syncedAt": "Synchronisiert {time}",
       "syncedProject": "Synchronisiertes Projekt"
-    }
+    },
+    "archiveFailed": "Dieses Projekt konnte nicht archiviert werden. Versuche es erneut, sobald die Synchronisierung abgeschlossen ist.",
+    "projectArchived": "Cloud-Projekt archiviert"
   },
   "shell": {
     "untitledTrack": "Unbenannter Track",
