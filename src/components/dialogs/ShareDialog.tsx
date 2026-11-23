@@ -953,7 +953,7 @@ export default function ShareDialog({
           ? t("share.gallery.descriptions.hidden")
           : share
             ? t("share.gallery.descriptions.linkOnly")
-            : t("share.gallery.descriptions.noLink");
+            : t("share.gallery.noPublicationDescription");
 
   const galleryVisibilityValue = !loadDone
     ? t("share.gallery.status.checking")
@@ -1057,8 +1057,8 @@ export default function ShareDialog({
             : t("share.content.share.description.anonymous"),
     },
     gallery: {
-      title: t("share.content.gallery.title"),
-      description: t("share.content.gallery.description"),
+      title: t("share.gallery.showcaseTitle"),
+      description: t("share.gallery.showcaseDescription"),
     },
     embed: {
       title: t("share.content.embed.title"),
@@ -1159,6 +1159,40 @@ export default function ShareDialog({
         ) : null}
         {resolvedTab === "share" && (
           <div className="space-y-4">
+            {!existingShareMode && (
+              <div className="border-border/60 space-y-3 border-b pb-4">
+                <div>
+                  <p className="text-foreground text-sm font-medium">
+                    {t("share.gallery.showcaseTitle")}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                    {t("share.gallery.showcaseDescription")}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  disabled={busy || !loadDone}
+                  className={shareDialogButtonClassName}
+                  onClick={() => {
+                    setActiveTab("gallery");
+                    if (
+                      isAuthenticated &&
+                      !isGalleryVisible &&
+                      !blockedByModeration &&
+                      !loadFailed
+                    )
+                      openGalleryForm();
+                  }}
+                >
+                  <ImageIcon className="size-4" />
+                  {t(
+                    isGalleryVisible
+                      ? "share.gallery.manageListing"
+                      : "share.gallery.showcaseAction"
+                  )}
+                </Button>
+              </div>
+            )}
             {existingShareMode ? (
               <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
                 <div className="flex items-center gap-2">

@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
@@ -102,30 +100,30 @@ export default async function GalleryPage() {
           <PublicSiteHeader currentPage="gallery" />
 
           <main>
-            <section className="mx-auto max-w-6xl px-4 pt-8 pb-6 sm:px-6 sm:pt-10">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1 className="text-3xl font-semibold tracking-tight">
+            <section className="relative pb-10 sm:pb-14">
+              <div className="pointer-events-none absolute -top-32 left-0 h-150 w-150 rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
+
+              <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
+                <div className="mx-auto max-w-3xl text-center">
+                  <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
                     {t("gallery.sectionLabel")}
+                  </p>
+                  <h1 className="mt-4 text-[clamp(34px,9vw,56px)] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:leading-[1.08]">
+                    <span className="block">{t("gallery.headingLine1")}</span>
+                    <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text pb-1 leading-[1.12] text-transparent sm:mt-0">
+                      {t("gallery.headingLine2")}
+                    </span>
                   </h1>
-                  <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-                    {t("gallery.introduction")}
+                  <p className="text-muted-foreground mx-auto mt-5 max-w-2xl text-[15px] leading-7">
+                    {t("gallery.description")}
                   </p>
                 </div>
-                <Button asChild className="shrink-0 self-start sm:self-auto">
-                  <Link
-                    href="/studio?dialog=share&section=gallery"
-                    prefetch={false}
-                  >
-                    {t("gallery.contribute")}
-                  </Link>
-                </Button>
               </div>
             </section>
 
             <section
               id="gallery-grid"
-              className="relative mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16"
+              className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 pb-12 sm:-mt-10 sm:px-6 sm:pb-16"
             >
               <PublicGalleryGrid
                 entries={entries}

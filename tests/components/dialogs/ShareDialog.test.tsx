@@ -465,4 +465,23 @@ describe("ShareDialog", () => {
       screen.getByRole("button", { name: "Capture preview" })
     ).toBeTruthy();
   });
+  it("opens the publication form directly from the main Share section", async () => {
+    const user = userEvent.setup();
+    renderShareDialog("project-1");
+    const action = await screen.findByRole("button", {
+      name: "Publish in gallery",
+    });
+    await waitFor(() =>
+      expect((action as HTMLButtonElement).disabled).toBe(false)
+    );
+    await user.click(action);
+    expect(screen.getByDisplayValue("Shared copy")).toBeTruthy();
+    expect(screen.getByLabelText(/Description \(optional\)/)).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Capture preview" })
+    ).toBeTruthy();
+    expect(
+      vi.mocked(fetch).mock.calls.some(([, init]) => init?.method === "POST")
+    ).toBe(false);
+  });
 });

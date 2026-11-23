@@ -4,7 +4,7 @@ Issue: [#1069](https://github.com/dutchdronesquad/trackdraw/issues/1069).
 
 ## Product contract
 
-The gallery is a starting point for exploring tracks and creating an editable local copy. Cards continue to open `/share/[token]`. “Add your track” opens the current Studio project's gallery publishing section; it does not transfer a project or publish anything by opening the URL. Signed-out visitors can sign in and return to that section. Anonymous editing, saving, export and temporary sharing remain available.
+This trial focuses on helping people showcase a project. The public gallery website keeps its existing design, copy and card destinations. The main Share section in Studio offers “Showcase your track” and opens the publication form directly, without requiring a separately published share link. Signed-out visitors can sign in and return to that section. Anonymous editing, saving, export and temporary sharing remain available.
 
 Publishing is an explicit confirmation: the personal project's current design (or the team's saved server revision) becomes a public snapshot and gallery listing, with the displayed personal or team name. The title defaults to the project name, the description is optional (maximum 500 characters), and personal previews are generated automatically. Team entries retain the standard TrackDraw preview, avoiding uploads from a private team canvas. Existing links are reused and updated only on explicit publication; later internal saves do not update public snapshots. Metadata edits do not republish geometry. Team revision and live permission checks remain authoritative.
 
@@ -24,19 +24,25 @@ These are trial decision rules, not established usage benchmarks. Publication co
 
 ## Measurement
 
-Use the existing first-party product event endpoint and analytics objection. `gallery.track_opened` fires when a gallery card is opened. `gallery.track_copied` fires only after Studio has successfully saved both the editable draft and local project. `sourceShare` carries the public share reference through the existing editable-copy link; it contains no track content. The server accepts these events only for active public gallery entries. Both events are deduplicated per share and browser session, not per person. A later session can count again. Direct views/copies of a currently listed track can contribute to the copy count; this is a reuse signal, not a precise visitor funnel. Browser context menus and analytics objections can undercount activity.
+Use the existing first-party product event endpoint and analytics objection. Existing `share.viewed` events measure views of tracks listed in the gallery. `gallery.track_copied` fires only after Studio has successfully saved both the editable draft and local project. `sourceShare` carries the public share reference through the existing editable-copy link; it contains no track content. The server accepts these events only for active public gallery entries. Views and copies are deduplicated per share and browser session, not per person. A later session can count again. Direct views/copies of a currently listed track contribute to the counts; this measures reuse of showcased tracks, not a precise visitor funnel. Analytics objections can undercount activity.
 
 No names, titles, descriptions, encoded designs or new third-party destinations enter analytics. The existing retention, bot filtering, request bounds and account/browser opt-out apply. Privacy and terms were checked: the existing predefined action categories and project/share references cover these events, so no material legal text change is needed.
 
 Use a read-only query over `product_events` for the recorded deployment/evaluation interval (replace both timestamps):
 
 ```sql
-SELECT event_type, COUNT(*) AS events
-FROM product_events
-WHERE created_at >= 'DEPLOYED_AT_UTC'
-  AND created_at < 'EVALUATION_AT_UTC'
-  AND event_type IN ('gallery.track_opened', 'gallery.track_copied', 'publication.gallery_published')
-GROUP BY event_type;
+SELECT e.event_type, COUNT(*) AS events
+FROM product_events e
+LEFT JOIN gallery_entries g ON g.share_token = e.share_token
+WHERE e.created_at >= 'DEPLOYED_AT_UTC'
+  AND e.created_at < 'EVALUATION_AT_UTC'
+  AND (
+    e.event_type IN ('gallery.track_copied', 'publication.gallery_published')
+    OR (e.event_type = 'share.viewed'
+      AND json_extract(e.metadata_json, '$.surface') = 'share'
+      AND g.gallery_state IN ('listed', 'featured'))
+  )
+GROUP BY e.event_type;
 ```
 
 Record counts, trial dates, limitations and the retain/change/remove decision on #1069. Deployment starts the trial; merging does not by itself prove production behavior or trial success.

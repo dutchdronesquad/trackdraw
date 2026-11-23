@@ -636,7 +636,12 @@
       "optionalDescription": "Description (optional)",
       "confirmPublication": "Publishing makes the current design and preview publicly discoverable in the gallery and search engines under the author name shown above. We will create a permanent share link or update this project’s existing link to this version. Later internal edits stay private until you publish again.",
       "confirmTeamPublication": "Publishing makes the saved team version publicly discoverable in the gallery and search engines under the team name shown above. We will create or update the selected share link. Unsaved edits are not included. Later internal saves do not update the public snapshot.",
-      "setDisplayName": "Set display name"
+      "setDisplayName": "Set display name",
+      "showcaseTitle": "Showcase your track",
+      "showcaseDescription": "Publish your track in the public gallery so other pilots can discover it and use it as a starting point.",
+      "showcaseAction": "Publish in gallery",
+      "manageListing": "Manage gallery listing",
+      "noPublicationDescription": "Not public yet. Publish here to create a share link and gallery listing together."
     },
     "actions": {
       "primary": {

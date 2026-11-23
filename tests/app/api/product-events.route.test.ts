@@ -281,7 +281,7 @@ describe("gallery evaluation events", () => {
         sessionId: null,
       }),
     });
-  it.each(["gallery.track_opened", "gallery.track_copied"])(
+  it.each(["gallery.track_copied"])(
     "records %s for a public listing",
     async (event) => {
       expect((await POST(request(event))).status).toBe(204);
@@ -307,7 +307,7 @@ describe("gallery evaluation events", () => {
       id: "user",
       productAnalyticsEnabled: false,
     });
-    await POST(request("gallery.track_opened"));
+    await POST(request("gallery.track_copied"));
     expect(mocks.getGalleryEntryByShareToken).not.toHaveBeenCalled();
     expect(mocks.recordProductEvent).not.toHaveBeenCalled();
   });

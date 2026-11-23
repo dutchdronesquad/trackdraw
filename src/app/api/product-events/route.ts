@@ -35,14 +35,6 @@ const productEventSchema = z.discriminatedUnion("event", [
   z
     .object({
       ...currentBaseFields,
-      event: z.literal("gallery.track_opened"),
-      shareToken,
-      properties: noProperties,
-    })
-    .strict(),
-  z
-    .object({
-      ...currentBaseFields,
       event: z.literal("gallery.track_copied"),
       shareToken,
       properties: noProperties,
@@ -218,10 +210,7 @@ export async function POST(request: Request) {
       return new Response(null, { status: 204 });
     }
 
-    if (
-      input.event === "gallery.track_opened" ||
-      input.event === "gallery.track_copied"
-    ) {
+    if (input.event === "gallery.track_copied") {
       const share = await getShareByToken(input.shareToken);
       if (
         !share ||
