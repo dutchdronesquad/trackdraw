@@ -447,12 +447,10 @@ describe("ShareDialog", () => {
       ).disabled
     ).toBe(false);
     act(() =>
-      useEditor
-        .getState()
-        .replaceDesign({
-          ...useEditor.getState().track.design,
-          title: "Changed design",
-        })
+      useEditor.getState().replaceDesign({
+        ...useEditor.getState().track.design,
+        title: "Changed design",
+      })
     );
     await waitFor(() =>
       expect(
