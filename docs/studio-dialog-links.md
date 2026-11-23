@@ -6,22 +6,23 @@ For API-key setup, link to `/studio?dialog=account&section=api-keys`. Users crea
 
 ## Supported targets
 
-| Query                              | Opens                                        |
-| ---------------------------------- | -------------------------------------------- |
-| `?dialog=account&section=profile`  | Profile                                      |
-| `?dialog=account&section=security` | Email and passkeys                           |
-| `?dialog=account&section=privacy`  | Analytics preferences                        |
-| `?dialog=account&section=api-keys` | Personal API keys                            |
-| `?dialog=account&section=danger`   | Account deletion confirmation                |
-| `?dialog=projects`                 | Project manager                              |
-| `?dialog=new-project`              | New-project dialog                           |
-| `?dialog=import`                   | Import dialog                                |
-| `?dialog=export`                   | Export dialog                                |
-| `?dialog=share`                    | Sharing dialog for the current local project |
-| `?dialog=shortcuts`                | Keyboard shortcuts                           |
-| `?dialog=feedback`                 | Feedback form                                |
-| `?dialog=presets`                  | Layout preset picker                         |
-| `?dialog=commands`                 | Command palette                              |
+| Query                              | Opens                                            |
+| ---------------------------------- | ------------------------------------------------ |
+| `?dialog=account&section=profile`  | Profile                                          |
+| `?dialog=account&section=security` | Email and passkeys                               |
+| `?dialog=account&section=privacy`  | Analytics preferences                            |
+| `?dialog=account&section=api-keys` | Personal API keys                                |
+| `?dialog=account&section=danger`   | Account deletion confirmation                    |
+| `?dialog=projects`                 | Project manager                                  |
+| `?dialog=new-project`              | New-project dialog                               |
+| `?dialog=import`                   | Import dialog                                    |
+| `?dialog=export`                   | Export dialog                                    |
+| `?dialog=share`                    | Sharing dialog for the current local project     |
+| `?dialog=share&section=gallery`    | Gallery publishing for the current local project |
+| `?dialog=shortcuts`                | Keyboard shortcuts                               |
+| `?dialog=feedback`                 | Feedback form                                    |
+| `?dialog=presets`                  | Layout preset picker                             |
+| `?dialog=commands`                 | Command palette                                  |
 
 Opening a dialog does not submit its form, generate/reveal an API key, delete an account, replace a track, import/export a file, publish a share, or send feedback. Project-dependent dialogs use the visitor's current Studio project; the URL does not transfer the sender's project. Conflict resolution, profile-completion prompts and item-specific forms are not public link targets.
 

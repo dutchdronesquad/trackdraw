@@ -19,6 +19,8 @@ export const productEventNames = [
   "share.viewed",
   "share.created",
   "publication.gallery_published",
+  "gallery.track_opened",
+  "gallery.track_copied",
   "acquisition.session_attributed",
   "operation.failed",
   "export.failed",

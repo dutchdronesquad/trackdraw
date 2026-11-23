@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   isTrustedRequest: vi.fn(),
   recordProductEvent: vi.fn(),
   getShareByToken: vi.fn(),
+  getGalleryEntryByShareToken: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -17,6 +18,9 @@ vi.mock("@/lib/server/csrf", () => ({
 vi.mock("@/lib/server/product-events", () => ({
   recordProductEvent: mocks.recordProductEvent,
 }));
+vi.mock("@/lib/server/gallery", () => ({
+  getGalleryEntryByShareToken: mocks.getGalleryEntryByShareToken,
+}));
 vi.mock("@/lib/server/shares", () => ({
   getShareByToken: mocks.getShareByToken,
 }));
@@ -28,6 +32,10 @@ beforeEach(() => {
   mocks.isTrustedRequest.mockReset();
   mocks.recordProductEvent.mockReset();
   mocks.getShareByToken.mockReset();
+  mocks.getGalleryEntryByShareToken.mockReset();
+  mocks.getGalleryEntryByShareToken.mockResolvedValue({
+    galleryState: "listed",
+  });
   mocks.isTrustedRequest.mockReturnValue(true);
   mocks.getCurrentUserFromHeaders.mockResolvedValue(null);
   mocks.recordProductEvent.mockResolvedValue(undefined);
@@ -257,6 +265,50 @@ describe("POST /api/product-events", () => {
         body,
       })
     );
+    expect(mocks.recordProductEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe("gallery evaluation events", () => {
+  const request = (event: string) =>
+    new Request("https://trackdraw.app/api/product-events", {
+      method: "POST",
+      headers: { origin: "https://trackdraw.app" },
+      body: JSON.stringify({
+        contractVersion: "1.1.0",
+        event,
+        shareToken: "gallery-share",
+        sessionId: null,
+      }),
+    });
+  it.each(["gallery.track_opened", "gallery.track_copied"])(
+    "records %s for a public listing",
+    async (event) => {
+      expect((await POST(request(event))).status).toBe(204);
+      expect(mocks.recordProductEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event,
+          shareToken: "gallery-share",
+          projectId: null,
+        })
+      );
+    }
+  );
+  it.each(["hidden", "unlisted"])(
+    "ignores %s listings",
+    async (galleryState) => {
+      mocks.getGalleryEntryByShareToken.mockResolvedValue({ galleryState });
+      await POST(request("gallery.track_copied"));
+      expect(mocks.recordProductEvent).not.toHaveBeenCalled();
+    }
+  );
+  it("honors the account analytics objection", async () => {
+    mocks.getCurrentUserFromHeaders.mockResolvedValue({
+      id: "user",
+      productAnalyticsEnabled: false,
+    });
+    await POST(request("gallery.track_opened"));
+    expect(mocks.getGalleryEntryByShareToken).not.toHaveBeenCalled();
     expect(mocks.recordProductEvent).not.toHaveBeenCalled();
   });
 });

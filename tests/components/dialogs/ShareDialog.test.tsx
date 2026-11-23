@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
@@ -29,6 +29,44 @@ vi.mock("@/lib/auth-client", () => ({
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("view=2d"),
+}));
+
+vi.mock("@/components/SidebarDialog", () => ({
+  SidebarDialog: ({
+    navItems,
+    onItemChange,
+    children,
+  }: import("@/components/SidebarDialog").SidebarDialogProps) => (
+    <div>
+      <nav>
+        {navItems.map((item) => (
+          <button key={item.id} onClick={() => onItemChange(item.id)}>
+            {item.label}
+          </button>
+        ))}
+      </nav>
+      {children}
+    </div>
+  ),
+}));
+
+vi.mock("next/dynamic", () => ({
+  default:
+    () =>
+    ({
+      onCapture,
+      onFailure,
+    }: {
+      onCapture: (url: string) => void;
+      onFailure: () => void;
+    }) => (
+      <div>
+        <button onClick={() => onCapture("data:image/png;base64,AAAA")}>
+          Capture preview
+        </button>
+        <button onClick={onFailure}>Fail preview</button>
+      </div>
+    ),
 }));
 
 vi.mock("sonner", () => ({
@@ -245,5 +283,188 @@ describe("ShareDialog", () => {
     });
     expect(screen.queryByLabelText("share-url-input")).toBeNull();
     expect(localStorage.getItem("trackdraw-anon-share")).toBeNull();
+  });
+  async function openPublicationForm(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: "Gallery" }));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Publish in gallery",
+      })
+    );
+  }
+
+  function mockPreviewConversion() {
+    vi.stubGlobal(
+      "Image",
+      class {
+        onload?: () => void;
+        naturalWidth = 960;
+        naturalHeight = 540;
+        set src(_value: string) {
+          queueMicrotask(() => this.onload?.());
+        }
+      }
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      drawImage: vi.fn(),
+    } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue(
+      "data:image/webp;base64,AAAA"
+    );
+  }
+
+  it("creates the share and listing in one confirmation with an optional description", async () => {
+    const user = userEvent.setup();
+    mockPreviewConversion();
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockImplementation(async (_url, init) => {
+      if (init?.method === "POST")
+        return Response.json({
+          ok: true,
+          share: {
+            token: "new-gallery",
+            path: "/share/new-gallery",
+            shareType: "published",
+            expiresAt: null,
+          },
+        });
+      if (init?.method === "PATCH")
+        return Response.json({
+          ok: true,
+          share: {
+            galleryState: "listed",
+            galleryTitle: "Shared copy",
+            galleryDescription: "",
+            expiresAt: null,
+          },
+        });
+      return Response.json({ ok: true, share: null });
+    });
+    renderShareDialog("project-1");
+    await openPublicationForm(user);
+    expect(screen.getByDisplayValue("Shared copy")).toBeTruthy();
+    expect(screen.getByLabelText(/Description \(optional\)/)).toBeTruthy();
+    expect(
+      screen.getByText(/Publishing makes the current design/)
+    ).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Capture preview" }));
+    await user.click(
+      screen.getByRole("button", { name: "Publish in gallery" })
+    );
+    expect(
+      await screen.findByRole("link", { name: "View published track" })
+    ).toHaveProperty("pathname", "/share/new-gallery");
+    const mutations = fetchMock.mock.calls.filter(([, init]) =>
+      ["POST", "PATCH"].includes(init?.method ?? "")
+    );
+    expect(mutations.map(([url]) => url)).toEqual([
+      "/api/shares",
+      "/api/shares/new-gallery",
+    ]);
+    expect(JSON.parse(String(mutations[1][1]?.body))).toMatchObject({
+      action: "list",
+      description: "",
+      previewDataUrl: "data:image/webp;base64,AAAA",
+    });
+  });
+
+  it("keeps the form open when publishing fails and never lists a missing share", async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(async (_url, init) =>
+      init?.method === "POST"
+        ? Response.json({ ok: false }, { status: 403 })
+        : Response.json({ ok: true, share: null })
+    );
+    render(
+      <ShareDialog
+        open
+        onOpenChange={vi.fn()}
+        projectId="project-1"
+        teamId="team-1"
+        teamName="Race team"
+        revision={4}
+      />
+    );
+    await openPublicationForm(user);
+    expect(screen.getByText("Race team", { exact: true })).toBeTruthy();
+    await user.click(
+      screen.getByRole("button", { name: "Publish in gallery" })
+    );
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(
+      vi.mocked(fetch).mock.calls.filter(([, init]) => init?.method === "PATCH")
+    ).toHaveLength(0);
+    expect(screen.getByDisplayValue("Shared copy")).toBeTruthy();
+  });
+
+  it("offers preview recovery and blocks publication without an author", async () => {
+    const user = userEvent.setup();
+    authState.session!.user.name = "";
+    renderShareDialog("project-1");
+    await openPublicationForm(user);
+    await user.click(screen.getByRole("button", { name: "Fail preview" }));
+    expect(screen.getByRole("button", { name: "Retry preview" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Set display name" })).toBeTruthy();
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Publish in gallery",
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+    await user.click(screen.getByRole("button", { name: "Retry preview" }));
+    expect(
+      screen.getByRole("button", { name: "Capture preview" })
+    ).toBeTruthy();
+  });
+
+  it("blocks publishing after a failed status read and offers retry", async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("offline"));
+    renderShareDialog("project-1");
+    await user.click(screen.getByRole("button", { name: "Gallery" }));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Publish in gallery" })
+    ).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(
+      await screen.findByRole("button", {
+        name: "Publish in gallery",
+      })
+    ).toBeTruthy();
+  });
+  it("requires a fresh preview after the current design changes", async () => {
+    const user = userEvent.setup();
+    renderShareDialog("project-1");
+    await openPublicationForm(user);
+    await user.click(screen.getByRole("button", { name: "Capture preview" }));
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Publish in gallery",
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(false);
+    act(() =>
+      useEditor
+        .getState()
+        .replaceDesign({
+          ...useEditor.getState().track.design,
+          title: "Changed design",
+        })
+    );
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Publish in gallery",
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(true)
+    );
+    expect(
+      screen.getByRole("button", { name: "Capture preview" })
+    ).toBeTruthy();
   });
 });

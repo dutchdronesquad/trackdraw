@@ -15,6 +15,7 @@ import {
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
 import { recordProductEvent } from "@/lib/server/product-events";
+import { getGalleryEntryByShareToken } from "@/lib/server/gallery";
 import { getShareByToken } from "@/lib/server/shares";
 
 const MAX_BODY_BYTES = 4096;
@@ -31,6 +32,22 @@ const shareToken = z.string().min(1).max(160);
 const noProperties = z.object({}).strict().optional();
 
 const productEventSchema = z.discriminatedUnion("event", [
+  z
+    .object({
+      ...currentBaseFields,
+      event: z.literal("gallery.track_opened"),
+      shareToken,
+      properties: noProperties,
+    })
+    .strict(),
+  z
+    .object({
+      ...currentBaseFields,
+      event: z.literal("gallery.track_copied"),
+      shareToken,
+      properties: noProperties,
+    })
+    .strict(),
   z
     .object({
       ...baseFields,
@@ -201,6 +218,21 @@ export async function POST(request: Request) {
       return new Response(null, { status: 204 });
     }
 
+    if (
+      input.event === "gallery.track_opened" ||
+      input.event === "gallery.track_copied"
+    ) {
+      const share = await getShareByToken(input.shareToken);
+      if (
+        !share ||
+        share.revokedAt ||
+        (share.expiresAt && Date.parse(share.expiresAt) <= Date.now())
+      )
+        return new Response(null, { status: 204 });
+      const entry = await getGalleryEntryByShareToken(input.shareToken);
+      if (!entry || !["listed", "featured"].includes(entry.galleryState))
+        return new Response(null, { status: 204 });
+    }
     let properties = input.properties;
     let resolvedProjectId = "projectId" in input ? input.projectId : null;
     if (

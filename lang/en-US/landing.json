@@ -279,7 +279,7 @@
       "byOwner": "by {owner}",
       "obstacleCount": "{count} obstacles",
       "published": "Published {date}",
-      "open": "Open",
+      "open": "View track",
       "emptyTitle": "No tracks yet.",
       "emptyDescription": "Gallery listings will appear here once TrackDraw pilots choose to share them publicly.",
       "featuredHeading": "Featured",
@@ -287,7 +287,9 @@
       "recentHeading": "Recent",
       "recentSubtitle": "Newly listed layouts from the community.",
       "loadMore": "Load more"
-    }
+    },
+    "introduction": "Discover community tracks. Open one to explore it in 2D or 3D, then choose Make editable copy to use it as your starting point.",
+    "contribute": "Add your track"
   },
   "notFound": {
     "logoAriaLabel": "TrackDraw",

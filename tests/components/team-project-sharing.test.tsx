@@ -78,6 +78,7 @@ it("explains the public audience and publishes only an explicit saved revision, 
       open
       onOpenChange={() => {}}
       teamId="club"
+      teamName="Race club"
       projectId="race"
       revision={7}
     />
@@ -123,6 +124,7 @@ it("does not publish an existing snapshot when its dialog opens or its embed tab
       open
       onOpenChange={() => {}}
       teamId="club"
+      teamName="Race club"
       projectId="race"
       revision={7}
     />
@@ -145,6 +147,7 @@ it("lists the stored team snapshot without generating or uploading a private can
             ok: true,
             share: {
               token: "stable",
+              path: "/share/stable",
               expiresAt: null,
               shareType: "published",
               galleryState: "listed",
@@ -156,6 +159,7 @@ it("lists the stored team snapshot without generating or uploading a private can
             ok: true,
             share: {
               token: "stable",
+              path: "/share/stable",
               expiresAt: null,
               shareType: "published",
               galleryState: null,
@@ -168,27 +172,43 @@ it("lists the stored team snapshot without generating or uploading a private can
       open
       onOpenChange={() => {}}
       teamId="club"
+      teamName="Race club"
       projectId="race"
       revision={7}
     />
   );
   await screen.findByRole("button", { name: "Copy link" });
   fireEvent.click(screen.getByRole("button", { name: "Gallery" }));
-  fireEvent.click(screen.getByRole("button", { name: "Add to gallery" }));
+  fireEvent.click(screen.getByRole("button", { name: "Publish in gallery" }));
   expect(screen.getByText("Uses the standard TrackDraw image.")).toBeTruthy();
   expect(screen.queryByText("Generating preview...")).toBeNull();
   fireEvent.change(screen.getByRole("textbox", { name: /Description/ }), {
     target: { value: "A shared team race" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Add to gallery" }));
+  fireEvent.click(screen.getByRole("button", { name: "Publish in gallery" }));
   await waitFor(() =>
     expect(
-      fetched.mock.calls.some(([, options]) => options?.method === "POST")
+      fetched.mock.calls.some(
+        ([, options]) =>
+          options?.method === "POST" &&
+          JSON.parse(String(options.body)).action === "list"
+      )
     ).toBe(true)
   );
   const mutation = fetched.mock.calls.find(
-    ([, options]) => options?.method === "POST"
+    ([, options]) =>
+      options?.method === "POST" &&
+      JSON.parse(String(options.body)).action === "list"
   );
+  expect(
+    JSON.parse(
+      String(
+        fetched.mock.calls.find(
+          ([, options]) => options?.method === "POST"
+        )?.[1]?.body
+      )
+    )
+  ).toMatchObject({ action: "publish", token: "stable", revision: 7 });
   expect(JSON.parse(String(mutation?.[1]?.body))).toMatchObject({
     action: "list",
     teamId: "club",
@@ -228,6 +248,7 @@ it("keeps a remaining retained link selectable after revoking the selected link"
       open
       onOpenChange={() => {}}
       teamId="club"
+      teamName="Race club"
       projectId="race"
       revision={7}
     />

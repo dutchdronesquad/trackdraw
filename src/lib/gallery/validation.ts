@@ -1,4 +1,3 @@
-export const GALLERY_DESCRIPTION_MIN_LENGTH = 10;
 export const GALLERY_DESCRIPTION_MAX_LENGTH = 500;
 
 export function getGalleryDescriptionLength(description: string) {
@@ -6,32 +5,25 @@ export function getGalleryDescriptionLength(description: string) {
 }
 
 export function isGalleryTitleValid(title: string) {
-  return title.trim().length > 0;
+  return title.trim().length > 0 && title.trim().length <= 120;
 }
 
 export function isGalleryDescriptionValid(description: string) {
   const length = getGalleryDescriptionLength(description);
 
-  return (
-    length >= GALLERY_DESCRIPTION_MIN_LENGTH &&
-    length <= GALLERY_DESCRIPTION_MAX_LENGTH
-  );
+  return length <= GALLERY_DESCRIPTION_MAX_LENGTH;
 }
 
 export function canSubmitGalleryListing(input: {
   title: string;
   description: string;
   displayNameValid: boolean;
-  shareNeedsRefresh: boolean;
-  hasShare: boolean;
   previewReady: boolean;
 }) {
   return (
     isGalleryTitleValid(input.title) &&
     isGalleryDescriptionValid(input.description) &&
     input.displayNameValid &&
-    !input.shareNeedsRefresh &&
-    input.hasShare &&
     input.previewReady
   );
 }

@@ -10,6 +10,7 @@ import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
 import { getSiteMediaUrl } from "@/lib/seo";
 import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units";
+import { trackProductEvent } from "@/lib/product-events";
 import { cn } from "@/lib/utils";
 
 type PublicGalleryGridProps = {
@@ -123,6 +124,13 @@ function GalleryCard({
     <Link
       href={`/share/${entry.shareToken}`}
       prefetch={false}
+      onClick={() =>
+        trackProductEvent(
+          "gallery.track_opened",
+          { shareToken: entry.shareToken },
+          { oncePerSession: `gallery-open:${entry.shareToken}` }
+        )
+      }
       className="group border-border/55 bg-background/72 hover:border-border relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border shadow-[0_16px_34px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_56px_rgba(15,23,42,0.12)]"
     >
       <div className="pointer-events-none absolute inset-x-6 top-0 h-20 rounded-full bg-[radial-gradient(circle,rgba(var(--brand-primary-rgb),0.16),transparent_70%)] opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
@@ -164,9 +172,11 @@ function GalleryCard({
           </p>
         </div>
 
-        <p className="text-muted-foreground line-clamp-3 text-sm leading-6">
-          {entry.galleryDescription}
-        </p>
+        {entry.galleryDescription && (
+          <p className="text-muted-foreground line-clamp-3 text-sm leading-6">
+            {entry.galleryDescription}
+          </p>
+        )}
 
         <div className="mt-auto flex flex-wrap gap-2">
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">

@@ -83,7 +83,7 @@ export default function ShareViewer({
     alternateView === "3d"
       ? tViewMode("preview3dShort")
       : tViewMode("canvas2dShort");
-  const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}`;
+  const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}&sourceShare=${encodeURIComponent(shareToken)}`;
   const shareTitle = getShareTitle(design, {
     untitledTitle: tFallback("untitled"),
     formatDescription: (title) => tFallback("readOnlyDescription", { title }),

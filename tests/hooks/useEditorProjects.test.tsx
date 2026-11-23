@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import * as en from "@lang/en-US";
 import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
+import { trackProductEvent } from "@/lib/product-events";
 import { encodeDesign } from "@/lib/share";
 import {
   createRestorePoint,
@@ -18,6 +19,8 @@ import {
   createMemoryStorage,
   createMemoryStorageController,
 } from "../helpers/storage";
+
+vi.mock("@/lib/product-events", () => ({ trackProductEvent: vi.fn() }));
 
 vi.mock("sonner", () => ({
   toast: {
@@ -48,6 +51,7 @@ describe("useEditorProjects", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    window.history.replaceState(null, "", "/");
   });
 
   it("surfaces local autosave failures and lets the user retry", () => {
@@ -113,6 +117,7 @@ describe("useEditorProjects", () => {
 
   it("opens shared links as a new editable local copy", () => {
     vi.stubGlobal("localStorage", createMemoryStorage());
+    window.history.replaceState(null, "", "/studio?sourceShare=gallery-source");
     const sharedDesign = createDefaultDesign();
     sharedDesign.id = "account-project-1";
     sharedDesign.title = "Shared race layout";
@@ -143,6 +148,11 @@ describe("useEditorProjects", () => {
     const copiedDesign = replaceDesign.mock.calls[0]?.[0];
     expect(copiedDesign?.id).not.toBe("account-project-1");
     expect(onSeedTokenImported).toHaveBeenCalledTimes(1);
+    expect(trackProductEvent).toHaveBeenCalledWith(
+      "gallery.track_copied",
+      { shareToken: "gallery-source" },
+      { oncePerSession: "gallery-copy:gallery-source" }
+    );
     expect(localStorage.getItem("trackdraw-design")).toContain(
       "Copy of Shared race layout"
     );

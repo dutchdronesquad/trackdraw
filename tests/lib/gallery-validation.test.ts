@@ -14,7 +14,8 @@ describe("gallery validation", () => {
     expect(isGalleryTitleValid("  Track  ")).toBe(true);
 
     expect(getGalleryDescriptionLength("  short  ")).toBe(5);
-    expect(isGalleryDescriptionValid("too short")).toBe(false);
+    expect(isGalleryDescriptionValid("too short")).toBe(true);
+    expect(isGalleryDescriptionValid("  ")).toBe(true);
     expect(isGalleryDescriptionValid("A useful description")).toBe(true);
     expect(
       isGalleryDescriptionValid("x".repeat(GALLERY_DESCRIPTION_MAX_LENGTH))
@@ -24,21 +25,15 @@ describe("gallery validation", () => {
     ).toBe(false);
   });
 
-  it("blocks listing when the share is stale, missing, or not previewed", () => {
+  it("allows publishing without a share but requires an author and preview", () => {
     const valid = {
       title: "Race track",
       description: "A useful public gallery description.",
       displayNameValid: true,
-      shareNeedsRefresh: false,
-      hasShare: true,
       previewReady: true,
     };
 
     expect(canSubmitGalleryListing(valid)).toBe(true);
-    expect(canSubmitGalleryListing({ ...valid, shareNeedsRefresh: true })).toBe(
-      false
-    );
-    expect(canSubmitGalleryListing({ ...valid, hasShare: false })).toBe(false);
     expect(canSubmitGalleryListing({ ...valid, previewReady: false })).toBe(
       false
     );

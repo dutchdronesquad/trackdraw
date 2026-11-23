@@ -23,6 +23,7 @@ import {
 } from "@/lib/projects";
 import { decodeDesign } from "@/lib/share";
 import { nowIso } from "@/lib/track/design";
+import { trackProductEvent } from "@/lib/product-events";
 import { recordPerfSample } from "@/lib/perf";
 import { create24HourDateTimeFormatter } from "@/lib/date-time";
 import { useEditor } from "@/store/editor";
@@ -181,6 +182,15 @@ export function useEditorProjects({
             "autosave:localStorage",
             performance.now() - startedAt
           );
+          const sourceShare = new URL(window.location.href).searchParams.get(
+            "sourceShare"
+          );
+          if (sourceShare)
+            trackProductEvent(
+              "gallery.track_copied",
+              { shareToken: sourceShare },
+              { oncePerSession: `gallery-copy:${sourceShare}` }
+            );
           onSeedTokenImported?.();
           // oxlint-disable-next-line react/set-state-in-effect -- report the completed import
           setSaveStatusLabel(tShell("editableCopyCreated"));

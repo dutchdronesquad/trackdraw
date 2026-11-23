@@ -9,6 +9,7 @@ import {
   SidebarDialog,
   type SidebarDialogNavItem,
 } from "@/components/SidebarDialog";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -27,7 +28,6 @@ import { parseEditorView } from "@/lib/editor/view";
 import { authClient } from "@/lib/auth-client";
 import {
   GALLERY_DESCRIPTION_MAX_LENGTH,
-  GALLERY_DESCRIPTION_MIN_LENGTH,
   canSubmitGalleryListing as canSubmitGalleryListingForm,
   canSubmitGalleryMetadataUpdate as canSubmitGalleryMetadataUpdateForm,
   isGalleryDescriptionValid,
@@ -199,6 +199,7 @@ interface ShareDialogProps {
   onSharePublished?: () => void;
   existingShareMode?: boolean;
   teamId?: string;
+  teamName?: string;
   revision?: number;
 }
 
@@ -211,6 +212,7 @@ export default function ShareDialog({
   onSharePublished,
   existingShareMode = false,
   teamId,
+  teamName,
   revision,
 }: ShareDialogProps) {
   const t = useTranslations("dialogs");
@@ -221,7 +223,7 @@ export default function ShareDialog({
 
   const isAuthenticated = !!session?.user;
   const userId = session?.user?.id ?? null;
-  const displayName = session?.user?.name?.trim() ?? "";
+  const displayName = (teamId ? teamName : session?.user?.name)?.trim() ?? "";
   const displayNameValid = displayName.length > 0;
   const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
   const currentDesignToken = encodeDesign(design);
@@ -231,7 +233,9 @@ export default function ShareDialog({
     typeof window !== "undefined" ? window.location.href : null;
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
-  const [activeTab, setActiveTab] = useState<Tab>("share");
+  const [activeTab, setActiveTab] = useState<Tab>(
+    searchParams.get("section") === "gallery" ? "gallery" : "share"
+  );
   const [share, setActiveShare] = useState<ActiveShare | null>(null);
   const [teamShares, setTeamShares] = useState<
     {
@@ -271,6 +275,10 @@ export default function ShareDialog({
   const [publishing, setPublishing] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const [galleryUpdating, setGalleryUpdating] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const [previewAttempt, setPreviewAttempt] = useState(0);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [copied, setCopied] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [embedView, setEmbedView] = useState<"2d" | "3d">(currentView);
@@ -282,6 +290,19 @@ export default function ShareDialog({
   const [galleryPreviewDataUrl, setGalleryPreviewDataUrl] = useState<
     string | null
   >(null);
+
+  const [previewDesignToken, setPreviewDesignToken] = useState<string | null>(
+    null
+  );
+  const previewReady =
+    galleryPreviewDataUrl !== null && previewDesignToken === currentDesignToken;
+  const handleGalleryPreviewCapture = useCallback(
+    (dataUrl: string) => {
+      setGalleryPreviewDataUrl(dataUrl);
+      setPreviewDesignToken(currentDesignToken);
+    },
+    [currentDesignToken]
+  );
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -328,9 +349,7 @@ export default function ShareDialog({
     title: galleryTitleInput,
     description: galleryDescriptionInput,
     displayNameValid,
-    shareNeedsRefresh,
-    hasShare: share !== null,
-    previewReady: Boolean(teamId) || galleryPreviewDataUrl !== null,
+    previewReady: Boolean(teamId) || previewReady,
   });
   const canSubmitGalleryMetadataUpdate = canSubmitGalleryMetadataUpdateForm({
     title: galleryTitleInput,
@@ -342,6 +361,7 @@ export default function ShareDialog({
   const busy = publishing || revoking || galleryUpdating;
 
   const handleGalleryPreviewFailure = useCallback(() => {
+    setPreviewFailed(true);
     trackProductEvent("operation.failed", {
       projectId: design.id,
       properties: {
@@ -359,6 +379,7 @@ export default function ShareDialog({
       share?.galleryDescription || design.description?.trim() || ""
     );
     setGalleryPreviewDataUrl(null);
+    setPreviewFailed(false);
     setShowGalleryForm(true);
   };
 
@@ -374,6 +395,8 @@ export default function ShareDialog({
     abortRef.current = ac;
 
     const doLoad = async () => {
+      setLoadDone(false);
+      setLoadFailed(false);
       try {
         if (userId && projectId) {
           const res = await fetch(
@@ -399,6 +422,7 @@ export default function ShareDialog({
 
           if (ac.signal.aborted) return;
 
+          if (!res.ok || !data.ok) throw new Error("Failed to load shares");
           if (data.ok && teamId) setTeamShares(data.shares ?? []);
           if (data.ok && data.share) {
             const s = data.share;
@@ -437,6 +461,7 @@ export default function ShareDialog({
         }
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
+        setLoadFailed(true);
       } finally {
         if (!ac.signal.aborted) setLoadDone(true);
       }
@@ -456,9 +481,10 @@ export default function ShareDialog({
     currentDesignToken,
     teamId,
     setShare,
+    loadAttempt,
   ]);
 
-  const doPublish = async (force = false): Promise<string> => {
+  const doPublish = async (force = false): Promise<ActiveShare> => {
     setPublishing(true);
     let failureCategory: ProductEventFailureCategory = "network";
     try {
@@ -558,7 +584,7 @@ export default function ShareDialog({
         shareToken: data.share.token,
         properties: { share_type: data.share.shareType },
       });
-      return url;
+      return newShare;
     } catch (error) {
       trackProductEvent("operation.failed", {
         projectId: design.id,
@@ -592,7 +618,7 @@ export default function ShareDialog({
       const url =
         share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(linkNeedsRefresh);
+          : (await doPublish(linkNeedsRefresh)).url;
       await navigator.clipboard.writeText(url);
       setCopied(true);
       toast.success(t("share.success.linkCopied"));
@@ -609,7 +635,7 @@ export default function ShareDialog({
       const url =
         share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(linkNeedsRefresh);
+          : (await doPublish(linkNeedsRefresh)).url;
       await navigator.share({
         title: design.title || "TrackDraw",
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
@@ -629,7 +655,7 @@ export default function ShareDialog({
       const url =
         share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(linkNeedsRefresh);
+          : (await doPublish(linkNeedsRefresh)).url;
       window.open(url, "_blank", "noopener,noreferrer");
     } catch {
       toast.error(t("share.errors.createFailed"), {
@@ -703,7 +729,9 @@ export default function ShareDialog({
   };
 
   const handleListInGallery = async () => {
-    if (!share || (!teamId && !galleryPreviewDataUrl)) return;
+    if (busy || !loadDone || loadFailed || !canSubmitGalleryListing) return;
+    setGalleryUpdating(true);
+    let publication = share;
     let failureCategory: ProductEventFailureCategory = "rendering";
     try {
       const webpDataUrl =
@@ -711,8 +739,9 @@ export default function ShareDialog({
           ? await convertPngToWebp(galleryPreviewDataUrl)
           : undefined;
 
-      setGalleryUpdating(true);
-      const res = await mutateShare(share.shareToken, "PATCH", {
+      failureCategory = "network";
+      publication = await doPublish();
+      const res = await mutateShare(publication.shareToken, "PATCH", {
         action: "list",
         title: galleryTitleInput.trim(),
         description: galleryDescriptionInput.trim(),
@@ -734,7 +763,7 @@ export default function ShareDialog({
       if (!data.ok) throw new Error(data.error ?? "Failed to list in gallery");
 
       setShare({
-        ...share,
+        ...publication,
         expiresInDays: inferExpiryDays(data.share.expiresAt),
         galleryState: parseGalleryState(data.share.galleryState),
         galleryTitle: data.share.galleryTitle ?? galleryTitleInput.trim(),
@@ -744,13 +773,13 @@ export default function ShareDialog({
       setShowGalleryForm(false);
       trackProductEvent("publication.gallery_published", {
         projectId: design.id,
-        shareToken: share.shareToken,
+        shareToken: publication?.shareToken,
       });
       toast.success(t("share.success.galleryListed"));
     } catch {
       trackProductEvent("operation.failed", {
         projectId: design.id,
-        shareToken: share.shareToken,
+        shareToken: publication?.shareToken,
         properties: {
           operation: "gallery_publish",
           category: failureCategory,
@@ -993,7 +1022,7 @@ export default function ShareDialog({
               },
             ]
           : []),
-        ...(isAccountProjectShare
+        ...(!existingShareMode
           ? [
               {
                 id: "gallery",
@@ -1046,11 +1075,15 @@ export default function ShareDialog({
   return (
     <>
       {!teamId &&
-        isAccountProjectShare &&
+        isAuthenticated &&
+        open &&
         showGalleryForm &&
+        !previewFailed &&
+        !previewReady &&
         !isGalleryVisible && (
           <GalleryPreviewRenderer
-            onCapture={setGalleryPreviewDataUrl}
+            key={`${currentDesignToken}:${previewAttempt}`}
+            onCapture={handleGalleryPreviewCapture}
             onFailure={handleGalleryPreviewFailure}
           />
         )}
@@ -1561,22 +1594,32 @@ export default function ShareDialog({
               </div>
             </div>
 
-            {!loadDone ? null : !share ? (
-              <div className="border-border/60 bg-muted/12 space-y-3 rounded-xl border p-3">
-                <div>
-                  <p className="text-foreground text-sm font-medium">
-                    {t("share.gallery.publishFirst.title")}
-                  </p>
-                  <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                    {t("share.gallery.publishFirst.description")}
-                  </p>
-                </div>
+            {!isAuthenticated ? (
+              <div className="space-y-3">
+                <p className="text-muted-foreground text-sm">
+                  {t("share.gallery.signInDescription")}
+                </p>
+                <Button asChild>
+                  <Link
+                    prefetch={false}
+                    href="/login?callbackURL=%2Fstudio%3Fdialog%3Dshare%26section%3Dgallery"
+                  >
+                    {t("share.gallery.signIn")}
+                  </Link>
+                </Button>
+              </div>
+            ) : !loadDone ? (
+              <p role="status" className="text-muted-foreground text-sm">
+                {t("share.gallery.status.loading")}
+              </p>
+            ) : loadFailed ? (
+              <div role="alert" className="space-y-3">
+                <p className="text-sm">{t("share.gallery.loadFailed")}</p>
                 <Button
                   variant="outline"
-                  onClick={() => setActiveTab("share")}
-                  className={cn(shareDialogButtonClassName, "w-full")}
+                  onClick={() => setLoadAttempt((value) => value + 1)}
                 >
-                  {t("share.gallery.publishFirst.action")}
+                  {t("share.gallery.retry")}
                 </Button>
               </div>
             ) : blockedByModeration ? (
@@ -1611,7 +1654,8 @@ export default function ShareDialog({
                   <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
                     {tCommon("labels.title")}
                   </span>
-                  <input
+                  <Input
+                    maxLength={120}
                     value={galleryTitleInput}
                     onChange={(e) => setGalleryTitleInput(e.target.value)}
                     className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
@@ -1621,7 +1665,7 @@ export default function ShareDialog({
 
                 <label className="block">
                   <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
-                    {tCommon("labels.description")}
+                    {t("share.gallery.optionalDescription")}
                   </span>
                   <textarea
                     value={galleryDescriptionInput}
@@ -1657,7 +1701,18 @@ export default function ShareDialog({
                         <span className="text-muted-foreground text-[11px]">
                           {t("teamPublication.galleryPreview")}
                         </span>
-                      ) : galleryPreviewDataUrl === null ? (
+                      ) : previewFailed ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPreviewFailed(false);
+                            setPreviewAttempt((value) => value + 1);
+                          }}
+                        >
+                          {t("share.gallery.retryPreview")}
+                        </Button>
+                      ) : !previewReady ? (
                         <>
                           <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
                           <span className="text-muted-foreground text-[11px]">
@@ -1676,18 +1731,13 @@ export default function ShareDialog({
                   </div>
                 ) : null}
 
-                {!isGalleryVisible && shareNeedsRefresh ? (
-                  <p className="text-muted-foreground text-[11px]">
-                    {t("share.gallery.validation.refreshShareFirst")}
-                  </p>
-                ) : !galleryTitleValid ? (
+                {!galleryTitleValid ? (
                   <p className="text-destructive text-[11px]">
                     {t("share.gallery.validation.titleRequired")}
                   </p>
                 ) : !galleryDescriptionValid ? (
                   <p className="text-destructive text-[11px]">
-                    {t("share.gallery.validation.descriptionLength", {
-                      min: GALLERY_DESCRIPTION_MIN_LENGTH,
+                    {t("share.gallery.validation.descriptionMaxLength", {
                       max: GALLERY_DESCRIPTION_MAX_LENGTH,
                     })}
                   </p>
@@ -1701,6 +1751,25 @@ export default function ShareDialog({
                   </p>
                 ) : null}
 
+                {!isGalleryVisible && (
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    {t(
+                      teamId
+                        ? "share.gallery.confirmTeamPublication"
+                        : "share.gallery.confirmPublication"
+                    )}
+                  </p>
+                )}
+                {!isGalleryVisible && !displayNameValid && (
+                  <Button asChild variant="outline">
+                    <Link
+                      prefetch={false}
+                      href="/studio?dialog=account&section=profile"
+                    >
+                      {t("share.gallery.setDisplayName")}
+                    </Link>
+                  </Button>
+                )}
                 <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                   <Button
                     variant="outline"
@@ -1720,7 +1789,7 @@ export default function ShareDialog({
                       busy ||
                       (isGalleryVisible
                         ? !canSubmitGalleryMetadataUpdate
-                        : !canSubmitGalleryListing)
+                        : !canSubmitGalleryListing || !loadDone || loadFailed)
                     }
                     className={shareDialogButtonClassName}
                   >
@@ -1749,7 +1818,7 @@ export default function ShareDialog({
                             {tCommon("labels.title")}
                           </dt>
                           <dd className="text-foreground truncate font-medium">
-                            {share.galleryTitle ||
+                            {share?.galleryTitle ||
                               design.title ||
                               t("share.gallery.card.untitled")}
                           </dd>
@@ -1759,7 +1828,7 @@ export default function ShareDialog({
                             {tCommon("labels.description")}
                           </dt>
                           <dd className="text-muted-foreground line-clamp-2 leading-relaxed">
-                            {share.galleryDescription ||
+                            {share?.galleryDescription ||
                               t("share.gallery.card.noDescription")}
                           </dd>
                         </div>
@@ -1777,7 +1846,12 @@ export default function ShareDialog({
                           className={shareDialogButtonClassName}
                           asChild
                         >
-                          <Link href="/gallery" prefetch={false}>
+                          <Link
+                            href={
+                              share ? `/share/${share.shareToken}` : "/gallery"
+                            }
+                            prefetch={false}
+                          >
                             {t("share.gallery.card.viewGallery")}
                           </Link>
                         </Button>
@@ -1843,15 +1917,10 @@ export default function ShareDialog({
                           {t("share.gallery.list.readyDescription")}
                         </p>
                       </div>
-                      {shareNeedsRefresh ? (
-                        <p className="text-muted-foreground text-[11px] leading-relaxed">
-                          {t("share.gallery.validation.refreshShareFirst")}
-                        </p>
-                      ) : null}
                       <div className="border-border/60 flex border-t pt-3 min-[520px]:justify-end">
                         <Button
                           onClick={openGalleryForm}
-                          disabled={busy || shareNeedsRefresh}
+                          disabled={busy}
                           className={cn(
                             shareDialogButtonClassName,
                             "w-full min-[520px]:w-auto"
