@@ -56,8 +56,6 @@ export async function POST(request: Request) {
     const parsed = teamPublicationCommandSchema.safeParse(input);
     if (!parsed.success) return json({ ok: false, code: "invalid" }, 400);
     const command = parsed.data;
-    if (command.action === "list" && !user.name?.trim())
-      return json({ ok: false, code: "invalid" }, 400);
     const share = await changeTeamPublication(user.id, command);
     await recordAuditEvent({
       actorUserId: user.id,

@@ -29,7 +29,7 @@ const updateGalleryStateSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("list"),
     title: z.string().trim().min(1).max(120),
-    description: z.string().trim().min(10).max(500),
+    description: z.string().trim().max(500),
     previewDataUrl: z
       .string()
       .regex(/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/)
@@ -41,7 +41,7 @@ const updateGalleryStateSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("update"),
     title: z.string().trim().min(1).max(120),
-    description: z.string().trim().min(10).max(500),
+    description: z.string().trim().max(500),
   }),
 ]);
 

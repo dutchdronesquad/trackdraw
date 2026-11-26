@@ -105,6 +105,26 @@ describe("owner share gallery API route", () => {
       });
   });
 
+  it.each(["", "Short"])(
+    "accepts optional or brief gallery descriptions: %s",
+    async (description) => {
+      const response = await PATCH(
+        patchRequest({
+          action: "list",
+          title: "Race",
+          description,
+          previewDataUrl: "data:image/webp;base64,AAAA",
+        }),
+        context()
+      );
+      expect(response?.status).toBe(200);
+      expect(updateGalleryEntryMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({ description }),
+        testUser.id
+      );
+    }
+  );
+
   it("lists an owned active share and uploads the generated preview", async () => {
     vi.mocked(uploadGalleryPreviewImage).mockResolvedValue(
       "gallery/previews/entry-1.webp"
@@ -120,7 +140,7 @@ describe("owner share gallery API route", () => {
       context()
     )) as Response;
 
-    expect(response.status).toBe(200);
+    expect(response?.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       ok: true,
       share: {
@@ -192,7 +212,7 @@ describe("owner share gallery API route", () => {
       context()
     )) as Response;
 
-    expect(response.status).toBe(200);
+    expect(response?.status).toBe(200);
     expect(revokeShare).toHaveBeenCalledWith(share.token, testUser.id);
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
     expect(recordAuditEvent).toHaveBeenCalledWith(
@@ -300,7 +320,7 @@ describe("owner share gallery API route", () => {
       context()
     )) as Response;
 
-    expect(response.status).toBe(200);
+    expect(response?.status).toBe(200);
     expect(updateGalleryEntryMetadata).toHaveBeenCalledWith(
       {
         shareToken: share.token,
@@ -356,7 +376,7 @@ describe("owner share gallery API route", () => {
       context()
     )) as Response;
 
-    expect(response.status).toBe(200);
+    expect(response?.status).toBe(200);
     expect(deleteGalleryEntry).toHaveBeenCalledWith(share.token, testUser.id);
     expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
     expect(recordAuditEvent).toHaveBeenCalledWith(

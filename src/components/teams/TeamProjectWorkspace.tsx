@@ -332,6 +332,7 @@ export default function TeamProjectWorkspace({
           open
           onOpenChange={setShareOpen}
           teamId={teamId}
+          teamName={loaded.team.name}
           projectId={projectId}
           revision={loaded.project.revision}
         />

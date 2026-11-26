@@ -570,7 +570,7 @@
         "listed": "Visible in the public gallery.",
         "hidden": "Hidden by moderation. The direct link still works until it is revoked.",
         "linkOnly": "Share link only. Not visible in the public gallery.",
-        "noLink": "Create a share link first."
+        "noLink": "Not public yet. Publish here to create a share link and gallery listing together."
       },
       "labels": {
         "visibility": "Visibility",
@@ -592,11 +592,11 @@
         "edit": "Edit details"
       },
       "list": {
-        "title": "List in gallery",
-        "description": "Add a title, description and generated preview for public browsing.",
-        "add": "Add to gallery",
-        "readyTitle": "Ready to list",
-        "readyDescription": "Add this published snapshot to the public gallery with its own title, description and preview."
+        "title": "Publish in gallery",
+        "description": "Review the title and author, then publish your track with an automatic preview. The description is optional.",
+        "add": "Publish in gallery",
+        "readyTitle": "Share your track with the community",
+        "readyDescription": "Publish your project for others to discover and use as a starting point. A share link is created automatically."
       },
       "fields": {
         "titlePlaceholder": "Track title",
@@ -607,7 +607,8 @@
         "descriptionLength": "Use {min}-{max} characters for the description.",
         "displayNameRequired": "Set an account display name first.",
         "noMetadataChanges": "Update the title or description to save changes.",
-        "refreshShareFirst": "Update the share link first so the gallery uses the latest snapshot."
+        "refreshShareFirst": "Update the share link first so the gallery uses the latest snapshot.",
+        "descriptionMaxLength": "Use at most {max} characters for the description."
       },
       "preview": {
         "generating": "Generating preview...",
@@ -618,7 +619,7 @@
         "description": "Review or update the public title and description for this track.",
         "untitled": "Untitled",
         "noDescription": "No gallery description set.",
-        "viewGallery": "View gallery"
+        "viewGallery": "View published track"
       },
       "remove": {
         "confirm": "Remove from the public gallery? The share link itself will continue to work until it is revoked.",
@@ -626,7 +627,21 @@
       },
       "fallback": {
         "noDisplayName": "no display name set"
-      }
+      },
+      "signInDescription": "Designing and sharing a link are free without an account. Sign in to publish your current project in the public gallery.",
+      "signIn": "Sign in to publish",
+      "loadFailed": "Could not load the published links. Retry before publishing.",
+      "retry": "Try again",
+      "retryPreview": "Retry preview",
+      "optionalDescription": "Description (optional)",
+      "confirmPublication": "Publishing makes the current design and preview publicly discoverable in the gallery and search engines under the author name shown above. We will create a permanent share link or update this project’s existing link to this version. Later internal edits stay private until you publish again.",
+      "confirmTeamPublication": "Publishing makes the saved team version publicly discoverable in the gallery and search engines under the team name shown above. We will create or update the selected share link. Unsaved edits are not included. Later internal saves do not update the public snapshot.",
+      "setDisplayName": "Set display name",
+      "showcaseTitle": "Showcase your track",
+      "showcaseDescription": "Publish your track in the public gallery so other pilots can discover it and use it as a starting point.",
+      "showcaseAction": "Publish in gallery",
+      "manageListing": "Manage gallery listing",
+      "noPublicationDescription": "Not public yet. Publish here to create a share link and gallery listing together."
     },
     "actions": {
       "primary": {
@@ -668,7 +683,7 @@
       "embedCopyFailed": "Could not copy embed code",
       "embedCopyFailedDescription": "The embed code is still visible. Select it and copy manually if the browser blocks clipboard access.",
       "galleryListFailed": "Could not list in gallery",
-      "galleryListFailedDescription": "The share link was not added to the public gallery. Check the title, description, preview, and connection before trying again.",
+      "galleryListFailedDescription": "The gallery listing did not complete. A share link may already have been created or updated; it remains available under Share. Retry publishing to finish the listing.",
       "galleryRemoveFailed": "Could not remove from gallery",
       "galleryRemoveFailedDescription": "The gallery entry may still be visible. Try again, or revoke the share link if it must stop being accessible.",
       "galleryUpdateFailed": "Could not update gallery details",
@@ -1281,7 +1296,7 @@
     "audience": "Anyone with the link can view this snapshot.",
     "consequences": "Recipients can copy, download or export the published track. Revoking a link cannot remove copies they already saved. Membership changes do not revoke public links.",
     "snapshot": "Publish or update uses the saved team project. Internal edits stay private until you explicitly update the link. Map references, inventory and internal metadata are excluded. Private artwork is replaced with the standard appearance.",
-    "galleryAudience": "Listing makes this snapshot discoverable in the public gallery and search engines, with your display name. Removing it from the gallery leaves its link active.",
+    "galleryAudience": "Listing makes this snapshot discoverable in the public gallery and search engines, with the team name. Removing it from the gallery leaves its link active.",
     "selectLink": "Manage published link",
     "title": "Team project snapshot",
     "description": "Publish a saved version of this team project. Updating a link replaces only that link’s public snapshot.",

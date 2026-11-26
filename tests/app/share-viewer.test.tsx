@@ -82,7 +82,7 @@ describe("ShareViewer", () => {
     expect(shell.getAttribute("data-existing-share-mode")).toBe("true");
     expect(shell.getAttribute("data-initial-tab")).toBe("2d");
     expect(shell.getAttribute("data-studio-href")).toBe(
-      "/studio?token=seed-token&view=3d"
+      "/studio?token=seed-token&view=3d&sourceShare=share-token"
     );
     expect(shell.getAttribute("data-title")).toBe("Race day handoff");
     expect(screen.getByText("Race day handoff")).toBeTruthy();
@@ -98,7 +98,7 @@ describe("ShareViewer", () => {
       screen
         .getByRole("link", { name: /Make editable copy/ })
         .getAttribute("href")
-    ).toBe("/studio?token=seed-token&view=3d");
+    ).toBe("/studio?token=seed-token&view=3d&sourceShare=share-token");
   });
 
   it("removes the shared track intro when dismissed", async () => {
