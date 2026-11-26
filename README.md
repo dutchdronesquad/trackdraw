@@ -32,6 +32,8 @@
   &middot;
   <a href="https://trackdraw.app/gallery"><strong>Gallery</strong></a>
   &middot;
+  <a href="https://trackdraw.app/contact"><strong>Contact</strong></a>
+  &middot;
   <a href="https://github.com/dutchdronesquad/trackdraw/discussions/106"><strong>Roadmap</strong></a>
 </p>
 

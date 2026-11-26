@@ -11,6 +11,7 @@ import {
   Images,
   ListChecks,
   LogIn,
+  Mail,
   Menu,
 } from "lucide-react";
 import { LanguagePicker } from "@/components/LanguagePicker";
@@ -22,11 +23,11 @@ import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 type PublicSiteHeaderProps = {
-  currentPage?: "home" | "gallery" | "legal";
+  currentPage?: "home" | "gallery" | "legal" | "contact";
 };
 
 type NavItem = {
-  key: "home" | "features" | "gallery" | "pricing" | "faq";
+  key: "home" | "features" | "gallery" | "faq" | "contact";
   label: string;
   homeHref: string;
   fallbackHref: string;
@@ -164,16 +165,16 @@ export function PublicSiteHeader({
       fallbackHref: "/gallery",
     },
     {
-      key: "pricing",
-      label: t("header.pricingNav"),
-      homeHref: "#plans",
-      fallbackHref: "/#plans",
-    },
-    {
       key: "faq",
       label: t("header.faqNav"),
       homeHref: "#faq",
       fallbackHref: "/#faq",
+    },
+    {
+      key: "contact",
+      label: t("header.contactNav"),
+      homeHref: "/contact",
+      fallbackHref: "/contact",
     },
   ];
 
@@ -182,7 +183,8 @@ export function PublicSiteHeader({
     href: currentPage === "home" ? item.homeHref : item.fallbackHref,
     isActive:
       (currentPage === "home" && item.key === "home") ||
-      (currentPage === "gallery" && item.key === "gallery"),
+      (currentPage === "gallery" && item.key === "gallery") ||
+      (currentPage === "contact" && item.key === "contact"),
     description:
       item.key === "home"
         ? t("header.homeTooltip")
@@ -190,8 +192,8 @@ export function PublicSiteHeader({
           ? t("header.galleryTooltip")
           : item.key === "features"
             ? t("header.featuresTooltip")
-            : item.key === "pricing"
-              ? t("header.pricingTooltip")
+            : item.key === "contact"
+              ? t("header.contactTooltip")
               : t("header.faqTooltip"),
     icon:
       item.key === "home" ? (
@@ -200,6 +202,8 @@ export function PublicSiteHeader({
         <Images className="size-4" />
       ) : item.key === "features" ? (
         <Compass className="size-4" />
+      ) : item.key === "contact" ? (
+        <Mail className="size-4" />
       ) : (
         <ListChecks className="size-4" />
       ),
@@ -223,7 +227,8 @@ export function PublicSiteHeader({
               currentPage === "home" ? item.homeHref : item.fallbackHref;
             const isActive =
               (currentPage === "home" && item.key === "home") ||
-              (currentPage === "gallery" && item.key === "gallery");
+              (currentPage === "gallery" && item.key === "gallery") ||
+              (currentPage === "contact" && item.key === "contact");
             const NavLink = href.includes("#") ? "a" : Link;
 
             return (
